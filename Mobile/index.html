@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fancy 2048</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Fancy 2048</h1>
+      <button type="button" id="invert-button">🌙</button>
+      <div id="hue-slider-container">
+        <label for="hue-slider">Color</label>
+        <input type="range" id="hue-slider" min="0" max="360" value="0" title="Adjust the hue" />
+      </div>
+    </header>
+    <main>
+      <div class="overlay"></div>
+      <section class="game-section">
+        <div class="game-container" id="game-container"></div>
+        <div id="game-over" class="hidden">Game Over!</div>
+      </section>
+      <aside id="score-box">
+        <p>Score: <span id="score">0</span></p>
+        <p>Best Score: <span id="best-score">0</span></p>
+      </aside>
+      <button type="button" id="reset-button">Reset Game</button>
+      <button type="button" id="back-button">⏪</button>
+    </main>
+    <script src="main.js"></script>
+  </body>
+</html>
