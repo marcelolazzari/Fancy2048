@@ -26,7 +26,7 @@ body {
 }
 
 body.light-mode {
-  background-color: #f0f0f0; /* Better light mode background color */
+  background-color: #ffffff; /* Better light mode background color */
   color: #000000;
   border-color: transparent;
 }
@@ -66,14 +66,14 @@ header h1 {
   padding: 0.5rem 1rem;
   font-size: 1.5rem;
   color: #f2f2f2;
-  background-color: rgba(50, 50, 50, 0.8);
+  background-color: rgba(50, 50, 50, 0.9); /* Improved contrast */
   border-radius: 10px;
   text-align: center;
   z-index: 6;
 }
 
 header.light-mode h1 {
-  background-color: rgba(240, 240, 240, 0.8);
+  background-color: rgba(240, 240, 240, 0.9); /* Improved contrast */
   color: #000000;
   border-color: transparent;
 }
@@ -122,6 +122,16 @@ header.inverted h1 {
   filter: grayscale(100%);
 }
 
+#invert-button.light-mode {
+  background-color: rgba(224, 224, 224, 0.9); /* Improved contrast */
+  color: #000000;
+}
+
+#invert-button.light-mode:hover {
+  background-color: rgba(192, 192, 192, 0.9); /* Improved contrast */
+  color: #000000;
+}
+
 main {
   display: flex;
   flex-direction: column;
@@ -152,7 +162,7 @@ main.inverted {
   padding: 0.5rem;
   color: #f2f2f2;
   font-size: 1rem;
-  background-color: rgba(50, 50, 50, 0.8);
+  background-color: rgba(50, 50, 50, 0.9); /* Improved contrast */
   border-radius: 10px;
   text-align: center;
   width: auto;
@@ -162,7 +172,7 @@ main.inverted {
 }
 
 #score-box.light-mode {
-  background-color: rgba(240, 240, 240, 0.8);
+  background-color: rgba(240, 240, 240, 0.9); /* Improved contrast */
   color: #000000;
   border-color: transparent;
 }
@@ -190,7 +200,7 @@ main.inverted {
 }
 
 #reset-button.light-mode {
-  background-color: rgba(240, 240, 240, 0.8);
+  background-color: rgba(224, 224, 224, 0.9); /* Improved contrast */
   color: #000000;
 }
 
@@ -206,6 +216,11 @@ main.inverted {
 
 #reset-button:active {
   transform: scale(0.95);
+}
+
+#reset-button.light-mode:hover {
+  background-color: rgba(192, 192, 192, 0.9); /* Improved contrast */
+  color: #000000;
 }
 
 #back-button {
@@ -227,7 +242,7 @@ main.inverted {
 }
 
 #back-button.light-mode {
-  background-color: rgba(240, 240, 240, 0.8);
+  background-color: rgba(224, 224, 224, 0.9); /* Improved contrast */
   color: #000000;
 }
 
@@ -244,6 +259,11 @@ main.inverted {
   background-color: rgba(255, 255, 255, 0.8);
   color: #333;
   filter: grayscale(0%);
+}
+
+#back-button.light-mode:hover {
+  background-color: rgba(192, 192, 192, 0.9); /* Improved contrast */
+  color: #000000;
 }
 
 #invert-button {
@@ -284,12 +304,13 @@ main.inverted {
   height: 100%;
   max-width: 100%;
   max-height: 100%;
-  background-color: rgba(50, 50, 50, 0.8);
+  background-color: rgba(50, 50, 50, 0.9); /* Improved contrast */
   margin: 20px;
   border: none; /* Remove black solid border */
   border-radius: 15px;
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.5),
-    0 0 20px rgba(255, 255, 255, 0.5), 0 0 30px rgba(255, 255, 255, 0.5);
+              0 0 20px rgba(255, 255, 255, 0.5),
+              0 0 30px rgba(255, 255, 255, 0.5);
   box-sizing: border-box;
   max-width: calc(100% - 10px);
   max-height: calc(100% - 10px);
@@ -304,10 +325,11 @@ main.inverted {
 }
 
 .game-container.light-mode {
-  background-color: rgba(240, 240, 240, 0.8);
+  background-color: rgba(240, 240, 240, 0.9); /* Improved contrast */
   border: 2px solid #cccccc;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1), 0 0 20px rgba(0, 0, 0, 0.1),
-    0 0 30px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.1),
+              0 0 10px rgba(0, 0, 0, 0.1),
+              0 0 15px rgba(0, 0, 0, 0.1);
   padding-right: var(--gap); /* Adjust right padding */
   padding-bottom: var(--gap); /* Adjust bottom padding */
 }
@@ -315,8 +337,9 @@ main.inverted {
 .game-container.inverted {
   background-color: rgba(255, 255, 255, 0.8);
   border: 2px solid rgba(0, 0, 0, 0.2);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 0, 0, 0.2),
-    0 0 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2),
+              0 0 10px rgba(0, 0, 0, 0.2),
+              0 0 15px rgba(0, 0, 0, 0.2);
 }
 
 .tile {
@@ -330,10 +353,10 @@ main.inverted {
   border-radius: 15px;
   font-size: calc(var(--tile-size) * 0.8);
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.5),
-    0 0 20px rgba(255, 255, 255, 0.5), 0 0 30px rgba(255, 255, 255, 0.5),
-    0 0 40px rgba(255, 255, 255, 0.5);
-  transition: transform 0.1s ease-in-out, opacity 0.3s ease-in-out,
-    box-shadow 0.3s ease-in-out;
+              0 0 20px rgba(255, 255, 255, 0.5),
+              0 0 30px rgba(255, 255, 255, 0.5);
+  transition: transform 0.05s ease-in-out, opacity 0.2s ease-in-out,
+              box-shadow 0.2s ease-in-out;
   overflow: hidden;
   margin: 0; /* Remove margin from tiles */
   width: calc((100% - var(--gap) * (var(--size) - 1)) / var(--size));
@@ -341,11 +364,12 @@ main.inverted {
 }
 
 .tile.light-mode {
-  background-color: rgba(238, 228, 218, 0.8);
+  background-color: rgba(238, 228, 218, 0.9); /* Improved contrast */
   color: #000000;
   border: 2px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 0, 0, 0.2),
-    0 0 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 5px rgba(0, 0, 0, 0.2),
+              0 0 10px rgba(0, 0, 0, 0.2),
+              0 0 15px rgba(0, 0, 0, 0.2);
 }
 
 .tile.light-mode[data-value="2"] {
@@ -404,57 +428,57 @@ main.inverted {
 }
 
 .tile[data-value="2"] {
-  background-color: rgba(238, 228, 218, 0.8);
+  background-color: #eee4da;
   color: #776e65;
 }
 
 .tile[data-value="4"] {
-  background-color: rgba(237, 224, 200, 0.8);
+  background-color: #ede0c8;
   color: #776e65;
 }
 
 .tile[data-value="8"] {
-  background-color: rgba(242, 177, 121, 0.8);
+  background-color: #f2b179;
   color: #f9f6f2;
 }
 
 .tile[data-value="16"] {
-  background-color: rgba(245, 149, 99, 0.8);
+  background-color: #f59563;
   color: #f9f6f2;
 }
 
 .tile[data-value="32"] {
-  background-color: rgba(246, 124, 95, 0.8);
+  background-color: #f67c5f;
   color: #f9f6f2;
 }
 
 .tile[data-value="64"] {
-  background-color: rgba(246, 94, 59, 0.8);
+  background-color: #f65e3b;
   color: #f9f6f2;
 }
 
 .tile[data-value="128"] {
-  background-color: rgba(237, 207, 114, 0.8);
+  background-color: #edcf72;
   color: #f9f6f2;
 }
 
 .tile[data-value="256"] {
-  background-color: rgba(237, 204, 97, 0.8);
+  background-color: #edcc61;
   color: #f9f6f2;
 }
 
 .tile[data-value="512"] {
-  background-color: rgba(237, 200, 80, 0.8);
+  background-color: #edc850;
   color: #f9f6f2;
 }
 
 .tile[data-value="1024"] {
-  background-color: rgba(237, 197, 63, 0.8);
+  background-color: #edc53f;
   color: #f9f6f2;
 }
 
 .tile[data-value="2048"] {
-  background-color: rgba(237, 194, 46, 0.8);
+  background-color: #edc22e;
   color: #f9f6f2;
 }
 
@@ -564,10 +588,10 @@ main.inverted {
 }
 
 .tile:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.7),
-    0 0 25px rgba(255, 255, 255, 0.7), 0 0 35px rgba(255, 255, 255, 0.7),
-    0 0 45px rgba(255, 255, 255, 0.7);
+  transform: scale(1.03);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5),
+              0 0 20px rgba(255, 255, 255, 0.5),
+              0 0 30px rgba(255, 255, 255, 0.5);
 }
 
 #game-over {

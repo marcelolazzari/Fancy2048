@@ -233,6 +233,7 @@ class Game {
   updateUI() {
     const gameContainer = document.querySelector('.game-container');
     gameContainer.innerHTML = '';
+    let highestValue = 0;
     this.board.forEach((row, x) => {
       row.forEach((value, y) => {
         const tile = document.createElement('div');
@@ -244,6 +245,7 @@ class Game {
         tile.setAttribute('data-y', y);
         if (value) {
           tile.setAttribute('data-value', value);
+          highestValue = Math.max(highestValue, value);
         }
         if (this.isLightMode) {
           tile.classList.add('light-mode');
@@ -255,10 +257,17 @@ class Game {
     document.getElementById('score').textContent = this.score;
     document.getElementById('best-score').textContent = this.bestScore;
     this.updateTileSize();
+    const h1Element = document.querySelector('header h1');
+    h1Element.style.backgroundColor = this.getTileColor(highestValue);
+    h1Element.style.color = this.getTextColor(highestValue);
   }
 
   getTextColor(value) {
-    return value >= 8 ? '#f9f6f2' : '#776e65';
+    if (this.isLightMode) {
+      return value >= 8 ? '#f9f6f2' : '#776e65';
+    } else {
+      return value >= 8 ? '#f9f6f2' : '#000000';
+    }
   }
 
   getTileColor(value) {
@@ -286,10 +295,15 @@ class Game {
 
   updateHue(event) {
     const hueValue = event.target.value;
-    document.querySelector('.game-section').style.filter = `hue-rotate(${hueValue}deg)`;
-    document.querySelector('.overlay').style.filter = `hue-rotate(${hueValue}deg)`;
-    document.querySelector('.game-container').style.filter = `hue-rotate(${hueValue}deg)`;
-    document.querySelector('header h1').style.filter = `hue-rotate(${hueValue}deg)`;
+    const elementsToUpdate = [
+      document.querySelector('.game-section'),
+      document.querySelector('.overlay'),
+      document.querySelector('.game-container'),
+      document.querySelector('header h1')
+    ];
+    elementsToUpdate.forEach(element => {
+      element.style.filter = `hue-rotate(${hueValue}deg)`;
+    });
   }
 
   handleResize() {
