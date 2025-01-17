@@ -6,7 +6,6 @@
   --game-size: calc(
     var(--tile-size) * (var(--size)) + var(--gap) * (var(--size) + 2)
   );
-  filter: invert(100%);
 }
 
 body {
