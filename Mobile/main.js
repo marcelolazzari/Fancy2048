@@ -6,7 +6,6 @@ class Game {
     this.bestScore = localStorage.getItem('bestScore') || 0;
     this.isLightMode = localStorage.getItem('isLightMode') === 'true';
     this.previousBoard = null;
-    this.overrideTheme = localStorage.getItem('overrideTheme') || 'auto';
     this.addEventListeners();
     this.reset();
     window.addEventListener('resize', () => this.updateTileSize());
@@ -21,41 +20,38 @@ class Game {
     document.querySelector('.game-container').addEventListener('touchstart', this.handleTouchStart.bind(this), false);
     document.querySelector('.game-container').addEventListener('touchend', this.handleTouchEnd.bind(this), false);
     document.getElementById('hue-slider').addEventListener('input', this.updateHue.bind(this));
-    document.getElementById('theme-override-select').addEventListener('change', this.setThemeOverride.bind(this));
-  }
-
-  setThemeOverride(event) {
-    this.overrideTheme = event.target.value;
-    localStorage.setItem('overrideTheme', this.overrideTheme);
-    this.applyTheme();
   }
 
   toggleTheme() {
-    if (this.overrideTheme === 'auto') {
-      this.isLightMode = !this.isLightMode;
-      localStorage.setItem('isLightMode', this.isLightMode);
-    }
+    this.isLightMode = !this.isLightMode;
+    localStorage.setItem('isLightMode', this.isLightMode);
     this.applyTheme();
   }
 
   applyTheme() {
-    let isLightMode = this.isLightMode;
-    if (this.overrideTheme === 'light') {
-      isLightMode = true;
-    } else if (this.overrideTheme === 'dark') {
-      isLightMode = false;
-    }
-    document.body.classList.toggle('light-mode', isLightMode);
-    document.querySelector('.overlay').classList.toggle('light-mode', isLightMode);
-    document.querySelector('.game-container').classList.toggle('light-mode', isLightMode);
+    document.body.classList.toggle('light-mode', this.isLightMode);
+    document.querySelector('.overlay').classList.toggle('light-mode', this.isLightMode);
+    document.querySelector('.game-container').classList.toggle('light-mode', this.isLightMode);
     document.querySelectorAll('.tile').forEach(tile => {
-      tile.classList.toggle('light-mode', isLightMode);
+      tile.classList.toggle('light-mode', this.isLightMode);
       this.invertTileDigits(tile);
     });
   }
 
   invertTileDigits(tile) {
     tile.style.color = this.isLightMode ? '#000000' : '#f9f6f2';
+  }
+
+  handleKeyPress(event) {
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
+      this.move(event.key);
+      this.updateUI();
+      setTimeout(() => {
+        if (this.isGameOver()) {
+          document.getElementById('game-over').classList.remove('hidden');
+        }
+      }, 0);
+    }
   }
 
   handleTouchStart(e) {
@@ -127,15 +123,6 @@ class Game {
     const spot = emptySpots[Math.floor(Math.random() * emptySpots.length)];
     const newValue = Math.random() < 0.9 ? 2 : 4;
     this.board[spot.x][spot.y] = newValue;
-    this.updateTileColor(spot.x, spot.y, newValue);
-  }
-
-  updateTileColor(x, y, value) {
-    const tile = document.querySelector(`.tile[data-x="${x}"][data-y="${y}"]`);
-    if (tile) {
-      tile.style.backgroundColor = this.getTileColor(value);
-      tile.style.color = this.getTextColor(value);
-    }
   }
 
   updateBestScore() {
@@ -163,18 +150,27 @@ class Game {
   }
 
   slideAndCombine(row) {
-    let newRow = Array(this.size).fill('');
-    let index = 0;
-    for (let i = 0; i < this.size; i++) {
-      if (row[i] !== '') {
-        if (row[i] === newRow[index - 1]) {
-          newRow[index - 1] *= 2;
-          this.score += newRow[index - 1];
+    const newRow = [];
+    let previousTile = null;
+    row.forEach(tile => {
+      if (tile !== '') {
+        if (previousTile === null) {
+          previousTile = tile;
+        } else if (previousTile === tile) {
+          newRow.push(tile * 2);
+          this.score += tile * 2;
+          previousTile = null;
         } else {
-          newRow[index] = row[i];
-          index++;
+          newRow.push(previousTile);
+          previousTile = tile;
         }
       }
+    });
+    if (previousTile !== null) {
+      newRow.push(previousTile);
+    }
+    while (newRow.length < this.size) {
+      newRow.push('');
     }
     return newRow;
   }
@@ -193,14 +189,12 @@ class Game {
   move(direction) {
     this.previousBoard = this.board.map(row => [...row]);
     let hasChanged = false;
-
-    if (['ArrowUp', 'ArrowDown'].includes(direction)) {
+    if (direction === 'ArrowUp' || direction === 'ArrowDown') {
       this.board = this.transpose(this.board);
     }
-    if (['ArrowDown', 'ArrowRight'].includes(direction)) {
+    if (direction === 'ArrowDown' || direction === 'ArrowRight') {
       this.board = this.board.map(row => row.reverse());
     }
-
     this.board = this.board.map(row => {
       const newRow = this.slideAndCombine(row);
       if (!hasChanged && JSON.stringify(newRow) !== JSON.stringify(row)) {
@@ -208,20 +202,17 @@ class Game {
       }
       return newRow;
     });
-
-    if (['ArrowDown', 'ArrowRight'].includes(direction)) {
+    if (direction === 'ArrowDown' || direction === 'ArrowRight') {
       this.board = this.board.map(row => row.reverse());
     }
-    if (['ArrowUp', 'ArrowDown'].includes(direction)) {
+    if (direction === 'ArrowUp' || direction === 'ArrowDown') {
       this.board = this.transpose(this.board);
     }
-
     if (hasChanged) {
       this.addRandomTile();
       this.updateBestScore();
     }
-
-    this.updateUI();
+    this.updateUI(); // Ensure UI is updated after move
   }
 
   transpose(matrix) {
@@ -231,7 +222,6 @@ class Game {
   updateUI() {
     const gameContainer = document.querySelector('.game-container');
     gameContainer.innerHTML = '';
-    let highestValue = 0;
     this.board.forEach((row, x) => {
       row.forEach((value, y) => {
         const tile = document.createElement('div');
@@ -243,7 +233,6 @@ class Game {
         tile.setAttribute('data-y', y);
         if (value) {
           tile.setAttribute('data-value', value);
-          highestValue = Math.max(highestValue, value);
         }
         if (this.isLightMode) {
           tile.classList.add('light-mode');
@@ -253,25 +242,8 @@ class Game {
       });
     });
     document.getElementById('score').textContent = this.score;
-    document.getElementById('score').style.color = this.getScoreColor(this.score);
     document.getElementById('best-score').textContent = this.bestScore;
     this.updateTileSize();
-    this.updateHeaderBackground(highestValue);
-  }
-
-  getScoreColor(score) {
-    if (score < 100) return '#ffcc00';
-    if (score < 500) return '#ff9900';
-    if (score < 1000) return '#ff6600';
-    if (score < 2000) return '#ff3300';
-    return '#ff0000';
-  }
-
-  updateHeaderBackground(highestValue) {
-    const header = document.querySelector('header h1');
-    const backgroundColor = this.getTileColor(highestValue);
-    header.style.backgroundColor = backgroundColor;
-    header.style.color = this.getTextColor(highestValue);
   }
 
   getTextColor(value) {
@@ -292,11 +264,6 @@ class Game {
       '512': '#edc850',
       '1024': '#edc53f',
       '2048': '#edc22e',
-      '4096': '#3c3a32',
-      '8192': '#3c3a32',
-      '16384': '#3c3a32',
-      '32768': '#3c3a32',
-      '65536': '#3c3a32',
     };
     return colorMap[value];
   }
@@ -314,7 +281,7 @@ class Game {
 document.addEventListener('DOMContentLoaded', () => {
   const game = new Game(4);
   game.updateTileSize();
-  game.applyTheme();
+  game.applyTheme(); // Ensure the theme is applied on page load
   game.reset(); // Ensure the game resets when the page is refreshed
   document.getElementById('hue-slider').value = 0;
 });
