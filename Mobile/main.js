@@ -55,22 +55,6 @@ class Game {
   }
 
   invertTileDigits(tile) {
-    tile.style.color = this.isLightMode ? '#000000' : '#f9f6f2';
-  }
-
-  handleKeyPress(event) {
-    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
-      this.move(event.key);
-      this.updateUI();
-      setTimeout(() => {
-        if (this.isGameOver()) {
-          document.getElementById('game-over').classList.remove('hidden');
-        }
-      }, 0);
-    }
-  }
-
-  handleTouchStart(e) {
     this.touchStartX = e.touches[0].clientX;
     this.touchStartY = e.touches[0].clientY;
   }
@@ -137,7 +121,17 @@ class Game {
   addRandomTile() {
     const emptySpots = this.board.flatMap((row, x) => row.map((cell, y) => (cell === '' ? { x, y } : null)).filter(Boolean));
     const spot = emptySpots[Math.floor(Math.random() * emptySpots.length)];
-    this.board[spot.x][spot.y] = Math.random() < 0.9 ? 2 : 4;
+    const newValue = Math.random() < 0.9 ? 2 : 4;
+    this.board[spot.x][spot.y] = newValue;
+    this.updateTileColor(spot.x, spot.y, newValue);
+  }
+
+  updateTileColor(x, y, value) {
+    const tile = document.querySelector(`.tile[data-x="${x}"][data-y="${y}"]`);
+    if (tile) {
+      tile.style.backgroundColor = this.getTileColor(value);
+      tile.style.color = this.getTextColor(value);
+    }
   }
 
   updateBestScore() {
@@ -234,13 +228,15 @@ class Game {
     const gameContainer = document.querySelector('.game-container');
     gameContainer.innerHTML = '';
     let highestValue = 0;
-    this.board.forEach(row => {
-      row.forEach(value => {
+    this.board.forEach((row, x) => {
+      row.forEach((value, y) => {
         const tile = document.createElement('div');
         tile.classList.add('tile');
         tile.textContent = value !== '' ? value : '';
         tile.style.backgroundColor = this.getTileColor(value);
         tile.style.color = this.getTextColor(value);
+        tile.setAttribute('data-x', x);
+        tile.setAttribute('data-y', y);
         if (value) {
           tile.setAttribute('data-value', value);
           highestValue = Math.max(highestValue, value);
@@ -316,5 +312,4 @@ document.addEventListener('DOMContentLoaded', () => {
   game.updateTileSize();
   game.applyTheme();
   document.getElementById('hue-slider').value = 0;
-  document.getElementById('theme-override-select').value = game.overrideTheme;
 });
