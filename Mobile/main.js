@@ -285,7 +285,7 @@ document.addEventListener('DOMContentLoaded', () => {
   game.reset(); // Ensure the game resets when the page is refreshed
   document.getElementById('hue-slider').value = 0;
 
-  // Override system dark mode settings
+  // Override system and browser dark mode settings
   if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
     document.body.classList.remove('light-mode');
     game.isLightMode = false;
