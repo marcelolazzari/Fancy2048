@@ -315,5 +315,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const game = new Game(4);
   game.updateTileSize();
   game.applyTheme();
+  game.reset(); // Ensure the game resets when the page is refreshed
   document.getElementById('hue-slider').value = 0;
 });
