@@ -6,6 +6,7 @@ class Game {
     this.bestScore = localStorage.getItem('bestScore') || 0;
     this.isLightMode = localStorage.getItem('isLightMode') === 'true';
     this.previousBoard = null;
+    this.overrideTheme = localStorage.getItem('overrideTheme') || 'auto';
     this.addEventListeners();
     this.reset();
     window.addEventListener('resize', () => this.updateTileSize());
@@ -20,20 +21,35 @@ class Game {
     document.querySelector('.game-container').addEventListener('touchstart', this.handleTouchStart.bind(this), false);
     document.querySelector('.game-container').addEventListener('touchend', this.handleTouchEnd.bind(this), false);
     document.getElementById('hue-slider').addEventListener('input', this.updateHue.bind(this));
+    document.getElementById('theme-override-select').addEventListener('change', this.setThemeOverride.bind(this));
+  }
+
+  setThemeOverride(event) {
+    this.overrideTheme = event.target.value;
+    localStorage.setItem('overrideTheme', this.overrideTheme);
+    this.applyTheme();
   }
 
   toggleTheme() {
-    this.isLightMode = !this.isLightMode;
-    localStorage.setItem('isLightMode', this.isLightMode);
+    if (this.overrideTheme === 'auto') {
+      this.isLightMode = !this.isLightMode;
+      localStorage.setItem('isLightMode', this.isLightMode);
+    }
     this.applyTheme();
   }
 
   applyTheme() {
-    document.body.classList.toggle('light-mode', this.isLightMode);
-    document.querySelector('.overlay').classList.toggle('light-mode', this.isLightMode);
-    document.querySelector('.game-container').classList.toggle('light-mode', this.isLightMode);
+    let isLightMode = this.isLightMode;
+    if (this.overrideTheme === 'light') {
+      isLightMode = true;
+    } else if (this.overrideTheme === 'dark') {
+      isLightMode = false;
+    }
+    document.body.classList.toggle('light-mode', isLightMode);
+    document.querySelector('.overlay').classList.toggle('light-mode', isLightMode);
+    document.querySelector('.game-container').classList.toggle('light-mode', isLightMode);
     document.querySelectorAll('.tile').forEach(tile => {
-      tile.classList.toggle('light-mode', this.isLightMode);
+      tile.classList.toggle('light-mode', isLightMode);
       this.invertTileDigits(tile);
     });
   }
@@ -300,4 +316,5 @@ document.addEventListener('DOMContentLoaded', () => {
   game.updateTileSize();
   game.applyTheme();
   document.getElementById('hue-slider').value = 0;
+  document.getElementById('theme-override-select').value = game.overrideTheme;
 });
