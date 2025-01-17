@@ -8,8 +8,9 @@ class Game {
     this.previousBoard = null;
     this.addEventListeners();
     this.reset();
-    window.addEventListener('resize', () => this.updateTileSize());
+    window.addEventListener('resize', () => this.handleResize());
     this.applyTheme();
+    window.addEventListener('orientationchange', () => this.handleResize());
   }
 
   addEventListeners() {
@@ -29,13 +30,23 @@ class Game {
   }
 
   applyTheme() {
-    document.body.classList.toggle('light-mode', this.isLightMode);
-    document.querySelector('.overlay').classList.toggle('light-mode', this.isLightMode);
-    document.querySelector('.game-container').classList.toggle('light-mode', this.isLightMode);
-    document.querySelectorAll('.tile').forEach(tile => {
-      tile.classList.toggle('light-mode', this.isLightMode);
-      this.invertTileDigits(tile);
-    });
+    if (this.isLightMode) {
+      document.body.classList.add('light-mode');
+      document.querySelector('.overlay').classList.add('light-mode');
+      document.querySelector('.game-container').classList.add('light-mode');
+      document.querySelectorAll('.tile').forEach(tile => {
+        tile.classList.add('light-mode');
+        this.invertTileDigits(tile);
+      });
+    } else {
+      document.body.classList.remove('light-mode');
+      document.querySelector('.overlay').classList.remove('light-mode');
+      document.querySelector('.game-container').classList.remove('light-mode');
+      document.querySelectorAll('.tile').forEach(tile => {
+        tile.classList.remove('light-mode');
+        this.invertTileDigits(tile);
+      });
+    }
   }
 
   invertTileDigits(tile) {
@@ -280,6 +291,31 @@ class Game {
     document.querySelector('.game-container').style.filter = `hue-rotate(${hueValue}deg)`;
     document.querySelector('header h1').style.filter = `hue-rotate(${hueValue}deg)`;
   }
+
+  handleOrientationChange() {
+    if (window.matchMedia("(orientation: landscape)").matches) {
+      this.updateTileSize();
+    }
+  }
+
+  handleResize() {
+    this.updateTileSize();
+    this.adjustGameContainer();
+  }
+
+  adjustGameContainer() {
+    const gameContainer = document.querySelector('.game-container');
+    const aspectRatio = window.innerWidth / window.innerHeight;
+    if (aspectRatio > 1) {
+      // Landscape
+      gameContainer.style.width = `${window.innerHeight}px`;
+      gameContainer.style.height = `${window.innerHeight}px`;
+    } else {
+      // Portrait
+      gameContainer.style.width = `${window.innerWidth}px`;
+      gameContainer.style.height = `${window.innerWidth}px`;
+    }
+  }
 }
 
 // Instantiate the game
@@ -291,11 +327,26 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('hue-slider').value = 0;
 
   // Override system and browser dark mode settings
-  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+  const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
+  if (prefersDarkScheme.matches) {
     document.body.classList.remove('light-mode');
     game.isLightMode = false;
   } else {
     document.body.classList.add('light-mode');
     game.isLightMode = true;
   }
+
+  prefersDarkScheme.addEventListener('change', (e) => {
+    if (e.matches) {
+      document.body.classList.remove('light-mode');
+      game.isLightMode = false;
+    } else {
+      document.body.classList.add('light-mode');
+      game.isLightMode = true;
+    }
+    game.applyTheme();
+  });
+
+  window.addEventListener('resize', () => game.handleResize());
+  window.addEventListener('orientationchange', () => game.handleResize());
 });
