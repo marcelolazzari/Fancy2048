@@ -55,15 +55,15 @@ class Game {
   }
 
   invertTileDigits(tile) {
+    tile.style.color = this.isLightMode ? '#000000' : '#f9f6f2';
+  }
+
+  handleTouchStart(e) {
     this.touchStartX = e.touches[0].clientX;
     this.touchStartY = e.touches[0].clientY;
   }
 
   handleTouchEnd(e) {
-    const gameContainer = document.querySelector('.game-container');
-    if (!gameContainer.contains(e.target)) return;
-
-    const touchEndX = e.changedTouches[0].clientX;
     const touchEndY = e.changedTouches[0].clientY;
     const dx = touchEndX - this.touchStartX;
     const dy = touchEndY - this.touchStartY;
