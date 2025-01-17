@@ -291,51 +291,6 @@ class Game {
     document.querySelector('.game-container').style.filter = `hue-rotate(${hueValue}deg)`;
     document.querySelector('header h1').style.filter = `hue-rotate(${hueValue}deg)`;
   }
-
-  handleOrientationChange() {
-    if (window.matchMedia("(orientation: landscape)").matches) {
-      this.updateTileSize();
-    }
-  }
-
-  handleResize() {
-    this.updateTileSize();
-    this.adjustGameContainer();
-    this.adjustMainLayout();
-  }
-
-  adjustGameContainer() {
-    const gameContainer = document.querySelector('.game-container');
-    const aspectRatio = window.innerWidth / window.innerHeight;
-    if (aspectRatio > 1) {
-      // Landscape
-      gameContainer.style.width = `${window.innerHeight * 0.8}px`;
-      gameContainer.style.height = `${window.innerHeight * 0.8}px`;
-      gameContainer.style.transform = 'scale(0.8)'; // Scale the game container
-    } else {
-      // Portrait
-      gameContainer.style.width = `${window.innerWidth * 0.9}px`;
-      gameContainer.style.height = `${window.innerWidth * 0.9}px`;
-      gameContainer.style.transform = 'scale(0.9)'; // Scale the game container
-    }
-    this.updateTileSize();
-  }
-
-  adjustMainLayout() {
-    const mainElement = document.querySelector('main');
-    const aspectRatio = window.innerWidth / window.innerHeight;
-    if (aspectRatio > 1) {
-      // Landscape
-      mainElement.style.flexDirection = 'row';
-      mainElement.style.alignItems = 'flex-start';
-      mainElement.style.justifyContent = 'space-between'; // Ensure elements are spaced out
-    } else {
-      // Portrait
-      mainElement.style.flexDirection = 'column';
-      mainElement.style.alignItems = 'center';
-      mainElement.style.justifyContent = 'space-between'; // Ensure elements are spaced out
-    }
-  }
 }
 
 // Instantiate the game
