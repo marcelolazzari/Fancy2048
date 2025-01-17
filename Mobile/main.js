@@ -17,8 +17,8 @@ class Game {
     document.getElementById('reset-button').addEventListener('click', this.reset.bind(this));
     document.getElementById('back-button').addEventListener('click', this.undo.bind(this));
     window.addEventListener('keydown', this.handleKeyPress.bind(this));
-    document.addEventListener('touchstart', this.handleTouchStart.bind(this), false);
-    document.addEventListener('touchend', this.handleTouchEnd.bind(this), false);
+    document.querySelector('.game-container').addEventListener('touchstart', this.handleTouchStart.bind(this), false);
+    document.querySelector('.game-container').addEventListener('touchend', this.handleTouchEnd.bind(this), false);
     document.getElementById('hue-slider').addEventListener('input', this.updateHue.bind(this));
   }
 
@@ -60,6 +60,9 @@ class Game {
   }
 
   handleTouchEnd(e) {
+    const gameContainer = document.querySelector('.game-container');
+    if (!gameContainer.contains(e.target)) return;
+
     const touchEndX = e.changedTouches[0].clientX;
     const touchEndY = e.changedTouches[0].clientY;
     const dx = touchEndX - this.touchStartX;
