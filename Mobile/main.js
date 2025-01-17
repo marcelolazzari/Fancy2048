@@ -64,6 +64,10 @@ class Game {
   }
 
   handleTouchEnd(e) {
+    const gameContainer = document.querySelector('.game-container');
+    if (!gameContainer.contains(e.target)) return;
+
+    const touchEndX = e.changedTouches[0].clientX;
     const touchEndY = e.changedTouches[0].clientY;
     const dx = touchEndX - this.touchStartX;
     const dy = touchEndY - this.touchStartY;
