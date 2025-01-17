@@ -284,4 +284,13 @@ document.addEventListener('DOMContentLoaded', () => {
   game.applyTheme(); // Ensure the theme is applied on page load
   game.reset(); // Ensure the game resets when the page is refreshed
   document.getElementById('hue-slider').value = 0;
+
+  // Override system dark mode settings
+  if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+    document.body.classList.remove('light-mode');
+    game.isLightMode = false;
+  } else {
+    document.body.classList.add('light-mode');
+    game.isLightMode = true;
+  }
 });
