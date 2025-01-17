@@ -298,7 +298,7 @@ class Game {
       '32768': '#3c3a32',
       '65536': '#3c3a32',
     };
-    return colorMap[value] || 'transparent';
+    return colorMap[value];
   }
 
   updateHue(event) {
