@@ -8,26 +8,35 @@
   </head>
   <body>
     <header>
-      <h1>Fancy 2048</h1>
-      <button type="button" id="invert-button">🌙</button>
-      <div id="hue-slider-container">
-        <label for="hue-slider">Color</label>
-        <input type="range" id="hue-slider" min="0" max="360" value="0" title="Adjust the hue" />
+      <div class="header-container">
+        <h1 class="top-left">Fancy 2048</h1>
+        <div class="left-container">
+          <div id="invert-button-container">
+            <button type="button" id="invert-button" aria-label="Toggle dark mode">🌙</button>
+          </div>
+        </div>
+        <aside id="score-box">
+          <div class="score-container">
+            <p>Score: <span id="score">0</span></p>
+            <p>Best Score: <span id="best-score">0</span></p>
+          </div>
+          <div id="hue-slider-container">
+            <label for="hue-slider">Color</label>
+            <input type="range" id="hue-slider" min="0" max="360" value="0" title="Adjust the hue" aria-label="Adjust the hue" />
+          </div>
+        </aside>
       </div>
     </header>
     <main>
       <div class="overlay"></div>
-      <section class="game-section">
-        <div class="game-container" id="game-container"></div>
-        <div id="game-over" class="hidden">Game Over!</div>
+      <section class="game-section" aria-live="polite">
+        <div class="game-container" id="game-container" role="grid"></div>
+        <div id="game-over" class="hidden" role="alert">Game Over!</div>
       </section>
-      <aside id="score-box">
-        <p>Score: <span id="score">0</span></p>
-        <p>Best Score: <span id="best-score">0</span></p>
-      </aside>
-      <button type="button" id="reset-button">Reset Game</button>
-      <button type="button" id="back-button">⏪</button>
+      <div class="button-container">
+        <button type="button" id="reset-button" aria-label="Reset Game">Reset Game</button>
+      </div>
     </main>
-    <script src="main.js"></script>
+    <script src="main.js" defer></script>
   </body>
 </html>

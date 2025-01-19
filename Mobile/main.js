@@ -16,7 +16,6 @@ class Game {
   addEventListeners() {
     document.getElementById('invert-button').addEventListener('click', this.toggleTheme.bind(this));
     document.getElementById('reset-button').addEventListener('click', this.reset.bind(this));
-    document.getElementById('back-button').addEventListener('click', this.undo.bind(this));
     window.addEventListener('keydown', this.handleKeyPress.bind(this));
     document.querySelector('.game-container').addEventListener('touchstart', this.handleTouchStart.bind(this), false);
     document.querySelector('.game-container').addEventListener('touchend', this.handleTouchEnd.bind(this), false);
@@ -38,6 +37,9 @@ class Game {
         tile.classList.add('light-mode');
         this.invertTileDigits(tile);
       });
+      document.querySelectorAll('.score-container').forEach(container => {
+        container.classList.add('light-mode');
+      });
     } else {
       document.body.classList.remove('light-mode');
       document.querySelector('.overlay').classList.remove('light-mode');
@@ -45,6 +47,9 @@ class Game {
       document.querySelectorAll('.tile').forEach(tile => {
         tile.classList.remove('light-mode');
         this.invertTileDigits(tile);
+      });
+      document.querySelectorAll('.score-container').forEach(container => {
+        container.classList.remove('light-mode');
       });
     }
   }
@@ -112,9 +117,9 @@ class Game {
     document.querySelectorAll('.tile').forEach(tile => {
       tile.style.width = `${tileSize}px`;
       tile.style.height = `${tileSize}px`;
-      tile.style.fontSize = `${tileSize * 0.4}px`;
+      tile.style.fontSize = `${tileSize * 0.5}px`; // Adjust font size for better readability
       if (tile.textContent.length > 3) {
-        tile.style.fontSize = `${tileSize * 0.3}px`;
+        tile.style.fontSize = `${tileSize * 0.4}px`; // Adjust font size for larger numbers
       }
     });
 
@@ -150,14 +155,6 @@ class Game {
     this.score = 0;
     this.updateUI();
     document.getElementById('game-over').classList.add('hidden');
-  }
-
-  undo() {
-    if (this.previousBoard) {
-      this.board = this.previousBoard;
-      this.previousBoard = null;
-      this.updateUI();
-    }
   }
 
   slideAndCombine(row) {
@@ -254,12 +251,19 @@ class Game {
         gameContainer.appendChild(tile);
       });
     });
-    document.getElementById('score').textContent = this.score;
-    document.getElementById('best-score').textContent = this.bestScore;
+    this.updateScoreDisplay();
     this.updateTileSize();
     const h1Element = document.querySelector('header h1');
     h1Element.style.backgroundColor = this.getTileColor(highestValue);
     h1Element.style.color = this.getTextColor(highestValue);
+  }
+
+  updateScoreDisplay() {
+    const scoreElement = document.getElementById('score');
+    const bestScoreElement = document.getElementById('best-score');
+    scoreElement.textContent = this.score;
+    bestScoreElement.textContent = this.bestScore;
+    scoreElement.style.filter = `hue-rotate(${(this.score / 10) % 360}deg)`; // Slower hue change based on score
   }
 
   getTextColor(value) {
@@ -319,29 +323,34 @@ class Game {
       // Landscape
       gameContainer.style.width = `${window.innerHeight * 0.8}px`;
       gameContainer.style.height = `${window.innerHeight * 0.8}px`;
-      gameContainer.style.transform = 'scale(0.8)'; // Scale the game container
+      gameContainer.style.transform = 'scale(0.9)'; // Scale the game container
     } else {
       // Portrait
       gameContainer.style.width = `${window.innerWidth * 0.9}px`;
       gameContainer.style.height = `${window.innerWidth * 0.9}px`;
-      gameContainer.style.transform = 'scale(0.9)'; // Scale the game container
+      gameContainer.style.transform = 'scale(0.95)'; // Scale the game container
     }
     this.updateTileSize();
   }
 
   adjustMainLayout() {
     const mainElement = document.querySelector('main');
+    const buttonContainer = document.querySelector('.button-container');
     const aspectRatio = window.innerWidth / window.innerHeight;
     if (aspectRatio > 1) {
       // Landscape
       mainElement.style.flexDirection = 'row';
       mainElement.style.alignItems = 'flex-start';
-      mainElement.style.justifyContent = 'space-between'; // Ensure elements are spaced out
+      mainElement.style.justifyContent = 'space-between';
+      buttonContainer.style.flexDirection = 'column';
+      buttonContainer.style.alignItems = 'flex-end';
     } else {
       // Portrait
       mainElement.style.flexDirection = 'column';
       mainElement.style.alignItems = 'center';
-      mainElement.style.justifyContent = 'space-between'; // Ensure elements are spaced out
+      mainElement.style.justifyContent = 'center';
+      buttonContainer.style.flexDirection = 'row';
+      buttonContainer.style.alignItems = 'center';
     }
   }
 }
@@ -350,11 +359,10 @@ class Game {
 document.addEventListener('DOMContentLoaded', () => {
   const game = new Game(4);
   game.updateTileSize();
-  game.applyTheme(); // Ensure the theme is applied on page load
-  game.reset(); // Ensure the game resets when the page is refreshed
+  game.applyTheme();
+  game.reset();
   document.getElementById('hue-slider').value = 0;
 
-  // Override system and browser dark mode settings
   const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
   if (prefersDarkScheme.matches) {
     document.body.classList.remove('light-mode');
