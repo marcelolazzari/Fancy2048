@@ -311,12 +311,13 @@ footer {
   align-items: center;
   width: 100%;
   height: 100%;
-  padding: var(--gap);
+  padding: 0; /* Remove padding */
   box-sizing: border-box;
   position: relative;
   margin-top: 20px; /* Adjust as needed to match tiles position */
   transition: filter 0.3s ease;
   flex: 1; /* Allow the game section to grow */
+  aspect-ratio: 1 / 1; /* Maintain aspect ratio */
 }
 
 .game-container {
@@ -325,24 +326,20 @@ footer {
   gap: var(--gap); /* Ensure gap between tiles */
   width: 100%;
   height: 100%;
-  max-width: 100%; /* Ensure full width */
-  max-height: 100%; /* Ensure full height */
+  max-width: calc(100% - var(--gap) * 2); /* Ensure full width with padding */
+  max-height: calc(100% - var(--gap) * 2); /* Ensure full height with padding */
   background-color: rgba(50, 50, 50, 0.9); /* Improved contrast */
-  margin: 20px;
+  margin: 0 auto; /* Center the game container */
   border: none; /* Remove black solid border */
   border-radius: 15px;
   box-shadow: 0 0 10px var(--tile-shadow),
               0 0 20px var(--tile-shadow),
               0 0 30px var(--tile-shadow);
   box-sizing: border-box;
-  margin: auto;
   position: relative;
-  padding: 0; /* Remove padding from the container */
+  padding: var(--gap); /* Add padding to the container */
   z-index: 3; /* Ensure game container is above other elements */
   overflow: hidden; /* Remove scroll option */
-  padding-right: var(--gap); /* Adjust right padding */
-  padding-bottom: var(--gap); /* Adjust bottom padding */
-  margin-bottom: 10px; /* Add margin below the game container */
   flex: 1; /* Allow the game container to grow */
 }
 
@@ -487,4 +484,297 @@ footer {
 .tile[data-value="256"] {
   background-color: #edcc61;
   color: #f9f6f2;
+}
+
+.tile[data-value="512"] {
+  background-color: #edc850;
+  color: #f9f6f2;
+}
+
+.tile[data-value="1024"] {
+  background-color: #edc53f;
+  color: #f9f6f2;
+}
+
+.tile[data-value="2048"] {
+  background-color: #edc22e;
+  color: #f9f6f2;
+}
+
+.tile.light-mode[data-value="2"] {
+  background-color: hsla(0, 0%, 90%, 0.8);
+  color: #000000;
+}
+
+.tile.light-mode[data-value="4"] {
+  background-color: hsla(0, 0%, 80%, 0.8);
+  color: #000000;
+}
+
+.tile.light-mode[data-value="8"] {
+  background-color: hsla(30, 100%, 70%, 0.8);
+  color: #000000;
+}
+
+.tile.light-mode[data-value="16"] {
+  background-color: hsla(30, 100%, 60%, 0.8);
+  color: #000000;
+}
+
+.tile.light-mode[data-value="32"] {
+  background-color: hsla(30, 100%, 50%, 0.8);
+  color: #000000;
+}
+
+.tile.light-mode[data-value="64"] {
+  background-color: hsla(30, 100%, 40%, 0.8);
+  color: #000000;
+}
+
+.tile.light-mode[data-value="128"] {
+  background-color: hsla(60, 100%, 70%, 0.8);
+  color: #000000;
+}
+
+.tile.light-mode[data-value="256"] {
+  background-color: hsla(60, 100%, 60%, 0.8);
+  color: #000000;
+}
+
+.tile.light-mode[data-value="512"] {
+  background-color: hsla(60, 100%, 50%, 0.8);
+  color: #000000;
+}
+
+.tile.light-mode[data-value="1024"] {
+  background-color: hsla(60, 100%, 40%, 0.8);
+  color: #000000;
+}
+
+.tile.light-mode[data-value="2048"] {
+  background-color: hsla(60, 100%, 30%, 0.8);
+  color: #000000;
+}
+
+.tile:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.7), 0 0 25px rgba(255, 255, 255, 0.7), 0 0 35px rgba(255, 255, 255, 0.7), 0 0 45px rgba(255, 255, 255, 0.7);
+}
+
+#game-over {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  font-size: 2rem;
+  z-index: 8;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.hidden {
+  display: none;
+}
+
+.inverted {
+  filter: invert(100%);
+}
+
+.inverted .tile {
+  filter: invert(100%);
+}
+
+.inverted .tile * {
+  filter: invert(100%);
+}
+
+.inverted #score-box,
+.inverted #invert-button,
+.inverted #reset-button,
+.inverted #back-button {
+  filter: invert(100%);
+}
+
+.inverted body {
+  background-color: #f2f2f2;
+  color: #333;
+}
+
+.inverted header h1 {
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #333;
+}
+
+.inverted .game-container {
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 0, 0, 0.2), 0 0 30px rgba(0, 0, 0, 0.2);
+}
+
+.inverted .tile {
+  background-color: #fff;
+  color: #333;
+}
+
+.inverted .tile[data-value="2"] {
+  background-color: #eee4da;
+  color: #776e65;
+}
+
+.inverted .tile[data-value="4"] {
+  background-color: #ede0c8;
+  color: #776e65;
+}
+
+.inverted .tile[data-value="8"] {
+  background-color: #f2b179;
+  color: #f9f6f2;
+}
+
+.inverted .tile[data-value="16"] {
+  background-color: #f59563;
+  color: #f9f6f2;
+}
+
+.inverted .tile[data-value="32"] {
+  background-color: #f67c5f;
+  color: #f9f6f2;
+}
+
+.inverted .tile[data-value="64"] {
+  background-color: #f65e3b;
+  color: #f9f6f2;
+}
+
+.inverted .tile[data-value="128"] {
+  background-color: #edcf72;
+  color: #f9f6f2;
+}
+
+.inverted .tile[data-value="256"] {
+  background-color: #edcc61;
+  color: #f9f6f2;
+}
+
+.inverted .tile[data-value="512"] {
+  background-color: #edc850;
+  color: #f9f6f2;
+}
+
+.inverted .tile[data-value="1024"] {
+  background-color: #edc53f;
+  color: #f9f6f2;
+}
+
+.inverted .tile[data-value="2048"] {
+  background-color: #edc22e;
+  color: #f9f6f2;
+}
+
+.inverted .tile:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.7), 0 0 25px rgba(0, 0, 0, 0.7), 0 0 35px rgba(0, 0, 0, 0.7), 0 0 45px rgba(0, 0, 0, 0.7);
+}
+
+/* Media queries for mobile optimization */
+@media (max-width: 600px) {
+  body {
+    overflow: hidden;
+    padding: 5px;
+    height: 100vh;
+  }
+
+  header h1 {
+    font-size: 1.2rem;
+  }
+
+  #score-box {
+    font-size: 0.8rem;
+    padding: 0.2rem;
+  }
+
+  .game-container {
+    width: 100%;
+    height: 100%;
+    max-width: 85vmin;
+    max-height: 85vmin;
+    margin-bottom: 5px;
+  }
+
+  .tile {
+    font-size: 0.8rem;
+  }
+
+  button {
+    font-size: 0.7rem;
+    padding: 5px 10px;
+  }
+
+  #game-over {
+    font-size: 1.2rem;
+  }
+
+  main {
+    padding: 5px;
+    height: 100%;
+  }
+}
+
+/* Force vertical layout and prevent rotation */
+@media (orientation: landscape) {
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  main {
+    max-width: 90vh;
+    max-height: 90vh;
+  }
+}
+
+/* Specific styles for iPhone */
+@media only screen and (max-device-width: 812px) and (-webkit-min-device-pixel-ratio: 2) {
+  body {
+    padding: 5px;
+  }
+
+  header h1 {
+    font-size: 1.4rem;
+  }
+
+  #score-box {
+    font-size: 0.9rem;
+    padding: 0.2rem;
+  }
+
+  .game-container {
+    width: 100%;
+    height: 100%;
+    max-width: 85vmin;
+    max-height: 85vmin;
+    margin-bottom: 5px;
+  }
+
+  .tile {
+    font-size: 0.9rem;
+  }
+
+  button {
+    font-size: 0.7rem;
+    padding: 5px 10px;
+  }
+
+  #game-over {
+    font-size: 1.4rem;
+  }
+
+  main {
+    padding: 0 5px;
+    height: 100%;
+  }
 }
