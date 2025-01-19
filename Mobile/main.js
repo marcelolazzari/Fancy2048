@@ -229,8 +229,9 @@ class Game {
 
   updateUI() {
     const gameContainer = document.querySelector('.game-container');
-    gameContainer.innerHTML = '';
+    const fragment = document.createDocumentFragment(); // Use a document fragment to minimize reflows
     let highestValue = 0;
+
     this.board.forEach((row, x) => {
       row.forEach((value, y) => {
         const tile = document.createElement('div');
@@ -248,9 +249,13 @@ class Game {
           tile.classList.add('light-mode');
           this.invertTileDigits(tile);
         }
-        gameContainer.appendChild(tile);
+        fragment.appendChild(tile); // Append tile to fragment
       });
     });
+
+    gameContainer.innerHTML = ''; // Clear the container once
+    gameContainer.appendChild(fragment); // Append the fragment to the container
+
     this.updateScoreDisplay();
     this.updateTileSize();
     const h1Element = document.querySelector('header h1');
