@@ -258,9 +258,6 @@ class Game {
 
     this.updateScoreDisplay();
     this.updateTileSize();
-    const h1Element = document.querySelector('header h1');
-    h1Element.style.backgroundColor = this.getTileColor(highestValue);
-    h1Element.style.color = this.getTextColor(highestValue);
   }
 
   updateScoreDisplay() {

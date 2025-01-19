@@ -9,22 +9,22 @@
   <body>
     <header>
       <div class="header-container">
-        <h1 class="top-left">Fancy 2048</h1>
-        <div class="left-container">
-          <div id="invert-button-container">
-            <button type="button" id="invert-button" aria-label="Toggle dark mode">🌙</button>
+        <div class="title-container">
+          <h1 class="top-left">Fancy 2048</h1>
+        </div>
+        <div class="invert-button-container">
+          <button type="button" id="invert-button" aria-label="Toggle dark mode">🌙</button>
+        </div>
+        <div class="score-box">
+          <div class="score-container">
+            <p>Score: <span id="score" style="filter: hue-rotate(0deg);">0</span></p>
+            <p>Best Score: <span id="best-score">4</span></p>
           </div>
         </div>
-        <aside id="score-box">
-          <div class="score-container">
-            <p>Score: <span id="score">0</span></p>
-            <p>Best Score: <span id="best-score">0</span></p>
-          </div>
-          <div id="hue-slider-container">
-            <label for="hue-slider">Color</label>
-            <input type="range" id="hue-slider" min="0" max="360" value="0" title="Adjust the hue" aria-label="Adjust the hue" />
-          </div>
-        </aside>
+        <div class="hue-slider-container">
+          <label for="hue-slider">Color</label>
+          <input type="range" id="hue-slider" min="0" max="360" value="0" title="Adjust the hue" aria-label="Adjust the hue">
+        </div>
       </div>
     </header>
     <main>
