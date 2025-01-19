@@ -305,7 +305,9 @@ class Game {
       document.querySelector('.game-section'),
       document.querySelector('.overlay'),
       document.querySelector('.game-container'),
-      document.querySelector('header h1')
+      document.querySelector('header h1'),
+      document.body,
+      document.querySelector('main') // Add main to elements to update
     ];
     elementsToUpdate.forEach(element => {
       element.style.filter = `hue-rotate(${hueValue}deg)`;

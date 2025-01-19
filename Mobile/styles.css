@@ -50,7 +50,7 @@ body.inverted {
   right: 0;
   bottom: 0;
   background: radial-gradient(circle at center, rgba(0, 16, 71, 0.8) 0%, rgb(0, 0, 0) 150%); /* Increase radius of gradient */
-  z-index: 1; /* Ensure overlay is below other elements */
+  z-index: -1; /* Ensure overlay is below other elements */
   pointer-events: none;
 }
 
@@ -121,13 +121,13 @@ main {
   box-sizing: border-box;
   height: 100%;
   flex: 1;
-  justify-content: center;
+  justify-content: space-between; /* Center content between score box and footer */
   overflow: hidden;
   color: var(--secondary-color);
   position: relative;
   z-index: 4; /* Ensure main content is above overlay but below header */
   transition: flex-direction 0.3s ease, align-items 0.3s ease, justify-content 0.3s ease;
-  padding-bottom: 50px; /* Add space from the bottom */
+  padding-bottom: 100px; /* Add more space from the bottom */
 }
 
 main.inverted {
@@ -156,7 +156,7 @@ main.inverted {
 
 .score-container.light-mode {
   background-color: rgba(240, 240, 240, 0.9); /* Improved contrast */
-  color: var(--dark-color);
+  color: var (--dark-color);
 }
 
 .score-container.inverted {
@@ -265,6 +265,34 @@ main.inverted {
   color: var(--dark-color);
 }
 
+#hue-slider {
+  width: 80%;
+  margin: 20px 0 60px; /* Add more space below the slider */
+  z-index: 10; /* Increase z-index for accessibility */
+  appearance: none; /* Remove default styling */
+  height: 10px; /* Increase height for better accessibility */
+  background: #ddd; /* Background color */
+  border-radius: 5px; /* Rounded corners */
+  outline: none; /* Remove outline */
+}
+
+#hue-slider::-webkit-slider-thumb {
+  appearance: none; /* Remove default styling */
+  width: 20px; /* Increase thumb size */
+  height: 20px; /* Increase thumb size */
+  background: var(--primary-color); /* Thumb color */
+  border-radius: 50%; /* Rounded thumb */
+  cursor: pointer; /* Pointer cursor */
+}
+
+#hue-slider::-moz-range-thumb {
+  width: 20px; /* Increase thumb size */
+  height: 20px; /* Increase thumb size */
+  background: var(--primary-color); /* Thumb color */
+  border-radius: 50%; /* Rounded thumb */
+  cursor: pointer; /* Pointer cursor */
+}
+
 .container {
   display: flex;
   flex-direction: column;
@@ -295,6 +323,8 @@ footer {
   align-items: center;
   position: relative;
   z-index: 5; /* Ensure footer is above other elements */
+  margin-top: -50px; /* Move footer closer to the game container */
+  margin-bottom: 20px; /* Add more space below the footer */
 }
 
 .footer-container {
@@ -310,11 +340,11 @@ footer {
   justify-content: center;
   align-items: center;
   width: 100%;
-  height: 100%;
+  height: auto; /* Adjust height to auto */
   padding: 0; /* Remove padding */
   box-sizing: border-box;
   position: relative;
-  margin-top: 20px; /* Adjust as needed to match tiles position */
+  margin-top: 0; /* Move game section closer to the top */
   transition: filter 0.3s ease;
   flex: 1; /* Allow the game section to grow */
   aspect-ratio: 1 / 1; /* Maintain aspect ratio */
@@ -376,7 +406,7 @@ footer {
               0 0 30px var(--tile-shadow);
   transition: transform 0.05s ease-in-out, opacity 0.2s ease-in-out,
               box-shadow 0.2s ease-in-out;
-  overflow: hidden;
+  overflow: auto;
   margin: 0; /* Remove margin from tiles */
   width: calc((100% - var(--gap) * (var(--size) - 1)) / var(--size));
   height: calc((100% - var(--gap) * (var(--size) - 1)) / var(--size));

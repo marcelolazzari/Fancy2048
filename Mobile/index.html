@@ -21,11 +21,12 @@
       </div>
     </header>
     <main>
-      <div class="overlay"></div>
       <section class="game-section" aria-live="polite">
         <div class="game-container" id="game-container" role="grid"></div>
+        <div class="overlay"></div>
         <div id="game-over" class="hidden" role="alert">Game Over!</div>
       </section>
+      <input type="range" id="hue-slider" min="0" max="360" value="0" aria-label="Adjust color hue" />
     </main>
     <footer>
       <div class="footer-container">
