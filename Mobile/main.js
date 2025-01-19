@@ -11,6 +11,7 @@ class Game {
     window.addEventListener('resize', () => this.handleResize());
     this.applyTheme();
     window.addEventListener('orientationchange', () => this.handleResize());
+    this.preventViewportScrolling();
   }
 
   addEventListeners() {
@@ -356,6 +357,12 @@ class Game {
       buttonContainer.style.flexDirection = 'row';
       buttonContainer.style.alignItems = 'center';
     }
+  }
+
+  preventViewportScrolling() {
+    document.body.addEventListener('touchmove', (e) => {
+      e.preventDefault();
+    }, { passive: false });
   }
 }
 

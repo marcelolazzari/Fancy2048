@@ -122,7 +122,7 @@ main {
   height: 100%;
   flex: 1;
   justify-content: space-between; /* Center content between score box and footer */
-  overflow: hidden;
+  overflow: hidden; /* Prevent scrolling */
   color: var(--secondary-color);
   position: relative;
   z-index: 4; /* Ensure main content is above overlay but below header */
