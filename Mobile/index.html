@@ -26,14 +26,14 @@
         <div class="overlay"></div>
         <div id="game-over" class="hidden" role="alert">Game Over!</div>
       </section>
+      <footer>
+        <div class="footer-container">
+          <button type="button" id="reset-button" aria-label="Reset Game">Reset Game</button>
+          <button type="button" id="invert-button" aria-label="Toggle dark mode">🌙</button>
+        </div>
+      </footer>
       <input type="range" id="hue-slider" min="0" max="360" value="0" aria-label="Adjust color hue" />
     </main>
-    <footer>
-      <div class="footer-container">
-        <button type="button" id="reset-button" aria-label="Reset Game">Reset Game</button>
-        <button type="button" id="invert-button" aria-label="Toggle dark mode">🌙</button>
-      </div>
-    </footer>
     <script src="main.js" defer></script>
   </body>
 </html>

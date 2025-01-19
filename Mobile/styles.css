@@ -30,6 +30,7 @@ body {
   max-width: 100vw;
   height: 100vh;
   box-sizing: border-box; /* Ensure padding is included in the element's total width and height */
+  z-index: 1; /* Base z-index for body */
 }
 
 body.light-mode {
@@ -50,7 +51,7 @@ body.inverted {
   right: 0;
   bottom: 0;
   background: radial-gradient(circle at center, rgba(0, 16, 71, 0.8) 0%, rgb(0, 0, 0) 150%); /* Increase radius of gradient */
-  z-index: -1; /* Ensure overlay is below other elements */
+  z-index: 2; /* Ensure overlay is above body */
   pointer-events: none;
 }
 
@@ -80,7 +81,7 @@ header {
   padding: 10px; /* Reduce padding for better spacing */
   text-align: left;
   width: 100%;
-  z-index: 5; /* Ensure header is above other elements */
+  z-index: 5; /* Ensure header is above overlay */
   display: flex;
   flex-direction: column; /* Align items in a column */
   gap: 20px; /* Increase spacing between elements */
@@ -139,7 +140,7 @@ main.inverted {
   display: flex;
   flex-direction: column;
   align-items: center; /* Center align the score box */
-  z-index: 7; /* Ensure score box is above other elements */
+  z-index: 7; /* Ensure score box is above main content */
   margin-top: 10px; /* Add margin above the score box */
 }
 
@@ -192,7 +193,7 @@ main.inverted {
   text-align: center;
   width: auto;
   max-width: 90%;
-  z-index: 7; /* Ensure buttons are above other elements */
+  z-index: 8; /* Ensure buttons are above score box */
   -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
   backdrop-filter: blur(10px); /* Glass effect */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
@@ -268,7 +269,7 @@ main.inverted {
 #hue-slider {
   width: 80%;
   margin: 20px 0 60px; /* Add more space below the slider */
-  z-index: 10; /* Increase z-index for accessibility */
+  z-index: 9; /* Ensure hue slider is above buttons */
   appearance: none; /* Remove default styling */
   height: 10px; /* Increase height for better accessibility */
   background: #ddd; /* Background color */
@@ -344,10 +345,12 @@ footer {
   padding: 0; /* Remove padding */
   box-sizing: border-box;
   position: relative;
-  margin-top: 0; /* Move game section closer to the top */
+  margin-top: 20px; /* Move game section closer to the top */
   transition: filter 0.3s ease;
   flex: 1; /* Allow the game section to grow */
   aspect-ratio: 1 / 1; /* Maintain aspect ratio */
+  transform: scale(0.9); /* Scale down the game section */
+  margin-top: 20px; /* Add margin to adjust positioning */
 }
 
 .game-container {
@@ -368,7 +371,7 @@ footer {
   box-sizing: border-box;
   position: relative;
   padding: var(--gap); /* Add padding to the container */
-  z-index: 3; /* Ensure game container is above other elements */
+  z-index: 3; /* Ensure game container is above overlay but below main content */
   overflow: hidden; /* Remove scroll option */
   flex: 1; /* Allow the game container to grow */
 }
@@ -599,7 +602,7 @@ footer {
   background-color: rgba(0, 0, 0, 0.5);
   color: white;
   font-size: 2rem;
-  z-index: 8;
+  z-index: 10; /* Ensure game over message is above all other elements */
   padding: 20px;
   border-radius: 10px;
 }
