@@ -8,7 +8,7 @@ class Game {
     this.previousBoard = null;
     this.addEventListeners();
     this.reset();
-    window.addEventListener('resize', () => this.updateTileSize());
+    window.addEventListener('resize', () => this.refreshLayout());
     this.applyTheme();
   }
 
@@ -19,6 +19,11 @@ class Game {
     document.addEventListener('touchstart', this.handleTouchStart.bind(this), false);
     document.addEventListener('touchend', this.handleTouchEnd.bind(this), false);
     document.getElementById('hue-slider').addEventListener('input', this.updateHue.bind(this));
+  }
+
+  refreshLayout() {
+    this.updateTileSize();
+    this.updateUI();
   }
 
   toggleTheme() {
@@ -245,7 +250,6 @@ class Game {
     const backgroundColor = this.getTileColor(highestValue);
     header.style.backgroundColor = backgroundColor;
     header.style.color = this.getTextColor(highestValue);
-    
   }
 
   getTextColor(value) {
@@ -291,7 +295,7 @@ class Game {
 // Instantiate the game
 document.addEventListener('DOMContentLoaded', () => {
   const game = new Game(4);
-  game.updateTileSize();
+  game.refreshLayout();
   game.applyTheme();
   document.getElementById('hue-slider').value = 0;
 });

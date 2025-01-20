@@ -303,8 +303,8 @@ main.inverted {
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.5),
     0 0 20px rgba(255, 255, 255, 0.5), 0 0 30px rgba(255, 255, 255, 0.5),
     0 0 40px rgba(255, 255, 255, 0.5);
-  transition: transform 0.1s ease-in-out, opacity 0.3s ease-in-out,
-    box-shadow 0.3s ease-in-out;
+  transition: transform 0.1s ease-in-out, opacity 0.1s ease-in-out,
+    box-shadow 0.1s ease-in-out;
   overflow: hidden;
   margin: 0; /* Remove margin from tiles */
   width: calc((100% - var(--gap) * (var(--size) - 1)) / var(--size));
