@@ -222,7 +222,43 @@ main.inverted {
 
 /* Remove back button styles */
 #back-button {
-  display: none;
+  display: inline-block; /* Ensure the button is visible */
+  position: absolute;
+  top: 160px; /* Adjust position as needed */
+  right: 10px; /* Adjust position as needed */
+  background-color: #ff4500; /* Bright red background color */
+  border: none;
+  padding: 0.8rem 1.2rem; /* Adjust padding for better visibility */
+  color: #ffffff; /* White text color */
+  font-size: 1rem; /* Adjust font size */
+  border-radius: 20px; /* Increase border radius */
+  text-align: center;
+  width: auto;
+  max-width: 90%;
+  margin-top: 20px; /* Added even space */
+  z-index: 7;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08); /* Add shadow for better styling */
+  transition: background-color 0.3s, color 0.3s, transform 0.2s; /* Add transform transition */
+}
+
+#back-button.light-mode {
+  background-color: #ff6347; /* Lighter red for light mode */
+  color: #000000; /* Black text color */
+}
+
+#back-button.inverted {
+  background-color: #ff6347; /* Lighter red for inverted mode */
+  color: #000000; /* Black text color */
+}
+
+#back-button:hover {
+  background-color: #ff6347; /* Darker shade for hover */
+  color: #ffffff; /* Ensure text contrast */
+  transform: scale(1.05); /* Slightly increase size on hover */
+}
+
+#back-button:active {
+  transform: scale(0.95); /* Slightly decrease size on active */
 }
 
 #invert-button {
@@ -307,7 +343,7 @@ main.inverted {
   justify-content: center;
   aspect-ratio: 1 / 1;
   border-radius: 15px;
-  font-size: calc(var(--tile-size) * 0.8);
+  font-size: calc(var(--tile-size) * 0.9); /* Increase font size */
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.5),
     0 0 20px rgba(255, 255, 255, 0.5), 0 0 30px rgba(255, 255, 255, 0.5),
     0 0 40px rgba(255, 255, 255, 0.5);
@@ -325,6 +361,7 @@ main.inverted {
   border: 2px solid rgba(0, 0, 0, 0.1);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 0, 0, 0.2),
     0 0 30px rgba(0, 0, 0, 0.2);
+  font-size: calc(var(--tile-size) * 0.9); /* Increase font size */
 }
 
 .tile.light-mode[data-value="2"] {
