@@ -851,8 +851,4 @@ main.inverted {
 #back-button.light-mode:hover {
   background-color: rgba(192, 192, 192, 0.7); /* Darker shade for hover in light mode */
   color: #000000; /* Ensure text contrast */
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 53375b4d216319bed5fb2337c08c8311d3b1c15d
