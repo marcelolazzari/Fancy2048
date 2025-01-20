@@ -5,35 +5,30 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Fancy 2048</title>
     <link rel="stylesheet" href="styles.css" />
+  
   </head>
   <body>
     <header>
-      <div class="header-container">
-        <div class="title-score-container">
-          <h1 class="top-left">Fancy 2048</h1>
-          <div class="score-box">
-            <div class="score-container">
-              <p>Score: <span id="score" style="filter: hue-rotate(0deg);">0</span></p>
-              <p>Best Score: <span id="best-score">4</span></p>
-            </div>
-          </div>
-        </div>
+      <h1>Fancy 2048</h1>
+      <button type="button" id="invert-button">🌙</button>
+      <div id="hue-slider-container">
+        <label for="hue-slider">Color</label>
+        <input type="range" id="hue-slider" min="0" max="360" value="0" title="Adjust the hue" />
       </div>
     </header>
     <main>
-      <section class="game-section" aria-live="polite">
-        <div class="game-container" id="game-container" role="grid"></div>
-        <div class="overlay"></div>
-        <div id="game-over" class="hidden" role="alert">Game Over!</div>
+      <div class="overlay"></div>
+      <section class="game-section">
+        <div class="game-container" id="game-container"></div>
+        <div id="game-over" class="hidden">Game Over!</div>
       </section>
-      <footer>
-        <div class="footer-container">
-          <button type="button" id="reset-button" aria-label="Reset Game">Reset Game</button>
-          <button type="button" id="invert-button" aria-label="Toggle dark mode">🌙</button>
-        </div>
-      </footer>
-      <input type="range" id="hue-slider" min="0" max="360" value="0" aria-label="Adjust color hue" />
+      <aside id="score-box">
+        <p>Score: <span id="score">0</span></p>
+        <p>Best Score: <span id="best-score">0</span></p>
+      </aside>
+      <button type="button" id="reset-button">Reset Game</button>
+      <button type="button" id="back-button">⏪</button>
     </main>
-    <script src="main.js" defer></script>
+    <script src="main.js"></script>
   </body>
 </html>
