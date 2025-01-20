@@ -25,7 +25,15 @@ Fancy2048 is a modded version of the classic 2048 game with enhanced features an
 - **Back Button**: Undo the last move.
 - **Hue Slider**: Adjust the hue of the game elements.
 
+## Play Online
+
+You can play Fancy2048 directly in your browser by visiting the following link:
+
+[Play Fancy2048](https://marcelolazzari.github.io/Fancy2048/Mobile/)
+
 ## Installation
+
+If you prefer to run the game locally, follow these steps:
 
 1. Clone the repository:
    ```bash
