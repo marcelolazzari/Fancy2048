@@ -15,7 +15,7 @@ body {
   background-color: #1a1a1a;
   color: #f2f2f2;
   margin: 0;
-  padding: 10px;
+  padding: env(safe-area-inset-top) 10px env(safe-area-inset-bottom);
   display: flex;
   flex-direction: column;
   align-items: center;
