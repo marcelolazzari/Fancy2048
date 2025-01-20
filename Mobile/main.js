@@ -15,7 +15,6 @@ class Game {
   addEventListeners() {
     document.getElementById('invert-button').addEventListener('click', this.toggleTheme.bind(this));
     document.getElementById('reset-button').addEventListener('click', this.reset.bind(this));
-    document.getElementById('back-button').addEventListener('click', this.undo.bind(this));
     window.addEventListener('keydown', this.handleKeyPress.bind(this));
     document.addEventListener('touchstart', this.handleTouchStart.bind(this), false);
     document.addEventListener('touchend', this.handleTouchEnd.bind(this), false);
@@ -137,14 +136,6 @@ class Game {
     document.getElementById('game-over').classList.add('hidden');
   }
 
-  undo() {
-    if (this.previousBoard) {
-      this.board = this.previousBoard;
-      this.previousBoard = null;
-      this.updateUI();
-    }
-  }
-
   slideAndCombine(row) {
     let newRow = Array(this.size).fill('');
     let index = 0;
@@ -238,6 +229,7 @@ class Game {
     document.getElementById('best-score').textContent = this.bestScore;
     this.updateTileSize();
     this.updateHeaderBackground(highestValue);
+    this.updateHue({ target: { value: document.getElementById('hue-slider').value } }); // Ensure hue is applied
   }
 
   getScoreColor(score) {
@@ -253,6 +245,7 @@ class Game {
     const backgroundColor = this.getTileColor(highestValue);
     header.style.backgroundColor = backgroundColor;
     header.style.color = this.getTextColor(highestValue);
+    
   }
 
   getTextColor(value) {
@@ -288,6 +281,10 @@ class Game {
     document.querySelector('.overlay').style.filter = `hue-rotate(${hueValue}deg)`;
     document.querySelector('.game-container').style.filter = `hue-rotate(${hueValue}deg)`;
     document.querySelector('header h1').style.filter = `hue-rotate(${hueValue}deg)`;
+    document.getElementById('score-box').style.filter = `hue-rotate(${hueValue}deg)`;
+    document.getElementById('score').style.filter = `hue-rotate(${hueValue}deg)`;
+    document.getElementById('best-score').style.filter = `hue-rotate(${hueValue}deg)`;
+    document.getElementById('hue-slider').style.filter = `hue-rotate(${hueValue}deg)`;
   }
 }
 

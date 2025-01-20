@@ -180,15 +180,17 @@ main.inverted {
   right: 10px;
   background-color: #001047; /* Adjust button background color */
   border: none;
-  padding: 0.4rem 0.8rem;
+  padding: 0.8rem 1.6rem; /* Increase padding for larger button */
   color: #f2f2f2;
-  font-size: 0.7rem;
-  border-radius: 10px;
+  font-size: 1rem; /* Increase font size */
+  border-radius: 15px; /* Increase border radius */
   text-align: center;
   width: auto;
   max-width: 90%;
   margin-top: 20px; /* Added even space */
   z-index: 7;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08); /* Add shadow for better styling */
+  transition: background-color 0.3s, color 0.3s;
 }
 
 #reset-button.light-mode {
@@ -210,47 +212,14 @@ main.inverted {
   transform: scale(0.95);
 }
 
+/* Remove back button styles */
 #back-button {
-  padding: 0.5rem 1rem;
-  color: #f2f2f2;
-  font-size: 1rem;
-  background-color: #001047; /* Adjust button background color */
-  border-radius: 10px;
-  text-align: center;
-  width: auto;
-  max-width: 90%;
-  margin-top: 20px; /* Added even space */
-  z-index: 7;
-  position: absolute;
-  top: 140px; /* Adjusted to align below the reset button */
-  right: 10px;
-  filter: grayscale(100%);
-  transition: background-color 0.3s, color 0.3s;
-}
-
-#back-button.light-mode {
-  background-color: rgba(240, 240, 240, 0.8);
-  color: #000000;
-}
-
-#back-button:hover {
-  background-color: #242f57; /* Darker shade for hover */
-  color: #ffffff; /* Ensure text contrast */
-}
-
-#back-button:active {
-  transform: scale(0.95);
-}
-
-#back-button.inverted {
-  background-color: rgba(255, 255, 255, 0.8);
-  color: #333;
-  filter: grayscale(0%);
+  display: none;
 }
 
 #invert-button {
   position: absolute;
-  bottom: 10px; /* Adjust as needed */
+  top: 140px; /* Adjust as needed */
   left: 50%;
   transform: translateX(-50%);
   z-index: 7;
@@ -797,11 +766,44 @@ main.inverted {
   justify-content: center;
   align-items: center;
   margin-top: 20px;
+  padding: 10px; /* Add padding for better touch accessibility */
+  width: 100%; /* Ensure it spans the full width */
+  box-sizing: border-box;
 }
 
 #hue-slider {
-  width: 80%;
-  max-width: 300px;
+  width: 90%; /* Increase width for easier touch interaction */
+  max-width: 400px; /* Increase max-width for better accessibility */
+  height: 30px; /* Increase height for better touch accessibility */
+  -webkit-appearance: none; /* Remove default styling */
+  appearance: none; /* Remove default styling */
+  background: #c6c9d67d; /* Background color */
+  border-radius: 5px; /* Rounded corners */
+  outline: none; /* Remove outline */
+  opacity: 0.7; /* Slightly transparent */
+  transition: opacity 0.2s; /* Smooth transition */
+}
+
+#hue-slider:hover {
+  opacity: 1; /* Fully opaque on hover */
+}
+
+#hue-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Remove default styling */
+  appearance: none; /* Remove default styling */
+  width: 25px; /* Thumb width */
+  height: 25px; /* Thumb height */
+  background: #001047; /* Thumb color */
+  border-radius: 50%; /* Rounded thumb */
+  cursor: pointer; /* Pointer cursor */
+}
+
+#hue-slider::-moz-range-thumb {
+  width: 25px; /* Thumb width */
+  height: 25px; /* Thumb height */
+  background: #001047; /* Thumb color */
+  border-radius: 50%; /* Rounded thumb */
+  cursor: pointer; /* Pointer cursor */
 }
 
 /* Adjust hue for game-section */
