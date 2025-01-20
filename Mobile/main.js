@@ -8,18 +8,17 @@ class Game {
     this.previousBoard = null;
     this.addEventListeners();
     this.reset();
-    window.addEventListener('resize', () => this.handleResize());
+    window.addEventListener('resize', () => this.updateTileSize());
     this.applyTheme();
-    window.addEventListener('orientationchange', () => this.handleResize());
-    this.preventViewportScrolling();
   }
 
   addEventListeners() {
     document.getElementById('invert-button').addEventListener('click', this.toggleTheme.bind(this));
     document.getElementById('reset-button').addEventListener('click', this.reset.bind(this));
+    document.getElementById('back-button').addEventListener('click', this.undo.bind(this));
     window.addEventListener('keydown', this.handleKeyPress.bind(this));
-    document.querySelector('.game-container').addEventListener('touchstart', this.handleTouchStart.bind(this), false);
-    document.querySelector('.game-container').addEventListener('touchend', this.handleTouchEnd.bind(this), false);
+    document.addEventListener('touchstart', this.handleTouchStart.bind(this), false);
+    document.addEventListener('touchend', this.handleTouchEnd.bind(this), false);
     document.getElementById('hue-slider').addEventListener('input', this.updateHue.bind(this));
   }
 
@@ -30,29 +29,13 @@ class Game {
   }
 
   applyTheme() {
-    if (this.isLightMode) {
-      document.body.classList.add('light-mode');
-      document.querySelector('.overlay').classList.add('light-mode');
-      document.querySelector('.game-container').classList.add('light-mode');
-      document.querySelectorAll('.tile').forEach(tile => {
-        tile.classList.add('light-mode');
-        this.invertTileDigits(tile);
-      });
-      document.querySelectorAll('.score-container').forEach(container => {
-        container.classList.add('light-mode');
-      });
-    } else {
-      document.body.classList.remove('light-mode');
-      document.querySelector('.overlay').classList.remove('light-mode');
-      document.querySelector('.game-container').classList.remove('light-mode');
-      document.querySelectorAll('.tile').forEach(tile => {
-        tile.classList.remove('light-mode');
-        this.invertTileDigits(tile);
-      });
-      document.querySelectorAll('.score-container').forEach(container => {
-        container.classList.remove('light-mode');
-      });
-    }
+    document.body.classList.toggle('light-mode', this.isLightMode);
+    document.querySelector('.overlay').classList.toggle('light-mode', this.isLightMode);
+    document.querySelector('.game-container').classList.toggle('light-mode', this.isLightMode);
+    document.querySelectorAll('.tile').forEach(tile => {
+      tile.classList.toggle('light-mode', this.isLightMode);
+      this.invertTileDigits(tile);
+    });
   }
 
   invertTileDigits(tile) {
@@ -77,9 +60,6 @@ class Game {
   }
 
   handleTouchEnd(e) {
-    const gameContainer = document.querySelector('.game-container');
-    if (!gameContainer.contains(e.target)) return;
-
     const touchEndX = e.changedTouches[0].clientX;
     const touchEndY = e.changedTouches[0].clientY;
     const dx = touchEndX - this.touchStartX;
@@ -118,9 +98,9 @@ class Game {
     document.querySelectorAll('.tile').forEach(tile => {
       tile.style.width = `${tileSize}px`;
       tile.style.height = `${tileSize}px`;
-      tile.style.fontSize = `${tileSize * 0.5}px`; // Adjust font size for better readability
+      tile.style.fontSize = `${tileSize * 0.4}px`;
       if (tile.textContent.length > 3) {
-        tile.style.fontSize = `${tileSize * 0.4}px`; // Adjust font size for larger numbers
+        tile.style.fontSize = `${tileSize * 0.3}px`;
       }
     });
 
@@ -138,8 +118,7 @@ class Game {
   addRandomTile() {
     const emptySpots = this.board.flatMap((row, x) => row.map((cell, y) => (cell === '' ? { x, y } : null)).filter(Boolean));
     const spot = emptySpots[Math.floor(Math.random() * emptySpots.length)];
-    const newValue = Math.random() < 0.9 ? 2 : 4;
-    this.board[spot.x][spot.y] = newValue;
+    this.board[spot.x][spot.y] = Math.random() < 0.9 ? 2 : 4;
   }
 
   updateBestScore() {
@@ -158,28 +137,27 @@ class Game {
     document.getElementById('game-over').classList.add('hidden');
   }
 
+  undo() {
+    if (this.previousBoard) {
+      this.board = this.previousBoard;
+      this.previousBoard = null;
+      this.updateUI();
+    }
+  }
+
   slideAndCombine(row) {
-    const newRow = [];
-    let previousTile = null;
-    row.forEach(tile => {
-      if (tile !== '') {
-        if (previousTile === null) {
-          previousTile = tile;
-        } else if (previousTile === tile) {
-          newRow.push(tile * 2);
-          this.score += tile * 2;
-          previousTile = null;
+    let newRow = Array(this.size).fill('');
+    let index = 0;
+    for (let i = 0; i < this.size; i++) {
+      if (row[i] !== '') {
+        if (row[i] === newRow[index - 1]) {
+          newRow[index - 1] *= 2;
+          this.score += newRow[index - 1];
         } else {
-          newRow.push(previousTile);
-          previousTile = tile;
+          newRow[index] = row[i];
+          index++;
         }
       }
-    });
-    if (previousTile !== null) {
-      newRow.push(previousTile);
-    }
-    while (newRow.length < this.size) {
-      newRow.push('');
     }
     return newRow;
   }
@@ -198,12 +176,14 @@ class Game {
   move(direction) {
     this.previousBoard = this.board.map(row => [...row]);
     let hasChanged = false;
-    if (direction === 'ArrowUp' || direction === 'ArrowDown') {
+
+    if (['ArrowUp', 'ArrowDown'].includes(direction)) {
       this.board = this.transpose(this.board);
     }
-    if (direction === 'ArrowDown' || direction === 'ArrowRight') {
+    if (['ArrowDown', 'ArrowRight'].includes(direction)) {
       this.board = this.board.map(row => row.reverse());
     }
+
     this.board = this.board.map(row => {
       const newRow = this.slideAndCombine(row);
       if (!hasChanged && JSON.stringify(newRow) !== JSON.stringify(row)) {
@@ -211,17 +191,20 @@ class Game {
       }
       return newRow;
     });
-    if (direction === 'ArrowDown' || direction === 'ArrowRight') {
+
+    if (['ArrowDown', 'ArrowRight'].includes(direction)) {
       this.board = this.board.map(row => row.reverse());
     }
-    if (direction === 'ArrowUp' || direction === 'ArrowDown') {
+    if (['ArrowUp', 'ArrowDown'].includes(direction)) {
       this.board = this.transpose(this.board);
     }
+
     if (hasChanged) {
       this.addRandomTile();
       this.updateBestScore();
     }
-    this.updateUI(); // Ensure UI is updated after move
+
+    this.updateUI();
   }
 
   transpose(matrix) {
@@ -230,18 +213,15 @@ class Game {
 
   updateUI() {
     const gameContainer = document.querySelector('.game-container');
-    const fragment = document.createDocumentFragment(); // Use a document fragment to minimize reflows
+    gameContainer.innerHTML = '';
     let highestValue = 0;
-
-    this.board.forEach((row, x) => {
-      row.forEach((value, y) => {
+    this.board.forEach(row => {
+      row.forEach(value => {
         const tile = document.createElement('div');
         tile.classList.add('tile');
         tile.textContent = value !== '' ? value : '';
         tile.style.backgroundColor = this.getTileColor(value);
         tile.style.color = this.getTextColor(value);
-        tile.setAttribute('data-x', x);
-        tile.setAttribute('data-y', y);
         if (value) {
           tile.setAttribute('data-value', value);
           highestValue = Math.max(highestValue, value);
@@ -250,31 +230,33 @@ class Game {
           tile.classList.add('light-mode');
           this.invertTileDigits(tile);
         }
-        fragment.appendChild(tile); // Append tile to fragment
+        gameContainer.appendChild(tile);
       });
     });
-
-    gameContainer.innerHTML = ''; // Clear the container once
-    gameContainer.appendChild(fragment); // Append the fragment to the container
-
-    this.updateScoreDisplay();
+    document.getElementById('score').textContent = this.score;
+    document.getElementById('score').style.color = this.getScoreColor(this.score);
+    document.getElementById('best-score').textContent = this.bestScore;
     this.updateTileSize();
+    this.updateHeaderBackground(highestValue);
   }
 
-  updateScoreDisplay() {
-    const scoreElement = document.getElementById('score');
-    const bestScoreElement = document.getElementById('best-score');
-    scoreElement.textContent = this.score;
-    bestScoreElement.textContent = this.bestScore;
-    scoreElement.style.filter = `hue-rotate(${(this.score / 10) % 360}deg)`; // Slower hue change based on score
+  getScoreColor(score) {
+    if (score < 100) return '#ffcc00';
+    if (score < 500) return '#ff9900';
+    if (score < 1000) return '#ff6600';
+    if (score < 2000) return '#ff3300';
+    return '#ff0000';
+  }
+
+  updateHeaderBackground(highestValue) {
+    const header = document.querySelector('header h1');
+    const backgroundColor = this.getTileColor(highestValue);
+    header.style.backgroundColor = backgroundColor;
+    header.style.color = this.getTextColor(highestValue);
   }
 
   getTextColor(value) {
-    if (this.isLightMode) {
-      return value >= 8 ? '#f9f6f2' : '#776e65';
-    } else {
-      return value >= 8 ? '#f9f6f2' : '#000000';
-    }
+    return value >= 8 ? '#f9f6f2' : '#776e65';
   }
 
   getTileColor(value) {
@@ -302,67 +284,10 @@ class Game {
 
   updateHue(event) {
     const hueValue = event.target.value;
-    const elementsToUpdate = [
-      document.querySelector('.game-section'),
-      document.querySelector('.overlay'),
-      document.querySelector('.game-container'),
-      document.querySelector('header h1'),
-      document.body,
-      document.querySelector('main') // Add main to elements to update
-    ];
-    elementsToUpdate.forEach(element => {
-      element.style.filter = `hue-rotate(${hueValue}deg)`;
-    });
-  }
-
-  handleResize() {
-    this.updateTileSize();
-    this.adjustGameContainer();
-    this.adjustMainLayout();
-  }
-
-  adjustGameContainer() {
-    const gameContainer = document.querySelector('.game-container');
-    const aspectRatio = window.innerWidth / window.innerHeight;
-    if (aspectRatio > 1) {
-      // Landscape
-      gameContainer.style.width = `${window.innerHeight * 0.8}px`;
-      gameContainer.style.height = `${window.innerHeight * 0.8}px`;
-      gameContainer.style.transform = 'scale(0.9)'; // Scale the game container
-    } else {
-      // Portrait
-      gameContainer.style.width = `${window.innerWidth * 0.9}px`;
-      gameContainer.style.height = `${window.innerWidth * 0.9}px`;
-      gameContainer.style.transform = 'scale(0.95)'; // Scale the game container
-    }
-    this.updateTileSize();
-  }
-
-  adjustMainLayout() {
-    const mainElement = document.querySelector('main');
-    const buttonContainer = document.querySelector('.button-container');
-    const aspectRatio = window.innerWidth / window.innerHeight;
-    if (aspectRatio > 1) {
-      // Landscape
-      mainElement.style.flexDirection = 'row';
-      mainElement.style.alignItems = 'flex-start';
-      mainElement.style.justifyContent = 'space-between';
-      buttonContainer.style.flexDirection = 'column';
-      buttonContainer.style.alignItems = 'flex-end';
-    } else {
-      // Portrait
-      mainElement.style.flexDirection = 'column';
-      mainElement.style.alignItems = 'center';
-      mainElement.style.justifyContent = 'center';
-      buttonContainer.style.flexDirection = 'row';
-      buttonContainer.style.alignItems = 'center';
-    }
-  }
-
-  preventViewportScrolling() {
-    document.body.addEventListener('touchmove', (e) => {
-      e.preventDefault();
-    }, { passive: false });
+    document.querySelector('.game-section').style.filter = `hue-rotate(${hueValue}deg)`;
+    document.querySelector('.overlay').style.filter = `hue-rotate(${hueValue}deg)`;
+    document.querySelector('.game-container').style.filter = `hue-rotate(${hueValue}deg)`;
+    document.querySelector('header h1').style.filter = `hue-rotate(${hueValue}deg)`;
   }
 }
 
@@ -371,29 +296,5 @@ document.addEventListener('DOMContentLoaded', () => {
   const game = new Game(4);
   game.updateTileSize();
   game.applyTheme();
-  game.reset();
   document.getElementById('hue-slider').value = 0;
-
-  const prefersDarkScheme = window.matchMedia('(prefers-color-scheme: dark)');
-  if (prefersDarkScheme.matches) {
-    document.body.classList.remove('light-mode');
-    game.isLightMode = false;
-  } else {
-    document.body.classList.add('light-mode');
-    game.isLightMode = true;
-  }
-
-  prefersDarkScheme.addEventListener('change', (e) => {
-    if (e.matches) {
-      document.body.classList.remove('light-mode');
-      game.isLightMode = false;
-    } else {
-      document.body.classList.add('light-mode');
-      game.isLightMode = true;
-    }
-    game.applyTheme();
-  });
-
-  window.addEventListener('resize', () => game.handleResize());
-  window.addEventListener('orientationchange', () => game.handleResize());
 });
