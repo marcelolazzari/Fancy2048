@@ -16,8 +16,9 @@ class Game {
     document.getElementById('invert-button').addEventListener('click', this.toggleTheme.bind(this));
     document.getElementById('reset-button').addEventListener('click', this.reset.bind(this));
     window.addEventListener('keydown', this.handleKeyPress.bind(this));
-    document.addEventListener('touchstart', this.handleTouchStart.bind(this), false);
-    document.addEventListener('touchend', this.handleTouchEnd.bind(this), false);
+    const gameContainer = document.querySelector('.game-container');
+    gameContainer.addEventListener('touchstart', this.handleTouchStart.bind(this), false);
+    gameContainer.addEventListener('touchend', this.handleTouchEnd.bind(this), false);
     document.getElementById('hue-slider').addEventListener('input', this.updateHue.bind(this));
   }
 
@@ -33,13 +34,27 @@ class Game {
   }
 
   applyTheme() {
-    document.body.classList.toggle('light-mode', this.isLightMode);
-    document.querySelector('.overlay').classList.toggle('light-mode', this.isLightMode);
-    document.querySelector('.game-container').classList.toggle('light-mode', this.isLightMode);
+    const elementsToToggle = [
+      document.body,
+      document.querySelector('.overlay'),
+      document.querySelector('.game-container'),
+      document.getElementById('score-box'),
+      document.getElementById('invert-button'),
+      document.getElementById('reset-button')
+    ];
+
+    elementsToToggle.forEach(element => {
+      if (element) {
+        element.classList.toggle('light-mode', this.isLightMode);
+      }
+    });
+
     document.querySelectorAll('.tile').forEach(tile => {
       tile.classList.toggle('light-mode', this.isLightMode);
       this.invertTileDigits(tile);
     });
+
+    this.updateUI(); // Ensure UI is updated with the correct theme
   }
 
   invertTileDigits(tile) {
@@ -252,22 +267,22 @@ class Game {
     header.style.color = this.getTextColor(highestValue);
   }
 
-// New color scheme
-
   getTextColor(value) {
-  return value >= 8 ? '#f9f6f2' : '#776e65';
-}
+    if (value === 2 || value === 4) return '#776e65'; // Darker color for better contrast
+    return value >= 8 ? '#f9f6f2' : '#776e65'; // Fix number value contrast ratio
+  }
 
-getTileColor(value) {
-  if (value === '') return 'transparent';
+  getTileColor(value) {
+    if (value === '') return 'transparent';
 
-  const baseHue = 15; // Starting hue for the color '2'
-  const hueStep = 30; // Step to rotate the hue for each value
+    if (value === 2) return '#add8e6'; // Light blue for value 2
 
-  const hue = baseHue + (Math.log2(value) - 1) * hueStep;
-  return `hsl(${hue}, 70%, 50%)`;
-}
+    const baseHue = 200; // Starting hue for the color '4'
+    const hueStep = 30; // Step to rotate the hue for each value
 
+    const hue = baseHue + (Math.log2(value) - 2) * hueStep;
+    return `hsl(${hue}, 70%, 50%)`;
+  }
 
   updateHue(event) {
     const hueValue = event.target.value;

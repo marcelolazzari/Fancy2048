@@ -335,8 +335,8 @@ main.inverted {
 }
 
 .tile {
-  background-color: rgb(238, 228, 218);
-  color: #1a1a1a;
+  background-color: transparent; /* Remove background color */
+  color: inherit; /* Remove color */
   font-weight: bold;
   display: flex;
   align-items: center;
@@ -355,6 +355,58 @@ main.inverted {
   height: calc((100% - var(--gap) * (var(--size) - 1)) / var(--size));
 }
 
+.tile[data-value="2"] {
+  background-color: #eee4da; /* Starting color for value 2 */
+  color: #776e65; /* Fix number value contrast ratio */
+}
+
+.tile[data-value="4"] {
+  background-color: #ede0c8;
+  color: #776e65;
+}
+
+/* Remove specific tile color rules */
+.tile[data-value="2"],
+.tile[data-value="4"],
+.tile[data-value="8"],
+.tile[data-value="16"],
+.tile[data-value="32"],
+.tile[data-value="64"],
+.tile[data-value="128"],
+.tile[data-value="256"],
+.tile[data-value="512"],
+.tile[data-value="1024"],
+.tile[data-value="2048"],
+.tile[data-value="4096"],
+.tile[data-value="8192"],
+.tile[data-value="16384"],
+.tile[data-value="32768"],
+.tile[data-value="65536"] {
+  background-color: transparent;
+  color: inherit;
+}
+
+/* Remove light-mode specific tile color rules */
+.tile.light-mode[data-value="2"],
+.tile.light-mode[data-value="4"],
+.tile.light-mode[data-value="8"],
+.tile.light-mode[data-value="16"],
+.tile.light-mode[data-value="32"],
+.tile.light-mode[data-value="64"],
+.tile.light-mode[data-value="128"],
+.tile.light-mode[data-value="256"],
+.tile.light-mode[data-value="512"],
+.tile.light-mode[data-value="1024"],
+.tile.light-mode[data-value="2048"],
+.tile.light-mode[data-value="4096"],
+.tile.light-mode[data-value="8192"],
+.tile.light-mode[data-value="16384"],
+.tile.light-mode[data-value="32768"],
+.tile.light-mode[data-value="65536"] {
+  background-color: transparent;
+  color: inherit;
+}
+
 .tile.light-mode {
   background-color: rgba(238, 228, 218, 0.8);
   color: #000000;
@@ -362,221 +414,6 @@ main.inverted {
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 0, 0, 0.2),
     0 0 30px rgba(0, 0, 0, 0.2);
   font-size: calc(var(--tile-size) * 0.9); /* Increase font size */
-}
-
-.tile.light-mode[data-value="2"] {
-  background-color: rgba(238, 228, 218, 0.8);
-  color: #776e65;
-}
-
-.tile.light-mode[data-value="4"] {
-  background-color: rgba(237, 224, 200, 0.8);
-  color: #776e65;
-}
-
-.tile.light-mode[data-value="8"] {
-  background-color: rgba(242, 177, 121, 0.8);
-  color: #f9f6f2;
-}
-
-.tile.light-mode[data-value="16"] {
-  background-color: rgba(245, 149, 99, 0.8);
-  color: #f9f6f2;
-}
-
-.tile.light-mode[data-value="32"] {
-  background-color: rgba(246, 124, 95, 0.8);
-  color: #f9f6f2;
-}
-
-.tile.light-mode[data-value="64"] {
-  background-color: rgba(246, 94, 59, 0.8);
-  color: #f9f6f2;
-}
-
-.tile.light-mode[data-value="128"] {
-  background-color: rgba(237, 207, 114, 0.8);
-  color: #f9f6f2;
-}
-
-.tile.light-mode[data-value="256"] {
-  background-color: rgba(237, 204, 97, 0.8);
-  color: #f9f6f2;
-}
-
-.tile.light-mode[data-value="512"] {
-  background-color: rgba(237, 200, 80, 0.8);
-  color: #f9f6f2;
-}
-
-.tile.light-mode[data-value="1024"] {
-  background-color: rgba(237, 197, 63, 0.8);
-  color: #f9f6f2;
-}
-
-.tile.light-mode[data-value="2048"] {
-  background-color: rgba(237, 194, 46, 0.8);
-  color: #f9f6f2;
-}
-
-.tile[data-value="2"] {
-  background-color: rgba(238, 228, 218, 0.8);
-  color: #776e65;
-}
-
-.tile[data-value="4"] {
-  background-color: rgba(237, 224, 200, 0.8);
-  color: #776e65;
-}
-
-.tile[data-value="8"] {
-  background-color: rgba(242, 177, 121, 0.8);
-  color: #f9f6f2;
-}
-
-.tile[data-value="16"] {
-  background-color: rgba(245, 149, 99, 0.8);
-  color: #f9f6f2;
-}
-
-.tile[data-value="32"] {
-  background-color: rgba(246, 124, 95, 0.8);
-  color: #f9f6f2;
-}
-
-.tile[data-value="64"] {
-  background-color: rgba(246, 94, 59, 0.8);
-  color: #f9f6f2;
-}
-
-.tile[data-value="128"] {
-  background-color: rgba(237, 207, 114, 0.8);
-  color: #f9f6f2;
-}
-
-.tile[data-value="256"] {
-  background-color: rgba(237, 204, 97, 0.8);
-  color: #f9f6f2;
-}
-
-.tile[data-value="512"] {
-  background-color: rgba(237, 200, 80, 0.8);
-  color: #f9f6f2;
-}
-
-.tile[data-value="1024"] {
-  background-color: rgba(237, 197, 63, 0.8);
-  color: #f9f6f2;
-}
-
-.tile[data-value="2048"] {
-  background-color: rgba(237, 194, 46, 0.8);
-  color: #f9f6f2;
-}
-
-.tile[data-value="4096"] {
-  background-color: #3c3a32;
-  color: #f9f6f2;
-}
-
-.tile[data-value="8192"] {
-  background-color: #3c3a32;
-  color: #f9f6f2;
-}
-
-.tile[data-value="16384"] {
-  background-color: #3c3a32;
-  color: #f9f6f2;
-}
-
-.tile[data-value="32768"] {
-  background-color: #3c3a32;
-  color: #f9f6f2;
-}
-
-.tile[data-value="65536"] {
-  background-color: #3c3a32;
-  color: #f9f6f2;
-}
-
-.tile.light-mode[data-value="4096"] {
-  background-color: rgba(60, 58, 50, 0.8);
-  color: #f9f6f2;
-}
-
-.tile.light-mode[data-value="8192"] {
-  background-color: rgba(60, 58, 50, 0.8);
-  color: #f9f6f2;
-}
-
-.tile.light-mode[data-value="16384"] {
-  background-color: rgba(60, 58, 50, 0.8);
-  color: #f9f6f2;
-}
-
-.tile.light-mode[data-value="32768"] {
-  background-color: rgba(60, 58, 50, 0.8);
-  color: #f9f6f2;
-}
-
-.tile.light-mode[data-value="65536"] {
-  background-color: rgba(60, 58, 50, 0.8);
-  color: #f9f6f2;
-}
-
-.tile.light-mode[data-value="2"] {
-  background-color: hsla(0, 0%, 90%, 0.8);
-  color: #000000;
-}
-
-.tile.light-mode[data-value="4"] {
-  background-color: hsla(0, 0%, 80%, 0.8);
-  color: #000000;
-}
-
-.tile.light-mode[data-value="8"] {
-  background-color: hsla(30, 100%, 70%, 0.8);
-  color: #000000;
-}
-
-.tile.light-mode[data-value="16"] {
-  background-color: hsla(30, 100%, 60%, 0.8);
-  color: #000000;
-}
-
-.tile.light-mode[data-value="32"] {
-  background-color: hsla(30, 100%, 50%, 0.8);
-  color: #000000;
-}
-
-.tile.light-mode[data-value="64"] {
-  background-color: hsla(30, 100%, 40%, 0.8);
-  color: #000000;
-}
-
-.tile.light-mode[data-value="128"] {
-  background-color: hsla(60, 100%, 70%, 0.8);
-  color: #000000;
-}
-
-.tile.light-mode[data-value="256"] {
-  background-color: hsla(60, 100%, 60%, 0.8);
-  color: #000000;
-}
-
-.tile.light-mode[data-value="512"] {
-  background-color: hsla(60, 100%, 50%, 0.8);
-  color: #000000;
-}
-
-.tile.light-mode[data-value="1024"] {
-  background-color: hsla(60, 100%, 40%, 0.8);
-  color: #000000;
-}
-
-.tile.light-mode[data-value="2048"] {
-  background-color: hsla(60, 100%, 30%, 0.8);
-  color: #000000;
 }
 
 .tile:hover {
