@@ -252,32 +252,22 @@ class Game {
     header.style.color = this.getTextColor(highestValue);
   }
 
-  getTextColor(value) {
-    return value >= 8 ? '#f9f6f2' : '#776e65';
-  }
+// New color scheme
 
-  getTileColor(value) {
-    const colorMap = {
-      '': 'transparent',
-      '2': '#eee4da',
-      '4': '#ede0c8',
-      '8': '#f2b179',
-      '16': '#f59563',
-      '32': '#f67c5f',
-      '64': '#f65e3b',
-      '128': '#edcf72',
-      '256': '#edcc61',
-      '512': '#edc850',
-      '1024': '#edc53f',
-      '2048': '#edc22e',
-      '4096': '#3c3a32',
-      '8192': '#3c3a32',
-      '16384': '#3c3a32',
-      '32768': '#3c3a32',
-      '65536': '#3c3a32',
-    };
-    return colorMap[value];
-  }
+  getTextColor(value) {
+  return value >= 8 ? '#f9f6f2' : '#776e65';
+}
+
+getTileColor(value) {
+  if (value === '') return 'transparent';
+
+  const baseHue = 15; // Starting hue for the color '2'
+  const hueStep = 30; // Step to rotate the hue for each value
+
+  const hue = baseHue + (Math.log2(value) - 1) * hueStep;
+  return `hsl(${hue}, 70%, 50%)`;
+}
+
 
   updateHue(event) {
     const hueValue = event.target.value;
