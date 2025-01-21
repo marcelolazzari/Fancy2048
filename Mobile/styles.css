@@ -93,7 +93,7 @@ header.inverted h1 {
   margin-left: 10px;
   padding: 0.5rem 1rem;
   color: #f2f2f2;
-  font-size: 1rem;
+  font-size: 2rem;
   background-color: #001047; /* Adjust button background color */
   border-radius: 50%;
   border: none;
@@ -101,8 +101,8 @@ header.inverted h1 {
     0 0 20px rgba(242, 177, 121, 0.3), 0 0 30px rgba(242, 177, 121, 0.3),
     0 0 5px rgba(255, 255, 255, 0.5); /* Add subtle outer glow */
   text-align: center;
-  width: 40px; /* Adjust width for better mobile experience */
-  height: 40px; /* Adjust height for better mobile experience */
+  width: 80px; /* Adjust width for better mobile experience */
+  height: 80px; /* Adjust height for better mobile experience */
   z-index: 6;
   display: inline-block;
   position: absolute;
@@ -222,43 +222,7 @@ main.inverted {
 
 /* Remove back button styles */
 #back-button {
-  display: inline-block; /* Ensure the button is visible */
-  position: absolute;
-  top: 160px; /* Adjust position as needed */
-  right: 10px; /* Adjust position as needed */
-  background-color: #ff4500; /* Bright red background color */
-  border: none;
-  padding: 0.8rem 1.2rem; /* Adjust padding for better visibility */
-  color: #ffffff; /* White text color */
-  font-size: 1rem; /* Adjust font size */
-  border-radius: 20px; /* Increase border radius */
-  text-align: center;
-  width: auto;
-  max-width: 90%;
-  margin-top: 20px; /* Added even space */
-  z-index: 7;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08); /* Add shadow for better styling */
-  transition: background-color 0.3s, color 0.3s, transform 0.2s; /* Add transform transition */
-}
-
-#back-button.light-mode {
-  background-color: #ff6347; /* Lighter red for light mode */
-  color: #000000; /* Black text color */
-}
-
-#back-button.inverted {
-  background-color: #ff6347; /* Lighter red for inverted mode */
-  color: #000000; /* Black text color */
-}
-
-#back-button:hover {
-  background-color: #ff6347; /* Darker shade for hover */
-  color: #ffffff; /* Ensure text contrast */
-  transform: scale(1.05); /* Slightly increase size on hover */
-}
-
-#back-button:active {
-  transform: scale(0.95); /* Slightly decrease size on active */
+  display: none; /* Ensure the button is not visible */
 }
 
 #invert-button {
