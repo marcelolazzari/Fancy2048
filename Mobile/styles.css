@@ -202,7 +202,7 @@ main.inverted {
   z-index: 7;
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5); /* Static drop shadow */
   text-shadow: 0 0 5px rgba(255, 255, 255, 0.7); /* Add text glow */
-  transition: background-color 0.3s, color 0.3s, transform 0.2s; /* Add transform transition */
+  transition: background-color 0.2s, color 0.2s, transform 0.1s; /* Faster transition */
 }
 
 #reset-button.light-mode {
@@ -326,8 +326,8 @@ main.inverted {
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.5),
     0 0 20px rgba(255, 255, 255, 0.5), 0 0 30px rgba(255, 255, 255, 0.5),
     0 0 40px rgba(255, 255, 255, 0.5);
-  transition: transform 0.1s ease-in-out, opacity 0.1s ease-in-out,
-    box-shadow 0.1s ease-in-out;
+  transition: transform 0.05s ease-in-out, opacity 0.05s ease-in-out,
+    box-shadow 0.05s ease-in-out; /* Faster transition */
   overflow: hidden;
   margin: 0; /* Remove margin from tiles */
   width: calc((100% - var(--gap) * (var(--size) - 1)) / var(--size));
@@ -728,11 +728,33 @@ main.inverted {
     justify-content: center;
     align-items: center;
     height: 100vh;
+    flex-direction: row; /* Adjust to row for landscape */
   }
 
   main {
     max-width: 90vh;
     max-height: 90vh;
+    flex: 1; /* Ensure main takes up available space */
+  }
+
+  header {
+    position: static; /* Remove absolute positioning */
+    margin: 0 20px; /* Add margin for spacing */
+  }
+
+  #score-container {
+    position: static; /* Remove absolute positioning */
+    margin: 0 20px; /* Add margin for spacing */
+  }
+
+  #reset-button {
+    position: static; /* Remove absolute positioning */
+    margin: 0 20px; /* Add margin for spacing */
+  }
+
+  #invert-button {
+    position: static; /* Remove absolute positioning */
+    margin: 0 20px; /* Add margin for spacing */
   }
 }
 
@@ -743,11 +765,33 @@ main.inverted {
     justify-content: center;
     align-items: center;
     height: 100vh;
+    flex-direction: row; /* Adjust to row for landscape */
   }
 
   main {
     max-width: 90vh;
     max-height: 90vh;
+    flex: 1; /* Ensure main takes up available space */
+  }
+
+  header {
+    position: static; /* Remove absolute positioning */
+    margin: 0 20px; /* Add margin for spacing */
+  }
+
+  #score-container {
+    position: static; /* Remove absolute positioning */
+    margin: 0 20px; /* Add margin for spacing */
+  }
+
+  #reset-button {
+    position: static; /* Remove absolute positioning */
+    margin: 0 20px; /* Add margin for spacing */
+  }
+
+  #invert-button {
+    position: static; /* Remove absolute positioning */
+    margin: 0 20px; /* Add margin for spacing */
   }
 }
 
@@ -871,7 +915,7 @@ main.inverted {
   -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
   backdrop-filter: blur(10px); /* Glass effect */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-  transition: background-color 0.3s, color 0.3s;
+  transition: background-color 0.2s, color 0.2s; /* Faster transition */
 }
 
 #invert-button:hover,
@@ -912,7 +956,7 @@ main.inverted {
   z-index: 7;
   box-shadow: inset 0 0 5px currentColor, inset 0 0 10px currentColor; /* Ensure inner glow */
   text-shadow: 0 0 3px currentColor; /* Ensure text glow */
-  transition: background-color 0.3s, color 0.3s, transform 0.2s; /* Add transform transition */
+  transition: background-color 0.2s, color 0.2s, transform 0.1s; /* Faster transition */
   display: flex;
   align-items: center;
   justify-content: center;
