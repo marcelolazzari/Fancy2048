@@ -123,13 +123,15 @@ class Game {
     const gap = parseInt(getComputedStyle(boardContainer).getPropertyValue('gap'));
     const tileSize = (containerSize - (this.size - 1) * gap) / this.size;
 
-    document.querySelectorAll('.tile').forEach(tile => {
+    document.querySelectorAll('.tile').forEach((tile, index) => {
       tile.style.width = `${tileSize}px`;
       tile.style.height = `${tileSize}px`;
       tile.style.fontSize = `${tileSize * 0.4}px`;
       if (tile.textContent.length > 3) {
         tile.style.fontSize = `${tileSize * 0.3}px`;
       }
+      tile.style.msGridRow = Math.floor(index / this.size) + 1; // IE 10+ grid row
+      tile.style.msGridColumn = (index % this.size) + 1; // IE 10+ grid column
     });
 
     boardContainer.style.gridTemplateColumns = `repeat(${this.size}, ${tileSize}px)`;
