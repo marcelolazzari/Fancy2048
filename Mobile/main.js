@@ -6,6 +6,7 @@ class Game {
     this.bestScore = localStorage.getItem('bestScore') || 0;
     this.isLightMode = localStorage.getItem('isLightMode') === 'true';
     this.previousBoard = null;
+    this.hueValue = 0; // Initialize hue value
     this.addEventListeners();
     this.reset();
     window.addEventListener('resize', () => this.refreshLayout());
@@ -19,7 +20,7 @@ class Game {
     const gameContainer = document.querySelector('.game-container');
     gameContainer.addEventListener('touchstart', this.handleTouchStart.bind(this), false);
     gameContainer.addEventListener('touchend', this.handleTouchEnd.bind(this), false);
-    document.getElementById('hue-slider').addEventListener('input', this.updateHue.bind(this));
+    document.getElementById('hue-button').addEventListener('click', this.changeHue.bind(this));
   }
 
   refreshLayout() {
@@ -40,7 +41,8 @@ class Game {
       document.querySelector('.game-container'),
       document.getElementById('score-box'),
       document.getElementById('invert-button'),
-      document.getElementById('reset-button')
+      document.getElementById('reset-button'),
+      document.getElementById('best-score') // Ensure best score is toggled
     ];
 
     elementsToToggle.forEach(element => {
@@ -53,6 +55,9 @@ class Game {
       tile.classList.toggle('light-mode', this.isLightMode);
       this.invertTileDigits(tile);
     });
+
+    const invertButton = document.getElementById('invert-button');
+    invertButton.textContent = this.isLightMode ? '☀️' : '🌙'; // Change emoji based on theme
 
     this.updateUI(); // Ensure UI is updated with the correct theme
   }
@@ -249,7 +254,7 @@ class Game {
     document.getElementById('best-score').textContent = this.bestScore;
     this.updateTileSize();
     this.updateHeaderBackground(highestValue);
-    this.updateHue({ target: { value: document.getElementById('hue-slider').value } }); // Ensure hue is applied
+    this.updateHue(); // Ensure hue is applied
   }
 
   getScoreColor(score) {
@@ -268,24 +273,32 @@ class Game {
   }
 
   getTextColor(value) {
-    if (value === 2 || value === 4) return '#776e65'; // Darker color for better contrast
+    if (value === 2) return '#776e65'; // Darker color for better contrast
+    if (value === 4) return '#776e65'; // Darker color for better contrast
     return value >= 8 ? '#f9f6f2' : '#776e65'; // Fix number value contrast ratio
   }
 
   getTileColor(value) {
     if (value === '') return 'transparent';
 
-    if (value === 2) return '#add8e6'; // Light blue for value 2
+    if (value === 2) return '#e0f7fa'; // Very light blue color for value 2
+    if (value === 4) return '#add8e6'; // Light blue color for value 4
 
-    const baseHue = 200; // Starting hue for the color '4'
+    const baseHue = 200; // Starting hue for the color '8'
     const hueStep = 30; // Step to rotate the hue for each value
 
-    const hue = baseHue + (Math.log2(value) - 2) * hueStep;
+    const hue = baseHue + (Math.log2(value) - 3) * hueStep;
     return `hsl(${hue}, 70%, 50%)`;
   }
 
-  updateHue(event) {
-    const hueValue = event.target.value;
+  changeHue() {
+    this.hueValue = (this.hueValue + 15) % 360; // Increment hue by 15 steps
+    this.updateHue();
+  }
+
+  updateHue() {
+    const hueValue = this.hueValue;
+    document.documentElement.style.setProperty('--hue-value', hueValue); // Set hue value as CSS variable
     document.querySelector('.game-section').style.filter = `hue-rotate(${hueValue}deg)`;
     document.querySelector('.overlay').style.filter = `hue-rotate(${hueValue}deg)`;
     document.querySelector('.game-container').style.filter = `hue-rotate(${hueValue}deg)`;
@@ -293,7 +306,8 @@ class Game {
     document.getElementById('score-box').style.filter = `hue-rotate(${hueValue}deg)`;
     document.getElementById('score').style.filter = `hue-rotate(${hueValue}deg)`;
     document.getElementById('best-score').style.filter = `hue-rotate(${hueValue}deg)`;
-    document.getElementById('hue-slider').style.filter = `hue-rotate(${hueValue}deg)`;
+    document.getElementById('hue-button').style.color = `hsl(${hueValue}, 70%, 50%)`; // Update hue button text color
+    document.getElementById('hue-button').style.borderColor = `hsl(${hueValue}, 70%, 50%)`; // Update hue button border color
   }
 }
 
@@ -302,5 +316,4 @@ document.addEventListener('DOMContentLoaded', () => {
   const game = new Game(4);
   game.refreshLayout();
   game.applyTheme();
-  document.getElementById('hue-slider').value = 0;
 });
