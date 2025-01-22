@@ -657,7 +657,86 @@ main.inverted {
   }
 }
 
-/* Force vertical layout and prevent rotation */
+/* Media queries for tablet optimization */
+@media (min-width: 600px) and (max-width: 1024px) {
+  body {
+    padding: 10px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  header h1 {
+    font-size: 1.5rem; /* Adjust font size for tablets */
+  }
+
+  #score-container {
+    font-size: 1rem; /* Adjust font size for tablets */
+    padding: 0.5rem;
+  }
+
+  #board-container {
+    width: 100%;
+    height: 100%;
+    max-width: 90vmin;
+    max-height: 90vmin;
+    margin-bottom: 10px;
+  }
+
+  .tile {
+    font-size: 1rem; /* Adjust font size for tablets */
+  }
+
+  button {
+    font-size: 1rem; /* Adjust font size for tablets */
+    padding: 10px 20px;
+  }
+
+  #game-over {
+    font-size: 1.5rem; /* Adjust font size for tablets */
+  }
+
+  main {
+    padding: 10px;
+    height: 100%;
+  }
+
+  #invert-button {
+    width: 50px; /* Adjust width for tablets */
+    height: 50px; /* Adjust height for tablets */
+    font-size: 1rem; /* Adjust font size for tablets */
+  }
+
+  #reset-button {
+    padding: 1rem 1.5rem; /* Adjust padding for tablets */
+    font-size: 1rem; /* Adjust font size for tablets */
+  }
+
+  #hue-slider {
+    height: 20px; /* Adjust height for tablets */
+    width: 80%; /* Adjust width for tablets */
+    max-width: 300px; /* Adjust max-width for tablets */
+  }
+}
+
+/* Force vertical layout and prevent rotation for tablets */
+@media (min-width: 600px) and (max-width: 1024px) and (orientation: landscape) {
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  main {
+    max-width: 90vh;
+    max-height: 90vh;
+  }
+}
+
+/* Force vertical layout and prevent rotation for all devices */
 @media (orientation: landscape) {
   body {
     display: flex;
