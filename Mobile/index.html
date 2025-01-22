@@ -7,25 +7,30 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
+    <!-- Header section -->
     <header>
       <h1>Fancy 2048</h1>
-      <div id="hue-slider-container">
+      <div id="controls-container">
         <button type="button" id="hue-button">Change Color</button>
         <button type="button" id="invert-button">🌙</button>
       </div>
     </header>
+
+    <!-- Main content section -->
     <main>
       <div class="overlay"></div>
       <section class="game-section">
-        <div class="game-container" id="game-container"></div>
+        <div class="board-container" id="board-container"></div>
         <div id="game-over" class="hidden">Game Over!</div>
       </section>
-      <aside id="score-box">
+      <aside id="score-container">
         <p>Score: <span id="score">0</span></p>
         <p>Best Score: <span id="best-score">0</span></p>
       </aside>
       <button type="button" id="reset-button">Reset Game</button>
     </main>
+
+    <!-- JavaScript file -->
     <script src="main.js"></script>
   </body>
 </html>

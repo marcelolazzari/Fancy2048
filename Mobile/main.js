@@ -17,9 +17,9 @@ class Game {
     document.getElementById('invert-button').addEventListener('click', this.toggleTheme.bind(this));
     document.getElementById('reset-button').addEventListener('click', this.reset.bind(this));
     window.addEventListener('keydown', this.handleKeyPress.bind(this));
-    const gameContainer = document.querySelector('.game-container');
-    gameContainer.addEventListener('touchstart', this.handleTouchStart.bind(this), false);
-    gameContainer.addEventListener('touchend', this.handleTouchEnd.bind(this), false);
+    const boardContainer = document.querySelector('.board-container');
+    boardContainer.addEventListener('touchstart', this.handleTouchStart.bind(this), false);
+    boardContainer.addEventListener('touchend', this.handleTouchEnd.bind(this), false);
     document.getElementById('hue-button').addEventListener('click', this.changeHue.bind(this));
   }
 
@@ -38,8 +38,8 @@ class Game {
     const elementsToToggle = [
       document.body,
       document.querySelector('.overlay'),
-      document.querySelector('.game-container'),
-      document.getElementById('score-box'),
+      document.querySelector('.board-container'),
+      document.getElementById('score-container'),
       document.getElementById('invert-button'),
       document.getElementById('reset-button'),
       document.getElementById('best-score') // Ensure best score is toggled
@@ -114,9 +114,9 @@ class Game {
   }
 
   updateTileSize() {
-    const gameContainer = document.querySelector('.game-container');
-    const containerSize = Math.min(gameContainer.clientWidth, gameContainer.clientHeight);
-    const gap = parseInt(getComputedStyle(gameContainer).getPropertyValue('gap'));
+    const boardContainer = document.querySelector('.board-container');
+    const containerSize = Math.min(boardContainer.clientWidth, boardContainer.clientHeight);
+    const gap = parseInt(getComputedStyle(boardContainer).getPropertyValue('gap'));
     const tileSize = (containerSize - (this.size - 1) * gap) / this.size;
 
     document.querySelectorAll('.tile').forEach(tile => {
@@ -128,8 +128,8 @@ class Game {
       }
     });
 
-    gameContainer.style.gridTemplateColumns = `repeat(${this.size}, ${tileSize}px)`;
-    gameContainer.style.gridTemplateRows = `repeat(${this.size}, ${tileSize}px)`;
+    boardContainer.style.gridTemplateColumns = `repeat(${this.size}, ${tileSize}px)`;
+    boardContainer.style.gridTemplateRows = `repeat(${this.size}, ${tileSize}px)`;
   }
 
   calculateTileSize() {
@@ -228,8 +228,8 @@ class Game {
   }
 
   updateUI() {
-    const gameContainer = document.querySelector('.game-container');
-    gameContainer.innerHTML = '';
+    const boardContainer = document.querySelector('.board-container');
+    boardContainer.innerHTML = '';
     let highestValue = 0;
     this.board.forEach(row => {
       row.forEach(value => {
@@ -246,7 +246,7 @@ class Game {
           tile.classList.add('light-mode');
           this.invertTileDigits(tile);
         }
-        gameContainer.appendChild(tile);
+        boardContainer.appendChild(tile);
       });
     });
     document.getElementById('score').textContent = this.score;
@@ -301,9 +301,9 @@ class Game {
     document.documentElement.style.setProperty('--hue-value', hueValue); // Set hue value as CSS variable
     document.querySelector('.game-section').style.filter = `hue-rotate(${hueValue}deg)`;
     document.querySelector('.overlay').style.filter = `hue-rotate(${hueValue}deg)`;
-    document.querySelector('.game-container').style.filter = `hue-rotate(${hueValue}deg)`;
+    document.querySelector('.board-container').style.filter = `hue-rotate(${hueValue}deg)`;
     document.querySelector('header h1').style.filter = `hue-rotate(${hueValue}deg)`;
-    document.getElementById('score-box').style.filter = `hue-rotate(${hueValue}deg)`;
+    document.getElementById('score-container').style.filter = `hue-rotate(${hueValue}deg)`;
     document.getElementById('score').style.filter = `hue-rotate(${hueValue}deg)`;
     document.getElementById('best-score').style.filter = `hue-rotate(${hueValue}deg)`;
     document.getElementById('hue-button').style.color = `hsl(${hueValue}, 70%, 50%)`; // Update hue button text color

@@ -152,7 +152,7 @@ main.inverted {
   color: #333;
 }
 
-#score-box {
+#score-container {
   position: absolute;
   top: 10px;
   right: 10px;
@@ -168,13 +168,13 @@ main.inverted {
   margin-bottom: 20px; /* Added more space under the score box */
 }
 
-#score-box.light-mode {
+#score-container.light-mode {
   background-color: rgba(240, 240, 240, 0.8);
   color: #000000;
   border-color: transparent;
 }
 
-#score-box.inverted {
+#score-container.inverted {
   background-color: rgba(255, 255, 255, 0.8);
   color: #333;
 }
@@ -257,7 +257,7 @@ main.inverted {
   color: #000000; /* Ensure text contrast in light mode */
 }
 
-.game-container {
+#board-container {
   display: grid;
   grid-template-columns: repeat(var(--size), 1fr);
   gap: var(--gap); /* Ensure gap between tiles */
@@ -284,7 +284,7 @@ main.inverted {
   padding-bottom: var(--gap); /* Adjust bottom padding */
 }
 
-.game-container.light-mode {
+#board-container.light-mode {
   background-color: rgba(240, 240, 240, 0.8);
   border: 2px solid #cccccc;
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.1), 0 0 20px rgba(0, 0, 0, 0.1),
@@ -293,7 +293,7 @@ main.inverted {
   padding-bottom: var(--gap); /* Adjust bottom padding */
 }
 
-.game-container.inverted {
+#board-container.inverted {
   background-color: rgba(255, 255, 255, 0.8);
   border: 2px solid rgba(0, 0, 0, 0.2);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 0, 0, 0.2),
@@ -480,7 +480,7 @@ main.inverted {
   filter: invert(100%);
 }
 
-.inverted #score-box,
+.inverted #score-container,
 .inverted #invert-button,
 .inverted #reset-button,
 .inverted #back-button {
@@ -497,7 +497,7 @@ main.inverted {
   color: #333;
 }
 
-.inverted .game-container {
+.inverted #board-container {
   background-color: rgba(255, 255, 255, 0.8);
   border: 2px solid rgba(0, 0, 0, 0.2);
   box-shadow: 0 0 10px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 0, 0, 0.2),
@@ -595,12 +595,12 @@ main.inverted {
     font-size: 1.2rem;
   }
 
-  #score-box {
+  #score-container {
     font-size: 0.8rem;
     padding: 0.2rem;
   }
 
-  .game-container {
+  #board-container {
     width: 100%;
     height: 100%;
     max-width: 85vmin;
@@ -669,12 +669,12 @@ main.inverted {
     font-size: 1.4rem;
   }
 
-  #score-box {
+  #score-container {
     font-size: 0.9rem;
     padding: 0.2rem;
   }
 
-  .game-container {
+  #board-container {
     width: 100%;
     height: 100%;
     max-width: 85vmin;
@@ -699,6 +699,16 @@ main.inverted {
     padding: 0 5px;
     height: 100%;
   }
+}
+
+#controls-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 10px; /* Adjust margin */
+  padding: 5px; /* Adjust padding for better mobile experience */
+  width: 100%; /* Ensure it spans the full width */
+  box-sizing: border-box;
 }
 
 #hue-slider-container {
