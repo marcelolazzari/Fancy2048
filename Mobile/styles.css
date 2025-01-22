@@ -70,7 +70,7 @@ header h1 {
   font-size: 1rem; /* Further adjust font size */
   width: auto; /* Adjust width to fit content */
   box-sizing: border-box; /* Ensure padding is included in the total width */
-  color: #ffffff; /* Better contrast for dark mode */
+  color: hsl(var(--hue-value), 70%, 50%); /* Text color based on hue value */
   background-color: rgba(50, 50, 50, 0.8);
   border-radius: 10px;
   text-align: center;
@@ -78,8 +78,8 @@ header h1 {
 }
 
 header.light-mode h1 {
-  background-color: rgba(240, 240, 240, 0.8);
-  color: #000000; /* Better contrast for light mode */
+  background-color: #ffffff; /* White background for better contrast */
+  color: hsl(var(--hue-value), 70%, 50%); /* Text color based on hue value */
   border-color: transparent;
 }
 
@@ -111,7 +111,7 @@ header.inverted h1 {
 
 #invert-button.light-mode {
   background-color: #ffcc00; /* Bright yellow for light mode */
-  color: #000000; /* Black text color for contrast */
+  color: #333333; /* Darker text color for contrast */
 }
 
 #invert-button:hover {
@@ -121,7 +121,7 @@ header.inverted h1 {
 
 #invert-button.light-mode:hover {
   background-color: #ff9900; /* Darker yellow for hover in light mode */
-  color: #000000; /* Ensure text contrast */
+  color: #333333; /* Ensure text contrast */
 }
 
 #invert-button.inverted {
@@ -169,8 +169,8 @@ main.inverted {
 }
 
 #score-container.light-mode {
-  background-color: rgba(240, 240, 240, 0.8);
-  color: #000000;
+  background-color: #ffffff; /* White background for better contrast */
+  color: #333333; /* Darker text color */
   border-color: transparent;
 }
 
@@ -195,12 +195,13 @@ main.inverted {
   margin-top: 20px; /* Added even space */
   z-index: 7;
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5); /* Static drop shadow */
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7); /* Add text glow */
   transition: background-color 0.3s, color 0.3s, transform 0.2s; /* Add transform transition */
 }
 
 #reset-button.light-mode {
   background-color: #ff7f50; /* Improved lighter red for light mode */
-  color: #000000; /* Black text color */
+  color: #333333; /* Darker text color */
 }
 
 #reset-button.inverted {
@@ -212,6 +213,11 @@ main.inverted {
   background-color: #ff4500; /* Darker shade for hover */
   color: #ffffff; /* Ensure text contrast */
   transform: scale(1.05); /* Slightly increase size on hover */
+}
+
+#reset-button.light-mode:hover {
+  background-color: #ff4500; /* Darker shade for hover */
+  color: #ffffff; /* Ensure text contrast */
 }
 
 #reset-button:active {
@@ -246,6 +252,7 @@ main.inverted {
 #score {
   color: #ffcc00; /* Pop more the current value color */
   font-size: 1.5rem;
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7); /* Add text glow */
 }
 
 #score.inverted,
@@ -805,7 +812,7 @@ main.inverted {
   color: #000000; /* Ensure text contrast */
 }
 
-#hue-button {
+#changeColor-button {
   background-color: transparent; /* Transparent background */
   border: 2px solid currentColor; /* Border color same as text color */
   padding: 0.5rem 1rem; /* Smaller padding */
@@ -818,24 +825,34 @@ main.inverted {
   white-space: nowrap; /* Ensure text fits in one line */
   margin-top: 10px; /* Adjust margin */
   z-index: 7;
-  box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.5); /* Inner shadow for border */
-  text-shadow: 0 0 5px rgba(255, 255, 255, 0.5); /* Subtle text glow */
+  box-shadow: inset 0 0 5px currentColor, inset 0 0 10px currentColor; /* Less visible inner glow */
+  text-shadow: 0 0 3px currentColor; /* Less visible text glow */
   transition: background-color 0.3s, color 0.3s, transform 0.2s; /* Add transform transition */
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
-#hue-button.light-mode {
+#changeColor-button.light-mode {
+  background-color: #ffffff; /* White background for better contrast */
+  color: hsl(var(--hue-value), 70%, 50%); /* Text color based on hue value */
+  border-color: hsl(var(--hue-value), 70%, 50%); /* Border color based on hue value */
+}
+
+#changeColor-button.inverted {
   color: hsl(var(--hue-value), 70%, 50%); /* Text color based on hue value */
 }
 
-#hue-button.inverted {
-  color: hsl(var(--hue-value), 70%, 50%); /* Text color based on hue value */
-}
-
-#hue-button:hover {
+#changeColor-button:hover {
   background-color: rgba(255, 255, 255, 0.1); /* Slightly visible background on hover */
   transform: scale(1.05); /* Slightly increase size on hover */
 }
 
-#hue-button:active {
+#changeColor-button.light-mode:hover {
+  background-color: rgba(0, 0, 0, 0.1); /* Slightly visible background on hover */
+  transform: scale(1.05); /* Slightly increase size on hover */
+}
+
+#changeColor-button:active {
   transform: scale(0.95); /* Slightly decrease size on active */
 }

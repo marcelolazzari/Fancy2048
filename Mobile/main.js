@@ -20,7 +20,7 @@ class Game {
     const boardContainer = document.querySelector('.board-container');
     boardContainer.addEventListener('touchstart', this.handleTouchStart.bind(this), false);
     boardContainer.addEventListener('touchend', this.handleTouchEnd.bind(this), false);
-    document.getElementById('hue-button').addEventListener('click', this.changeHue.bind(this));
+    document.getElementById('changeColor-button').addEventListener('click', this.changeHue.bind(this));
   }
 
   refreshLayout() {
@@ -298,16 +298,17 @@ class Game {
 
   updateHue() {
     const hueValue = this.hueValue;
+    const hueRotation = this.isLightMode ? -hueValue : hueValue; // Invert hue in light mode
     document.documentElement.style.setProperty('--hue-value', hueValue); // Set hue value as CSS variable
-    document.querySelector('.game-section').style.filter = `hue-rotate(${hueValue}deg)`;
-    document.querySelector('.overlay').style.filter = `hue-rotate(${hueValue}deg)`;
-    document.querySelector('.board-container').style.filter = `hue-rotate(${hueValue}deg)`;
-    document.querySelector('header h1').style.filter = `hue-rotate(${hueValue}deg)`;
-    document.getElementById('score-container').style.filter = `hue-rotate(${hueValue}deg)`;
-    document.getElementById('score').style.filter = `hue-rotate(${hueValue}deg)`;
-    document.getElementById('best-score').style.filter = `hue-rotate(${hueValue}deg)`;
-    document.getElementById('hue-button').style.color = `hsl(${hueValue}, 70%, 50%)`; // Update hue button text color
-    document.getElementById('hue-button').style.borderColor = `hsl(${hueValue}, 70%, 50%)`; // Update hue button border color
+    document.querySelector('.game-section').style.filter = `hue-rotate(${hueRotation}deg)`;
+    document.querySelector('.overlay').style.filter = `hue-rotate(${hueRotation}deg)`;
+    document.querySelector('.board-container').style.filter = `hue-rotate(${hueRotation}deg)`;
+    document.querySelector('header h1').style.filter = `hue-rotate(${hueRotation}deg)`;
+    document.getElementById('score-container').style.filter = `hue-rotate(${hueRotation}deg)`;
+    document.getElementById('score').style.filter = `hue-rotate(${hueRotation}deg)`;
+    document.getElementById('best-score').style.filter = `hue-rotate(${hueRotation}deg)`;
+    document.getElementById('changeColor-button').style.color = `hsl(${hueValue}, 70%, 50%)`; // Update changeColor button text color
+    document.getElementById('changeColor-button').style.borderColor = `hsl(${hueValue}, 70%, 50%)`; // Update changeColor button border color
   }
 }
 
