@@ -11,6 +11,8 @@ class Game {
     this.reset();
     window.addEventListener('resize', () => this.refreshLayout());
     this.applyTheme();
+    this.updateHue(); // Ensure hue is applied on initialization
+    this.applyButtonStyles(); // Ensure button styles are applied on initialization
   }
 
   addEventListeners() {
@@ -60,6 +62,8 @@ class Game {
     invertButton.textContent = this.isLightMode ? '☀️' : '🌙'; // Change emoji based on theme
 
     this.updateUI(); // Ensure UI is updated with the correct theme
+    this.updateHue(); // Ensure hue is applied
+    this.applyButtonStyles(); // Ensure button styles are applied
   }
 
   invertTileDigits(tile) {
@@ -159,6 +163,8 @@ class Game {
     this.score = 0;
     this.updateUI();
     document.getElementById('game-over').classList.add('hidden');
+    this.applyTheme(); // Ensure theme is applied on reset
+    this.updateHue(); // Ensure hue is applied on reset
   }
 
   slideAndCombine(row) {
@@ -307,8 +313,21 @@ class Game {
     document.getElementById('score-container').style.filter = `hue-rotate(${hueRotation}deg)`;
     document.getElementById('score').style.filter = `hue-rotate(${hueRotation}deg)`;
     document.getElementById('best-score').style.filter = `hue-rotate(${hueRotation}deg)`;
-    document.getElementById('changeColor-button').style.color = `hsl(${hueValue}, 70%, 50%)`; // Update changeColor button text color
-    document.getElementById('changeColor-button').style.borderColor = `hsl(${hueValue}, 70%, 50%)`; // Update changeColor button border color
+    const changeColorButton = document.getElementById('changeColor-button');
+    const buttonHueValue = this.isLightMode ? hueValue - 30 : hueValue; // Adjust hue value for light mode
+    changeColorButton.style.color = `hsl(${buttonHueValue}, 70%, 40%)`; // Update changeColor button text color
+    changeColorButton.style.borderColor = `hsl(${buttonHueValue}, 70%, 40%)`; // Update changeColor button border color
+    changeColorButton.style.boxShadow = `inset 0 0 3px hsl(${buttonHueValue}, 70%, 40%), inset 0 0 6px hsl(${buttonHueValue}, 70%, 40%)`; // Ensure inner glow
+    changeColorButton.style.textShadow = `0 0 2px hsl(${buttonHueValue}, 70%, 40%)`; // Ensure text glow
+  }
+
+  applyButtonStyles() {
+    const changeColorButton = document.getElementById('changeColor-button');
+    const buttonHueValue = this.isLightMode ? this.hueValue - 30 : this.hueValue; // Adjust hue value for light mode
+    changeColorButton.style.color = `hsl(${buttonHueValue}, 70%, 40%)`; // Update changeColor button text color
+    changeColorButton.style.borderColor = `hsl(${buttonHueValue}, 70%, 40%)`; // Update changeColor button border color
+    changeColorButton.style.boxShadow = `inset 0 0 3px hsl(${buttonHueValue}, 70%, 40%), inset 0 0 6px hsl(${buttonHueValue}, 70%, 40%)`; // Ensure inner glow
+    changeColorButton.style.textShadow = `0 0 2px hsl(${buttonHueValue}, 70%, 40%)`; // Ensure text glow
   }
 }
 
@@ -317,4 +336,5 @@ document.addEventListener('DOMContentLoaded', () => {
   const game = new Game(4);
   game.refreshLayout();
   game.applyTheme();
+  game.updateHue(); // Ensure hue is applied on page load
 });
