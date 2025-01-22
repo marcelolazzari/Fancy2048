@@ -38,6 +38,7 @@ class Game {
 
   applyTheme() {
     const elementsToToggle = [
+      
       document.body,
       document.querySelector('.overlay'),
       document.querySelector('.board-container'),
