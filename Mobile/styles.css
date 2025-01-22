@@ -97,9 +97,7 @@ header.inverted h1 {
   background-color: #001047; /* Adjust button background color */
   border-radius: 50%;
   border: none;
-  box-shadow: 0 0 10px rgba(242, 177, 121, 0.3),
-    0 0 20px rgba(242, 177, 121, 0.3), 0 0 30px rgba(242, 177, 121, 0.3),
-    0 0 5px rgba(255, 255, 255, 0.5); /* Add subtle outer glow */
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5); /* Static drop shadow */
   text-align: center;
   width: 50px; /* Adjust width */
   height: 50px; /* Adjust height */
@@ -109,34 +107,26 @@ header.inverted h1 {
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  filter: grayscale(100%);
 }
 
 #invert-button.light-mode {
   background-color: #ffcc00; /* Bright yellow for light mode */
   color: #000000; /* Black text color for contrast */
-  filter: none; /* Remove grayscale filter in light mode */
 }
 
 #invert-button:hover {
   background-color: #242f57; /* Darker shade for hover */
   color: #ffffff; /* Ensure text contrast */
-  filter: grayscale(100%);
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.7),
-    0 0 25px rgba(255, 255, 255, 0.7), 0 0 35px rgba(255, 255, 255, 0.7),
-    0 0 10px rgba(255, 255, 255, 0.7); /* Enhance glow on hover */
 }
 
 #invert-button.light-mode:hover {
   background-color: #ff9900; /* Darker yellow for hover in light mode */
   color: #000000; /* Ensure text contrast */
-  filter: none; /* Remove grayscale filter in light mode */
 }
 
 #invert-button.inverted {
   background-color: rgba(255, 255, 255, 0.8);
   color: #333;
-  filter: grayscale(100%);
 }
 
 main {
@@ -145,7 +135,7 @@ main {
   align-items: center;
   width: 100%;
   max-width: 100%;
-  margin: 0 auto;
+  margin: 20px 0; /* Apply 20px margin for top and bottom */
   padding: 10px;
   box-sizing: border-box;
   height: 100%;
@@ -193,7 +183,7 @@ main.inverted {
   position: absolute;
   top: 100px; /* Adjust position */
   right: 10px;
-  background-color: #ff4500; /* Bright red background color */
+  background-color: #ff6347; /* Improved background color */
   border: none;
   padding: 0.8rem 1.2rem; /* Adjust padding for better mobile experience */
   color: #ffffff; /* White text color */
@@ -204,22 +194,22 @@ main.inverted {
   max-width: 90%;
   margin-top: 20px; /* Added even space */
   z-index: 7;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08); /* Add shadow for better styling */
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5); /* Static drop shadow */
   transition: background-color 0.3s, color 0.3s, transform 0.2s; /* Add transform transition */
 }
 
 #reset-button.light-mode {
-  background-color: #ff6347; /* Lighter red for light mode */
+  background-color: #ff7f50; /* Improved lighter red for light mode */
   color: #000000; /* Black text color */
 }
 
 #reset-button.inverted {
-  background-color: #ff6347; /* Lighter red for inverted mode */
+  background-color: #ff7f50; /* Improved lighter red for inverted mode */
   color: #000000; /* Black text color */
 }
 
 #reset-button:hover {
-  background-color: #ff6347; /* Darker shade for hover */
+  background-color: #ff4500; /* Darker shade for hover */
   color: #ffffff; /* Ensure text contrast */
   transform: scale(1.05); /* Slightly increase size on hover */
 }
@@ -715,7 +705,7 @@ main.inverted {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 20px;
+  margin-top: 10px; /* Adjust margin */
   padding: 5px; /* Adjust padding for better mobile experience */
   width: 100%; /* Ensure it spans the full width */
   box-sizing: border-box;
