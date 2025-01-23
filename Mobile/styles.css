@@ -170,7 +170,7 @@ main.inverted {
   position: absolute;
   top: 10px;
   right: 10px;
-  padding: 0.5rem;
+  padding: 0.5rem 20px; /* Add 20px padding left and right */
   color: var(--secondary-color);
   font-size: 1rem;
   background-color: rgba(50, 50, 50, 0.5); /* Glass effect background */
@@ -278,7 +278,7 @@ main.inverted {
 #score {
   color: var(--highlight-color); /* Pop more the current value color */
   font-size: 1.5rem;
-  text-shadow: 0 0 2px rgba(255, 255, 255, 0.7); /* Add text glow */
+  text-shadow: none; /* Remove text shadow */
 }
 
 #score.inverted,
