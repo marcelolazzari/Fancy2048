@@ -220,8 +220,14 @@ main.inverted {
 }
 
 #reset-button.light-mode {
-  background-color: #ffa07a; /* Even lighter color for light mode */
+  background-color: rgba(224, 224, 224, 0.5); /* Updated background color */
   color: #333333; /* Darker text color */
+  border: none; /* Remove border */
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5); /* Match reset button box shadow */
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7); /* Match reset button text glow */
+  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
+  backdrop-filter: blur(10px); /* Glass effect */
+  transition: background-color 0.2s, color 0.2s, transform 0.1s; /* Faster transition */
 }
 
 #reset-button.inverted {
@@ -921,7 +927,7 @@ main.inverted {
 #invert-button,
 #reset-button,
 #back-button {
-  background-color: rgba(0, 16, 71, 0.5); /* Glass effect background */
+  background-color: rgba(0, 16, 71, 0.4); /* Glass effect background */
   color: var(--secondary-color); /* Ensure text contrast */
   border: none;
   -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
@@ -960,7 +966,7 @@ main.inverted {
 
 #changeColor-button {
   background-color: transparent; /* Transparent background */
-  border: 2px solid #ffffff; /* White border */
+  border: none; /* Remove border */
   padding: 0.5rem 1rem; /* Smaller padding */
   color: #ffffff; /* White text color */
   font-size: 1rem; /* Increase font size */
@@ -978,7 +984,7 @@ main.inverted {
   align-items: center;
   justify-content: center;
   filter: brightness(85%); /* Add brightness effect */
-  background-color: rgba(0, 16, 71, 0.5); /* Glass effect background */
+  background-color: rgba(0, 16, 71, 0.4); /* Glass effect background */
   -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
   backdrop-filter: blur(10px); /* Glass effect */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08); /* Static drop shadow */
@@ -986,8 +992,8 @@ main.inverted {
 
 #changeColor-button.light-mode {
   background-color: rgba(224, 224, 224, 0.5); /* Updated background color */
-  color: #000000; /* Darker text color */
-  border-color: transparent; /* Match reset button border color */
+  color: #333333; /* Match reset button light mode text color */
+  border: none; /* Remove border */
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5); /* Match reset button box shadow */
   text-shadow: 0 0 5px rgba(255, 255, 255, 0.7); /* Match reset button text glow */
   -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
@@ -1005,10 +1011,68 @@ main.inverted {
 }
 
 #changeColor-button.light-mode:hover {
-  background-color: rgba(0, 0, 0, 0.1); /* Slightly visible background on hover */
+  background-color: var(--reset-button-hover-background); /* Match reset button hover background color */
+  color: #ffffff; /* Match reset button hover text color */
   transform: scale(1.05); /* Slightly increase size on hover */
 }
 
 #changeColor-button:active {
   transform: scale(0.95); /* Slightly decrease size on active */
+}
+
+#changeColor-button,
+#reset-button,
+#invert-button,
+#back-button {
+  border: none; /* Remove border */
+}
+
+#changeColor-button.light-mode,
+#reset-button.light-mode,
+#invert-button.light-mode,
+#back-button.light-mode {
+  background-color: rgba(224, 224, 224, 0.5); /* Updated background color */
+  color: #333333; /* Darker text color */
+  border: none; /* Remove border */
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5); /* Match reset button box shadow */
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7); /* Match reset button text glow */
+  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
+  backdrop-filter: blur(10px); /* Glass effect */
+  transition: background-color 0.2s, color 0.2s, transform 0.1s; /* Faster transition */
+}
+
+#changeColor-button:hover,
+#reset-button:hover,
+#invert-button:hover,
+#back-button:hover {
+  background-color: rgba(36, 47, 87, 0.7); /* Darker shade for hover */
+  color: #ffffff; /* Ensure text contrast */
+}
+
+#changeColor-button.light-mode:hover,
+#reset-button.light-mode:hover,
+#invert-button.light-mode:hover,
+#back-button.light-mode:hover {
+  background-color: rgba(192, 192, 192, 0.7); /* Darker shade for hover in light mode */
+  color: #000000; /* Ensure text contrast */
+}
+
+#changeColor-button:active,
+#reset-button:active,
+#invert-button:active,
+#back-button:active {
+  transform: scale(0.95); /* Slightly decrease size on active */
+}
+
+#changeColor-button,
+#reset-button,
+#invert-button,
+#back-button {
+  background-color: rgba(0, 16, 71, 0.4); /* Glass effect background with alpha 0.4 */
+  color: var(--secondary-color); /* Ensure text contrast */
+  border: none;
+  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
+  backdrop-filter: blur(10px); /* Glass effect */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: background-color 0.2s, color 0.2s; /* Faster transition */
 }

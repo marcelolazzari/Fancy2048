@@ -168,6 +168,7 @@ class Game {
     document.getElementById('game-over').classList.add('hidden');
     this.applyTheme(); // Ensure theme is applied on reset
     this.updateHue(); // Ensure hue is applied on reset
+    this.applyButtonStyles(); // Ensure button styles are applied on reset
   }
 
   slideAndCombine(row) {
@@ -316,46 +317,40 @@ class Game {
     document.getElementById('score-container').style.filter = `hue-rotate(${hueRotation}deg)`;
     document.getElementById('score').style.filter = `hue-rotate(${hueRotation}deg)`;
     document.getElementById('best-score').style.filter = `hue-rotate(${hueRotation}deg)`;
-    const changeColorButton = document.getElementById('changeColor-button');
-    if (this.isLightMode) {
-      changeColorButton.style.backgroundColor = 'rgba(224, 224, 224, 0.5)'; // Updated background color
-      changeColorButton.style.color = '#333333'; // Darker text color
-      changeColorButton.style.borderColor = 'rgba(255, 255, 255, 0.7)'; // Light mode border color
-      changeColorButton.style.boxShadow = 'inset 0 0 5px rgba(255, 255, 255, 0.7)'; // Subtle inner border glow
-    } else {
-      changeColorButton.style.backgroundColor = 'rgba(0, 16, 71, 0.5)'; // Glass effect background
-      changeColorButton.style.color = '#ffffff'; // White text color
-      changeColorButton.style.borderColor = '#ffffff'; // White border color
-      changeColorButton.style.boxShadow = 'inset 0 0 5px #ffffff'; // Subtle inner border glow
-    }
-    changeColorButton.style.textShadow = 'none'; // Remove text glow
-    changeColorButton.style.webkitBackdropFilter = 'blur(10px)'; // Glass effect for Safari
-    changeColorButton.style.backdropFilter = 'blur(10px)'; // Glass effect
-    changeColorButton.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)'; // Static drop shadow
+    const buttons = [document.getElementById('changeColor-button'), document.getElementById('reset-button'), document.getElementById('invert-button')];
+    buttons.forEach(button => {
+      if (!this.isLightMode) {
+        button.style.filter = `hue-rotate(${hueRotation}deg)`; // Apply hue rotation to buttons in dark mode
+      } else {
+        button.style.filter = 'none'; // Remove hue rotation in light mode
+      }
+    });
   }
 
   applyButtonStyles() {
-    const changeColorButton = document.getElementById('changeColor-button');
-    if (this.isLightMode) {
-      changeColorButton.style.backgroundColor = 'rgba(224, 224, 224, 0.5)'; // Updated background color
-      changeColorButton.style.color = '#000000'; // Darker text color
-      changeColorButton.style.borderColor = 'transparent'; // Match reset button border color
-      changeColorButton.style.boxShadow = '0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5)'; // Match reset button box shadow
-      changeColorButton.style.textShadow = '0 0 5px rgba(255, 255, 255, 0.7)'; // Match reset button text glow
-      changeColorButton.style.webkitBackdropFilter = 'blur(10px)'; // Glass effect for Safari
-      changeColorButton.style.backdropFilter = 'blur(10px)'; // Glass effect
-      changeColorButton.style.transition = 'background-color 0.2s, color 0.2s, transform 0.1s'; // Faster transition
-    } else {
-      changeColorButton.style.backgroundColor = 'rgba(0, 16, 71, 0.5)'; // Glass effect background
-      changeColorButton.style.color = '#ffffff'; // White text color
-      changeColorButton.style.borderColor = '#ffffff'; // White border color
-      changeColorButton.style.boxShadow = 'inset 0 0 5px #ffffff'; // Subtle inner border glow
-      changeColorButton.style.textShadow = 'none'; // Remove text glow
-    }
-    changeColorButton.style.filter = 'brightness(85%)'; // Add brightness effect
-    changeColorButton.style.webkitBackdropFilter = 'blur(10px)'; // Glass effect for Safari
-    changeColorButton.style.backdropFilter = 'blur(10px)'; // Glass effect
-    changeColorButton.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)'; // Static drop shadow
+    const buttons = [document.getElementById('changeColor-button'), document.getElementById('reset-button'), document.getElementById('invert-button')];
+    buttons.forEach(button => {
+      if (this.isLightMode) {
+        button.style.backgroundColor = 'rgba(224, 224, 224, 0.5)'; // Updated background color
+        button.style.color = '#333333'; // Darker text color
+        button.style.borderColor = 'transparent'; // Match reset button border color
+        button.style.boxShadow = '0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5)'; // Match reset button box shadow
+        button.style.textShadow = '0 0 5px rgba(255, 255, 255, 0.7)'; // Match reset button text glow
+        button.style.webkitBackdropFilter = 'blur(10px)'; // Glass effect for Safari
+        button.style.backdropFilter = 'blur(10px)'; // Glass effect
+        button.style.transition = 'background-color 0.2s, color 0.2s, transform 0.1s'; // Faster transition
+      } else {
+        button.style.backgroundColor = 'rgba(0, 16, 71, 0.4)'; // Glass effect background with alpha 0.4
+        button.style.color = '#ffffff'; // White text color
+        button.style.borderColor = '#ffffff'; // White border color
+        button.style.boxShadow = 'inset 0 0 5px #ffffff'; // Subtle inner border glow
+        button.style.textShadow = 'none'; // Remove text glow
+      }
+      button.style.filter = 'brightness(85%)'; // Add brightness effect
+      button.style.webkitBackdropFilter = 'blur(10px)'; // Glass effect for Safari
+      button.style.backdropFilter = 'blur(10px)'; // Glass effect
+      button.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)'; // Static drop shadow
+    });
   }
 }
 
