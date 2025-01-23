@@ -272,7 +272,7 @@ main.inverted {
 #score {
   color: var(--highlight-color); /* Pop more the current value color */
   font-size: 1.5rem;
-  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7); /* Add text glow */
+  text-shadow: 0 0 2px rgba(255, 255, 255, 0.7); /* Add text glow */
 }
 
 #score.inverted,
@@ -955,9 +955,9 @@ main.inverted {
 
 #changeColor-button {
   background-color: transparent; /* Transparent background */
-  border: 2px solid currentColor; /* Border color same as text color */
+  border: 2px solid #ffffff; /* White border */
   padding: 0.5rem 1rem; /* Smaller padding */
-  color: hsl(var(--hue-value), 70%, 50%); /* Text color based on hue value */
+  color: #ffffff; /* White text color */
   font-size: 1rem; /* Increase font size */
   border-radius: 20px; /* Increase border radius */
   text-align: center;
@@ -966,20 +966,25 @@ main.inverted {
   white-space: nowrap; /* Ensure text fits in one line */
   margin-top: 10px; /* Adjust margin */
   z-index: 7;
-  box-shadow: inset 0 0 5px currentColor, inset 0 0 10px currentColor; /* Ensure inner glow */
-  text-shadow: 0 0 3px currentColor; /* Ensure text glow */
+  box-shadow: inset 0 0 5px #ffffff; /* Subtle inner border glow */
+  text-shadow: none; /* Remove text glow */
   transition: background-color 0.2s, color 0.2s, transform 0.1s; /* Faster transition */
   display: flex;
   align-items: center;
   justify-content: center;
+  filter: brightness(85%); /* Add brightness effect */
+  background-color: rgba(0, 16, 71, 0.5); /* Glass effect background */
+  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
+  backdrop-filter: blur(10px); /* Glass effect */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08); /* Static drop shadow */
 }
 
 #changeColor-button.light-mode {
-  background-color: #ffffff; /* White background for better contrast */
-  color: hsl(var(--hue-value), 70%, 40%); /* Darker text color based on hue value */
-  border-color: hsl(var(--hue-value), 70%, 40%); /* Darker border color based on hue value */
-  box-shadow: inset 0 0 3px hsl(var(--hue-value), 70%, 40%), inset 0 0 6px hsl(var(--hue-value), 70%, 40%), 0 0 5px rgba(0, 0, 0, 0.1); /* Reduced inner and outer glow */
-  text-shadow: 0 0 2px hsl(var(--hue-value), 70%, 40%), 0 0 3px rgba(0, 0, 0, 0.1); /* Reduced text glow */
+  background-color: rgba(255, 255, 255, 0.7); /* Brighter light mode button background color */
+  color: #333333; /* Darker text color */
+  border-color: rgba(255, 255, 255, 0.7); /* Light mode border color */
+  box-shadow: inset 0 0 5px rgba(255, 255, 255, 0.7); /* Subtle inner border glow */
+  text-shadow: none; /* Remove text glow */
 }
 
 #changeColor-button.inverted {

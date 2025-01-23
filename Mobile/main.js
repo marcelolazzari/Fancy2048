@@ -317,20 +317,42 @@ class Game {
     document.getElementById('score').style.filter = `hue-rotate(${hueRotation}deg)`;
     document.getElementById('best-score').style.filter = `hue-rotate(${hueRotation}deg)`;
     const changeColorButton = document.getElementById('changeColor-button');
-    const buttonHueValue = this.isLightMode ? hueValue - 30 : hueValue; // Adjust hue value for light mode
-    changeColorButton.style.color = `hsl(${buttonHueValue}, 70%, 40%)`; // Update changeColor button text color
-    changeColorButton.style.borderColor = `hsl(${buttonHueValue}, 70%, 40%)`; // Update changeColor button border color
-    changeColorButton.style.boxShadow = `inset 0 0 3px hsl(${buttonHueValue}, 70%, 40%), inset 0 0 6px hsl(${buttonHueValue}, 70%, 40%)`; // Ensure inner glow
-    changeColorButton.style.textShadow = `0 0 2px hsl(${buttonHueValue}, 70%, 40%)`; // Ensure text glow
+    if (this.isLightMode) {
+      changeColorButton.style.backgroundColor = 'rgba(255, 255, 255, 0.7)'; // Brighter light mode background color
+      changeColorButton.style.color = '#333333'; // Darker text color
+      changeColorButton.style.borderColor = 'rgba(255, 255, 255, 0.7)'; // Light mode border color
+      changeColorButton.style.boxShadow = 'inset 0 0 5px rgba(255, 255, 255, 0.7)'; // Subtle inner border glow
+    } else {
+      changeColorButton.style.backgroundColor = 'rgba(0, 16, 71, 0.5)'; // Glass effect background
+      changeColorButton.style.color = '#ffffff'; // White text color
+      changeColorButton.style.borderColor = '#ffffff'; // White border color
+      changeColorButton.style.boxShadow = 'inset 0 0 5px #ffffff'; // Subtle inner border glow
+    }
+    changeColorButton.style.textShadow = 'none'; // Remove text glow
+    changeColorButton.style.filter = 'brightness(85%)'; // Add brightness effect
+    changeColorButton.style.webkitBackdropFilter = 'blur(10px)'; // Glass effect for Safari
+    changeColorButton.style.backdropFilter = 'blur(10px)'; // Glass effect
+    changeColorButton.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)'; // Static drop shadow
   }
 
   applyButtonStyles() {
     const changeColorButton = document.getElementById('changeColor-button');
-    const buttonHueValue = this.isLightMode ? this.hueValue - 30 : this.hueValue; // Adjust hue value for light mode
-    changeColorButton.style.color = `hsl(${buttonHueValue}, 70%, 40%)`; // Update changeColor button text color
-    changeColorButton.style.borderColor = `hsl(${buttonHueValue}, 70%, 40%)`; // Update changeColor button border color
-    changeColorButton.style.boxShadow = `inset 0 0 3px hsl(${buttonHueValue}, 70%, 40%), inset 0 0 6px hsl(${buttonHueValue}, 70%, 40%)`; // Ensure inner glow
-    changeColorButton.style.textShadow = `0 0 2px hsl(${buttonHueValue}, 70%, 40%)`; // Ensure text glow
+    if (this.isLightMode) {
+      changeColorButton.style.backgroundColor = 'rgba(255, 255, 255, 0.7)'; // Brighter light mode background color
+      changeColorButton.style.color = '#333333'; // Darker text color
+      changeColorButton.style.borderColor = 'rgba(255, 255, 255, 0.7)'; // Light mode border color
+      changeColorButton.style.boxShadow = 'inset 0 0 5px rgba(255, 255, 255, 0.7)'; // Subtle inner border glow
+    } else {
+      changeColorButton.style.backgroundColor = 'rgba(0, 16, 71, 0.5)'; // Glass effect background
+      changeColorButton.style.color = '#ffffff'; // White text color
+      changeColorButton.style.borderColor = '#ffffff'; // White border color
+      changeColorButton.style.boxShadow = 'inset 0 0 5px #ffffff'; // Subtle inner border glow
+    }
+    changeColorButton.style.textShadow = 'none'; // Remove text glow
+    changeColorButton.style.filter = 'brightness(85%)'; // Add brightness effect
+    changeColorButton.style.webkitBackdropFilter = 'blur(10px)'; // Glass effect for Safari
+    changeColorButton.style.backdropFilter = 'blur(10px)'; // Glass effect
+    changeColorButton.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)'; // Static drop shadow
   }
 }
 
