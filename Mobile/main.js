@@ -318,7 +318,7 @@ class Game {
     document.getElementById('best-score').style.filter = `hue-rotate(${hueRotation}deg)`;
     const changeColorButton = document.getElementById('changeColor-button');
     if (this.isLightMode) {
-      changeColorButton.style.backgroundColor = 'rgba(255, 255, 255, 0.7)'; // Brighter light mode background color
+      changeColorButton.style.backgroundColor = 'rgba(224, 224, 224, 0.5)'; // Updated background color
       changeColorButton.style.color = '#333333'; // Darker text color
       changeColorButton.style.borderColor = 'rgba(255, 255, 255, 0.7)'; // Light mode border color
       changeColorButton.style.boxShadow = 'inset 0 0 5px rgba(255, 255, 255, 0.7)'; // Subtle inner border glow
@@ -329,7 +329,6 @@ class Game {
       changeColorButton.style.boxShadow = 'inset 0 0 5px #ffffff'; // Subtle inner border glow
     }
     changeColorButton.style.textShadow = 'none'; // Remove text glow
-    changeColorButton.style.filter = 'brightness(85%)'; // Add brightness effect
     changeColorButton.style.webkitBackdropFilter = 'blur(10px)'; // Glass effect for Safari
     changeColorButton.style.backdropFilter = 'blur(10px)'; // Glass effect
     changeColorButton.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)'; // Static drop shadow
@@ -338,17 +337,21 @@ class Game {
   applyButtonStyles() {
     const changeColorButton = document.getElementById('changeColor-button');
     if (this.isLightMode) {
-      changeColorButton.style.backgroundColor = 'rgba(255, 255, 255, 0.7)'; // Brighter light mode background color
-      changeColorButton.style.color = '#333333'; // Darker text color
-      changeColorButton.style.borderColor = 'rgba(255, 255, 255, 0.7)'; // Light mode border color
-      changeColorButton.style.boxShadow = 'inset 0 0 5px rgba(255, 255, 255, 0.7)'; // Subtle inner border glow
+      changeColorButton.style.backgroundColor = 'rgba(224, 224, 224, 0.5)'; // Updated background color
+      changeColorButton.style.color = '#000000'; // Darker text color
+      changeColorButton.style.borderColor = 'transparent'; // Match reset button border color
+      changeColorButton.style.boxShadow = '0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5)'; // Match reset button box shadow
+      changeColorButton.style.textShadow = '0 0 5px rgba(255, 255, 255, 0.7)'; // Match reset button text glow
+      changeColorButton.style.webkitBackdropFilter = 'blur(10px)'; // Glass effect for Safari
+      changeColorButton.style.backdropFilter = 'blur(10px)'; // Glass effect
+      changeColorButton.style.transition = 'background-color 0.2s, color 0.2s, transform 0.1s'; // Faster transition
     } else {
       changeColorButton.style.backgroundColor = 'rgba(0, 16, 71, 0.5)'; // Glass effect background
       changeColorButton.style.color = '#ffffff'; // White text color
       changeColorButton.style.borderColor = '#ffffff'; // White border color
       changeColorButton.style.boxShadow = 'inset 0 0 5px #ffffff'; // Subtle inner border glow
+      changeColorButton.style.textShadow = 'none'; // Remove text glow
     }
-    changeColorButton.style.textShadow = 'none'; // Remove text glow
     changeColorButton.style.filter = 'brightness(85%)'; // Add brightness effect
     changeColorButton.style.webkitBackdropFilter = 'blur(10px)'; // Glass effect for Safari
     changeColorButton.style.backdropFilter = 'blur(10px)'; // Glass effect
