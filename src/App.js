@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import Game from './Game';
+import './styles.css';
 
 function App() {
   const [size] = useState(4);
