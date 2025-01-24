@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import Game from './Game';
 
 function App() {
-  const [size, setSize] = useState(4);
+  const [size] = useState(4);
 
   useEffect(() => {
     const game = new Game(size);
