@@ -83,7 +83,7 @@ header {
 }
 
 header h1 {
-  margin: 10px 10px 10px 0; /* Adjust margin for better spacing */
+  margin: 10px; /* Adjust margin for better spacing */
   padding: 0.2rem 0.4rem; /* Further reduce padding for smaller box size */
   font-size: 1rem; /* Further adjust font size */
   width: auto; /* Adjust width to fit content */
@@ -175,7 +175,8 @@ main.inverted {
 }
 #score-container {
   position: absolute;
-  top: 10px;
+  top: 5px;
+  bottom: auto;
   right: 10px;
   padding: 1.5rem; /* Increase padding */
   color: var(--secondary-color);
@@ -190,7 +191,7 @@ main.inverted {
   -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
   backdrop-filter: blur(10px); /* Glass effect */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-  width: auto;
+  width: max-content;
   max-width: 90%;
   box-sizing: border-box;
   text-align: left;
@@ -215,10 +216,10 @@ main.inverted {
 }
 
 #reset-button {
-  position: absolute; /* Position it absolutely */
-  top: calc(25px + 1.5rem + 50px + 1.5rem + 10px); /* Position below the score-container */
-  right: 10px; /* Align to the right */
-  margin-top: 10px; /* Add margin to separate from score-container */
+  position: relative; /* Change to relative for inline display */
+  top: auto; /* Reset top position */
+  right: auto; /* Reset right position */
+  margin-top: 0; /* Reset margin-top */
   background-color: var(--reset-button-background); /* Lighter background color */
   border: none;
   padding: 0.6rem 1rem; /* Adjust padding for better mobile experience */
@@ -232,11 +233,9 @@ main.inverted {
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08); /* Static drop shadow */
   text-shadow: none; /* Remove text glow */
   transition: background-color 0.2s, color 0.2s, transform 0.1s; /* Faster transition */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  filter: hue-rotate(0deg); /* Apply hue rotation */
-  backdrop-filter: blur(10px); /* Glass effect */
+  display: inline-block;
+  vertical-align: top;
+  margin-left: 10px;
 }
 
 #stats-button {
@@ -1698,3 +1697,15 @@ main.inverted {
     font-size: 1.75rem;
   }
 }
+
+.header-container {
+  text-align: right;
+}
+
+.score-box, .statistics, #reset-button {
+  display: inline-block;
+  vertical-align: top;
+  margin-left: 10px;
+}
+
+/* Removed empty rulesets for .score-box and .statistics */
