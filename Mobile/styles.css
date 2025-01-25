@@ -1,4 +1,66 @@
 /* Root variables */
+/* ...existing code... */
+
+button {
+  margin: 10px; /* Ensure every button has an even margin */
+}
+
+/* ...existing code... */
+/* ...existing code... */
+
+#reset-button {
+  /* ...existing code... */
+  margin: 20px; /* Add margin of 10px to each side */
+  /* ...existing code... */
+}
+
+/* ...existing code... */
+/* ...existing code... */
+
+main {
+  /* ...existing code... */
+  margin: 10px; /* Add margin of 10px to each side */
+  /* ...existing code... */
+}
+
+/* ...existing code... */
+/* ...existing code... */
+
+#reset-button {
+  /* ...existing code... */
+  padding: 0.8rem 1.2rem; /* Adjust padding for better mobile experience */
+  /* ...existing code... */
+}
+
+/* ...existing code... */
+
+#reset-button.light-mode {
+  /* ...existing code... */
+  padding: 0.8rem 1.2rem; /* Adjust padding for better mobile experience */
+  /* ...existing code... */
+}
+
+/* ...existing code... */
+
+@media (max-width: 600px) {
+  /* ...existing code... */
+  #reset-button {
+    padding: 0.6rem 1rem; /* Further adjust padding for smaller screens */
+  }
+  /* ...existing code... */
+}
+
+/* ...existing code... */
+
+@media (min-width: 600px) and (max-width: 1024px) {
+  /* ...existing code... */
+  #reset-button {
+    padding: 1rem 1.5rem; /* Adjust padding for tablets */
+  }
+  /* ...existing code... */
+}
+
+/* ...existing code... */
 :root {
   --size: 4;
   --gap: 10px;
@@ -1130,6 +1192,9 @@ main.inverted {
   padding: 5px; /* Adjust padding for better mobile experience */
   width: auto; /* Adjust width */
   box-sizing: border-box;
+  position: absolute;
+  top: 10px;
+  right: 10px;
 }
 
 #hue-slider-container {
@@ -1503,6 +1568,9 @@ main.inverted {
   padding: 10px;
   box-sizing: border-box;
   margin: 10px;
+  justify-content: center;
+  gap: 10px;
+  margin-bottom: 20px;
 }
 
 #reset-button,
@@ -1653,6 +1721,10 @@ main.inverted {
   font-size: 1.5rem;
   text-align: left;
   margin-left: 10px;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 10;
 }
 
 @media (max-width: 600px) {
