@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fancy 2048 - Statistics</title>
+    <link rel="stylesheet" href="stats.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Statistics</h1>
+    </header>
+    <main>
+      <button type="button" id="back-button">←</button>
+      <button type="button" id="clear-history-button">Clear History</button>
+      <button type="button" id="export-button">Export</button>
+      <section class="stats-section">
+        <table>
+          <thead>
+            <tr>
+              <th>Date & Time</th>
+              <th>Best Score</th>
+              <th>Best Time</th>
+              <th>Highest Number</th>
+            </tr>
+          </thead>
+          <tbody id="stats-table-body">
+            <!-- Statistics will be dynamically inserted here -->
+          </tbody>
+        </table>
+      </section>
+    </main>
+    <script src="stats.js"></script>
+  </body>
+</html>
