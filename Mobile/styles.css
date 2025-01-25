@@ -103,14 +103,16 @@ header.inverted h1 {
 }
 
 #invert-button {
-  margin-top: 15px; /* Adjust margin */
-  margin-left: 15px;
-  padding: 0.6rem 1.2rem; /* Better padding */
-  color: var(--secondary-color);
-  font-size: 3rem; /* Adjust font size */
+  position: absolute; /* Position it absolutely */
+  top: calc(10px + 1.5rem + 10px + 1.5rem + 10px + 1.5rem + 20px); /* Position below the changeColor-button */
+  left: 20px; /* Align to the left */
+  margin-top: 10px; /* Add margin to separate from changeColor-button */
   background-color: var(--button-background);
   border-radius: 50%;
   border: none;
+  padding: 0.6rem 1.2rem; /* Better padding */
+  color: var(--secondary-color);
+  font-size: 3rem; /* Adjust font size */
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5); /* Static drop shadow */
   text-align: center;
   width: 50px; /* Adjust width */
@@ -165,24 +167,31 @@ main.inverted {
   background-color: var(--secondary-color);
   color: #333;
 }
-
 #score-container {
   position: absolute;
   top: 10px;
   right: 10px;
-  padding: 0.5rem 20px; /* Add 20px padding left and right */
+  padding: 1.5rem; /* Increase padding */
   color: var(--secondary-color);
-  font-size: 1rem;
+  font-size: 1.5rem;
   background-color: rgba(50, 50, 50, 0.5); /* Glass effect background */
   border-radius: 10px;
-  text-align: center;
-  width: auto;
+  text-align: calc(var(--size) * 1rem); /* Adjust text alignment */
+  width: max-content;
   max-width: 90%;
   z-index: 7;
-  margin-bottom: 20px; /* Added more space under the score box */
+  margin: 10px; /* Unified margin for all sides */
   -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
   backdrop-filter: blur(10px); /* Glass effect */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+  width: auto;
+  max-width: 90%;
+  box-sizing: border-box;
+  text-align: left;
+}
+
+#score-container p {
+  margin: 0.5rem; /* Add margin around the text */
 }
 
 #score-container.light-mode {
@@ -200,9 +209,10 @@ main.inverted {
 }
 
 #reset-button {
-  position: absolute;
-  top: 100px; /* Adjust position */
-  right: 10px;
+  position: absolute; /* Position it absolutely */
+  top: calc(20px + 1.5rem + 20px + 1.5rem + 20px); /* Position below the score-container */
+  right: 10px; /* Align to the right */
+  margin-top: 10px; /* Add margin to separate from score-container */
   background-color: var(--reset-button-background); /* Lighter background color */
   border: none;
   padding: 0.8rem 1.2rem; /* Adjust padding for better mobile experience */
@@ -212,7 +222,6 @@ main.inverted {
   text-align: center;
   width: auto;
   max-width: 90%;
-  margin-top: 20px; /* Added even space */
   z-index: 7;
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5); /* Static drop shadow */
   text-shadow: 0 0 5px rgba(255, 255, 255, 0.7); /* Add text glow */
@@ -255,19 +264,6 @@ main.inverted {
   display: none; /* Ensure the button is not visible */
 }
 
-#invert-button {
-  position: absolute;
-  top: 100px; /* Adjust as needed */
-  left: 50px;
-  transform: translateX(-50%);
-  z-index: 7;
-}
-
-#invert-button.inverted {
-  background-color: rgba(255, 255, 255, 0.8);
-  color: #333;
-}
-
 #score,
 #best-score {
   font-size: 1.2rem;
@@ -276,6 +272,7 @@ main.inverted {
 }
 
 #score {
+  color: rgb(255, 204, 0);
   color: var(--highlight-color); /* Pop more the current value color */
   font-size: 1.5rem;
   text-shadow: none; /* Remove text shadow */
@@ -857,11 +854,11 @@ main.inverted {
 
 #controls-container {
   display: flex;
-  justify-content: center;
-  align-items: center;
+  flex-direction: column; /* Change to column for vertical alignment */
+  align-items: flex-start; /* Align items to the left */
   margin-top: 10px; /* Adjust margin */
   padding: 5px; /* Adjust padding for better mobile experience */
-  width: 100%; /* Ensure it spans the full width */
+  width: auto; /* Adjust width */
   box-sizing: border-box;
 }
 
@@ -1075,4 +1072,11 @@ main.inverted {
   backdrop-filter: blur(10px); /* Glass effect */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
   transition: background-color 0.2s, color 0.2s; /* Faster transition */
+}
+
+#changeColor-button,
+#reset-button {
+  margin-top: 10px; /* Add margin to separate buttons */
+  width: auto; /* Adjust width */
+  max-width: 90%; /* Ensure it spans the full width */
 }
