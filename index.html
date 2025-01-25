@@ -1,19 +1,29 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- ...existing code... -->
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fancy 2048</title>
     <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+    <header>
+        <h1>Fancy 2048</h1>
+    </header>
     <div class="menu">
         <button id="new-game">New Game</button>
         <button id="settings">Settings</button>
     </div>
-    <div class="game-container">
-        <div class="container">
-            <h1 class="responsive-header">Fancy 2048</h1>
-            <!-- ...existing code... -->
+    <div class="game-section">
+        <div id="score-container">
+            <div id="score">0</div>
+            <div id="best-score">0</div>
         </div>
+        <div class="board-container"></div>
+        <div class="overlay hidden" id="game-over">Game Over</div>
+        <button id="invert-button">🌙</button>
+        <button id="changeColor-button">Change Color</button>
+        <button id="reset-button">Reset</button>
     </div>
     <div id="rotation-popup">
         Please rotate your device vertically.
@@ -31,6 +41,6 @@
         window.addEventListener('resize', checkOrientation);
         window.addEventListener('load', checkOrientation);
     </script>
-    <!-- Content from /workspaces/Fancy2048/public/index.html -->
+    <script src="js/game.js"></script>
 </body>
 </html>

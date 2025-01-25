@@ -19,6 +19,7 @@ body {
     font-family: Arial, sans-serif;
     background-color: #faf8ef;
     overflow: hidden; /* Fix margins to avoid viewport scrolling */
+    transition: background-color 0.3s;
 }
 
 .menu {
@@ -74,6 +75,25 @@ body {
     justify-content: center;
     align-items: center;
     z-index: 1000;
+}
+
+header h1 {
+    margin: 0;
+    padding: 20px;
+    background-color: #bbada0;
+    color: #f9f6f2;
+    text-align: center;
+    transition: background-color 0.3s, color 0.3s;
+}
+
+.game-section {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+button {
+    margin: 5px 0; /* Add margin between buttons */
 }
 
 main {
