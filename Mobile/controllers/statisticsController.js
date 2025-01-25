@@ -1,4 +1,3 @@
-
 const Statistics = require('../models/statistics');
 const stats = new Statistics();
 
