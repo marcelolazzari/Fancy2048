@@ -1,5 +1,7 @@
 # Fancy2048
 
+[Play Fancy2048](https://marcelolazzari.github.io/Fancy2048/Mobile/)
+
 Fancy2048 is a modded version of the classic 2048 game with enhanced features and improved user experience. This version includes:
 
 - **Light Mode**: Switch between dark and light themes for better visibility.
