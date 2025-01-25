@@ -28,7 +28,7 @@ body {
   font-family: Arial, sans-serif;
   background-color: var(--dark-background);
   color: var(--dark-text);
-  margin: 0;
+  margin: 10px;
   padding: env(safe-area-inset-top) 10px env(safe-area-inset-bottom);
   display: flex;
   flex-direction: column;
@@ -40,6 +40,8 @@ body {
   max-width: 100vw;
   height: 100vh;
   box-sizing: border-box; /* Ensure padding is included in the total width and height */
+  padding: 10px;
+  box-sizing: border-box;
 }
 
 body.light-mode {
@@ -69,13 +71,15 @@ body.inverted {
 }
 
 header {
-  margin: 0;
+  margin: 10px;
   padding: 10px;
   text-align: left;
   position: absolute;
   top: 10px;
   left: 10px;
   z-index: 5;
+  width: 100%;
+  box-sizing: border-box;
 }
 
 header h1 {
@@ -151,7 +155,7 @@ main {
   align-items: center;
   width: 100%;
   max-width: 100%;
-  margin: 20px 0; /* Apply 20px margin for top and bottom */
+  margin: 10px;
   padding: 10px;
   box-sizing: border-box;
   height: 100%;
@@ -161,6 +165,8 @@ main {
   color: var(--secondary-color);
   position: relative;
   z-index: 4;
+  padding: 10px;
+  box-sizing: border-box;
 }
 
 main.inverted {
@@ -285,10 +291,6 @@ main.inverted {
 
 #reset-button:active,
 #stats-button:active {
-  transform: scale(0.95); /* Slightly decrease size on active */
-}
-
-#reset-button:active {
   transform: scale(0.95); /* Slightly decrease size on active */
 }
 
@@ -650,6 +652,7 @@ main.inverted {
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
+    margin: 5px;
   }
 
   header h1 {
@@ -685,6 +688,7 @@ main.inverted {
   main {
     padding: 5px;
     height: 100%;
+    margin: 5px;
   }
 
   #invert-button {
@@ -703,6 +707,85 @@ main.inverted {
     width: 70%; /* Further adjust width for smaller screens */
     max-width: 250px; /* Further adjust max-width for smaller screens */
   }
+  body {
+    padding: 5px;
+  }
+
+  header h1 {
+    font-size: 1.2rem;
+    margin: 5px;
+  }
+
+  #score-container {
+    font-size: 0.8rem;
+    padding: 0.2rem;
+  }
+
+  #board-container {
+    width: 100%;
+    height: 100%;
+    max-width: 85vmin;
+    max-height: 85vmin;
+    margin-bottom: 5px;
+  }
+
+  .tile {
+    font-size: 0.8rem;
+  }
+
+  button {
+    font-size: 0.7rem;
+    padding: 5px 10px;
+  }
+
+  #game-over {
+    font-size: 1.2rem;
+  }
+
+  main {
+    padding: 5px;
+    height: 100%;
+    margin: 5px;
+  }
+
+  #invert-button {
+    width: 35px;
+    height: 35px;
+    font-size: 0.7rem;
+  }
+
+  #reset-button {
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
+  }
+
+  #hue-slider {
+    height: 15px;
+    width: 70%;
+    max-width: 250px;
+  }
+
+  .table-container {
+    height: 300px; /* Adjust height for smaller screens */
+    margin: 5px;
+  }
+
+  #button-container {
+    flex-direction: column;
+    align-items: center;
+    margin: 5px;
+  }
+
+  #back-button,
+  #clear-history-button,
+  #export-button {
+    max-width: 90%;
+    margin: 5px 0;
+  }
+
+  .responsive-header {
+    font-size: 1.5rem;
+  }
 }
 
 /* Media queries for tablet optimization */
@@ -714,6 +797,7 @@ main.inverted {
     flex-direction: column;
     align-items: center;
     justify-content: space-between;
+    margin: 10px;
   }
 
   header h1 {
@@ -749,6 +833,7 @@ main.inverted {
   main {
     padding: 10px;
     height: 100%;
+    margin: 10px;
   }
 
   #invert-button {
@@ -766,6 +851,84 @@ main.inverted {
     height: 20px; /* Adjust height for tablets */
     width: 80%; /* Adjust width for tablets */
     max-width: 300px; /* Adjust max-width for tablets */
+  }
+  body {
+    padding: 10px;
+  }
+
+  header h1 {
+    font-size: 1.5rem;
+    margin: 10px;
+  }
+
+  #score-container {
+    font-size: 1rem;
+    padding: 0.5rem;
+  }
+
+  #board-container {
+    width: 100%;
+    height: 100%;
+    max-width: 90vmin;
+    max-height: 90vmin;
+    margin-bottom: 10px;
+  }
+
+  .tile {
+    font-size: 1rem;
+  }
+
+  button {
+    font-size: 1rem;
+    padding: 10px 20px;
+  }
+
+  #game-over {
+    font-size: 1.5rem;
+  }
+
+  main {
+    padding: 10px;
+    height: 100%;
+    margin: 10px;
+  }
+
+  #invert-button {
+    width: 50px;
+    height: 50px;
+    font-size: 1rem;
+  }
+
+  #reset-button {
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
+  }
+
+  #hue-slider {
+    height: 20px;
+    width: 80%;
+    max-width: 300px;
+  }
+
+  .table-container {
+    height: 350px; /* Adjust height for tablets */
+    margin: 10px;
+  }
+
+  #button-container {
+    flex-direction: row;
+    justify-content: space-between;
+    margin: 10px;
+  }
+
+  #back-button,
+  #clear-history-button,
+  #export-button {
+    max-width: 30%;
+  }
+
+  .responsive-header {
+    font-size: 1.75rem;
   }
 }
 
@@ -804,6 +967,39 @@ main.inverted {
     position: static; /* Remove absolute positioning */
     margin: 0 20px; /* Add margin for spacing */
   }
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: row;
+  }
+
+  main {
+    max-width: 90vh;
+    max-height: 90vh;
+    flex: 1;
+  }
+
+  header {
+    position: static;
+    margin: 0 20px;
+  }
+
+  #score-container {
+    position: static;
+    margin: 0 20px;
+  }
+
+  #reset-button {
+    position: static;
+    margin: 0 20px;
+  }
+
+  #invert-button {
+    position: static;
+    margin: 0 20px;
+  }
 }
 
 /* Force vertical layout and prevent rotation for all devices */
@@ -840,6 +1036,39 @@ main.inverted {
   #invert-button {
     position: static; /* Remove absolute positioning */
     margin: 0 20px; /* Add margin for spacing */
+  }
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    flex-direction: column;
+  }
+
+  main {
+    max-width: 90vh;
+    max-height: 90vh;
+    flex: 1;
+  }
+
+  header {
+    position: static;
+    margin: 0 20px;
+  }
+
+  #score-container {
+    position: static;
+    margin: 0 20px;
+  }
+
+  #reset-button {
+    position: static;
+    margin: 0 20px;
+  }
+
+  #invert-button {
+    position: static;
+    margin: 0 20px;
   }
 }
 
@@ -882,6 +1111,46 @@ main.inverted {
   main {
     padding: 0 5px;
     height: 100%;
+  }
+  body {
+    padding: 5px;
+  }
+
+  header h1 {
+    font-size: 1.4rem;
+    margin: 5px;
+  }
+
+  #score-container {
+    font-size: 0.9rem;
+    padding: 0.2rem;
+  }
+
+  #board-container {
+    width: 100%;
+    height: 100%;
+    max-width: 85vmin;
+    max-height: 85vmin;
+    margin-bottom: 5px;
+  }
+
+  .tile {
+    font-size: 0.9rem;
+  }
+
+  button {
+    font-size: 0.7rem;
+    padding: 5px 10px;
+  }
+
+  #game-over {
+    font-size: 1.4rem;
+  }
+
+  main {
+    padding: 0 5px;
+    height: 100%;
+    margin: 5px;
   }
 }
 
@@ -1181,7 +1450,7 @@ main.inverted {
   align-items: center;
   width: 100%;
   max-width: 100%;
-  margin: 20px 0;
+  margin: 10px;
   padding: 10px;
   box-sizing: border-box;
   height: 100%;
@@ -1191,6 +1460,8 @@ main.inverted {
   color: var(--secondary-color);
   position: relative;
   z-index: 4;
+  padding: 10px;
+  box-sizing: border-box;
 }
 
 .stats-section table {
@@ -1263,6 +1534,7 @@ main.inverted {
   width: 100%;
   padding: 10px;
   box-sizing: border-box;
+  margin: 10px;
 }
 
 #reset-button,
@@ -1335,4 +1607,92 @@ main.inverted {
 #invert-button:active,
 #stats-button:active {
   transform: scale(0.95); /* Slightly decrease size on active */
+}
+
+.table-container {
+  width: 100%;
+  max-width: 90%;
+  height: 400px; /* Adjust height as needed */
+  overflow-y: auto;
+  border: 1px solid var(--secondary-color);
+  border-radius: 10px;
+  margin: 10px;
+}
+
+.table-container table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-container th,
+.table-container td {
+  border: 1px solid var(--secondary-color);
+  padding: 10px;
+  text-align: center;
+}
+
+.table-container th {
+  background-color: var(--button-background);
+  color: var(--secondary-color);
+}
+
+.table-container td {
+  background-color: rgba(50, 50, 50, 0.5);
+  color: var(--secondary-color);
+}
+
+#back-button,
+#clear-history-button,
+#export-button {
+  background-color: var(--button-background);
+  border: none;
+  padding: 0.8rem 1.2rem;
+  color: #ffffff;
+  font-size: 1rem;
+  border-radius: 20px;
+  text-align: center;
+  width: auto;
+  max-width: 45%;
+  margin: 10px;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5);
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+  transition: background-color 0.2s, color 0.2s, transform 0.1s;
+}
+
+#back-button:hover,
+#clear-history-button:hover,
+#export-button:hover {
+  background-color: var(--button-hover-background);
+  color: #ffffff;
+  transform: scale(1.05);
+}
+
+#back-button:active,
+#clear-history-button:active,
+#export-button:active {
+  transform: scale(0.95);
+}
+
+#button-container {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 90%;
+  margin: 10px 0;
+}
+
+.responsive-header {
+  font-size: 2rem;
+}
+
+@media (max-width: 600px) {
+  .responsive-header {
+    font-size: 1.5rem;
+  }
+}
+
+@media (min-width: 600px) and (max-width: 1024px) {
+  .responsive-header {
+    font-size: 1.75rem;
+  }
 }

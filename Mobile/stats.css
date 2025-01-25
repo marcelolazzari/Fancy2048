@@ -9,7 +9,7 @@ body {
   font-family: Arial, sans-serif;
   background-color: var(--primary-color);
   color: var(--secondary-color);
-  margin: 0;
+  margin: 10px;
   padding: 10px;
   display: flex;
   flex-direction: column;
@@ -23,7 +23,7 @@ body {
 }
 
 header {
-  margin: 0;
+  margin: 10px;
   padding: 10px;
   text-align: center;
   width: 100%;
@@ -46,7 +46,7 @@ main {
   align-items: center;
   width: 100%;
   max-width: 100%;
-  margin: 20px 0;
+  margin: 10px;
   padding: 10px;
   box-sizing: border-box;
   height: 100%;
@@ -63,7 +63,7 @@ main {
   align-items: center;
   width: 100%;
   max-width: 100%;
-  margin: 20px 0;
+  margin: 10px;
   padding: 10px;
   box-sizing: border-box;
   height: 100%;
@@ -81,6 +81,7 @@ main {
   overflow-y: auto;
   border: 1px solid var(--secondary-color);
   border-radius: 10px;
+  margin: 10px;
 }
 
 .table-container table {
@@ -105,6 +106,14 @@ main {
   color: var(--secondary-color);
 }
 
+#button-container {
+  display: flex;
+  justify-content: space-between;
+  width: 100%;
+  max-width: 90%;
+  margin: 10px;
+}
+
 #back-button,
 #clear-history-button,
 #export-button {
@@ -116,7 +125,7 @@ main {
   border-radius: 20px;
   text-align: center;
   width: auto;
-  max-width: 45%;
+  max-width: 30%;
   margin: 10px;
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5);
   text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
@@ -135,4 +144,105 @@ main {
 #clear-history-button:active,
 #export-button:active {
   transform: scale(0.95);
+}
+
+/* Media queries for mobile optimization */
+@media (max-width: 600px) {
+  body {
+    padding: 5px;
+    margin: 5px;
+  }
+
+  header h1 {
+    font-size: 1.2rem;
+  }
+
+  header {
+    margin: 5px;
+  }
+
+  main {
+    padding: 5px;
+    height: 100%;
+    margin: 5px;
+  }
+
+  .table-container {
+    height: 300px; /* Adjust height for smaller screens */
+    margin: 5px;
+  }
+
+  button {
+    font-size: 0.7rem;
+    padding: 5px 10px;
+  }
+
+  #button-container {
+    flex-direction: column;
+    align-items: center;
+    margin: 5px;
+  }
+
+  #back-button,
+  #clear-history-button,
+  #export-button {
+    max-width: 90%;
+    margin: 5px 0;
+  }
+
+  .responsive-header {
+    font-size: 1.5rem;
+  }
+}
+
+/* Media queries for tablet optimization */
+@media (min-width: 600px) and (max-width: 1024px) {
+  body {
+    padding: 10px;
+    margin: 10px;
+  }
+
+  header h1 {
+    font-size: 1.5rem;
+  }
+
+  header {
+    margin: 10px;
+  }
+
+  main {
+    padding: 10px;
+    height: 100%;
+    margin: 10px;
+  }
+
+  .table-container {
+    height: 350px; /* Adjust height for tablets */
+    margin: 10px;
+  }
+
+  button {
+    font-size: 1rem;
+    padding: 10px 20px;
+  }
+
+  #button-container {
+    flex-direction: row;
+    justify-content: space-between;
+    margin: 10px;
+  }
+
+  #back-button,
+  #clear-history-button,
+  #export-button {
+    max-width: 30%;
+  }
+
+  .responsive-header {
+    font-size: 1.75rem;
+  }
+}
+
+.responsive-header {
+  font-size: 2rem;
 }

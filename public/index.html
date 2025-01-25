@@ -8,26 +8,30 @@
   </head>
   <body>
     <header>
-      <h1>Statistics</h1>
+      <h1 class="responsive-header">Statistics</h1>
     </header>
     <main>
-      <button type="button" id="back-button">←</button>
-      <button type="button" id="clear-history-button">Clear History</button>
-      <button type="button" id="export-button">Export</button>
+      <div id="button-container">
+        <button type="button" id="back-button">←</button>
+        <button type="button" id="clear-history-button">Clear History</button>
+        <button type="button" id="export-button">Export</button>
+      </div>
       <section class="stats-section">
-        <table>
-          <thead>
-            <tr>
-              <th>Date & Time</th>
-              <th>Best Score</th>
-              <th>Best Time</th>
-              <th>Highest Number</th>
-            </tr>
-          </thead>
-          <tbody id="stats-table-body">
-            <!-- Statistics will be dynamically inserted here -->
-          </tbody>
-        </table>
+        <div class="table-container">
+          <table>
+            <thead>
+              <tr>
+                <th>Date & Time</th>
+                <th>Best Score</th>
+                <th>Best Time</th>
+                <th>Highest Number</th>
+              </tr>
+            </thead>
+            <tbody id="stats-table-body">
+              <!-- Statistics will be dynamically inserted here -->
+            </tbody>
+          </table>
+        </div>
       </section>
     </main>
     <script src="js/stats.js"></script>

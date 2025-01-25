@@ -4,32 +4,45 @@
     <!-- ...existing code... -->
     <title>Statistics</title>
 </head>
-<body>
-    <!-- ...existing code... -->
-    <table>
-        <thead>
-            <tr>
-                <th>Games Played</th>
-                <th>Total Score</th>
-                <th>Highest Score</th>
-                <th>Average Score</th>
-                <th>Wins</th>
-                <th>Losses</th>
-                <th>Last Updated</th>
-            </tr>
-        </thead>
-        <tbody>
-            <tr>
-                <td id="gamesPlayed"></td>
-                <td id="totalScore"></td>
-                <td id="highestScore"></td>
-                <td id="averageScore"></td>
-                <td id="wins"></td>
-                <td id="losses"></td>
-                <td id="lastUpdated"></td>
-            </tr>
-        </tbody>
-    </table>
+<body style="margin: 20px;">
+    <header>
+      <h1 class="responsive-header">Statistics</h1>
+    </header>
+    <main>
+      <div id="button-container">
+        <button type="button" id="back-button">←</button>
+        <button type="button" id="clear-history-button">Clear History</button>
+        <button type="button" id="export-button">Export</button>
+      </div>
+      <section class="stats-section">
+        <div class="table-container">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Games Played</th>
+                        <th>Total Score</th>
+                        <th>Highest Score</th>
+                        <th>Average Score</th>
+                        <th>Wins</th>
+                        <th>Losses</th>
+                        <th>Last Updated</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td id="gamesPlayed"></td>
+                        <td id="totalScore"></td>
+                        <td id="highestScore"></td>
+                        <td id="averageScore"></td>
+                        <td id="wins"></td>
+                        <td id="losses"></td>
+                        <td id="lastUpdated"></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+      </section>
+    </main>
     <script>
         document.addEventListener('DOMContentLoaded', function() {
             fetch('/api/statistics')
