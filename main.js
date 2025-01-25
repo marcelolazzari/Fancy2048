@@ -1,4 +1,3 @@
-
 document.getElementById('new-game').addEventListener('click', () => {
     // Logic to start a new game
     startNewGame();
@@ -18,4 +17,5 @@ function openSettingsMenu() {
     alert('Settings menu opened');
 }
 
+// Content from /workspaces/Fancy2048/Mobile/main.js
 // ...existing code...
