@@ -112,11 +112,12 @@ function gameOver() {
 function updateStatistics() {
     const score = getCurrentScore();
     const won = checkIfWon();
+    const date = new Date().toISOString(); // Use ISO format for consistency
     fetch('/api/statistics', {
         method: 'POST',
         headers: {
             'Content-Type': 'application/json'
         },
-        body: JSON.stringify({ score, won })
+        body: JSON.stringify({ score, won, date })
     });
 }

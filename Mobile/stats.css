@@ -74,26 +74,33 @@ main {
   position: relative;
 }
 
-.stats-section table {
+.table-container {
   width: 100%;
   max-width: 90%;
-  border-collapse: collapse;
-  margin: 20px 0;
+  height: 400px; /* Adjust height as needed */
+  overflow-y: auto;
+  border: 1px solid var(--secondary-color);
+  border-radius: 10px;
 }
 
-.stats-section th,
-.stats-section td {
+.table-container table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.table-container th,
+.table-container td {
   border: 1px solid var(--secondary-color);
   padding: 10px;
   text-align: center;
 }
 
-.stats-section th {
+.table-container th {
   background-color: var(--button-background);
   color: var(--secondary-color);
 }
 
-.stats-section td {
+.table-container td {
   background-color: rgba(50, 50, 50, 0.5);
   color: var(--secondary-color);
 }

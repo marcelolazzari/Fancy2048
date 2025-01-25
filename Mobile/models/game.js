@@ -21,19 +21,46 @@ class Game {
     }
 
     moveUp() {
-        // ...existing code to move tiles up...
+        this.board = this.transpose(this.board);
+        this.board = this.board.map(row => this.slideAndCombine(row));
+        this.board = this.transpose(this.board);
+        this.addRandomTile();
     }
 
     moveDown() {
-        // ...existing code to move tiles down...
+        this.board = this.transpose(this.board);
+        this.board = this.board.map(row => this.slideAndCombine(row.reverse()).reverse());
+        this.board = this.transpose(this.board);
+        this.addRandomTile();
     }
 
     moveLeft() {
-        // ...existing code to move tiles left...
+        this.board = this.board.map(row => this.slideAndCombine(row));
+        this.addRandomTile();
     }
 
     moveRight() {
-        // ...existing code to move tiles right...
+        this.board = this.board.map(row => this.slideAndCombine(row.reverse()).reverse());
+        this.addRandomTile();
+    }
+
+    slideAndCombine(row) {
+        let newRow = row.filter(val => val);
+        for (let i = 0; i < newRow.length - 1; i++) {
+            if (newRow[i] === newRow[i + 1]) {
+                newRow[i] *= 2;
+                this.score += newRow[i];
+                newRow.splice(i + 1, 1);
+            }
+        }
+        while (newRow.length < row.length) {
+            newRow.push('');
+        }
+        return newRow;
+    }
+
+    transpose(matrix) {
+        return matrix[0].map((_, i) => matrix.map(row => row[i]));
     }
 
     updateGameState() {

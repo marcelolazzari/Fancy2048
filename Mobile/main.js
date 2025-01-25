@@ -180,18 +180,16 @@ class Game {
   }
 
   slideAndCombine(row) {
-    let newRow = Array(this.size).fill('');
-    let index = 0;
-    for (let i = 0; i < this.size; i++) {
-      if (row[i] !== '') {
-        if (row[i] === newRow[index - 1]) {
-          newRow[index - 1] *= 2;
-          this.score += newRow[index - 1];
-        } else {
-          newRow[index] = row[i];
-          index++;
-        }
+    let newRow = row.filter(val => val);
+    for (let i = 0; i < newRow.length - 1; i++) {
+      if (newRow[i] === newRow[i + 1]) {
+        newRow[i] *= 2;
+        this.score += newRow[i];
+        newRow.splice(i + 1, 1);
       }
+    }
+    while (newRow.length < row.length) {
+      newRow.push('');
     }
     return newRow;
   }
