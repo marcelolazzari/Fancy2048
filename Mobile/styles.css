@@ -83,7 +83,7 @@ header {
 }
 
 header h1 {
-  margin: 0;
+  margin: 10px 10px 10px 0; /* Adjust margin for better spacing */
   padding: 0.2rem 0.4rem; /* Further reduce padding for smaller box size */
   font-size: 1rem; /* Further adjust font size */
   width: auto; /* Adjust width to fit content */
@@ -1682,7 +1682,9 @@ main.inverted {
 }
 
 .responsive-header {
-  font-size: 2rem;
+  font-size: 1.5rem;
+  text-align: left;
+  margin-left: 10px;
 }
 
 @media (max-width: 600px) {

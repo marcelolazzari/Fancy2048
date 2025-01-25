@@ -1,0 +1,116 @@
+/* ...existing code... */
+
+header, h1 {
+    font-size: 1.2rem; /* Smaller font size */
+    text-align: center; /* Center align text */
+    position: relative; /* Position relative */
+    top: 0; /* Top centered */
+    border: 1px solid #bbada0; /* Smaller border size */
+    padding: 5px; /* Adjust padding */
+}
+
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+    margin: 0;
+    font-family: Arial, sans-serif;
+    background-color: #faf8ef;
+    overflow: hidden; /* Fix margins to avoid viewport scrolling */
+}
+
+.menu {
+    display: flex;
+    justify-content: space-around;
+    width: 100%;
+    padding: 10px;
+    background-color: #bbada0;
+}
+
+.menu button {
+    padding: 10px 20px;
+    font-size: 16px;
+    background-color: #8f7a66;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+.menu button:hover {
+    background-color: #776e65;
+}
+
+.game-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    max-width: 500px;
+    margin: 20px 0;
+}
+
+.container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100vh;
+}
+
+#rotation-popup {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.8);
+    color: white;
+    font-size: 2em;
+    text-align: center;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+main {
+    /* ...existing styles... */
+}
+
+/* Media query for devices with a max width of 600px (mobile devices) */
+@media (max-width: 600px) {
+    header, h1 {
+        font-size: 1.2em; /* Example: Adjust font size */
+        padding: 10px; /* Example: Adjust padding */
+        text-align: center; /* Example: Center align text */
+    }
+
+    header .logo {
+        width: 100px; /* Example: Adjust logo width */
+        height: auto; /* Maintain aspect ratio */
+    }
+
+    header nav {
+        display: block; /* Stack navigation items vertically */
+    }
+
+    header nav a {
+        display: block; /* Stack links vertically */
+        padding: 10px 0; /* Example: Adjust padding */
+    }
+
+    body {
+        margin: 0; /* Remove default margin */
+        padding: 10px; /* Example: Add padding */
+    }
+
+    main {
+        margin: 0; /* Remove default margin */
+        padding: 10px; /* Example: Add padding */
+    }
+}
+
+/* ...existing code... */

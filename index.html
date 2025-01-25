@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <!-- ...existing code... -->
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="menu">
+        <button id="new-game">New Game</button>
+        <button id="settings">Settings</button>
+    </div>
+    <div class="game-container">
+        <div class="container">
+            <h1 class="responsive-header">Fancy 2048</h1>
+            <!-- ...existing code... -->
+        </div>
+    </div>
+    <div id="rotation-popup">
+        Please rotate your device vertically.
+    </div>
+    <script>
+        function checkOrientation() {
+            const popup = document.getElementById('rotation-popup');
+            if (window.innerHeight < window.innerWidth) {
+                popup.style.display = 'flex';
+            } else {
+                popup.style.display = 'none';
+            }
+        }
+
+        window.addEventListener('resize', checkOrientation);
+        window.addEventListener('load', checkOrientation);
+    </script>
+</body>
+</html>
