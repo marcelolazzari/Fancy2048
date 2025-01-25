@@ -7,6 +7,8 @@ class Game {
     this.isLightMode = localStorage.getItem('isLightMode') === 'true';
     this.previousBoard = null;
     this.hueValue = 0; // Initialize hue value
+    this.stats = JSON.parse(localStorage.getItem('stats')) || [];
+    this.startTime = Date.now();
     this.addEventListeners();
     this.reset();
     window.addEventListener('resize', () => this.refreshLayout());
@@ -18,6 +20,9 @@ class Game {
   addEventListeners() {
     document.getElementById('invert-button').addEventListener('click', this.toggleTheme.bind(this));
     document.getElementById('reset-button').addEventListener('click', this.reset.bind(this));
+    document.getElementById('stats-button').addEventListener('click', () => {
+      window.location.href = 'stats.html';
+    });
     window.addEventListener('keydown', this.handleKeyPress.bind(this));
     const boardContainer = document.querySelector('.board-container');
     boardContainer.addEventListener('touchstart', this.handleTouchStart.bind(this), false);
@@ -38,7 +43,6 @@ class Game {
 
   applyTheme() {
     const elementsToToggle = [
-      
       document.body,
       document.querySelector('.overlay'),
       document.querySelector('.board-container'),
@@ -77,6 +81,7 @@ class Game {
       this.updateUI();
       setTimeout(() => {
         if (this.isGameOver()) {
+          this.saveStats();
           document.getElementById('game-over').classList.remove('hidden');
         }
       }, 0);
@@ -108,6 +113,7 @@ class Game {
       this.updateUI();
       setTimeout(() => {
         if (this.isGameOver()) {
+          this.saveStats();
           document.getElementById('game-over').classList.remove('hidden');
         }
       }, 0);
@@ -160,10 +166,12 @@ class Game {
   }
 
   reset() {
+    this.saveStats(); // Save stats before resetting
     this.board = this.createEmptyBoard();
     this.addRandomTile();
     this.addRandomTile();
     this.score = 0;
+    this.startTime = Date.now(); // Reset start time
     this.updateUI();
     document.getElementById('game-over').classList.add('hidden');
     this.applyTheme(); // Ensure theme is applied on reset
@@ -351,6 +359,22 @@ class Game {
       button.style.backdropFilter = 'blur(10px)'; // Glass effect
       button.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)'; // Static drop shadow
     });
+  }
+
+  saveStats() {
+    const endTime = Date.now();
+    const bestTime = ((endTime - this.startTime) / 1000).toFixed(2); // Calculate best time in seconds
+    const highestNumber = Math.max(...this.board.flat()); // Find the highest number on the board
+
+    const sessionStats = {
+      bestScore: this.bestScore,
+      bestTime,
+      highestNumber,
+      date: new Date().toISOString() // Save the date in ISO format
+    };
+
+    this.stats.push(sessionStats);
+    localStorage.setItem('stats', JSON.stringify(this.stats));
   }
 }
 
