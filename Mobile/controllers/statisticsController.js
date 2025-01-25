@@ -3,7 +3,6 @@ const stats = new Statistics();
 
 function updateStatistics(score, won) {
     stats.updateStats(score, won);
-    stats.updateDateTime(); // Update date and time fields
     // ...existing code...
 }
 
