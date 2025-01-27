@@ -11,12 +11,15 @@ Fancy2048 is a modded version of the classic 2048 game with enhanced features an
 - **Undo Move**: Undo your last move to correct mistakes.
 - **Smooth Animations**: Enjoy smooth transitions and animations for a more engaging gameplay.
 - **Local Storage**: Your best score and theme preferences are saved locally.
+- **Sound Effects**: Enable or disable sound effects for tile movements and merges.
+- **Leaderboard**: Compete with other players and see your ranking on the leaderboard.
 
 ## How to Play
 
 1. Use arrow keys or swipe gestures to move the tiles.
 2. When two tiles with the same number touch, they merge into one.
 3. Try to reach the 2048 tile!
+4. Use the undo button to revert your last move if needed.
 
 ## Controls
 
@@ -26,6 +29,8 @@ Fancy2048 is a modded version of the classic 2048 game with enhanced features an
 - **Reset Button**: Restart the game.
 - **Back Button**: Undo the last move.
 - **Hue Slider**: Adjust the hue of the game elements.
+- **Sound Toggle**: Enable or disable sound effects.
+- **Leaderboard Button**: View the leaderboard.
 
 ## Play Online
 
