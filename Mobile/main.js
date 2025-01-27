@@ -383,3 +383,20 @@ document.addEventListener('DOMContentLoaded', () => {
   game.applyTheme();
   game.updateHue(); // Ensure hue is applied on page load
 });
+
+// Statistics functionality
+document.addEventListener('DOMContentLoaded', () => {
+  const stats = JSON.parse(localStorage.getItem('stats')) || [];
+  const statsTable = document.getElementById('stats-table');
+
+  stats.forEach(stat => {
+    const row = document.createElement('tr');
+    row.innerHTML = `
+      <td>${stat.date}</td>
+      <td>${stat.bestScore}</td>
+      <td>${stat.bestTime}</td>
+      <td>${stat.highestNumber}</td>
+    `;
+    statsTable.appendChild(row);
+  });
+});

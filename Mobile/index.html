@@ -7,36 +7,44 @@
     <link rel="stylesheet" href="styles.css" />
   </head>
   <body>
-    <!-- Header section -->
-    <header>
-      <h1 class="responsive-header">Fancy 2048</h1>
-      <div id="controls-container">
-        <button type="button" id="changeColor-button">Change Color</button>
-        <button type="button" id="invert-button">🌙</button>
-      </div>
-    </header>
+    <!-- Main game content -->
+    <div id="game-container">
+      <!-- Header section -->
+      <header>
+        <h1 class="responsive-header">Fancy 2048</h1>
+        <div id="controls-container">
+          <button type="button" id="changeColor-button">Change Color</button>
+          <button type="button" id="invert-button">🌙</button>
+        </div>
+      </header>
 
-    <!-- Main content section -->
-    <main>
-      <div class="overlay"></div>
-      <div id="button-container">
-        <button type="button" id="reset-button">Reset Game</button>
-        <!-- <button type="button" id="changeColor-button">Change Color</button> -->
-        <button type="button" id="stats-button">Statistics</button>
-        <!-- <button type="button" id="invert-button">🌙</button> -->
-        <button type="button" id="back-button">Back to Game</button>
-      </div>
-      <section class="game-section">
-        <div class="board-container" id="board-container"></div>
-        <div id="game-over" class="hidden">Game Over!</div>
-      </section>
-      <aside id="score-container">
-        <p>Score: <span id="score">0</span></p>
-        <p>Best Score: <span id="best-score">6312</span></p>
-      </aside>
-    </main>
+      <!-- Main content section -->
+      <main>
+        <div class="overlay"></div>
+        <div id="button-container">
+          <button type="button" id="reset-button">Reset Game</button>
+          <!-- <button type="button" id="changeColor-button">Change Color</button> -->
+          <button type="button" id="stats-button">Statistics</button>
+          <!-- <button type="button" id="invert-button">🌙</button> -->
+          <button type="button" id="back-button">Back to Game</button>
+        </div>
+        <section class="game-section">
+          <div class="board-container" id="board-container"></div>
+          <div id="game-over" class="hidden">Game Over!</div>
+        </section>
+        <aside id="score-container">
+          <p>Score: <span id="score">0</span></p>
+          <p>Best Score: <span id="best-score">6312</span></p>
+        </aside>
+      </main>
+    </div>
+    
+    <!-- Statistics content -->
+    <div id="statistics-container">
+      <!-- ...existing code from statistics.html... -->
+    </div>
 
-    <!-- JavaScript file -->
     <script src="main.js"></script>
+    <script src="statistics.js"></script>
   </body>
 </html>
