@@ -13,6 +13,7 @@ Fancy2048 is a modded version of the classic 2048 game with enhanced features an
 - **Local Storage**: Your best score and theme preferences are saved locally.
 - **Sound Effects**: Enable or disable sound effects for tile movements and merges.
 - **Leaderboard**: Compete with other players and see your ranking on the leaderboard.
+- **Change Color**: Change the hue of the game elements for a personalized experience.
 
 ## How to Play
 
@@ -31,6 +32,7 @@ Fancy2048 is a modded version of the classic 2048 game with enhanced features an
 - **Hue Slider**: Adjust the hue of the game elements.
 - **Sound Toggle**: Enable or disable sound effects.
 - **Leaderboard Button**: View the leaderboard.
+- **Change Color Button**: Change the hue of the game elements.
 
 ## Play Online
 

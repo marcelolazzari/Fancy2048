@@ -136,7 +136,9 @@ class Game {
     });
 
     boardContainer.style.gridTemplateColumns = `repeat(${this.size}, ${tileSize}px)`;
+    boardContainer.style.msGridColumns = `repeat(${this.size}, ${tileSize}px)`; // IE 10+ grid columns
     boardContainer.style.gridTemplateRows = `repeat(${this.size}, ${tileSize}px)`;
+    boardContainer.style.msGridRows = `repeat(${this.size}, ${tileSize}px)`; // IE 10+ grid rows
   }
 
   calculateTileSize() {

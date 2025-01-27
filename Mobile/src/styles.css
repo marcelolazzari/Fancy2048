@@ -33,11 +33,15 @@ body {
   margin: 0;
   padding: env(safe-area-inset-top) 10px env(safe-area-inset-bottom);
   display: flex;
+  -ms-flex-direction: column; /* IE 10+ */
   flex-direction: column;
   align-items: center;
+  -ms-flex-align: center; /* IE 10+ */
   justify-content: space-between;
+  -ms-flex-pack: justify; /* IE 10+ */
   min-height: 100vh;
   touch-action: none;
+  -ms-touch-action: none; /* IE 10+ */
   overflow: hidden;
   max-width: 100vw;
   height: 100vh;
@@ -279,6 +283,7 @@ main.inverted {
 
 #board-container {
   display: grid;
+  -ms-grid-columns: repeat(var(--size), 1fr); /* IE 10+ */
   grid-template-columns: repeat(var(--size), 1fr);
   gap: var(--gap); /* Ensure gap between tiles */
   width: 100%;
@@ -323,7 +328,9 @@ main.inverted {
   color: inherit; /* Remove color */
   font-weight: bold;
   display: flex;
+  -ms-flex-align: center; /* IE 10+ */
   align-items: center;
+  -ms-flex-pack: center; /* IE 10+ */
   justify-content: center;
   aspect-ratio: 1 / 1;
   border-radius: 15px;
