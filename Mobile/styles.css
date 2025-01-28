@@ -57,6 +57,102 @@
   transform: scale(0.95); /* Slightly decrease size on active */
 }
 
+#back-button {
+  background-color: rgba(0, 16, 71, 0.4); /* Glass effect background */
+  color: var(--secondary-color); /* Ensure text contrast */
+  border: none;
+  padding: 0.5rem 1rem; /* Adjust padding */
+  font-size: 1rem; /* Adjust font size */
+  border-radius: 20px; /* Increase border radius */
+  text-align: center;
+  width: auto;
+  max-width: 90%;
+  margin-top: 10px; /* Adjust margin */
+  z-index: 7;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08); /* Static drop shadow */
+  transition: background-color 0.2s, color 0.2s, transform 0.1s; /* Faster transition */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: brightness(85%); /* Add brightness effect */
+  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
+  backdrop-filter: blur(10px); /* Glass effect */
+}
+
+#back-button.light-mode {
+  background-color: rgba(224, 224, 224, 0.5); /* Updated background color */
+  color: #333333; /* Darker text color */
+  border: none; /* Remove border */
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5); /* Match reset button box shadow */
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7); /* Match reset button text glow */
+  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
+  backdrop-filter: blur(10px); /* Glass effect */
+  transition: background-color 0.2s, color 0.2s, transform 0.1s; /* Faster transition */
+}
+
+#back-button:hover {
+  background-color: rgba(255, 255, 255, 0.1); /* Slightly visible background on hover */
+  transform: scale(1.05); /* Slightly increase size on hover */
+}
+
+#back-button.light-mode:hover {
+  background-color: var(--reset-button-hover-background); /* Match reset button hover background color */
+  color: #ffffff; /* Match reset button hover text color */
+  transform: scale(1.05); /* Slightly increase size on hover */
+}
+
+#back-button:active {
+  transform: scale(0.95); /* Slightly decrease size on active */
+}
+
+#leaderboard-button {
+  background-color: rgba(0, 16, 71, 0.4); /* Glass effect background */
+  color: var(--secondary-color); /* Ensure text contrast */
+  border: none;
+  padding: 0.5rem 1rem; /* Adjust padding */
+  font-size: 1rem; /* Adjust font size */
+  border-radius: 20px; /* Increase border radius */
+  text-align: center;
+  width: auto;
+  max-width: 90%;
+  margin-top: 10px; /* Adjust margin */
+  z-index: 7;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08); /* Static drop shadow */
+  transition: background-color 0.2s, color 0.2s, transform 0.1s; /* Faster transition */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: brightness(85%); /* Add brightness effect */
+  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
+  backdrop-filter: blur(10px); /* Glass effect */
+}
+
+#leaderboard-button.light-mode {
+  background-color: rgba(224, 224, 224, 0.5); /* Updated background color */
+  color: #333333; /* Darker text color */
+  border: none; /* Remove border */
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5); /* Match reset button box shadow */
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7); /* Match reset button text glow */
+  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
+  backdrop-filter: blur(10px); /* Glass effect */
+  transition: background-color 0.2s, color 0.2s, transform 0.1s; /* Faster transition */
+}
+
+#leaderboard-button:hover {
+  background-color: rgba(255, 255, 255, 0.1); /* Slightly visible background on hover */
+  transform: scale(1.05); /* Slightly increase size on hover */
+}
+
+#leaderboard-button.light-mode:hover {
+  background-color: var(--reset-button-hover-background); /* Match reset button hover background color */
+  color: #ffffff; /* Match reset button hover text color */
+  transform: scale(1.05); /* Slightly increase size on hover */
+}
+
+#leaderboard-button:active {
+  transform: scale(0.95); /* Slightly decrease size on active */
+}
+
 :root {
   --size: 4;
   --gap: 10px;
@@ -1093,6 +1189,54 @@ main.inverted {
   backdrop-filter: blur(10px); /* Glass effect */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
   transition: background-color 0.2s, color 0.2s; /* Faster transition */
+}
+
+#leaderboard-button {
+  background-color: rgba(0, 16, 71, 0.4); /* Glass effect background */
+  color: var(--secondary-color); /* Ensure text contrast */
+  border: none;
+  padding: 0.5rem 1rem; /* Adjust padding */
+  font-size: 1rem; /* Adjust font size */
+  border-radius: 20px; /* Increase border radius */
+  text-align: center;
+  width: auto;
+  max-width: 90%;
+  margin-top: 10px; /* Adjust margin */
+  z-index: 7;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08); /* Static drop shadow */
+  transition: background-color 0.2s, color 0.2s, transform 0.1s; /* Faster transition */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: brightness(85%); /* Add brightness effect */
+  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
+  backdrop-filter: blur(10px); /* Glass effect */
+}
+
+#leaderboard-button.light-mode {
+  background-color: rgba(224, 224, 224, 0.5); /* Updated background color */
+  color: #333333; /* Darker text color */
+  border: none; /* Remove border */
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5); /* Match reset button box shadow */
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7); /* Match reset button text glow */
+  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
+  backdrop-filter: blur(10px); /* Glass effect */
+  transition: background-color 0.2s, color 0.2s, transform 0.1s; /* Faster transition */
+}
+
+#leaderboard-button:hover {
+  background-color: rgba(255, 255, 255, 0.1); /* Slightly visible background on hover */
+  transform: scale(1.05); /* Slightly increase size on hover */
+}
+
+#leaderboard-button.light-mode:hover {
+  background-color: var(--reset-button-hover-background); /* Match reset button hover background color */
+  color: #ffffff; /* Match reset button hover text color */
+  transform: scale(1.05); /* Slightly increase size on hover */
+}
+
+#leaderboard-button:active {
+  transform: scale(0.95); /* Slightly decrease size on active */
 }
 
 /* ...existing code... */

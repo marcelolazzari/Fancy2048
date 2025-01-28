@@ -7,6 +7,8 @@ class Game {
       this.isLightMode = localStorage.getItem('isLightMode') === 'true';
       this.previousBoard = null;
       this.hueValue = 0; // Initialize hue value
+      this.gameStateStack = []; // Initialize game state stack
+      this.leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || []; // Initialize leaderboard
       this.addEventListeners();
       this.reset();
       window.addEventListener('resize', () => this.refreshLayout());
@@ -23,6 +25,8 @@ class Game {
       boardContainer.addEventListener('touchstart', this.handleTouchStart.bind(this), false);
       boardContainer.addEventListener('touchend', this.handleTouchEnd.bind(this), false);
       document.getElementById('changeColor-button').addEventListener('click', this.changeHue.bind(this));
+      document.getElementById('back-button').addEventListener('click', this.undoMove.bind(this));
+      document.getElementById('leaderboard-button').addEventListener('click', this.showLeaderboard.bind(this));
     }
   
     refreshLayout() {
@@ -157,6 +161,7 @@ class Game {
       if (this.score > this.bestScore) {
         this.bestScore = this.score;
         localStorage.setItem('bestScore', this.bestScore);
+        this.updateLeaderboard(); // Update leaderboard when best score is achieved
       }
     }
   
@@ -201,6 +206,7 @@ class Game {
     }
   
     move(direction) {
+      this.saveState(); // Save state before making a move
       this.previousBoard = this.board.map(row => [...row]);
       let hasChanged = false;
   
@@ -352,6 +358,29 @@ class Game {
         button.style.backdropFilter = 'blur(10px)'; // Glass effect
         button.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)'; // Static drop shadow
       });
+    }
+
+    saveState() {
+      this.gameStateStack.push(JSON.stringify(this.board));
+    }
+  
+    undoMove() {
+      if (this.gameStateStack.length > 0) {
+        this.board = JSON.parse(this.gameStateStack.pop());
+        this.updateUI();
+      }
+    }
+  
+    showLeaderboard() {
+      let leaderboardHtml = this.leaderboard.map((entry, index) => `<li>${index + 1}. ${entry.name}: ${entry.score}</li>`).join('');
+      document.getElementById('leaderboardList').innerHTML = leaderboardHtml;
+      document.getElementById('leaderboardModal').style.display = 'block';
+    }
+  
+    updateLeaderboard() {
+      this.leaderboard.push({ name: 'Player', score: this.score });
+      this.leaderboard.sort((a, b) => b.score - a.score);
+      localStorage.setItem('leaderboard', JSON.stringify(this.leaderboard));
     }
   }
   
