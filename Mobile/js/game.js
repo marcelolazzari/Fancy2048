@@ -378,13 +378,25 @@ class Game {
     }
   
     openLeaderboardPage() {
-      window.open('Stats/stats.html', '_blank');
+      document.getElementById('leaderboardModal').classList.remove('hidden');
+      this.updateLeaderboardModal(); // Ensure leaderboard modal is updated
     }
   
     updateLeaderboard() {
       this.leaderboard.push({ name: 'Player', score: this.score });
       this.leaderboard.sort((a, b) => b.score - a.score);
       localStorage.setItem('leaderboard', JSON.stringify(this.leaderboard));
+      this.updateLeaderboardModal(); // Update leaderboard modal
+    }
+
+    updateLeaderboardModal() {
+      const leaderboardList = document.getElementById('leaderboardList');
+      leaderboardList.innerHTML = '';
+      this.leaderboard.forEach((entry, index) => {
+        const listItem = document.createElement('li');
+        listItem.textContent = `${index + 1}. ${entry.name}: ${entry.score}`;
+        leaderboardList.appendChild(listItem);
+      });
     }
 
     saveStats() {
