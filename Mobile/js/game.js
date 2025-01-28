@@ -10,6 +10,7 @@ class Game {
       this.gameStateStack = []; // Initialize game state stack
       this.leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || []; // Initialize leaderboard
       this.stats = JSON.parse(localStorage.getItem('gameStats')) || []; // Initialize stats
+      this.startTime = null; // Initialize start time
       this.addEventListeners();
       this.reset();
       window.addEventListener('resize', () => this.refreshLayout());
@@ -171,6 +172,7 @@ class Game {
       this.addRandomTile();
       this.addRandomTile();
       this.score = 0;
+      this.startTime = new Date(); // Set start time on reset
       this.updateUI();
       document.getElementById('game-over').classList.add('hidden');
       this.applyTheme(); // Ensure theme is applied on reset
@@ -400,10 +402,18 @@ class Game {
 
     saveStats() {
       if (this.score > 0) {
+        const endTime = new Date();
+        const timeDiff = Math.floor((endTime - this.startTime) / 1000);
+        const minutes = Math.floor(timeDiff / 60).toString().padStart(2, '0');
+        const seconds = (timeDiff % 60).toString().padStart(2, '0');
+        const time = `${minutes}:${seconds}`;
+
         const stat = {
           score: this.score,
           bestTile: Math.max(...this.board.flat()),
-          date: new Date().toISOString()
+          bestScore: this.bestScore,
+          date: new Date().toISOString(),
+          time: time
         };
         this.stats.push(stat);
         localStorage.setItem('gameStats', JSON.stringify(this.stats));
