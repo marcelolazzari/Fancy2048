@@ -374,7 +374,7 @@ class Game {
     showLeaderboard() {
       let leaderboardHtml = this.leaderboard.map((entry, index) => `<li>${index + 1}. ${entry.name}: ${entry.score}</li>`).join('');
       document.getElementById('leaderboardList').innerHTML = leaderboardHtml;
-      document.getElementById('leaderboardModal').style.display = 'block';
+      document.getElementById('leaderboardModal').classList.remove('hidden'); // Ensure the modal is displayed
     }
   
     updateLeaderboard() {

@@ -1241,6 +1241,25 @@ main.inverted {
 
 /* ...existing code... */
 
+#leaderboardModal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.8);
+  color: white;
+  padding: 20px;
+  border-radius: 10px;
+  z-index: 10;
+  display: none; /* Initially hidden */
+}
+
+#leaderboardModal.hidden {
+  display: none; /* Hide when the hidden class is present */
+}
+
+/* ...existing code... */
+
 @media (max-width: 600px) {
   .grid-container {
     width: 90%;
