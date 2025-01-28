@@ -11,7 +11,6 @@ Fancy2048 is a modded version of the classic 2048 game with enhanced features an
 - **Undo Move**: Undo your last move to correct mistakes.
 - **Smooth Animations**: Enjoy smooth transitions and animations for a more engaging gameplay.
 - **Local Storage**: Your best score and theme preferences are saved locally.
-- **Sound Effects**: Enable or disable sound effects for tile movements and merges.
 - **Leaderboard**: Compete with other players and see your ranking on the leaderboard.
 - **Change Color**: Change the hue of the game elements for a personalized experience.
 

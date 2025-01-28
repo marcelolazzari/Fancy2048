@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fancy2048 Stats</title>
+    <link rel="stylesheet" href="stats_styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Fancy2048 Stats</h1>
+    </header>
+    <main>
+      <section class="stats-section">
+        <h2>Game Statistics</h2>
+        <table id="statsTable">
+          <thead>
+            <tr>
+              <th>Session</th>
+              <th>Score</th>
+              <th>Best Tile</th>
+              <th>Date</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Stats will be dynamically inserted here -->
+          </tbody>
+        </table>
+      </section>
+    </main>
+    <script>
+      document.addEventListener('DOMContentLoaded', () => {
+        const stats = JSON.parse(localStorage.getItem('gameStats')) || [];
+        const statsTableBody = document.getElementById('statsTable').querySelector('tbody');
+        stats.forEach((stat, index) => {
+          const row = document.createElement('tr');
+          row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${stat.score}</td>
+            <td>${stat.bestTile}</td>
+            <td>${new Date(stat.date).toLocaleString()}</td>
+          `;
+          statsTableBody.appendChild(row);
+        });
+      });
+    </script>
+  </body>
+</html>

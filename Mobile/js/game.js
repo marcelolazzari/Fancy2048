@@ -26,7 +26,7 @@ class Game {
       boardContainer.addEventListener('touchend', this.handleTouchEnd.bind(this), false);
       document.getElementById('changeColor-button').addEventListener('click', this.changeHue.bind(this));
       document.getElementById('back-button').addEventListener('click', this.undoMove.bind(this));
-      document.getElementById('leaderboard-button').addEventListener('click', this.showLeaderboard.bind(this));
+      document.getElementById('leaderboard-button').addEventListener('click', this.openLeaderboardPage.bind(this));
     }
   
     refreshLayout() {
@@ -371,10 +371,8 @@ class Game {
       }
     }
   
-    showLeaderboard() {
-      let leaderboardHtml = this.leaderboard.map((entry, index) => `<li>${index + 1}. ${entry.name}: ${entry.score}</li>`).join('');
-      document.getElementById('leaderboardList').innerHTML = leaderboardHtml;
-      document.getElementById('leaderboardModal').classList.remove('hidden'); // Ensure the modal is displayed
+    openLeaderboardPage() {
+      window.open('Stats/stats.html', '_blank');
     }
   
     updateLeaderboard() {
