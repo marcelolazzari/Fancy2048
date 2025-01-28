@@ -76,7 +76,7 @@ header.inverted h1 {
   align-items: center;
   margin: auto; /* Adjust margin */
   padding: auto; /* Adjust padding for better mobile experience */
-  width: 100%; /* Ensure it spans the full width */
+  width: auto; /* Ensure it spans the full width */
   box-sizing: border-box;
 }
 
@@ -185,8 +185,6 @@ header.inverted h1 {
   margin-top: 120px; /* CHECK THIS */
   z-index: 3;
   overflow: hidden; /* Remove scroll option */
-  padding-right: var(--gap); /* Adjust right padding */
-  padding-bottom: var(--gap); /* Adjust bottom padding */
   justify-content: center; /* Center the board container */
   align-items: center; /* Center the board container */
 }
