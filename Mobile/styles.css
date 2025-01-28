@@ -187,6 +187,8 @@ header.inverted h1 {
   overflow: hidden; /* Remove scroll option */
   padding-right: var(--gap); /* Adjust right padding */
   padding-bottom: var(--gap); /* Adjust bottom padding */
+  justify-content: center; /* Center the board container */
+  align-items: center; /* Center the board container */
 }
 
 #board-container.light-mode {
@@ -837,11 +839,13 @@ main.inverted {
   margin: auto;
   position: relative;
   padding: 0; /* Remove padding from the container */
-  margin-top: 120px; /* CHECK THIS */
+  margin-top: 100px; /* CHECK THIS */
   z-index: 3;
   overflow: hidden; /* Remove scroll option */
   padding-right: var(--gap); /* Adjust right padding */
   padding-bottom: var(--gap); /* Adjust bottom padding */
+  justify-content: center; /* Center the board container */
+  align-items: center; /* Center the board container */
 }
 
 #board-container.light-mode {
