@@ -156,8 +156,10 @@ class Game {
   
     addRandomTile() {
       const emptySpots = this.board.flatMap((row, x) => row.map((cell, y) => (cell === '' ? { x, y } : null)).filter(Boolean));
-      const spot = emptySpots[Math.floor(Math.random() * emptySpots.length)];
-      this.board[spot.x][spot.y] = Math.random() < 0.9 ? 2 : 4;
+      if (emptySpots.length > 0) {
+        const spot = emptySpots[Math.floor(Math.random() * emptySpots.length)];
+        this.board[spot.x][spot.y] = Math.random() < 0.9 ? 2 : 4;
+      }
     }
   
     updateBestScore() {
@@ -183,18 +185,17 @@ class Game {
     }
   
     slideAndCombine(row) {
-      let newRow = Array(this.size).fill('');
-      let index = 0;
-      for (let i = 0; i < this.size; i++) {
-        if (row[i] !== '') {
-          if (row[i] === newRow[index - 1]) {
-            newRow[index - 1] *= 2;
-            this.score += newRow[index - 1];
-          } else {
-            newRow[index] = row[i];
-            index++;
-          }
+      let newRow = row.filter(val => val);
+      for (let i = 0; i < newRow.length - 1; i++) {
+        if (newRow[i] === newRow[i + 1]) {
+          newRow[i] *= 2;
+          this.score += newRow[i];
+          newRow[i + 1] = 0;
         }
+      }
+      newRow = newRow.filter(val => val);
+      while (newRow.length < this.size) {
+        newRow.push('');
       }
       return newRow;
     }
@@ -421,6 +422,47 @@ class Game {
         this.stats.push(stat);
         localStorage.setItem('gameStats', JSON.stringify(this.stats));
       }
+    }
+
+    getAvailableCells() {
+      const cells = [];
+      for (let x = 0; x < this.size; x++) {
+        for (let y = 0; y < this.size; y++) {
+          if (this.board[x][y] === '') {
+            cells.push({ x, y });
+          }
+        }
+      }
+      return cells;
+    }
+
+    positionsEqual(first, second) {
+      return first.x === second.x && first.y === second.y;
+    }
+
+    findFarthestPosition(cell, vector) {
+      let previous;
+      do {
+        previous = cell;
+        cell = { x: previous.x + vector.x, y: previous.y + vector.y };
+      } while (this.withinBounds(cell) && this.cellAvailable(cell));
+  
+      return {
+        farthest: previous,
+        next: cell // Used to check if a merge is required
+      };
+    }
+
+    withinBounds(position) {
+      return position.x >= 0 && position.x < this.size && position.y >= 0 && position.y < this.size;
+    }
+
+    cellAvailable(cell) {
+      return !this.cellOccupied(cell);
+    }
+
+    cellOccupied(cell) {
+      return this.board[cell.x][cell.y] !== '';
     }
   }
   
