@@ -9,6 +9,7 @@ class Game {
       this.hueValue = 0; // Initialize hue value
       this.gameStateStack = []; // Initialize game state stack
       this.leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || []; // Initialize leaderboard
+      this.stats = JSON.parse(localStorage.getItem('gameStats')) || []; // Initialize stats
       this.addEventListeners();
       this.reset();
       window.addEventListener('resize', () => this.refreshLayout());
@@ -175,6 +176,7 @@ class Game {
       this.applyTheme(); // Ensure theme is applied on reset
       this.updateHue(); // Ensure hue is applied on reset
       this.applyButtonStyles(); // Ensure button styles are applied on reset
+      this.saveStats(); // Save stats on reset
     }
   
     slideAndCombine(row) {
@@ -202,7 +204,11 @@ class Game {
           if (i < this.size - 1 && this.board[i][j] === this.board[i + 1][j]) return false;
         }
       }
-      return true;
+      const gameOver = true;
+      if (gameOver) {
+        this.saveStats(); // Save stats on game over
+      }
+      return gameOver;
     }
   
     move(direction) {
@@ -380,6 +386,16 @@ class Game {
       this.leaderboard.sort((a, b) => b.score - a.score);
       localStorage.setItem('leaderboard', JSON.stringify(this.leaderboard));
     }
+
+    saveStats() {
+      const stat = {
+        score: this.score,
+        bestTile: Math.max(...this.board.flat()),
+        date: new Date().toISOString()
+      };
+      this.stats.push(stat);
+      localStorage.setItem('gameStats', JSON.stringify(this.stats));
+    }
   }
   
   // Instantiate the game
@@ -388,4 +404,5 @@ class Game {
     game.refreshLayout();
     game.applyTheme();
     game.updateHue(); // Ensure hue is applied on page load
+    window.addEventListener('beforeunload', () => game.saveStats()); // Save stats on page refresh
   });
