@@ -23,7 +23,7 @@ body {
   font-family: Arial, sans-serif;
   background-color: var(--primary-color);
   color: var(--secondary-color);
-  margin: 0;
+  margin: 20px;
   padding: 20px;
   display: flex;
   flex-direction: column;
@@ -35,14 +35,14 @@ body {
 
 header {
   margin: 0;
-  padding: 10px;
+  padding: 5px;
   text-align: left;
   position: absolute;
-  top: 10px;
+  top: 5px;
   left: 10px;
   z-index: 5;
   width: auto; /* Ensure the header width auto-fits */
-  max-width: calc(100% - 20px); /* Ensure it doesn't overlap with the score element */
+  max-width: calc(100% - 10px); /* Ensure it doesn't overlap with the score element */
   box-sizing: border-box; /* Include padding and border in the element's total width and height */
 }
 
