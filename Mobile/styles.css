@@ -1,3 +1,928 @@
+/* Root variables */
+:root {
+  --size: 4;
+  --gap: 10px;
+  --tile-size: calc((100vmin - var(--gap) * (var(--size) + 1)) / var(--size));
+  --game-size: calc(
+    var(--tile-size) * (var(--size)) + var(--gap) * (var(--size) + 2)
+  );
+}
+
+
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #1a1a1a;
+  color: #f2f2f2;
+  margin: 0;
+  padding: env(safe-area-inset-top) 10px env(safe-area-inset-bottom);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  min-height: 100vh;
+  touch-action: none;
+  overflow: hidden;
+  max-width: 100vw;
+  height: 100vh;
+  box-sizing: border-box; /* Ensure padding is included in the total width and height */
+}
+
+body.light-mode {
+  background-color: #f0f0f0; /* Better light mode background color */
+  color: #000000;
+  border-color: transparent;
+}
+
+body.inverted {
+  background-color: #f2f2f2;
+  color: #333;
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, rgba(0, 16, 71, 0.8) 0%, rgb(0, 0, 0) 150%); /* Increase radius of gradient */
+  z-index: -1; /* Changed to be under the elements */
+  pointer-events: none;
+}
+
+.overlay.light-mode {
+  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.8) 0%, rgba(240, 240, 240, 1) 100%); /* Better light mode overlay color */
+}
+
+header {
+  margin: 0;
+  padding: 10px;
+  text-align: left;
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  z-index: 5;
+}
+
+header h1 {
+  margin: 0;
+  padding: 0.2rem 0.4rem; /* Further reduce padding for smaller box size */
+  font-size: 1rem; /* Further adjust font size */
+  width: auto; /* Adjust width to fit content */
+  box-sizing: border-box; /* Ensure padding is included in the total width */
+  color: #f2f2f2;
+  background-color: rgba(50, 50, 50, 0.8);
+  border-radius: 10px;
+  text-align: center;
+  z-index: 6;
+}
+
+header.light-mode h1 {
+  background-color: rgba(240, 240, 240, 0.8);
+  color: #000000;
+  border-color: transparent;
+}
+
+header.inverted h1 {
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #333;
+}
+
+#invert-button {
+  margin-top: 10px;
+  margin-left: 10px;
+  padding: 0.5rem 1rem;
+  color: #f2f2f2;
+  font-size: 1rem;
+  background-color: #001047; /* Adjust button background color */
+  border-radius: 50%;
+  border: none;
+  box-shadow: 0 0 10px rgba(242, 177, 121, 0.3),
+    0 0 20px rgba(242, 177, 121, 0.3), 0 0 30px rgba(242, 177, 121, 0.3),
+    0 0 5px rgba(255, 255, 255, 0.5); /* Add subtle outer glow */
+  text-align: center;
+  width: 40px; /* Adjust width for better mobile experience */
+  height: 40px; /* Adjust height for better mobile experience */
+  z-index: 6;
+  display: inline-block;
+  position: absolute;
+  top: 80px; /* Adjust position */
+  left: 10px; /* Adjust as needed */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+
+  filter: grayscale(100%);
+}
+
+#invert-button:hover {
+  background-color: #242f57; /* Darker shade for hover */
+  color: #ffffff; /* Ensure text contrast */
+  filter: grayscale(100%);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.7),
+    0 0 25px rgba(255, 255, 255, 0.7), 0 0 35px rgba(255, 255, 255, 0.7),
+    0 0 10px rgba(255, 255, 255, 0.7); /* Enhance glow on hover */
+}
+
+#invert-button.inverted {
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #333;
+  filter: grayscale(100%);
+}
+
+main {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
+  padding: 10px;
+  box-sizing: border-box;
+  height: 100%;
+  flex: 1;
+  justify-content: center;
+  overflow: hidden;
+  color: #f2f2f2;
+  position: relative;
+  z-index: 4;
+}
+
+main.inverted {
+  background-color: #f2f2f2;
+  color: #333;
+}
+
+#score-box {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  padding: 0.5rem;
+  color: #f2f2f2;
+  font-size: 1rem;
+  background-color: rgba(50, 50, 50, 0.8);
+  border-radius: 10px;
+  text-align: center;
+  width: auto;
+  max-width: 90%;
+  z-index: 7;
+  margin-bottom: 20px; /* Added more space under the score box */
+}
+
+#score-box.light-mode {
+  background-color: rgba(240, 240, 240, 0.8);
+  color: #000000;
+  border-color: transparent;
+}
+
+#score-box.inverted {
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #333;
+}
+
+#reset-button {
+  position: absolute;
+  top: 100px; /* Adjust position */
+  right: 10px;
+  background-color: #ff4500; /* Bright red background color */
+  border: none;
+  padding: 0.8rem 1.2rem; /* Adjust padding for better mobile experience */
+  color: #ffffff; /* White text color */
+  font-size: 1rem; /* Adjust font size */
+  border-radius: 20px; /* Increase border radius */
+  text-align: center;
+  width: auto;
+  max-width: 90%;
+  margin-top: 20px; /* Added even space */
+  z-index: 7;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08); /* Add shadow for better styling */
+  transition: background-color 0.3s, color 0.3s, transform 0.2s; /* Add transform transition */
+}
+
+#reset-button.light-mode {
+  background-color: #ff6347; /* Lighter red for light mode */
+  color: #000000; /* Black text color */
+}
+
+#reset-button.inverted {
+  background-color: #ff6347; /* Lighter red for inverted mode */
+  color: #000000; /* Black text color */
+}
+
+#reset-button:hover {
+  background-color: #ff6347; /* Darker shade for hover */
+  color: #ffffff; /* Ensure text contrast */
+  transform: scale(1.05); /* Slightly increase size on hover */
+}
+
+#reset-button:active {
+  transform: scale(0.95); /* Slightly decrease size on active */
+}
+
+/* Remove back button styles */
+#back-button {
+  display: inline-block; /* Ensure the button is visible */
+  position: absolute;
+  top: 160px; /* Adjust position as needed */
+  right: 10px; /* Adjust position as needed */
+  background-color: #ff4500; /* Bright red background color */
+  border: none;
+  padding: 0.8rem 1.2rem; /* Adjust padding for better visibility */
+  color: #ffffff; /* White text color */
+  font-size: 1rem; /* Adjust font size */
+  border-radius: 20px; /* Increase border radius */
+  text-align: center;
+  width: auto;
+  max-width: 90%;
+  margin-top: 20px; /* Added even space */
+  z-index: 7;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08); /* Add shadow for better styling */
+  transition: background-color 0.3s, color 0.3s, transform 0.2s; /* Add transform transition */
+}
+
+#back-button.light-mode {
+  background-color: #ff6347; /* Lighter red for light mode */
+  color: #000000; /* Black text color */
+}
+
+#back-button.inverted {
+  background-color: #ff6347; /* Lighter red for inverted mode */
+  color: #000000; /* Black text color */
+}
+
+#back-button:hover {
+  background-color: #ff6347; /* Darker shade for hover */
+  color: #ffffff; /* Ensure text contrast */
+  transform: scale(1.05); /* Slightly increase size on hover */
+}
+
+#back-button:active {
+  transform: scale(0.95); /* Slightly decrease size on active */
+}
+
+#invert-button {
+  position: absolute;
+  top: 100px; /* Adjust as needed */
+  left: 50px;
+  transform: translateX(-50%);
+  z-index: 7;
+}
+
+#invert-button.inverted {
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #333;
+}
+
+#score,
+#best-score {
+  font-size: 1.2rem;
+  font-weight: bold;
+  color: #f2f2f2;
+}
+
+#score {
+  color: #ffcc00; /* Pop more the current value color */
+  font-size: 1.5rem;
+}
+
+#score.inverted,
+#best-score.inverted {
+  color: #333;
+}
+
+.game-container {
+  display: grid;
+  grid-template-columns: repeat(var(--size), 1fr);
+  gap: var(--gap); /* Ensure gap between tiles */
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  background-color: rgba(50, 50, 50, 0.8);
+  margin: 20px;
+  border: none; /* Remove black solid border */
+  border-radius: 15px;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5),
+    0 0 20px rgba(255, 255, 255, 0.5), 0 0 30px rgba(255, 255, 255, 0.5);
+  box-sizing: border-box;
+  max-width: calc(100% - 10px);
+  max-height: calc(100% - 10px);
+  margin: auto;
+  position: relative;
+  padding: 0; /* Remove padding from the container */
+  margin-top: 120px; /* CHECK THIS */
+  z-index: 3;
+  overflow: hidden; /* Remove scroll option */
+  padding-right: var(--gap); /* Adjust right padding */
+  padding-bottom: var(--gap); /* Adjust bottom padding */
+}
+
+.game-container.light-mode {
+  background-color: rgba(240, 240, 240, 0.8);
+  border: 2px solid #cccccc;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1), 0 0 20px rgba(0, 0, 0, 0.1),
+    0 0 30px rgba(0, 0, 0, 0.1);
+  padding-right: var(--gap); /* Adjust right padding */
+  padding-bottom: var(--gap); /* Adjust bottom padding */
+}
+
+.game-container.inverted {
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 0, 0, 0.2),
+    0 0 30px rgba(0, 0, 0, 0.2);
+}
+
+.tile {
+  background-color: rgb(238, 228, 218);
+  color: #1a1a1a;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1 / 1;
+  border-radius: 15px;
+  font-size: calc(var(--tile-size) * 0.9); /* Increase font size */
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5),
+    0 0 20px rgba(255, 255, 255, 0.5), 0 0 30px rgba(255, 255, 255, 0.5),
+    0 0 40px rgba(255, 255, 255, 0.5);
+  transition: transform 0.1s ease-in-out, opacity 0.1s ease-in-out,
+    box-shadow 0.1s ease-in-out;
+  overflow: hidden;
+  margin: 0; /* Remove margin from tiles */
+  width: calc((100% - var(--gap) * (var(--size) - 1)) / var(--size));
+  height: calc((100% - var(--gap) * (var(--size) - 1)) / var(--size));
+}
+
+.tile.light-mode {
+  background-color: rgba(238, 228, 218, 0.8);
+  color: #000000;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 0, 0, 0.2),
+    0 0 30px rgba(0, 0, 0, 0.2);
+  font-size: calc(var(--tile-size) * 0.9); /* Increase font size */
+}
+
+.tile.light-mode[data-value="2"] {
+  background-color: rgba(238, 228, 218, 0.8);
+  color: #776e65;
+}
+
+.tile.light-mode[data-value="4"] {
+  background-color: rgba(237, 224, 200, 0.8);
+  color: #776e65;
+}
+
+.tile.light-mode[data-value="8"] {
+  background-color: rgba(242, 177, 121, 0.8);
+  color: #f9f6f2;
+}
+
+.tile.light-mode[data-value="16"] {
+  background-color: rgba(245, 149, 99, 0.8);
+  color: #f9f6f2;
+}
+
+.tile.light-mode[data-value="32"] {
+  background-color: rgba(246, 124, 95, 0.8);
+  color: #f9f6f2;
+}
+
+.tile.light-mode[data-value="64"] {
+  background-color: rgba(246, 94, 59, 0.8);
+  color: #f9f6f2;
+}
+
+.tile.light-mode[data-value="128"] {
+  background-color: rgba(237, 207, 114, 0.8);
+  color: #f9f6f2;
+}
+
+.tile.light-mode[data-value="256"] {
+  background-color: rgba(237, 204, 97, 0.8);
+  color: #f9f6f2;
+}
+
+.tile.light-mode[data-value="512"] {
+  background-color: rgba(237, 200, 80, 0.8);
+  color: #f9f6f2;
+}
+
+.tile.light-mode[data-value="1024"] {
+  background-color: rgba(237, 197, 63, 0.8);
+  color: #f9f6f2;
+}
+
+.tile.light-mode[data-value="2048"] {
+  background-color: rgba(237, 194, 46, 0.8);
+  color: #f9f6f2;
+}
+
+.tile[data-value="2"] {
+  background-color: rgba(238, 228, 218, 0.8);
+  color: #776e65;
+}
+
+.tile[data-value="4"] {
+  background-color: rgba(237, 224, 200, 0.8);
+  color: #776e65;
+}
+
+.tile[data-value="8"] {
+  background-color: rgba(242, 177, 121, 0.8);
+  color: #f9f6f2;
+}
+
+.tile[data-value="16"] {
+  background-color: rgba(245, 149, 99, 0.8);
+  color: #f9f6f2;
+}
+
+.tile[data-value="32"] {
+  background-color: rgba(246, 124, 95, 0.8);
+  color: #f9f6f2;
+}
+
+.tile[data-value="64"] {
+  background-color: rgba(246, 94, 59, 0.8);
+  color: #f9f6f2;
+}
+
+.tile[data-value="128"] {
+  background-color: rgba(237, 207, 114, 0.8);
+  color: #f9f6f2;
+}
+
+.tile[data-value="256"] {
+  background-color: rgba(237, 204, 97, 0.8);
+  color: #f9f6f2;
+}
+
+.tile[data-value="512"] {
+  background-color: rgba(237, 200, 80, 0.8);
+  color: #f9f6f2;
+}
+
+.tile[data-value="1024"] {
+  background-color: rgba(237, 197, 63, 0.8);
+  color: #f9f6f2;
+}
+
+.tile[data-value="2048"] {
+  background-color: rgba(237, 194, 46, 0.8);
+  color: #f9f6f2;
+}
+
+.tile[data-value="4096"] {
+  background-color: #3c3a32;
+  color: #f9f6f2;
+}
+
+.tile[data-value="8192"] {
+  background-color: #3c3a32;
+  color: #f9f6f2;
+}
+
+.tile[data-value="16384"] {
+  background-color: #3c3a32;
+  color: #f9f6f2;
+}
+
+.tile[data-value="32768"] {
+  background-color: #3c3a32;
+  color: #f9f6f2;
+}
+
+.tile[data-value="65536"] {
+  background-color: #3c3a32;
+  color: #f9f6f2;
+}
+
+.tile.light-mode[data-value="4096"] {
+  background-color: rgba(60, 58, 50, 0.8);
+  color: #f9f6f2;
+}
+
+.tile.light-mode[data-value="8192"] {
+  background-color: rgba(60, 58, 50, 0.8);
+  color: #f9f6f2;
+}
+
+.tile.light-mode[data-value="16384"] {
+  background-color: rgba(60, 58, 50, 0.8);
+  color: #f9f6f2;
+}
+
+.tile.light-mode[data-value="32768"] {
+  background-color: rgba(60, 58, 50, 0.8);
+  color: #f9f6f2;
+}
+
+.tile.light-mode[data-value="65536"] {
+  background-color: rgba(60, 58, 50, 0.8);
+  color: #f9f6f2;
+}
+
+.tile.light-mode[data-value="2"] {
+  background-color: hsla(0, 0%, 90%, 0.8);
+  color: #000000;
+}
+
+.tile.light-mode[data-value="4"] {
+  background-color: hsla(0, 0%, 80%, 0.8);
+  color: #000000;
+}
+
+.tile.light-mode[data-value="8"] {
+  background-color: hsla(30, 100%, 70%, 0.8);
+  color: #000000;
+}
+
+.tile.light-mode[data-value="16"] {
+  background-color: hsla(30, 100%, 60%, 0.8);
+  color: #000000;
+}
+
+.tile.light-mode[data-value="32"] {
+  background-color: hsla(30, 100%, 50%, 0.8);
+  color: #000000;
+}
+
+.tile.light-mode[data-value="64"] {
+  background-color: hsla(30, 100%, 40%, 0.8);
+  color: #000000;
+}
+
+.tile.light-mode[data-value="128"] {
+  background-color: hsla(60, 100%, 70%, 0.8);
+  color: #000000;
+}
+
+.tile.light-mode[data-value="256"] {
+  background-color: hsla(60, 100%, 60%, 0.8);
+  color: #000000;
+}
+
+.tile.light-mode[data-value="512"] {
+  background-color: hsla(60, 100%, 50%, 0.8);
+  color: #000000;
+}
+
+.tile.light-mode[data-value="1024"] {
+  background-color: hsla(60, 100%, 40%, 0.8);
+  color: #000000;
+}
+
+.tile.light-mode[data-value="2048"] {
+  background-color: hsla(60, 100%, 30%, 0.8);
+  color: #000000;
+}
+
+.tile:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.7),
+    0 0 25px rgba(255, 255, 255, 0.7), 0 0 35px rgba(255, 255, 255, 0.7),
+    0 0 45px rgba(255, 255, 255, 0.7);
+}
+
+#game-over {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(0, 0, 0, 0.5);
+  color: white;
+  font-size: 2rem;
+  z-index: 8;
+  padding: 20px;
+  border-radius: 10px;
+}
+
+.hidden {
+  display: none;
+}
+
+.inverted {
+  filter: invert(100%);
+}
+
+.inverted .tile {
+  filter: invert(100%);
+}
+
+.inverted .tile * {
+  filter: invert(100%);
+}
+
+.inverted #score-box,
+.inverted #invert-button,
+.inverted #reset-button,
+.inverted #back-button {
+  filter: invert(100%);
+}
+
+.inverted body {
+  background-color: #f2f2f2;
+  color: #333;
+}
+
+.inverted header h1 {
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #333;
+}
+
+.inverted .game-container {
+  background-color: rgba(255, 255, 255, 0.8);
+  border: 2px solid rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 0, 0, 0.2),
+    0 0 30px rgba(0, 0, 0, 0.2);
+}
+
+.inverted .tile {
+  background-color: #fff;
+  color: #333;
+}
+
+.inverted .tile[data-value="2"] {
+  background-color: #eee4da;
+  color: #776e65;
+}
+
+.inverted .tile[data-value="4"] {
+  background-color: #ede0c8;
+  color: #776e65;
+}
+
+.inverted .tile[data-value="8"] {
+  background-color: #f2b179;
+  color: #f9f6f2;
+}
+
+.inverted .tile[data-value="16"] {
+  background-color: #f59563;
+  color: #f9f6f2;
+}
+
+.inverted .tile[data-value="32"] {
+  background-color: #f67c5f;
+  color: #f9f6f2;
+}
+
+.inverted .tile[data-value="64"] {
+  background-color: #f65e3b;
+  color: #f9f6f2;
+}
+
+.inverted .tile[data-value="128"] {
+  background-color: #edcf72;
+  color: #f9f6f2;
+}
+
+.inverted .tile[data-value="256"] {
+  background-color: #edcc61;
+  color: #f9f6f2;
+}
+
+.inverted .tile[data-value="512"] {
+  background-color: #edc850;
+  color: #f9f6f2;
+}
+
+.inverted .tile[data-value="1024"] {
+  background-color: #edc53f;
+  color: #f9f6f2;
+}
+
+.inverted .tile[data-value="2048"] {
+  background-color: #edc22e;
+  color: #f9f6f2;
+}
+
+.inverted .tile:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.7), 0 0 25px rgba(0, 0, 0, 0.7),
+    0 0 35px rgba(0, 0, 0, 0.7), 0 0 45px rgba(0, 0, 0, 0.7);
+}
+
+/* Media queries for mobile optimization */
+@media (max-width: 600px) {
+  body {
+    overflow: hidden;
+    padding: 5px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  header h1 {
+    font-size: 1.2rem;
+  }
+
+  #score-box {
+    font-size: 0.8rem;
+    padding: 0.2rem;
+  }
+
+  .game-container {
+    width: 100%;
+    height: 100%;
+    max-width: 85vmin;
+    max-height: 85vmin;
+    margin-bottom: 5px;
+  }
+
+  .tile {
+    font-size: 0.8rem;
+  }
+
+  button {
+    font-size: 0.7rem;
+    padding: 5px 10px;
+  }
+
+  #game-over {
+    font-size: 1.2rem;
+  }
+
+  main {
+    padding: 5px;
+    height: 100%;
+  }
+
+  #invert-button {
+    width: 35px; /* Further adjust width for smaller screens */
+    height: 35px; /* Further adjust height for smaller screens */
+    font-size: 0.7rem; /* Further adjust font size for smaller screens */
+  }
+
+  #reset-button {
+    padding: 0.6rem 1rem; /* Further adjust padding for smaller screens */
+    font-size: 0.9rem; /* Further adjust font size for smaller screens */
+  }
+
+  #hue-slider {
+    height: 15px; /* Further adjust height for smaller screens */
+    width: 70%; /* Further adjust width for smaller screens */
+    max-width: 250px; /* Further adjust max-width for smaller screens */
+  }
+}
+
+/* Force vertical layout and prevent rotation */
+@media (orientation: landscape) {
+  body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+  }
+
+  main {
+    max-width: 90vh;
+    max-height: 90vh;
+  }
+}
+
+/* Specific styles for iPhone */
+@media only screen and (max-device-width: 812px) and (-webkit-min-device-pixel-ratio: 2) {
+  body {
+    padding: 5px;
+  }
+
+  header h1 {
+    font-size: 1.4rem;
+  }
+
+  #score-box {
+    font-size: 0.9rem;
+    padding: 0.2rem;
+  }
+
+  .game-container {
+    width: 100%;
+    height: 100%;
+    max-width: 85vmin;
+    max-height: 85vmin;
+    margin-bottom: 5px;
+  }
+
+  .tile {
+    font-size: 0.9rem;
+  }
+
+  button {
+    font-size: 0.7rem;
+    padding: 5px 10px;
+  }
+
+  #game-over {
+    font-size: 1.4rem;
+  }
+
+  main {
+    padding: 0 5px;
+    height: 100%;
+  }
+}
+
+#hue-slider-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+  padding: 5px; /* Adjust padding for better mobile experience */
+  width: 100%; /* Ensure it spans the full width */
+  box-sizing: border-box;
+}
+
+#hue-slider {
+  width: 80%; /* Adjust width for better mobile experience */
+  max-width: 300px; /* Adjust max-width for better mobile experience */
+  height: 20px; /* Adjust height for better mobile experience */
+  -webkit-appearance: none; /* Remove default styling */
+  appearance: none; /* Remove default styling */
+  background: #c6c9d67d; /* Background color */
+  border-radius: 5px; /* Rounded corners */
+  outline: none; /* Remove outline */
+  opacity: 0.7; /* Slightly transparent */
+  transition: opacity 0.2s; /* Smooth transition */
+}
+
+#hue-slider:hover {
+  opacity: 1; /* Fully opaque on hover */
+}
+
+#hue-slider::-webkit-slider-thumb {
+  -webkit-appearance: none; /* Remove default styling */
+  appearance: none; /* Remove default styling */
+  width: 25px; /* Thumb width */
+  height: 25px; /* Thumb height */
+  background: #001047; /* Thumb color */
+  border-radius: 50%; /* Rounded thumb */
+  cursor: pointer; /* Pointer cursor */
+}
+
+#hue-slider::-moz-range-thumb {
+  width: 25px; /* Thumb width */
+  height: 25px; /* Thumb height */
+  background: #001047; /* Thumb color */
+  border-radius: 50%; /* Rounded thumb */
+  cursor: pointer; /* Pointer cursor */
+}
+
+/* Adjust hue for game-section */
+.game-section {
+  transition: filter 0.3s ease;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
+  padding: var(--gap);
+  box-sizing: border-box;
+  position: relative;
+  margin-top: 20px; /* Adjust as needed to match tiles position */
+}
+
+#invert-button,
+#reset-button,
+#back-button {
+  background-color: rgba(0, 16, 71, 0.5); /* Glass effect background */
+  color: #f2f2f2; /* Ensure text contrast */
+  border: none;
+  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
+  backdrop-filter: blur(10px); /* Glass effect */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+#invert-button:hover,
+#reset-button:hover,
+#back-button:hover {
+  background-color: rgba(36, 47, 87, 0.7); /* Darker shade for hover */
+  color: #ffffff; /* Ensure text contrast */
+}
+
+#invert-button.light-mode,
+#reset-button.light-mode,
+#back-button.light-mode {
+  background-color: rgba(224, 224, 224, 0.5); /* Better light mode button background color */
+  color: #000000; /* Ensure text contrast */
+  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
+  backdrop-filter: blur(10px); /* Glass effect */
+}
+
+#invert-button.light-mode:hover,
+#reset-button.light-mode:hover,
+#back-button.light-mode:hover {
+  background-color: rgba(192, 192, 192, 0.7); /* Darker shade for hover in light mode */
+  color: #000000; /* Ensure text contrast */
+}
+
+
+
 :root {
   --primary-color: #1a1a1a;
   --secondary-color: #f2f2f2;
