@@ -1,18 +1,38 @@
 class Game {
-  constructor(size) {
+  constructor(size = 4) {
     this.size = size;
     this.board = this.createEmptyBoard();
     this.score = 0;
     this.bestScore = localStorage.getItem('bestScore') || 0;
     this.isLightMode = localStorage.getItem('isLightMode') === 'true';
     this.previousBoard = null;
-    this.hueValue = 0; // Initialize hue value
+    this.hueValue = 0;
     this.addEventListeners();
     this.reset();
+    this.updateUI();
     window.addEventListener('resize', () => this.refreshLayout());
     this.applyTheme();
-    this.updateHue(); // Ensure hue is applied on initialization
-    this.applyButtonStyles(); // Ensure button styles are applied on initialization
+    this.updateHue();
+    this.applyButtonStyles();
+  }
+
+  createEmptyBoard() {
+    return Array.from({ length: this.size }, () => Array(this.size).fill(''));
+  }
+
+  addRandomTile() {
+    const emptyCells = [];
+    for (let row = 0; row < this.size; row++) {
+      for (let col = 0; col < this.size; col++) {
+        if (this.board[row][col] === '') {
+          emptyCells.push({ row, col });
+        }
+      }
+    }
+    if (emptyCells.length > 0) {
+      const { row, col } = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+      this.board[row][col] = Math.random() < 0.9 ? 2 : 4;
+    }
   }
 
   addEventListeners() {
@@ -37,48 +57,31 @@ class Game {
   }
 
   applyTheme() {
-    const elementsToToggle = [
-      
+    const elements = [
       document.body,
       document.querySelector('.overlay'),
       document.querySelector('.board-container'),
       document.getElementById('score-container'),
       document.getElementById('invert-button'),
       document.getElementById('reset-button'),
-      document.getElementById('best-score') // Ensure best score is toggled
+      document.getElementById('best-score')
     ];
 
-    elementsToToggle.forEach(element => {
-      if (element) {
-        element.classList.toggle('light-mode', this.isLightMode);
-      }
-    });
-
+    elements.forEach(el => el?.classList.toggle('light-mode', this.isLightMode));
     document.querySelectorAll('.tile').forEach(tile => {
       tile.classList.toggle('light-mode', this.isLightMode);
-      this.invertTileDigits(tile);
+      tile.style.color = this.isLightMode ? '#776e65' : '#f9f6f2';
     });
-
-    const invertButton = document.getElementById('invert-button');
-    invertButton.textContent = this.isLightMode ? '☀️' : '🌙'; // Change emoji based on theme
-
-    this.updateUI(); // Ensure UI is updated with the correct theme
-    this.updateHue(); // Ensure hue is applied
-    this.applyButtonStyles(); // Ensure button styles are applied
+    this.updateUI();
+    this.updateHue();
+    this.applyButtonStyles();
   }
 
-  invertTileDigits(tile) {
-    tile.style.color = this.isLightMode ? '#000000' : '#f9f6f2';
-  }
-
-  handleKeyPress(event) {
-    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
-      this.move(event.key);
-      this.updateUI();
+  handleKeyPress(e) {
+    if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+      this.move(e.key);
       setTimeout(() => {
-        if (this.isGameOver()) {
-          document.getElementById('game-over').classList.remove('hidden');
-        }
+        if (this.isGameOver()) document.getElementById('game-over').classList.remove('hidden');
       }, 0);
     }
   }
@@ -89,69 +92,32 @@ class Game {
   }
 
   handleTouchEnd(e) {
-    const touchEndX = e.changedTouches[0].clientX;
-    const touchEndY = e.changedTouches[0].clientY;
-    const dx = touchEndX - this.touchStartX;
-    const dy = touchEndY - this.touchStartY;
+    const dx = e.changedTouches[0].clientX - this.touchStartX;
+    const dy = e.changedTouches[0].clientY - this.touchStartY;
     const absDx = Math.abs(dx);
     const absDy = Math.abs(dy);
 
-    let direction = '';
-    if (absDx > absDy) {
-      direction = dx > 0 ? 'ArrowRight' : 'ArrowLeft';
-    } else {
-      direction = dy > 0 ? 'ArrowDown' : 'ArrowUp';
-    }
-
     if (Math.max(absDx, absDy) > 50) {
+      const direction = absDx > absDy 
+        ? (dx > 0 ? 'ArrowRight' : 'ArrowLeft')
+        : (dy > 0 ? 'ArrowDown' : 'ArrowUp');
       this.move(direction);
-      this.updateUI();
       setTimeout(() => {
-        if (this.isGameOver()) {
-          document.getElementById('game-over').classList.remove('hidden');
-        }
+        if (this.isGameOver()) document.getElementById('game-over').classList.remove('hidden');
       }, 0);
     }
   }
 
-  createEmptyBoard() {
-    return Array.from({ length: this.size }, () => Array(this.size).fill(''));
-  }
-
   updateTileSize() {
-    const boardContainer = document.querySelector('.board-container');
-    const containerSize = Math.min(boardContainer.clientWidth, boardContainer.clientHeight);
-    const gap = parseInt(getComputedStyle(boardContainer).getPropertyValue('gap'));
-    const tileSize = (containerSize - (this.size - 1) * gap) / this.size;
-
-    document.querySelectorAll('.tile').forEach((tile, index) => {
-      tile.style.width = `${tileSize}px`;
-      tile.style.height = `${tileSize}px`;
+    const container = document.querySelector('.board-container');
+    const containerSize = Math.min(container.clientWidth, container.clientHeight);
+    const tileSize = (containerSize - (this.size - 1) * 10) / this.size;
+    
+    container.style.gridTemplateColumns = `repeat(${this.size}, ${tileSize}px)`;
+    document.querySelectorAll('.tile').forEach(tile => {
+      tile.style.width = tile.style.height = `${tileSize}px`;
       tile.style.fontSize = `${tileSize * 0.4}px`;
-      if (tile.textContent.length > 3) {
-        tile.style.fontSize = `${tileSize * 0.3}px`;
-      }
-      tile.style.msGridRow = Math.floor(index / this.size) + 1; // IE 10+ grid row
-      tile.style.msGridColumn = (index % this.size) + 1; // IE 10+ grid column
     });
-
-    boardContainer.style.gridTemplateColumns = `repeat(${this.size}, ${tileSize}px)`;
-    boardContainer.style.msGridColumns = `repeat(${this.size}, ${tileSize}px)`; // IE 10+ grid columns
-    boardContainer.style.gridTemplateRows = `repeat(${this.size}, ${tileSize}px)`;
-    boardContainer.style.msGridRows = `repeat(${this.size}, ${tileSize}px)`; // IE 10+ grid rows
-  }
-
-  calculateTileSize() {
-    const viewportSize = Math.min(window.innerWidth, window.innerHeight);
-    const boardPadding = 20;
-    const maxBoardSize = viewportSize - boardPadding * 2;
-    return maxBoardSize / this.size;
-  }
-
-  addRandomTile() {
-    const emptySpots = this.board.flatMap((row, x) => row.map((cell, y) => (cell === '' ? { x, y } : null)).filter(Boolean));
-    const spot = emptySpots[Math.floor(Math.random() * emptySpots.length)];
-    this.board[spot.x][spot.y] = Math.random() < 0.9 ? 2 : 4;
   }
 
   updateBestScore() {
@@ -166,200 +132,164 @@ class Game {
     this.addRandomTile();
     this.addRandomTile();
     this.score = 0;
-    this.updateUI();
     document.getElementById('game-over').classList.add('hidden');
-    this.applyTheme(); // Ensure theme is applied on reset
-    this.updateHue(); // Ensure hue is applied on reset
-    this.applyButtonStyles(); // Ensure button styles are applied on reset
-  }
-
-  slideAndCombine(row) {
-    let newRow = Array(this.size).fill('');
-    let index = 0;
-    for (let i = 0; i < this.size; i++) {
-      if (row[i] !== '') {
-        if (row[i] === newRow[index - 1]) {
-          newRow[index - 1] *= 2;
-          this.score += newRow[index - 1];
-        } else {
-          newRow[index] = row[i];
-          index++;
-        }
-      }
-    }
-    return newRow;
-  }
-
-  isGameOver() {
-    for (let i = 0; i < this.size; i++) {
-      for (let j = 0; j < this.size; j++) {
-        if (this.board[i][j] === '') return false;
-        if (j < this.size - 1 && this.board[i][j] === this.board[i][j + 1]) return false;
-        if (i < this.size - 1 && this.board[i][j] === this.board[i + 1][j]) return false;
-      }
-    }
-    return true;
+    this.updateUI();
   }
 
   move(direction) {
-    this.previousBoard = this.board.map(row => [...row]);
-    let hasChanged = false;
+    const vector = this.getVector(direction);
+    const traversals = this.buildTraversals(vector);
+    let moved = false;
+    const merged = this.createEmptyBoard().map(row => row.map(() => false));
 
-    if (['ArrowUp', 'ArrowDown'].includes(direction)) {
-      this.board = this.transpose(this.board);
-    }
-    if (['ArrowDown', 'ArrowRight'].includes(direction)) {
-      this.board = this.board.map(row => row.reverse());
-    }
+    traversals.x.forEach(x => {
+      traversals.y.forEach(y => {
+        const cell = { x, y };
+        const value = this.board[x][y];
+        
+        if (value === '') return;
 
-    this.board = this.board.map(row => {
-      const newRow = this.slideAndCombine(row);
-      if (!hasChanged && JSON.stringify(newRow) !== JSON.stringify(row)) {
-        hasChanged = true;
-      }
-      return newRow;
+        const positions = this.findFarthestPosition(cell, vector);
+        const next = this.board[positions.next.x]?.[positions.next.y];
+
+        if (this.withinBounds(positions.next) && next === value && !merged[positions.next.x][positions.next.y]) {
+          this.board[positions.next.x][positions.next.y] = value * 2;
+          this.score += value * 2;
+          merged[positions.next.x][positions.next.y] = true;
+          this.board[x][y] = '';
+          moved = true;
+        } else if (!this.positionsEqual(cell, positions.farthest)) {
+          this.board[positions.farthest.x][positions.farthest.y] = value;
+          this.board[x][y] = '';
+          moved = true;
+        }
+      });
     });
 
-    if (['ArrowDown', 'ArrowRight'].includes(direction)) {
-      this.board = this.board.map(row => row.reverse());
-    }
-    if (['ArrowUp', 'ArrowDown'].includes(direction)) {
-      this.board = this.transpose(this.board);
-    }
-
-    if (hasChanged) {
+    if (moved) {
       this.addRandomTile();
       this.updateBestScore();
+      this.updateUI();
     }
-
-    this.updateUI();
   }
 
-  transpose(matrix) {
-    return matrix[0].map((_, i) => matrix.map(row => row[i]));
+  getVector(direction) {
+    return {
+      'ArrowUp': { x: -1, y: 0 },
+      'ArrowRight': { x: 0, y: 1 },
+      'ArrowDown': { x: 1, y: 0 },
+      'ArrowLeft': { x: 0, y: -1 }
+    }[direction];
+  }
+
+  buildTraversals(vector) {
+    const traversals = { x: [], y: [] };
+    for (let i = 0; i < this.size; i++) {
+      traversals.x.push(i);
+      traversals.y.push(i);
+    }
+    if (vector.x === 1) traversals.x = traversals.x.reverse();
+    if (vector.y === 1) traversals.y = traversals.y.reverse();
+    return traversals;
+  }
+
+  findFarthestPosition(cell, vector) {
+    let previous = cell;
+    let next = { x: cell.x + vector.x, y: cell.y + vector.y };
+    while (this.withinBounds(next) && this.board[next.x][next.y] === '') {
+      previous = next;
+      next = { x: next.x + vector.x, y: next.y + vector.y };
+    }
+    return { farthest: previous, next };
+  }
+
+  withinBounds(cell) {
+    return cell.x >= 0 && cell.x < this.size && cell.y >= 0 && cell.y < this.size;
+  }
+
+  positionsEqual(a, b) {
+    return a.x === b.x && a.y === b.y;
+  }
+
+  isGameOver() {
+    return !this.cellsAvailable() && !this.tileMatchesAvailable();
+  }
+
+  cellsAvailable() {
+    return this.board.some(row => row.includes(''));
+  }
+
+  tileMatchesAvailable() {
+    for (let x = 0; x < this.size; x++) {
+      for (let y = 0; y < this.size; y++) {
+        const current = this.board[x][y];
+        if (current === '') continue;
+        if ((x < this.size - 1 && current === this.board[x + 1][y]) ||
+            (y < this.size - 1 && current === this.board[x][y + 1])) {
+          return true;
+        }
+      }
+    }
+    return false;
   }
 
   updateUI() {
-    const boardContainer = document.querySelector('.board-container');
-    boardContainer.innerHTML = '';
-    let highestValue = 0;
-    this.board.forEach(row => {
-      row.forEach(value => {
-        const tile = document.createElement('div');
-        tile.classList.add('tile');
-        tile.textContent = value !== '' ? value : '';
-        tile.style.backgroundColor = this.getTileColor(value);
-        tile.style.color = this.getTextColor(value);
-        if (value) {
-          tile.setAttribute('data-value', value);
-          highestValue = Math.max(highestValue, value);
-        }
-        if (this.isLightMode) {
-          tile.classList.add('light-mode');
-          this.invertTileDigits(tile);
-        }
-        boardContainer.appendChild(tile);
-      });
+    const container = document.querySelector('.board-container');
+    container.innerHTML = '';
+    let maxValue = 0;
+
+    this.board.flat().forEach(value => {
+      const tile = document.createElement('div');
+      tile.className = `tile${value ? ' active' : ''}${this.isLightMode ? ' light-mode' : ''}`;
+      tile.textContent = value || '';
+      tile.style.backgroundColor = this.getTileColor(value);
+      tile.style.color = this.getTextColor(value);
+      if (value) maxValue = Math.max(maxValue, value);
+      container.appendChild(tile);
     });
+
     document.getElementById('score').textContent = this.score;
-    document.getElementById('score').style.color = this.getScoreColor(this.score);
     document.getElementById('best-score').textContent = this.bestScore;
     this.updateTileSize();
-    this.updateHeaderBackground(highestValue);
-    this.updateHue(); // Ensure hue is applied
-  }
-
-  getScoreColor(score) {
-    if (score < 100) return '#ffcc00';
-    if (score < 500) return '#ff9900';
-    if (score < 1000) return '#ff6600';
-    if (score < 2000) return '#ff3300';
-    return '#ff0000';
-  }
-
-  updateHeaderBackground(highestValue) {
-    const header = document.querySelector('header h1');
-    const backgroundColor = this.getTileColor(highestValue);
-    header.style.backgroundColor = backgroundColor;
-    header.style.color = this.getTextColor(highestValue);
-  }
-
-  getTextColor(value) {
-    if (value === 2) return '#776e65'; // Darker color for better contrast
-    if (value === 4) return '#776e65'; // Darker color for better contrast
-    return value >= 8 ? '#f9f6f2' : '#776e65'; // Fix number value contrast ratio
+    this.updateHeaderBackground(maxValue);
   }
 
   getTileColor(value) {
-    if (value === '') return 'transparent';
-
-    if (value === 2) return '#e0f7fa'; // Very light blue color for value 2
-    if (value === 4) return '#add8e6'; // Light blue color for value 4
-
-    const baseHue = 200; // Starting hue for the color '8'
-    const hueStep = 30; // Step to rotate the hue for each value
-
-    const hue = baseHue + (Math.log2(value) - 3) * hueStep;
+    if (!value) return 'transparent';
+    const hue = 200 + (Math.log2(value) - 1) * 30;
     return `hsl(${hue}, 70%, 50%)`;
   }
 
-  changeHue() {
-    this.hueValue = (this.hueValue + 15) % 360; // Increment hue by 15 steps
-    this.updateHue();
+  getTextColor(value) {
+    return value <= 4 ? '#776e65' : '#f9f6f2';
   }
 
-  updateHue() {
-    const hueValue = this.hueValue;
-    const hueRotation = this.isLightMode ? -hueValue : hueValue; // Invert hue in light mode
-    document.documentElement.style.setProperty('--hue-value', hueValue); // Set hue value as CSS variable
-    document.querySelector('.game-section').style.filter = `hue-rotate(${hueRotation}deg)`;
-    document.querySelector('.overlay').style.filter = `hue-rotate(${hueRotation}deg)`;
-    document.querySelector('.board-container').style.filter = `hue-rotate(${hueRotation}deg)`;
-    document.querySelector('header h1').style.filter = `hue-rotate(${hueRotation}deg)`;
-    document.getElementById('score-container').style.filter = `hue-rotate(${hueRotation}deg)`;
-    document.getElementById('score').style.filter = `hue-rotate(${hueRotation}deg)`;
-    document.getElementById('best-score').style.filter = `hue-rotate(${hueRotation}deg)`;
-    const buttons = [document.getElementById('changeColor-button'), document.getElementById('reset-button'), document.getElementById('invert-button')];
-    buttons.forEach(button => {
-      if (!this.isLightMode) {
-        button.style.filter = `hue-rotate(${hueRotation}deg)`; // Apply hue rotation to buttons in dark mode
-      } else {
-        button.style.filter = 'none'; // Remove hue rotation in light mode
-      }
-    });
+  updateHeaderBackground(value) {
+    const header = document.querySelector('header h1');
+    header.style.backgroundColor = this.getTileColor(value);
+  }
+
+  changeHue() {
+    this.hueValue = (this.hueValue + 15) % 360;
+    document.documentElement.style.setProperty('--hue', this.hueValue);
+    document.querySelector('.game-section').style.filter = `hue-rotate(${this.hueValue}deg)`;
   }
 
   applyButtonStyles() {
-    const buttons = [document.getElementById('changeColor-button'), document.getElementById('reset-button'), document.getElementById('invert-button')];
+    const buttons = ['changeColor-button', 'reset-button', 'invert-button']
+      .map(id => document.getElementById(id))
+      .filter(Boolean);
+
     buttons.forEach(button => {
-      if (this.isLightMode) {
-        button.style.backgroundColor = 'rgba(224, 224, 224, 0.5)'; // Updated background color
-        button.style.color = '#333333'; // Darker text color
-        button.style.borderColor = 'transparent'; // Match reset button border color
-        button.style.boxShadow = '0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5)'; // Match reset button box shadow
-        button.style.textShadow = '0 0 5px rgba(255, 255, 255, 0.7)'; // Match reset button text glow
-        button.style.webkitBackdropFilter = 'blur(10px)'; // Glass effect for Safari
-        button.style.backdropFilter = 'blur(10px)'; // Glass effect
-        button.style.transition = 'background-color 0.2s, color 0.2s, transform 0.1s'; // Faster transition
-      } else {
-        button.style.backgroundColor = 'rgba(0, 16, 71, 0.4)'; // Glass effect background with alpha 0.4
-        button.style.color = '#ffffff'; // White text color
-        button.style.borderColor = '#ffffff'; // White border color
-        button.style.boxShadow = 'inset 0 0 5px #ffffff'; // Subtle inner border glow
-        button.style.textShadow = 'none'; // Remove text glow
-      }
-      button.style.filter = 'brightness(85%)'; // Add brightness effect
-      button.style.webkitBackdropFilter = 'blur(10px)'; // Glass effect for Safari
-      button.style.backdropFilter = 'blur(10px)'; // Glass effect
-      button.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)'; // Static drop shadow
+      button.style.backgroundColor = this.isLightMode 
+        ? 'rgba(224, 224, 224, 0.5)' 
+        : 'rgba(0, 16, 71, 0.4)';
+      button.style.color = this.isLightMode ? '#333' : '#fff';
     });
   }
 }
 
-// Instantiate the game
 document.addEventListener('DOMContentLoaded', () => {
   const game = new Game(4);
   game.refreshLayout();
-  game.applyTheme();
-  game.updateHue(); // Ensure hue is applied on page load
 });
