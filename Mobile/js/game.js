@@ -176,7 +176,6 @@ class Game {
       this.applyTheme(); // Ensure theme is applied on reset
       this.updateHue(); // Ensure hue is applied on reset
       this.applyButtonStyles(); // Ensure button styles are applied on reset
-      this.saveStats(); // Save stats on reset
     }
   
     slideAndCombine(row) {
@@ -205,7 +204,7 @@ class Game {
         }
       }
       const gameOver = true;
-      if (gameOver) {
+      if (gameOver && this.score > 0) {
         this.saveStats(); // Save stats on game over
       }
       return gameOver;
@@ -400,13 +399,15 @@ class Game {
     }
 
     saveStats() {
-      const stat = {
-        score: this.score,
-        bestTile: Math.max(...this.board.flat()),
-        date: new Date().toISOString()
-      };
-      this.stats.push(stat);
-      localStorage.setItem('gameStats', JSON.stringify(this.stats));
+      if (this.score > 0) {
+        const stat = {
+          score: this.score,
+          bestTile: Math.max(...this.board.flat()),
+          date: new Date().toISOString()
+        };
+        this.stats.push(stat);
+        localStorage.setItem('gameStats', JSON.stringify(this.stats));
+      }
     }
   }
   
