@@ -34,8 +34,8 @@ body {
 }
 
 header {
-  margin: 0;
-  padding: 5px;
+  margin: auto;
+  padding: auto;
   text-align: left;
   position: absolute;
   top: 5px;
@@ -47,8 +47,8 @@ header {
 }
 
 header h1 {
-  margin: 0;
-  padding: 0.2rem 0.4rem; /* Further reduce padding for smaller box size */
+  margin: auto;
+  padding: auto; /* Further reduce padding for smaller box size */
   font-size: 1rem; /* Further adjust font size */
   width: auto; /* Adjust width to fit content */
   box-sizing: border-box; /* Ensure padding is included in the total width */
@@ -74,8 +74,8 @@ header.inverted h1 {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 10px; /* Adjust margin */
-  padding: 5px; /* Adjust padding for better mobile experience */
+  margin: auto; /* Adjust margin */
+  padding: auto; /* Adjust padding for better mobile experience */
   width: 100%; /* Ensure it spans the full width */
   box-sizing: border-box;
 }
@@ -604,8 +604,8 @@ body.inverted {
 }
 
 header {
-  margin: 0;
-  padding: 10px;
+  margin: auto;
+  padding: auto;
   text-align: left;
   position: absolute;
   top: 10px;
@@ -617,8 +617,8 @@ header {
 }
 
 header h1 {
-  margin: 0;
-  padding: 0.2rem 0.4rem; /* Further reduce padding for smaller box size */
+  margin: auto;
+  padding: auto; /* Further reduce padding for smaller box size */
   font-size: 1rem; /* Further adjust font size */
   width: auto; /* Adjust width to fit content */
   box-sizing: border-box; /* Ensure padding is included in the total width */
@@ -1406,8 +1406,8 @@ main.inverted {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 10px; /* Adjust margin */
-  padding: 5px; /* Adjust padding for better mobile experience */
+  margin: auto; /* Adjust margin */
+  padding: auto; /* Adjust padding for better mobile experience */
   width: 100%; /* Ensure it spans the full width */
   box-sizing: border-box;
 }
