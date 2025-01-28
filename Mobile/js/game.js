@@ -11,6 +11,7 @@ class Game {
       this.leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || []; // Initialize leaderboard
       this.stats = JSON.parse(localStorage.getItem('gameStats')) || []; // Initialize stats
       this.startTime = null; // Initialize start time
+      this.hasSavedStats = false; // Track if stats have been saved
       this.addEventListeners();
       this.reset();
       window.addEventListener('resize', () => this.refreshLayout());
@@ -173,6 +174,7 @@ class Game {
       this.addRandomTile();
       this.score = 0;
       this.startTime = new Date(); // Set start time on reset
+      this.hasSavedStats = false; // Reset saved stats flag
       this.updateUI();
       document.getElementById('game-over').classList.add('hidden');
       this.applyTheme(); // Ensure theme is applied on reset
@@ -206,8 +208,9 @@ class Game {
         }
       }
       const gameOver = true;
-      if (gameOver && this.score > 0) {
+      if (gameOver && this.score > 0 && !this.hasSavedStats) {
         this.saveStats(); // Save stats on game over
+        this.hasSavedStats = true; // Mark stats as saved
       }
       return gameOver;
     }

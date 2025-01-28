@@ -35,8 +35,9 @@
     <script>
       document.addEventListener('DOMContentLoaded', () => {
         const stats = JSON.parse(localStorage.getItem('gameStats')) || [];
+        const uniqueStats = Array.from(new Set(stats.map(stat => JSON.stringify(stat)))).map(stat => JSON.parse(stat));
         const statsTableBody = document.getElementById('statsTable').querySelector('tbody');
-        stats.forEach((stat) => {
+        uniqueStats.forEach((stat) => {
           const row = document.createElement('tr');
           const date = new Date(stat.date);
           const formattedDate = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear().toString().slice(-2)} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
@@ -53,7 +54,7 @@
         document.getElementById('save-csv-button').addEventListener('click', () => {
           const csvContent = "data:text/csv;charset=utf-8,"
             + "Session,Best Tile,Score,Best Score,Time\n"
-            + stats.map(stat => {
+            + uniqueStats.map(stat => {
               const date = new Date(stat.date);
               const formattedDate = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear().toString().slice(-2)} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
               return `${formattedDate},${stat.bestTile},${stat.score},${stat.bestScore},${stat.time}`;

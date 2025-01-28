@@ -234,6 +234,9 @@ header {
   top: 10px;
   left: 10px;
   z-index: 5;
+  width: auto; /* Ensure the header width auto-fits */
+  max-width: calc(100% - 20px); /* Ensure it doesn't overlap with the score element */
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
 }
 
 header h1 {
