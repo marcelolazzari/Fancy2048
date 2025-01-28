@@ -6,76 +6,206 @@
   --game-size: calc(
     var(--tile-size) * (var(--size)) + var(--gap) * (var(--size) + 2)
   );
+  --primary-color: #1a1a1a;
+  --secondary-color: #f2f2f2;
+  --highlight-color: #ffcc00;
+  --button-background: #001047;
+  --button-hover-background: #242f57;
+  --button-light-background: #ffcc00;
+  --button-light-hover-background: #ff9900;
+  --reset-button-background: #ff7f50;
+  --reset-button-hover-background: #ff4500;
+  --overlay-dark: rgba(0, 16, 71, 0.8);
+  --overlay-light: rgba(255, 255, 255, 0.8);
+  --overlay-light-end: rgba(240, 240, 240, 1);
 }
-
-
 
 body {
   font-family: Arial, sans-serif;
-  background-color: #1a1a1a;
-  color: #f2f2f2;
-  margin: 0;
-  padding: env(safe-area-inset-top) 10px env(safe-area-inset-bottom);
+  background-color: var(--primary-color);
+  color: var(--secondary-color);
+  margin: 20px;
+  padding: 20px;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   min-height: 100vh;
-  touch-action: none;
-  overflow: hidden;
-  max-width: 100vw;
-  height: 100vh;
-  box-sizing: border-box; /* Ensure padding is included in the total width and height */
-}
-
-body.light-mode {
-  background-color: #f0f0f0; /* Better light mode background color */
-  color: #000000;
-  border-color: transparent;
-}
-
-body.inverted {
-  background-color: #f2f2f2;
-  color: #333;
-}
-
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at center, rgba(0, 16, 71, 0.8) 0%, rgb(0, 0, 0) 150%); /* Increase radius of gradient */
-  z-index: -1; /* Changed to be under the elements */
-  pointer-events: none;
-}
-
-.overlay.light-mode {
-  background: radial-gradient(circle at center, rgba(255, 255, 255, 0.8) 0%, rgba(240, 240, 240, 1) 100%); /* Better light mode overlay color */
+  box-sizing: border-box;
 }
 
 header {
-  margin: 0;
-  padding: 10px;
+  margin: auto;
+  padding: auto;
   text-align: left;
   position: absolute;
-  top: 10px;
+  top: 5px;
   left: 10px;
   z-index: 5;
+  width: auto; /* Ensure the header width auto-fits */
+  max-width: calc(100% - 10px); /* Ensure it doesn't overlap with the score element */
+  box-sizing: border-box; /* Include padding and border in the element's total width and height */
 }
 
 header h1 {
-  margin: 0;
-  padding: 0.2rem 0.4rem; /* Further reduce padding for smaller box size */
+  margin: auto;
+  padding: auto; /* Further reduce padding for smaller box size */
   font-size: 1rem; /* Further adjust font size */
   width: auto; /* Adjust width to fit content */
   box-sizing: border-box; /* Ensure padding is included in the total width */
-  color: #f2f2f2;
+  color: hsl(var(--hue-value), 70%, 50%); /* Text color based on hue value */
   background-color: rgba(50, 50, 50, 0.8);
   border-radius: 10px;
   text-align: center;
   z-index: 6;
 }
+
+header.light-mode h1 {
+  background-color: #ffffff; /* White background for better contrast */
+  color: hsl(var(--hue-value), 70%, 50%); /* Text color based on hue value */
+  border-color: transparent;
+}
+
+header.inverted h1 {
+  background-color: rgba(255, 255, 255, 0.8);
+  color: #333;
+}
+
+.game-container {
+  display: grid;
+  grid-template-columns: repeat(var(--size), 1fr);
+  gap: var(--gap); /* Ensure gap between tiles */
+  width: 100%;
+  height: 100%;
+  max-width: 100%;
+  max-height: 100%;
+  background-color: rgba(50, 50, 50, 0.8);
+  margin: 20px;
+  border: none; /* Remove black solid border */
+  border-radius: 15px;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5),
+    0 0 20px rgba(255, 255, 255, 0.5), 0 0 30px rgba(255, 255, 255, 0.5);
+  box-sizing: border-box;
+  margin-top: 120px;
+  z-index: 3;
+  overflow: hidden;
+}
+
+.tile {
+  background-color: rgb(238, 228, 218);
+  color: #1a1a1a;
+  font-weight: bold;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  aspect-ratio: 1 / 1;
+  border-radius: 15px;
+  font-size: calc(var(--tile-size) * 0.9); /* Increase font size */
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5),
+    0 0 20px rgba(255, 255, 255, 0.5), 0 0 30px rgba(255, 255, 255, 0.5),
+    0 0 40px rgba(255, 255, 255, 0.5);
+  transition: transform 0.1s ease-in-out, opacity 0.1s ease-in-out,
+    box-shadow 0.1s ease-in-out;
+  overflow: hidden;
+  margin: 0; /* Remove margin from tiles */
+  width: calc((100% - var(--gap) * (var(--size) - 1)) / var(--size));
+  height: calc((100% - var(--gap) * (var(--size) - 1)) / var(--size));
+}
+
+.tile.light-mode {
+  background-color: rgba(238, 228, 218, 0.8);
+  color: #000000;
+  border: 2px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 0, 0, 0.2),
+    0 0 30px rgba(0, 0, 0, 0.2);
+  font-size: calc(var(--tile-size) * 0.9); /* Increase font size */
+}
+
+/* Additional styles for specific tile values */
+.tile[data-value="2"] {
+  background-color: rgba(238, 228, 218, 0.8);
+  color: #776e65;
+}
+
+.tile[data-value="4"] {
+  background-color: rgba(237, 224, 200, 0.8);
+  color: #776e65;
+}
+
+.tile[data-value="8"] {
+  background-color: rgba(242, 177, 121, 0.8);
+  color: #f9f6f2;
+}
+
+/* Additional styles for light mode and inverted mode */
+.tile.light-mode[data-value="2"],
+.tile.light-mode[data-value="4"],
+.tile.light-mode[data-value="8"] {
+  background-color: rgba(238, 228, 218, 0.8);
+  color: #776e65;
+}
+
+.tile.light-mode[data-value="16"],
+.tile.light-mode[data-value="32"],
+.tile.light-mode[data-value="64"] {
+  background-color: rgba(245, 149, 99, 0.8);
+  color: #f9f6f2;
+}
+
+.tile.light-mode[data-value="128"],
+.tile.light-mode[data-value="256"],
+.tile.light-mode[data-value="512"] {
+  background-color: rgba(237, 207, 114, 0.8);
+  color: #f9f6f2;
+}
+
+.tile.light-mode[data-value="1024"],
+.tile.light-mode[data-value="2048"] {
+  background-color: rgba(237, 197, 63, 0.8);
+  color: #f9f6f2;
+}
+
+/* Hover effect for tiles */
+.tile:hover {
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.7),
+    0 0 25px rgba(255, 255, 255, 0.7), 0 0 35px rgba(255, 255, 255, 0.7),
+    0 0 45px rgba(255, 255, 255, 0.7);
+}
+
+/* Media queries for mobile optimization */
+@media (max-width: 600px) {
+  body {
+    overflow: hidden;
+    padding: 5px;
+    height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  header h1 {
+    font-size: 1.2rem;
+  }
+
+  .game-container {
+    width: 100%;
+    height: 100%;
+    max-width: 85vmin;
+    max-height: 85vmin;
+  }
+
+  .tile {
+    font-size: 0.8rem;
+  }
+
+  main {
+    padding: 5px;
+    height: 100%;
+  }
+}
+
 
 header.light-mode h1 {
   background-color: rgba(240, 240, 240, 0.8);
@@ -96,58 +226,10 @@ header.inverted h1 {
   font-size: 1rem;
   background-color: #001047; /* Adjust button background color */
   border-radius: 50%;
-  border: none;
-  box-shadow: 0 0 10px rgba(242, 177, 121, 0.3),
-    0 0 20px rgba(242, 177, 121, 0.3), 0 0 30px rgba(242, 177, 121, 0.3),
-    0 0 5px rgba(255, 255, 255, 0.5); /* Add subtle outer glow */
-  text-align: center;
-  width: 40px; /* Adjust width for better mobile experience */
-  height: 40px; /* Adjust height for better mobile experience */
-  z-index: 6;
-  display: inline-block;
-  position: absolute;
-  top: 80px; /* Adjust position */
-  left: 10px; /* Adjust as needed */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-sizing: border-box;
 
-  filter: grayscale(100%);
-}
-
-#invert-button:hover {
-  background-color: #242f57; /* Darker shade for hover */
-  color: #ffffff; /* Ensure text contrast */
-  filter: grayscale(100%);
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.7),
-    0 0 25px rgba(255, 255, 255, 0.7), 0 0 35px rgba(255, 255, 255, 0.7),
-    0 0 10px rgba(255, 255, 255, 0.7); /* Enhance glow on hover */
-}
-
-#invert-button.inverted {
-  background-color: rgba(255, 255, 255, 0.8);
-  color: #333;
-  filter: grayscale(100%);
-}
-
-main {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  width: 100%;
-  max-width: 100%;
-  margin: 0 auto;
-  padding: 10px;
-  box-sizing: border-box;
-  height: 100%;
-  flex: 1;
-  justify-content: center;
-  overflow: hidden;
-  color: #f2f2f2;
-  position: relative;
-  z-index: 4;
-}
+  
+  
+  
 
 main.inverted {
   background-color: #f2f2f2;
