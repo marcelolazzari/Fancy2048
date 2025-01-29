@@ -383,7 +383,7 @@ class Game {
     }
   
     openLeaderboardPage() {
-      window.location.href = 'Mobile/Stats/leaderboard.html';
+      window.location.href = 'Stats/leaderboard.html';
     }
   
     updateLeaderboard() {
