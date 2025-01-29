@@ -383,8 +383,7 @@ class Game {
     }
   
     openLeaderboardPage() {
-      document.getElementById('leaderboardModal').classList.remove('hidden');
-      this.updateLeaderboardModal(); // Ensure leaderboard modal is updated
+      window.location.href = '../Mobile/Stats/leaderboard.html';
     }
   
     updateLeaderboard() {
