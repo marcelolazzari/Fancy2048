@@ -165,7 +165,7 @@ header.inverted h1 {
 }
 
 #invert-button {
-  margin-top: 15px; /* Adjust margin */
+  margin-top: 30px; /* Adjust margin */
   margin-left: 15px;
   padding: 0.6rem 1.2rem; /* Better padding */
   color: var(--secondary-color);
