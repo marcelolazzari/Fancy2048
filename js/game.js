@@ -37,3 +37,26 @@ class Game {
 
     // ...existing code...
 }
+
+function createButton() {
+    const button = document.createElement('button');
+    button.className = 'button';
+    button.textContent = 'Start Game';
+    // ...existing code...
+    return button;
+}
+
+function createContainer() {
+    const container = document.createElement('div');
+    container.className = 'container';
+    // ...existing code...
+    return container;
+}
+
+function createTextElement() {
+    const textElement = document.createElement('p');
+    textElement.className = 'text';
+    textElement.textContent = 'Welcome to Fancy 2048!';
+    // ...existing code...
+    return textElement;
+}

@@ -1,0 +1,8 @@
+
+.container {
+    /* Add container styles here */
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    /* ...other container styles... */
+}
