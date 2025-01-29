@@ -1,446 +1,5 @@
-:root {
-  --primary-color: #1a1a1a;
-  --secondary-color: #f2f2f2;
-  --highlight-color: #ffcc00;
-  --button-background: #001047;
-  --button-hover-background: #242f57;
-  --button-light-background: #ffcc00;
-  --button-light-hover-background: #ff9900;
-  --reset-button-background: #ff7f50;
-  --reset-button-hover-background: #ff4500;
-  --overlay-dark: rgba(0, 16, 71, 0.8);
-  --overlay-light: rgba(255, 255, 255, 0.8);
-  --overlay-light-end: rgba(240, 240, 240, 1);
-  --tile-size: calc((100vmin - var(--gap) * (var(--size) + 1)) / var(--size));
-  --gap: 10px;
-  --size: 4;
-  --game-size: calc(
-    var(--tile-size) * (var(--size)) + var(--gap) * (var(--size) + 2)
-  );
-}
-
-body {
-  font-family: Arial, sans-serif;
-  background-color: var(--primary-color);
-  color: var(--secondary-color);
-  margin: 20px;
-  padding: 20px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  min-height: 100vh;
-  box-sizing: border-box;
-}
-
-header {
-  margin: auto;
-  padding: auto;
-  text-align: left;
-  position: absolute;
-  top: 5px;
-  left: 10px;
-  z-index: 5;
-  width: auto; /* Ensure the header width auto-fits */
-  max-width: calc(100% - 10px); /* Ensure it doesn't overlap with the score element */
-  box-sizing: border-box; /* Include padding and border in the element's total width and height */
-}
-
-header h1 {
-  margin: auto;
-  padding: auto; /* Further reduce padding for smaller box size */
-  font-size: 1rem; /* Further adjust font size */
-  width: auto; /* Adjust width to fit content */
-  box-sizing: border-box; /* Ensure padding is included in the total width */
-  color: hsl(var(--hue-value), 70%, 50%); /* Text color based on hue value */
-  background-color: rgba(50, 50, 50, 0.8);
-  border-radius: 10px;
-  text-align: center;
-  z-index: 6;
-}
-
-header.light-mode h1 {
-  background-color: #ffffff; /* White background for better contrast */
-  color: hsl(var(--hue-value), 70%, 50%); /* Text color based on hue value */
-  border-color: transparent;
-}
-
-header.inverted h1 {
-  background-color: rgba(255, 255, 255, 0.8);
-  color: #333;
-}
-
-#controls-container {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  margin: auto; /* Adjust margin */
-  padding: auto; /* Adjust padding for better mobile experience */
-  width: 100%; /* Ensure it spans the full width */
-  box-sizing: border-box;
-}
-
-#score-container {
-  position: absolute;
-  top: 10px;
-  right: 10px;
-  padding: 0.5rem 20px; /* Add 20px padding left and right */
-  color: var(--secondary-color);
-  font-size: 1rem;
-  background-color: rgba(50, 50, 50, 0.5); /* Glass effect background */
-  border-radius: 10px;
-  text-align: center;
-  width: auto;
-  max-width: 90%;
-  z-index: 7;
-  margin-bottom: 20px; /* Added more space under the score box */
-  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
-  backdrop-filter: blur(10px); /* Glass effect */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-}
-
-#score-container.light-mode {
-  background-color: rgba(255, 255, 255, 0.5); /* Glass effect background for light mode */
-  color: #333333; /* Darker text color */
-  border-color: transparent;
-  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
-  backdrop-filter: blur(10px); /* Glass effect */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-}
-
-#score-container.inverted {
-  background-color: rgba(255, 255, 255, 0.8);
-  color: #333;
-}
-
-#reset-button {
-  position: absolute;
-  top: 100px; /* Adjust position */
-  right: 10px;
-  background-color: var(--reset-button-background); /* Lighter background color */
-  border: none;
-  padding: 0.8rem 1.2rem; /* Adjust padding for better mobile experience */
-  color: #ffffff; /* White text color */
-  font-size: 1rem; /* Adjust font size */
-  border-radius: 20px; /* Increase border radius */
-  text-align: center;
-  width: auto;
-  max-width: 90%;
-  margin-top: 20px; /* Added even space */
-  z-index: 7;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5); /* Static drop shadow */
-  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7); /* Add text glow */
-  transition: background-color 0.2s, color 0.2s, transform 0.1s; /* Faster transition */
-}
-
-#reset-button.light-mode {
-  background-color: rgba(224, 224, 224, 0.5); /* Updated background color */
-  color: #333333; /* Darker text color */
-  border: none; /* Remove border */
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5); /* Match reset button box shadow */
-  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7); /* Match reset button text glow */
-  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
-  backdrop-filter: blur(10px); /* Glass effect */
-  transition: background-color 0.2s, color 0.2s, transform 0.1s; /* Faster transition */
-}
-
-#reset-button.inverted {
-  background-color: #ffa07a; /* Even lighter color for inverted mode */
-  color: #000000; /* Black text color */
-}
-
-#reset-button:hover {
-  background-color: var(--reset-button-hover-background); /* Darker shade for hover */
-  color: #ffffff; /* Ensure text contrast */
-  transform: scale(1.05); /* Slightly increase size on hover */
-}
-
-#reset-button.light-mode:hover {
-  background-color: var(--reset-button-hover-background); /* Darker shade for hover */
-  color: #ffffff; /* Ensure text contrast */
-}
-
-#reset-button:active {
-  transform: scale(0.95); /* Slightly decrease size on active */
-}
-
-#board-container {
-  display: grid;
-  grid-template-columns: repeat(var(--size), 1fr);
-  gap: var(--gap); /* Ensure gap between tiles */
-  width: 100%;
-  height: 100%;
-  max-width: 100%;
-  max-height: 100%;
-  background-color: rgba(50, 50, 50, 0.8);
-  margin: 20px;
-  border: none; /* Remove black solid border */
-  border-radius: 15px;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5),
-    0 0 20px rgba(255, 255, 255, 0.5), 0 0 30px rgba(255, 255, 255, 0.5);
-  box-sizing: border-box;
-  margin: auto;
-  position: relative;
-  padding: 0; /* Remove padding from the container */
-  margin-top: 120px; /* CHECK THIS */
-  z-index: 3;
-  overflow: hidden; /* Remove scroll option */
-  padding-right: var(--gap); /* Adjust right padding */
-  padding-bottom: var(--gap); /* Adjust bottom padding */
-  justify-content: center; /* Center the board container */
-  align-items: center; /* Center the board container */
-}
-
-#board-container.light-mode {
-  background-color: #ffffff; /* White background for better contrast */
-  border: 2px solid #cccccc;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1), 0 0 20px rgba(0, 0, 0, 0.1),
-    0 0 30px rgba(0, 0, 0, 0.1);
-  padding-right: var(--gap); /* Adjust right padding */
-  padding-bottom: var(--gap); /* Adjust bottom padding */
-}
-
-#board-container.inverted {
-  background-color: rgba(255, 255, 255, 0.8);
-  border: 2px solid rgba(0, 0, 0, 0.2);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 0, 0, 0.2),
-    0 0 30px rgba(0, 0, 0, 0.2);
-}
-
-.tile {
-  background-color: transparent; /* Remove background color */
-  color: inherit; /* Remove color */
-  font-weight: bold;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  aspect-ratio: 1 / 1;
-  border-radius: 15px;
-  font-size: calc(var(--tile-size) * 0.9); /* Increase font size */
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5),
-    0 0 20px rgba(255, 255, 255, 0.5), 0 0 30px rgba(255, 255, 255, 0.5),
-    0 0 40px rgba(255, 255, 255, 0.5);
-  transition: transform 0.05s ease-in-out, opacity 0.05s ease-in-out,
-    box-shadow 0.05s ease-in-out; /* Faster transition */
-  overflow: hidden;
-  margin: 0; /* Remove margin from tiles */
-  width: calc((100% - var(--gap) * (var(--size) - 1)) / var(--size));
-  height: calc((100% - var(--gap) * (var(--size) - 1)) / var(--size));
-}
-
-.tile[data-value="2"] {
-  background-color: #e0f7fa; /* Very light blue color for value 2 */
-  color: #776e65; /* Darker color for better contrast */
-}
-
-.tile[data-value="4"] {
-  background-color: #add8e6; /* Light blue color for value 4 */
-  color: #776e65; /* Darker color for better contrast */
-}
-
-.tile[data-value="8"] {
-  background-color: #f2b179;
-  color: #f9f6f2; /* Light color for better contrast */
-}
-
-.tile[data-value="16"] {
-  background-color: #f59563;
-  color: #f9f6f2; /* Light color for better contrast */
-}
-
-.tile[data-value="32"] {
-  background-color: #f67c5f;
-  color: #f9f6f2; /* Light color for better contrast */
-}
-
-.tile[data-value="64"] {
-  background-color: #f65e3b;
-  color: #f9f6f2; /* Light color for better contrast */
-}
-
-.tile[data-value="128"] {
-  background-color: #edcf72;
-  color: #f9f6f2; /* Light color for better contrast */
-}
-
-.tile[data-value="256"] {
-  background-color: #edcc61;
-  color: #f9f6f2; /* Light color for better contrast */
-}
-
-.tile[data-value="512"] {
-  background-color: #edc850;
-  color: #f9f6f2; /* Light color for better contrast */
-}
-
-.tile[data-value="1024"] {
-  background-color: #edc53f;
-  color: #f9f6f2; /* Light color for better contrast */
-}
-
-.tile[data-value="2048"] {
-  background-color: #edc22e;
-  color: #f9f6f2; /* Light color for better contrast */
-}
-
-.tile[data-value="4096"],
-.tile[data-value="8192"],
-.tile[data-value="16384"],
-.tile[data-value="32768"],
-.tile[data-value="65536"] {
-  background-color: #3c3a32; /* Dark color for higher values */
-  color: #f9f6f2; /* Light color for better contrast */
-}
-
-.tile:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.7),
-    0 0 25px rgba(255, 255, 255, 0.7), 0 0 35px rgba(255, 255, 255, 0.7),
-    0 0 45px rgba(255, 255, 255, 0.7);
-}
-
-#game-over {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: rgba(0, 0, 0, 0.5);
-  color: white;
-  font-size: 2rem;
-  z-index: 8;
-  padding: 20px;
-  border-radius: 10px;
-}
-
-.hidden {
-  display: none;
-}
-
-.inverted {
-  filter: invert(100%);
-}
-
-.inverted .tile {
-  filter: invert(100%);
-}
-
-.inverted .tile * {
-  filter: invert(100%);
-}
-
-.inverted #score-container,
-.inverted #invert-button,
-.inverted #reset-button,
-.inverted #back-button {
-  filter: invert(100%);
-}
-
-.inverted body {
-  background-color: var(--secondary-color);
-  color: #333;
-}
-
-.inverted header h1 {
-  background-color: rgba(255, 255, 255, 0.8);
-  color: #333;
-}
-
-.inverted #board-container {
-  background-color: rgba(255, 255, 255, 0.8);
-  border: 2px solid rgba(0, 0, 0, 0.2);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 0, 0, 0.2),
-    0 0 30px rgba(0, 0, 0, 0.2);
-}
-
-.inverted .tile {
-  background-color: #fff;
-  color: #333;
-}
-
-.inverted .tile[data-value="2"] {
-  background-color: #eee4da;
-  color: #776e65;
-}
-
-.inverted .tile[data-value="4"] {
-  background-color: #ede0c8;
-  color: #776e65;
-}
-
-.inverted .tile[data-value="8"] {
-  background-color: #f2b179;
-  color: #f9f6f2;
-}
-
-.inverted .tile[data-value="16"] {
-  background-color: #f59563;
-  color: #f9f6f2;
-}
-
-.inverted .tile[data-value="32"] {
-  background-color: #f67c5f;
-  color: #f9f6f2;
-}
-
-.inverted .tile[data-value="64"] {
-  background-color: #f65e3b;
-  color: #f9f6f2;
-}
-
-.inverted .tile[data-value="128"] {
-  background-color: #edcf72;
-  color: #f9f6f2;
-}
-
-.inverted .tile[data-value="256"] {
-  background-color: #edcc61;
-  color: #f9f6f2;
-}
-
-.inverted .tile[data-value="512"] {
-  background-color: #edc850;
-  color: #f9f6f2;
-}
-
-.inverted .tile[data-value="1024"] {
-  background-color: #edc53f;
-  color: #f9f6f2;
-}
-
-.inverted .tile[data-value="2048"] {
-  background-color: #edc22e;
-  color: #f9f6f2;
-}
-
-.inverted .tile[data-value="4096"],
-.inverted .tile[data-value="8192"],
-.inverted .tile[data-value="16384"],
-.inverted .tile[data-value="32768"],
-.inverted .tile[data-value="65536"] {
-  background-color: #3c3a32;
-  color: #f9f6f2;
-}
-
-.inverted .tile:hover {
-  transform: scale(1.05);
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.7), 0 0 25px rgba(0, 0, 0, 0.7),
-    0 0 35px rgba(0, 0, 0, 0.7), 0 0 45px rgba(0, 0, 0, 0.7);
-}
-
-.overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: radial-gradient(circle at center, var(--overlay-dark) 0%, rgb(0, 0, 0) 150%); /* Increase radius of gradient */
-  z-index: -1; /* Changed to be under the elements */
-  pointer-events: none;
-}
-
-.overlay.light-mode {
-  background: radial-gradient(circle at center, var(--overlay-light) 0%, var(--overlay-light-end) 100%); /* Better light mode overlay color */
-}
+/* Root variables */
+/* ...existing code... */
 
 #changeColor-button {
   background-color: transparent; /* Transparent background */
@@ -498,100 +57,51 @@ header.inverted h1 {
   transform: scale(0.95); /* Slightly decrease size on active */
 }
 
-#back-button {
-  background-color: rgba(0, 16, 71, 0.4); /* Glass effect background */
-  color: var(--secondary-color); /* Ensure text contrast */
-  border: none;
-  padding: 0.5rem 1rem; /* Adjust padding */
-  font-size: 1rem; /* Adjust font size */
-  border-radius: 20px; /* Increase border radius */
-  text-align: center;
-  width: auto;
-  max-width: 90%;
-  margin-top: 10px; /* Adjust margin */
-  z-index: 7;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08); /* Static drop shadow */
-  transition: background-color 0.2s, color 0.2s, transform 0.1s; /* Faster transition */
+:root {
+  --size: 4;
+  --gap: 10px;
+  --tile-size: calc((100vmin - var(--gap) * (var(--size) + 1)) / var(--size));
+  --game-size: calc(
+    var(--tile-size) * (var(--size)) + var(--gap) * (var(--size) + 2)
+  );
+  --primary-color: #1a1a1a;
+  --secondary-color: #f2f2f2;
+  --light-background: #f0f0f0;
+  --light-text: #000000;
+  --dark-background: #1a1a1a;
+  --dark-text: #f2f2f2;
+  --highlight-color: #ffcc00;
+  --button-background: #001047;
+  --button-hover-background: #242f57;
+  --button-light-background: #ffcc00;
+  --button-light-hover-background: #ff9900;
+  --reset-button-background: #ff7f50;
+  --reset-button-hover-background: #ff4500;
+  --overlay-dark: rgba(0, 16, 71, 0.8);
+  --overlay-light: rgba(255, 255, 255, 0.8);
+  --overlay-light-end: rgba(240, 240, 240, 1);
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: var(--dark-background);
+  color: var(--dark-text);
+  margin: 0;
+  padding: env(safe-area-inset-top) 10px env(safe-area-inset-bottom);
   display: flex;
+  -ms-flex-direction: column; /* IE 10+ */
+  flex-direction: column;
   align-items: center;
-  justify-content: center;
-  filter: brightness(85%); /* Add brightness effect */
-  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
-  backdrop-filter: blur(10px); /* Glass effect */
-}
-
-#back-button.light-mode {
-  background-color: rgba(224, 224, 224, 0.5); /* Updated background color */
-  color: #333333; /* Darker text color */
-  border: none; /* Remove border */
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5); /* Match reset button box shadow */
-  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7); /* Match reset button text glow */
-  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
-  backdrop-filter: blur(10px); /* Glass effect */
-  transition: background-color 0.2s, color 0.2s, transform 0.1s; /* Faster transition */
-}
-
-#back-button:hover {
-  background-color: rgba(255, 255, 255, 0.1); /* Slightly visible background on hover */
-  transform: scale(1.05); /* Slightly increase size on hover */
-}
-
-#back-button.light-mode:hover {
-  background-color: var(--reset-button-hover-background); /* Match reset button hover background color */
-  color: #ffffff; /* Match reset button hover text color */
-  transform: scale(1.05); /* Slightly increase size on hover */
-}
-
-#back-button:active {
-  transform: scale(0.95); /* Slightly decrease size on active */
-}
-
-#leaderboard-button {
-  background-color: rgba(0, 16, 71, 0.4); /* Glass effect background */
-  color: var(--secondary-color); /* Ensure text contrast */
-  border: none;
-  padding: 0.5rem 1rem; /* Adjust padding */
-  font-size: 1rem; /* Adjust font size */
-  border-radius: 20px; /* Increase border radius */
-  text-align: center;
-  width: auto;
-  max-width: 90%;
-  margin-top: 10px; /* Adjust margin */
-  z-index: 7;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08); /* Static drop shadow */
-  transition: background-color 0.2s, color 0.2s, transform 0.1s; /* Faster transition */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  filter: brightness(85%); /* Add brightness effect */
-  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
-  backdrop-filter: blur(10px); /* Glass effect */
-}
-
-#leaderboard-button.light-mode {
-  background-color: rgba(224, 224, 224, 0.5); /* Updated background color */
-  color: #333333; /* Darker text color */
-  border: none; /* Remove border */
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5); /* Match reset button box shadow */
-  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7); /* Match reset button text glow */
-  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
-  backdrop-filter: blur(10px); /* Glass effect */
-  transition: background-color 0.2s, color 0.2s, transform 0.1s; /* Faster transition */
-}
-
-#leaderboard-button:hover {
-  background-color: rgba(255, 255, 255, 0.1); /* Slightly visible background on hover */
-  transform: scale(1.05); /* Slightly increase size on hover */
-}
-
-#leaderboard-button.light-mode:hover {
-  background-color: var(--reset-button-hover-background); /* Match reset button hover background color */
-  color: #ffffff; /* Match reset button hover text color */
-  transform: scale(1.05); /* Slightly increase size on hover */
-}
-
-#leaderboard-button:active {
-  transform: scale(0.95); /* Slightly decrease size on active */
+  -ms-flex-align: center; /* IE 10+ */
+  justify-content: space-between;
+  -ms-flex-pack: justify; /* IE 10+ */
+  min-height: 100vh;
+  touch-action: none;
+  -ms-touch-action: none; /* IE 10+ */
+  overflow: hidden;
+  max-width: 100vw;
+  height: 100vh;
+  box-sizing: border-box; /* Ensure padding is included in the total width and height */
 }
 
 body.light-mode {
@@ -605,22 +115,34 @@ body.inverted {
   color: #333;
 }
 
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: radial-gradient(circle at center, var(--overlay-dark) 0%, rgb(0, 0, 0) 150%); /* Increase radius of gradient */
+  z-index: -1; /* Changed to be under the elements */
+  pointer-events: none;
+}
+
+.overlay.light-mode {
+  background: radial-gradient(circle at center, var(--overlay-light) 0%, var(--overlay-light-end) 100%); /* Better light mode overlay color */
+}
+
 header {
-  margin: auto;
-  padding: auto;
+  margin: 0;
+  padding: 10px;
   text-align: left;
   position: absolute;
   top: 10px;
   left: 10px;
   z-index: 5;
-  width: auto; /* Ensure the header width auto-fits */
-  max-width: calc(100% - 20px); /* Ensure it doesn't overlap with the score element */
-  box-sizing: border-box; /* Include padding and border in the element's total width and height */
 }
 
 header h1 {
-  margin: auto;
-  padding: auto; /* Further reduce padding for smaller box size */
+  margin: 0;
+  padding: 0.2rem 0.4rem; /* Further reduce padding for smaller box size */
   font-size: 1rem; /* Further adjust font size */
   width: auto; /* Adjust width to fit content */
   box-sizing: border-box; /* Ensure padding is included in the total width */
@@ -823,6 +345,7 @@ main.inverted {
 
 #board-container {
   display: grid;
+  -ms-grid-columns: repeat(var(--size), 1fr); /* IE 10+ */
   grid-template-columns: repeat(var(--size), 1fr);
   gap: var(--gap); /* Ensure gap between tiles */
   width: 100%;
@@ -839,13 +362,11 @@ main.inverted {
   margin: auto;
   position: relative;
   padding: 0; /* Remove padding from the container */
-  margin-top: 100px; /* CHECK THIS */
+  margin-top: 120px; /* CHECK THIS */
   z-index: 3;
   overflow: hidden; /* Remove scroll option */
   padding-right: var(--gap); /* Adjust right padding */
   padding-bottom: var(--gap); /* Adjust bottom padding */
-  justify-content: center; /* Center the board container */
-  align-items: center; /* Center the board container */
 }
 
 #board-container.light-mode {
@@ -869,7 +390,9 @@ main.inverted {
   color: inherit; /* Remove color */
   font-weight: bold;
   display: flex;
+  -ms-flex-align: center; /* IE 10+ */
   align-items: center;
+  -ms-flex-pack: center; /* IE 10+ */
   justify-content: center;
   aspect-ratio: 1 / 1;
   border-radius: 15px;
@@ -1410,8 +933,8 @@ main.inverted {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin: auto; /* Adjust margin */
-  padding: auto; /* Adjust padding for better mobile experience */
+  margin-top: 10px; /* Adjust margin */
+  padding: 5px; /* Adjust padding for better mobile experience */
   width: 100%; /* Ensure it spans the full width */
   box-sizing: border-box;
 }
@@ -1570,104 +1093,6 @@ main.inverted {
   backdrop-filter: blur(10px); /* Glass effect */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
   transition: background-color 0.2s, color 0.2s; /* Faster transition */
-}
-
-#leaderboard-button {
-  background-color: rgba(0, 16, 71, 0.4); /* Glass effect background */
-  color: var(--secondary-color); /* Ensure text contrast */
-  border: none;
-  padding: 0.5rem 1rem; /* Adjust padding */
-  font-size: 1rem; /* Adjust font size */
-  border-radius: 20px; /* Increase border radius */
-  text-align: center;
-  width: auto;
-  max-width: 90%;
-  margin-top: 10px; /* Adjust margin */
-  z-index: 7;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08); /* Static drop shadow */
-  transition: background-color 0.2s, color 0.2s, transform 0.1s; /* Faster transition */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  filter: brightness(85%); /* Add brightness effect */
-  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
-  backdrop-filter: blur(10px); /* Glass effect */
-}
-
-#leaderboard-button.light-mode {
-  background-color: rgba(224, 224, 224, 0.5); /* Updated background color */
-  color: #333333; /* Darker text color */
-  border: none; /* Remove border */
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5); /* Match reset button box shadow */
-  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7); /* Match reset button text glow */
-  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
-  backdrop-filter: blur(10px); /* Glass effect */
-  transition: background-color 0.2s, color 0.2s, transform 0.1s; /* Faster transition */
-}
-
-#leaderboard-button:hover {
-  background-color: rgba(255, 255, 255, 0.1); /* Slightly visible background on hover */
-  transform: scale(1.05); /* Slightly increase size on hover */
-}
-
-#leaderboard-button.light-mode:hover {
-  background-color: var(--reset-button-hover-background); /* Match reset button hover background color */
-  color: #ffffff; /* Match reset button hover text color */
-  transform: scale(1.05); /* Slightly increase size on hover */
-}
-
-#leaderboard-button:active {
-  transform: scale(0.95); /* Slightly decrease size on active */
-}
-
-/* ...existing code... */
-
-#leaderboardModal {
-  position: fixed;
-  top: 50%;
-  left: 50%;
-  transform: translate(-50%, -50%);
-  background-color: rgba(0, 0, 0, 0.8);
-  color: white;
-  padding: 20px;
-  border-radius: 10px;
-  z-index: 10;
-  display: none; /* Initially hidden */
-}
-
-#leaderboardModal.hidden {
-  display: none; /* Hide when the hidden class is present */
-}
-
-#leaderboardModal button {
-  background-color: rgba(0, 16, 71, 0.4); /* Glass effect background */
-  color: var(--secondary-color); /* Ensure text contrast */
-  border: none;
-  padding: 0.5rem 1rem; /* Adjust padding */
-  font-size: 1rem; /* Adjust font size */
-  border-radius: 20px; /* Increase border radius */
-  text-align: center;
-  width: auto;
-  max-width: 90%;
-  margin-top: 10px; /* Adjust margin */
-  z-index: 7;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08); /* Static drop shadow */
-  transition: background-color 0.2s, color 0.2s, transform 0.1s; /* Faster transition */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  filter: brightness(85%); /* Add brightness effect */
-  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
-  backdrop-filter: blur(10px); /* Glass effect */
-}
-
-#leaderboardModal button:hover {
-  background-color: rgba(255, 255, 255, 0.1); /* Slightly visible background on hover */
-  transform: scale(1.05); /* Slightly increase size on hover */
-}
-
-#leaderboardModal button:active {
-  transform: scale(0.95); /* Slightly decrease size on active */
 }
 
 /* ...existing code... */
