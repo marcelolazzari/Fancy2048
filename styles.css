@@ -16,7 +16,7 @@ h1 {
 }
 
 .button-container {
-    display: flex;
+    display: block;
     flex-direction: column;
     align-items: center;
     gap: 10px; /* Adjust the spacing as needed */
