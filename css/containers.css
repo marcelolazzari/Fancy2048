@@ -1,7 +1,7 @@
 
 .container {
     /* Add container styles here */
-    display: flex;
+    display: block;
     justify-content: center;
     align-items: center;
     /* ...other container styles... */
