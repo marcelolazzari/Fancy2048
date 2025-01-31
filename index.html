@@ -8,24 +8,33 @@
     <link rel="stylesheet" href="css/text.css">
     <link rel="stylesheet" href="css/buttons.css">
     <link rel="stylesheet" href="styles.css">
-    <!-- ...existing links and scripts... -->
     <style>
         .button-container {
             display: flex;
-            flex-direction: column;
-            align-items: flex-start;
+            flex-direction: row; /* Changed to row for horizontal alignment */
+            justify-content: center; /* Center the buttons horizontally */
+            align-items: center; /* Center the buttons vertically */
             gap: 10px; /* Adjust the spacing as needed */
+        }
+        button {
+            padding: 10px 20px; /* Added padding for better touch targets */
+            font-size: 16px; /* Increased font size for better readability */
+            border-radius: 5px; /* Added border-radius for rounded corners */
+            border: 1px solid #ccc; /* Added border for button styling */
+            background-color: #f0f0f0; /* Added background color */
+            cursor: pointer; /* Added cursor pointer for better UX */
+        }
+        button:hover {
+            background-color: #ddd; /* Change background on hover */
         }
     </style>
 </head>
 <body>
-    <!-- ...existing body content... -->
     <h1>Fancy 2048</h1>
     <div class="button-container">
         <button id="change-color">Change Color</button>
         <button id="invert-color">Invert Color</button>
         <button id="leaderboard">Leaderboard</button>
     </div>
-    <!-- ...existing body content... -->
 </body>
 </html>
