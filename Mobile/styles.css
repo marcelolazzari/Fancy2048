@@ -134,7 +134,7 @@ header {
   margin: 0;
   padding: 10px;
   text-align: left;
-  position: absolute;
+  position: fixed;
   top: 10px;
   left: 10px;
   z-index: 5;
