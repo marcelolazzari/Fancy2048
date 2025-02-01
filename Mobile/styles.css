@@ -81,7 +81,7 @@ button {
   border: none;
   background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent background */
   cursor: pointer;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5), 0 0 30px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.5); /* Match tile box shadow */
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3), 0 0 20px rgba(255, 255, 255, 0.3); /* Reduced glow effect */
   transition: background-color 0.2s, color 0.2s, transform 0.05s ease-in-out, opacity 0.05s ease-in-out, box-shadow 0.05s ease-in-out; /* Match tile transition */
   display: flex;
   align-items: center;
@@ -101,7 +101,7 @@ button i {
 button:hover {
   background-color: rgba(255, 255, 255, 0.3); /* Slightly more opaque on hover */
   transform: scale(1.05); /* Match tile hover effect */
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.7), 0 0 25px rgba(255, 255, 255, 0.7), 0 0 35px rgba(255, 255, 255, 0.7), 0 0 45px rgba(255, 255, 255, 0.7); /* Match tile hover shadow */
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.5), 0 0 25px rgba(255, 255, 255, 0.5); /* Reduced glow effect */
 }
 
 button:active {
@@ -126,19 +126,51 @@ button:active {
   border-radius: 15px; /* Match tile border radius */
   margin-top: 20px;
   z-index: 5; /* Adjusted z-index */
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5), 0 0 30px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.5); /* Match tile box shadow */
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3), 0 0 20px rgba(255, 255, 255, 0.3); /* Reduced glow effect */
   text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
 }
 
 #reset-button:hover {
   background-color: rgba(255, 255, 255, 0.3); /* Slightly more opaque on hover */
   transform: scale(1.05); /* Match tile hover effect */
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.7), 0 0 25px rgba(255, 255, 255, 0.7), 0 0 35px rgba(255, 255, 255, 0.7), 0 0 45px rgba(255, 255, 255, 0.7); /* Match tile hover shadow */
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.5), 0 0 25px rgba(255, 255, 255, 0.5); /* Reduced glow effect */
 }
 
 /* Back button styles */
 #back-button {
   display: none;
+  background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent background */
+  border: 1px solid rgba(255, 255, 255, 0.3); /* Semi-transparent border */
+  padding: 0.8rem 1.2rem;
+  color: #ffffff;
+  font-size: 1rem;
+  border-radius: 15px; /* Match tile border radius */
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3), 0 0 20px rgba(255, 255, 255, 0.3); /* Reduced glow effect */
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+}
+
+#back-button:hover {
+  background-color: rgba(255, 255, 255, 0.3); /* Slightly more opaque on hover */
+  transform: scale(1.05); /* Match tile hover effect */
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.5), 0 0 25px rgba(255, 255, 255, 0.5); /* Reduced glow effect */
+}
+
+/* Leaderboard button styles */
+#leaderboard-button {
+  background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent background */
+  border: 1px solid rgba(255, 255, 255, 0.3); /* Semi-transparent border */
+  padding: 0.8rem 1.2rem;
+  color: #ffffff;
+  font-size: 1rem;
+  border-radius: 15px; /* Match tile border radius */
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3), 0 0 20px rgba(255, 255, 255, 0.3); /* Reduced glow effect */
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+}
+
+#leaderboard-button:hover {
+  background-color: rgba(255, 255, 255, 0.3); /* Slightly more opaque on hover */
+  transform: scale(1.05); /* Match tile hover effect */
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.5), 0 0 25px rgba(255, 255, 255, 0.5); /* Reduced glow effect */
 }
 
 /* Main styles */
@@ -165,23 +197,24 @@ main {
   position: fixed;
   top: 10px;
   right: 10px;
-  padding: 0.5rem 20px;
+  padding: 0.5rem 1rem; /* Add padding for space around the text */
   color: var(--secondary-color);
   font-size: 1rem;
-  background-color: rgba(50, 50, 50, 0.5);
-  border-radius: 10px;
-  text-align: center;
-  width: calc(100% - 40px); /* Adjust width based on text with some space around */
-  max-width: 90px;
+  background-color: rgba(255, 255, 255, 0.1); /* Better background color contrast */
+  border-radius: 15px; /* Match tile border radius */
+  text-align: left;
+  width: calc(fit-content + 20px); /* Width auto based on text with some space around */
+  max-width: 90%;
   z-index: 7;
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3), 0 0 20px rgba(255, 255, 255, 0.3); /* Reduced glow effect */
+  border: 2px solid rgba(255, 255, 255, 0.3); /* Semi-transparent border */
 }
 
 #score,
 #best-score {
-  font-size: 1.2rem;
+  font-size: 1rem;
   font-weight: bold;
   color: var(--secondary-color);
 }
