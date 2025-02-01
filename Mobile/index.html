@@ -5,55 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Fancy 2048</title>
     <link rel="stylesheet" href="styles.css" />
-    <style>
-      header {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      #controls-container {
-        display: flex; /* Use flexbox for alignment */
-        flex-direction: column; /* Align buttons vertically */
-        justify-content: center; /* Center buttons horizontally */
-        align-items: flex-start; /* Align buttons to the left */
-        gap: 10px; /* Adjust the spacing as needed */
-        margin-top: calc(20px + 1em); /* Add margin from the top based on h1 element */
-        padding: 10px; /* Add padding for better spacing */
-      }
-      button {
-        padding: 10px 20px;
-        font-size: 16px;
-        color: #ffffff;
-        border-radius: 20px;
-        border: none;
-        background-color: rgba(0, 16, 71, 0.8);
-        cursor: pointer;
-        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-        transition: background-color 0.2s, color 0.2s;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        filter: brightness(85%);
-        -webkit-backdrop-filter: blur(10px);
-        backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.2);
-      }
-      button:hover {
-        background-color: rgba(255, 255, 255, 0.1);
-      }
-      button:active {
-        transform: scale(0.95);
-      }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   </head>
   <body>
     <!-- Header section -->
     <header style="width: auto;">
       <h1>Fancy 2048</h1>
       <div id="controls-container">
-        <button type="button" id="changeColor-button">Change Color</button>
-        <button type="button" id="back-button">Undo</button>
-        <button type="button" id="leaderboard-button" onclick="window.location.href='Stats/leaderboard.html'">Leaderboard</button>
+        <button type="button" id="changeColor-button"><i class="fas fa-palette"></i></button>
+        <button type="button" id="back-button"><i class="fas fa-undo"></i></button>
+        <button type="button" id="leaderboard-button" onclick="window.location.href='Stats/leaderboard.html'"><i class="fas fa-trophy"></i></button>
       </div>
     </header>
 
@@ -70,7 +31,7 @@
       </aside>
     </main>
 
-    <button type="button" id="reset-button">Reset Game</button>
+    <button type="button" id="reset-button"><i class="fas fa-redo"></i></button>
 
     <!-- Leaderboard Modal -->
     <div id="leaderboardModal" class="hidden">

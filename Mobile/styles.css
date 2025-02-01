@@ -47,6 +47,9 @@ body {
 
 /* Header styles */
 header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
   margin: 0;
   padding: 10px;
   text-align: left;
@@ -71,17 +74,13 @@ header h1 {
 
 /* General button styles */
 button {
-  background-color: rgba(0, 16, 71, 0.8);
+  padding: 10px 20px;
+  font-size: 16px;
   color: #ffffff;
-  border: none;
-  padding: 0.5rem 1rem;
-  font-size: 1rem;
   border-radius: 20px;
-  text-align: center;
-  width: auto;
-  max-width: 90%;
-  white-space: nowrap;
-  margin-top: 10px;
+  border: none;
+  background-color: rgba(0, 16, 71, 0.8);
+  cursor: pointer;
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
   transition: background-color 0.2s, color 0.2s;
   display: flex;
@@ -92,6 +91,10 @@ button {
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 255, 255, 0.2);
   position: relative;
+}
+
+button i {
+  font-size: 1.5rem;
 }
 
 button:hover {
@@ -122,6 +125,10 @@ button:active {
   z-index: 5; /* Adjusted z-index */
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5);
   text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+}
+
+#reset-button i {
+  font-size: 1.5rem;
 }
 
 #reset-button:hover {
@@ -555,20 +562,13 @@ main {
 }
 
 #controls-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 10px; /* Evenly spaced */
-  position: fixed;
-  top: 10px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 100%;
-  max-width: 600px;
-  z-index: 10; /* Ensure controls container is on top */
-  padding: 10px;
-  box-sizing: border-box;
+  display: flex; /* Use flexbox for alignment */
+  flex-direction: column; /* Align buttons vertically */
+  justify-content: center; /* Center buttons horizontally */
+  align-items: flex-start; /* Align buttons to the left */
+  gap: 10px; /* Adjust the spacing as needed */
+  margin-top: calc(20px + 1em); /* Add margin from the top based on h1 element */
+  padding: 10px; /* Add padding for better spacing */
 }
 
 #hue-slider-container {
