@@ -13,6 +13,7 @@ Fancy2048 is a modded version of the classic 2048 game with enhanced features an
 - **Local Storage**: Your best score and theme preferences are saved locally.
 - **Leaderboard**: Compete with other players and see your ranking on the leaderboard.
 - **Change Color**: Change the hue of the game elements for a personalized experience.
+- **Game Statistics**: View detailed statistics of your game sessions.
 
 ## How to Play
 
@@ -52,56 +53,5 @@ If you prefer to run the game locally, follow these steps:
    cd Fancy2048
    ```
 3. Open `index.html` in your preferred web browser to start playing.
-
-## Implementation Details
-
-### Back Button
-
-The back button allows the player to undo their last move. This is implemented by maintaining a stack of previous game states and reverting to the last state when the button is pressed.
-
-```javascript
-// ...existing code...
-
-let gameStateStack = [];
-
-// Save the current state before making a move
-function saveState() {
-    gameStateStack.push(JSON.stringify(grid));
-}
-
-// Undo the last move
-function undoMove() {
-    if (gameStateStack.length > 0) {
-        grid = JSON.parse(gameStateStack.pop());
-        updateGrid();
-    }
-}
-
-// ...existing code...
-
-document.getElementById('backButton').addEventListener('click', undoMove);
-
-// ...existing code...
-```
-
-### Leaderboard Button
-
-The leaderboard button allows the player to view the leaderboard. This is implemented by fetching the leaderboard data from local storage or a server and displaying it in a modal or a new view.
-
-```javascript
-// ...existing code...
-
-function showLeaderboard() {
-    // Fetch leaderboard data (this example uses local storage)
-    let leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
-    let leaderboardHtml = leaderboard.map((entry, index) => `<li>${index + 1}. ${entry.name}: ${entry.score}</li>`).join('');
-    document.getElementById('leaderboardList').innerHTML = leaderboardHtml;
-    document.getElementById('leaderboardModal').style.display = 'block';
-}
-
-document.getElementById('leaderboardButton').addEventListener('click', showLeaderboard);
-
-// ...existing code...
-```
 
 Enjoy the enhanced 2048 experience with Fancy2048!
