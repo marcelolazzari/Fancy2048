@@ -21,7 +21,6 @@ class Game {
     }
   
     addEventListeners() {
-      document.getElementById('invert-button').addEventListener('click', this.toggleTheme.bind(this));
       document.getElementById('reset-button').addEventListener('click', this.reset.bind(this));
       window.addEventListener('keydown', this.handleKeyPress.bind(this));
       const boardContainer = document.querySelector('.board-container');
@@ -49,7 +48,6 @@ class Game {
         document.querySelector('.overlay'),
         document.querySelector('.board-container'),
         document.getElementById('score-container'),
-        document.getElementById('invert-button'),
         document.getElementById('reset-button'),
         document.getElementById('best-score') // Ensure best score is toggled
       ];
@@ -64,9 +62,6 @@ class Game {
         tile.classList.toggle('light-mode', this.isLightMode);
         this.invertTileDigits(tile);
       });
-  
-      const invertButton = document.getElementById('invert-button');
-      invertButton.textContent = this.isLightMode ? '☀️' : '🌙'; // Change emoji based on theme
   
       this.updateUI(); // Ensure UI is updated with the correct theme
       this.updateHue(); // Ensure hue is applied
@@ -335,7 +330,7 @@ class Game {
       document.getElementById('score-container').style.filter = `hue-rotate(${hueRotation}deg)`;
       document.getElementById('score').style.filter = `hue-rotate(${hueRotation}deg)`;
       document.getElementById('best-score').style.filter = `hue-rotate(${hueRotation}deg)`;
-      const buttons = [document.getElementById('changeColor-button'), document.getElementById('reset-button'), document.getElementById('invert-button')];
+      const buttons = [document.getElementById('changeColor-button'), document.getElementById('reset-button')];
       buttons.forEach(button => {
         if (!this.isLightMode) {
           button.style.filter = `hue-rotate(${hueRotation}deg)`; // Apply hue rotation to buttons in dark mode
@@ -346,7 +341,7 @@ class Game {
     }
   
     applyButtonStyles() {
-      const buttons = [document.getElementById('changeColor-button'), document.getElementById('reset-button'), document.getElementById('invert-button')];
+      const buttons = [document.getElementById('changeColor-button'), document.getElementById('reset-button')];
       buttons.forEach(button => {
         if (this.isLightMode) {
           button.style.backgroundColor = 'rgba(224, 224, 224, 0.5)'; // Updated background color
