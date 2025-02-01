@@ -6,25 +6,32 @@
     <title>Fancy 2048</title>
     <link rel="stylesheet" href="styles.css" />
     <style>
-        #controls-container {
-            display: flex;
-            flex-direction: column; /* Changed to row for horizontal alignment */
-            justify-content: center; /* Center the buttons horizontally */
-            align-items: center; /* Center the buttons vertically */
-            gap: 10px; /* Adjust the spacing as needed */
-        }
-        button {
-            padding: 10px 20px; /* Added padding for better touch targets */
-            font-size: 16px; /* Increased font size for better readability */
-            color: #000;
-            border-radius: 5px; /* Added border-radius for rounded corners */
-            border: 1px solid #ccc; /* Added border for button styling */
-            background-color: #f0f0f049; /* Added background color */
-            cursor: pointer; /* Added cursor pointer for better UX */
-        }
-        button:hover {
-            background-color: #dddddd91; /* Change background on hover */
-        }
+      header {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      #controls-container {
+        display: flex; /* Use flexbox for alignment */
+        flex-direction: column; /* Align buttons vertically */
+        justify-content: center; /* Center buttons horizontally */
+        align-items: flex-start; /* Align buttons to the left */
+        gap: 10px; /* Adjust the spacing as needed */
+        margin-top: calc(20px + 1em); /* Add margin from the top based on h1 element */
+        padding: 10px; /* Add padding for better spacing */
+      }
+      button {
+        padding: 10px 20px; /* Added padding for better touch targets */
+        font-size: 16px; /* Increased font size for better readability */
+        color: #000;
+        border-radius: 5px; /* Added border-radius for rounded corners */
+        border: 1px solid #ccc; /* Added border for button styling */
+        background-color: #f0f0f049; /* Added background color */
+        cursor: pointer; /* Added cursor pointer for better UX */
+      }
+      button:hover {
+        background-color: #dddddd91; /* Change background on hover */
+      }
     </style>
   </head>
   <body>
