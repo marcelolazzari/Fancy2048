@@ -382,6 +382,29 @@ class Game {
       localStorage.setItem('gameStats', JSON.stringify(this.stats));
     }
   }
+
+  optimizedSlideAndCombine(row) {
+    let newRow = [];
+    let i = 0;
+    while (i < row.length) {
+      if (row[i] !== '') {
+        if (row[i] === row[i + 1]) {
+          newRow.push(row[i] * 2);
+          this.score += row[i] * 2;
+          i += 2;
+        } else {
+          newRow.push(row[i]);
+          i++;
+        }
+      } else {
+        i++;
+      }
+    }
+    while (newRow.length < this.size) {
+      newRow.push('');
+    }
+    return newRow;
+  }
 }
 
 // Instantiate the game
