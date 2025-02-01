@@ -77,28 +77,31 @@ button {
   padding: 10px 20px;
   font-size: 16px;
   color: #ffffff;
-  border-radius: 20px;
+  border-radius: 15px; /* Match tile border radius */
   border: none;
-  background-color: rgba(0, 16, 71, 0.8);
+  background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent background */
   cursor: pointer;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-  transition: background-color 0.2s, color 0.2s;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5), 0 0 30px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.5); /* Match tile box shadow */
+  transition: background-color 0.2s, color 0.2s, transform 0.05s ease-in-out, opacity 0.05s ease-in-out, box-shadow 0.05s ease-in-out; /* Match tile transition */
   display: flex;
   align-items: center;
   justify-content: center;
   filter: brightness(85%);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3); /* Semi-transparent border */
   position: relative;
 }
 
 button i {
   font-size: 1.5rem;
+  color: #ffffff; /* White icon color */
 }
 
 button:hover {
-  background-color: rgba(255, 255, 255, 0.1);
+  background-color: rgba(255, 255, 255, 0.3); /* Slightly more opaque on hover */
+  transform: scale(1.05); /* Match tile hover effect */
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.7), 0 0 25px rgba(255, 255, 255, 0.7), 0 0 35px rgba(255, 255, 255, 0.7), 0 0 45px rgba(255, 255, 255, 0.7); /* Match tile hover shadow */
 }
 
 button:active {
@@ -115,24 +118,22 @@ button:active {
   position: fixed;
   top: 150px;
   right: 10px;
-  background-color: rgba(255, 127, 80, 0.2); /* Semi-transparent background */
-  border: 1px solid rgba(255, 127, 80, 0.3); /* Semi-transparent border */
+  background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent background */
+  border: 1px solid rgba(255, 255, 255, 0.3); /* Semi-transparent border */
   padding: 0.8rem 1.2rem;
   color: #ffffff;
   font-size: 1rem;
-  border-radius: 20px;
+  border-radius: 15px; /* Match tile border radius */
   margin-top: 20px;
   z-index: 5; /* Adjusted z-index */
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5), 0 0 30px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.5); /* Match tile box shadow */
   text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
 }
 
-#reset-button i {
-  font-size: 1.5rem;
-}
-
 #reset-button:hover {
-  background-color: rgba(255, 127, 80, 0.3); /* Slightly more opaque on hover */
+  background-color: rgba(255, 255, 255, 0.3); /* Slightly more opaque on hover */
+  transform: scale(1.05); /* Match tile hover effect */
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.7), 0 0 25px rgba(255, 255, 255, 0.7), 0 0 35px rgba(255, 255, 255, 0.7), 0 0 45px rgba(255, 255, 255, 0.7); /* Match tile hover shadow */
 }
 
 /* Back button styles */
@@ -563,9 +564,9 @@ main {
 
 #controls-container {
   display: flex; /* Use flexbox for alignment */
-  flex-direction: column; /* Align buttons vertically */
+  flex-direction: row; /* Align buttons vertically */
   justify-content: center; /* Center buttons horizontally */
-  align-items: flex-start; /* Align buttons to the left */
+  align-items: normal; /* Align buttons to the left */
   gap: 10px; /* Adjust the spacing as needed */
   margin-top: calc(20px + 1em); /* Add margin from the top based on h1 element */
   padding: 10px; /* Add padding for better spacing */
