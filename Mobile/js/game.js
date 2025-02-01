@@ -407,7 +407,7 @@ class Game {
   }
 }
 
-// Instantiate the game
+// Instantiate the game 
 document.addEventListener('DOMContentLoaded', () => {
   const game = new Game(4);
   game.refreshLayout();
