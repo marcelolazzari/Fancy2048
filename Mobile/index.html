@@ -21,16 +21,28 @@
         padding: 10px; /* Add padding for better spacing */
       }
       button {
-        padding: 10px 20px; /* Added padding for better touch targets */
-        font-size: 16px; /* Increased font size for better readability */
-        color: #000;
-        border-radius: 5px; /* Added border-radius for rounded corners */
-        border: 1px solid #ccc; /* Added border for button styling */
-        background-color: #f0f0f049; /* Added background color */
-        cursor: pointer; /* Added cursor pointer for better UX */
+        padding: 10px 20px;
+        font-size: 16px;
+        color: #ffffff;
+        border-radius: 20px;
+        border: none;
+        background-color: rgba(0, 16, 71, 0.8);
+        cursor: pointer;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+        transition: background-color 0.2s, color 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        filter: brightness(85%);
+        -webkit-backdrop-filter: blur(10px);
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
       }
       button:hover {
-        background-color: #dddddd91; /* Change background on hover */
+        background-color: rgba(255, 255, 255, 0.1);
+      }
+      button:active {
+        transform: scale(0.95);
       }
     </style>
   </head>

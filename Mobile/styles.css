@@ -69,11 +69,11 @@ header h1 {
   z-index: 6;
 }
 
-/* Button styles */
+/* General button styles */
 button {
-  background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent background */
-  color: var(--secondary-color);
-  border: 1px solid rgba(255, 255, 255, 0.3); /* Semi-transparent border */
+  background-color: rgba(0, 16, 71, 0.8);
+  color: #ffffff;
+  border: none;
   padding: 0.5rem 1rem;
   font-size: 1rem;
   border-radius: 20px;
@@ -82,32 +82,32 @@ button {
   max-width: 90%;
   white-space: nowrap;
   margin-top: 10px;
-  z-index: 5; /* Adjusted z-index */
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-  text-shadow: none;
-  transition: background-color 0.2s, color 0.2s, transform 0.1s;
+  transition: background-color 0.2s, color 0.2s;
   display: flex;
   align-items: center;
   justify-content: center;
   filter: brightness(85%);
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  position: relative;
 }
 
 button:hover {
-  background-color: rgba(255, 255, 255, 0.3); /* Slightly more opaque on hover */
-  transform: scale(1.05);
+  background-color: rgba(255, 255, 255, 0.1);
 }
 
 button:active {
   transform: scale(0.95);
 }
 
-/* Specific button styles */
+/* Change Color button styles */
 #changeColor-button {
   color: hsl(var(--hue-value), 70%, 50%);
 }
 
+/* Reset button styles */
 #reset-button {
   position: fixed;
   top: 150px;
@@ -128,6 +128,7 @@ button:active {
   background-color: rgba(255, 127, 80, 0.3); /* Slightly more opaque on hover */
 }
 
+/* Back button styles */
 #back-button {
   display: none;
 }

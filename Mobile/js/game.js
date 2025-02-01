@@ -16,7 +16,6 @@ class Game {
     window.addEventListener('resize', () => this.refreshLayout());
     this.applyTheme();
     this.updateHue();
-    this.applyButtonStyles();
   }
 
   addEventListeners() {
@@ -67,7 +66,6 @@ class Game {
 
     this.updateUI();
     this.updateHue();
-    this.applyButtonStyles();
   }
 
   invertTileDigits(tile) {
@@ -171,7 +169,6 @@ class Game {
     document.getElementById('game-over').classList.add('hidden');
     this.applyTheme();
     this.updateHue();
-    this.applyButtonStyles();
   }
 
   slideAndCombine(row) {
@@ -331,32 +328,6 @@ class Game {
       } else {
         button.style.filter = 'none';
       }
-    });
-  }
-
-  applyButtonStyles() {
-    const buttons = [document.getElementById('changeColor-button'), document.getElementById('reset-button')];
-    buttons.forEach(button => {
-      if (this.isLightMode) {
-        button.style.backgroundColor = 'rgba(224, 224, 224, 0.5)';
-        button.style.color = '#333333';
-        button.style.borderColor = 'transparent';
-        button.style.boxShadow = '0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5)';
-        button.style.textShadow = '0 0 5px rgba(255, 255, 255, 0.7)';
-        button.style.webkitBackdropFilter = 'blur(10px)';
-        button.style.backdropFilter = 'blur(10px)';
-        button.style.transition = 'background-color 0.2s, color 0.2s, transform 0.1s';
-      } else {
-        button.style.backgroundColor = 'rgba(0, 16, 71, 0.4)';
-        button.style.color = '#ffffff';
-        button.style.borderColor = '#ffffff';
-        button.style.boxShadow = 'inset 0 0 5px #ffffff';
-        button.style.textShadow = 'none';
-      }
-      button.style.filter = 'brightness(85%)';
-      button.style.webkitBackdropFilter = 'blur(10px)';
-      button.style.backdropFilter = 'blur(10px)';
-      button.style.boxShadow = '0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08)';
     });
   }
 
