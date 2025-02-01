@@ -1,69 +1,9 @@
 /* Root variables */
-/* ...existing code... */
-
-#changeColor-button {
-  background-color: transparent; /* Transparent background */
-  border: none; /* Remove border */
-  padding: 0.5rem 1rem; /* Smaller padding */
-  color: #ffffff; /* White text color */
-  font-size: 1rem; /* Increase font size */
-  border-radius: 20px; /* Increase border radius */
-  text-align: center;
-  width: auto;
-  max-width: 90%;
-  white-space: nowrap; /* Ensure text fits in one line */
-  margin-top: 10px; /* Adjust margin */
-  z-index: 7;
-  box-shadow: inset 0 0 5px #ffffff; /* Subtle inner border glow */
-  text-shadow: none; /* Remove text glow */
-  transition: background-color 0.2s, color 0.2s, transform 0.1s; /* Faster transition */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  filter: brightness(85%); /* Add brightness effect */
-  background-color: rgba(0, 16, 71, 0.4); /* Glass effect background */
-  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
-  backdrop-filter: blur(10px); /* Glass effect */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08); /* Static drop shadow */
-}
-
-#changeColor-button.light-mode {
-  background-color: rgba(224, 224, 224, 0.5); /* Updated background color */
-  color: #333333; /* Match reset button light mode text color */
-  border: none; /* Remove border */
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5); /* Match reset button box shadow */
-  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7); /* Match reset button text glow */
-  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
-  backdrop-filter: blur(10px); /* Glass effect */
-  transition: background-color 0.2s, color 0.2s, transform 0.1s; /* Faster transition */
-}
-
-#changeColor-button.inverted {
-  color: hsl(var(--hue-value), 70%, 50%); /* Text color based on hue value */
-}
-
-#changeColor-button:hover {
-  background-color: rgba(255, 255, 255, 0.1); /* Slightly visible background on hover */
-  transform: scale(1.05); /* Slightly increase size on hover */
-}
-
-#changeColor-button.light-mode:hover {
-  background-color: var(--reset-button-hover-background); /* Match reset button hover background color */
-  color: #ffffff; /* Match reset button hover text color */
-  transform: scale(1.05); /* Slightly increase size on hover */
-}
-
-#changeColor-button:active {
-  transform: scale(0.95); /* Slightly decrease size on active */
-}
-
 :root {
   --size: 4;
   --gap: 10px;
   --tile-size: calc((100vmin - var(--gap) * (var(--size) + 1)) / var(--size));
-  --game-size: calc(
-    var(--tile-size) * (var(--size)) + var(--gap) * (var(--size) + 2)
-  );
+  --game-size: calc(var(--tile-size) * var(--size) + var(--gap) * (var(--size) + 2));
   --primary-color: #1a1a1a;
   --secondary-color: #f2f2f2;
   --light-background: #f0f0f0;
@@ -82,6 +22,7 @@
   --overlay-light-end: rgba(240, 240, 240, 1);
 }
 
+/* Body styles */
 body {
   font-family: Arial, sans-serif;
   background-color: var(--dark-background);
@@ -89,25 +30,20 @@ body {
   margin: 0;
   padding: env(safe-area-inset-top) 10px env(safe-area-inset-bottom);
   display: flex;
-  -ms-flex-direction: column; /* IE 10+ */
   flex-direction: column;
   align-items: center;
-  -ms-flex-align: center; /* IE 10+ */
   justify-content: space-between;
-  -ms-flex-pack: justify; /* IE 10+ */
   min-height: 100vh;
   touch-action: none;
-  -ms-touch-action: none; /* IE 10+ */
   overflow: hidden;
   max-width: 100vw;
   height: 100vh;
-  box-sizing: border-box; /* Ensure padding is included in the total width and height */
+  box-sizing: border-box;
 }
 
 body.light-mode {
   background-color: var(--light-background);
   color: var(--light-text);
-  border-color: transparent;
 }
 
 body.inverted {
@@ -115,21 +51,23 @@ body.inverted {
   color: #333;
 }
 
+/* Overlay styles */
 .overlay {
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: radial-gradient(circle at center, var(--overlay-dark) 0%, rgb(0, 0, 0) 150%); /* Increase radius of gradient */
-  z-index: -1; /* Changed to be under the elements */
+  background: radial-gradient(circle at center, var(--overlay-dark) 0%, rgb(0, 0, 0) 150%);
+  z-index: -1;
   pointer-events: none;
 }
 
 .overlay.light-mode {
-  background: radial-gradient(circle at center, var(--overlay-light) 0%, var(--overlay-light-end) 100%); /* Better light mode overlay color */
+  background: radial-gradient(circle at center, var(--overlay-light) 0%, var(--overlay-light-end) 100%);
 }
 
+/* Header styles */
 header {
   margin: 0;
   padding: 10px;
@@ -142,11 +80,11 @@ header {
 
 header h1 {
   margin: 0;
-  padding: 0.2rem 0.4rem; /* Further reduce padding for smaller box size */
-  font-size: 1rem; /* Further adjust font size */
-  width: auto; /* Adjust width to fit content */
-  box-sizing: border-box; /* Ensure padding is included in the total width */
-  color: hsl(var(--hue-value), 70%, 50%); /* Text color based on hue value */
+  padding: 0.2rem 0.4rem;
+  font-size: 1rem;
+  width: auto;
+  box-sizing: border-box;
+  color: hsl(var(--hue-value), 70%, 50%);
   background-color: rgba(50, 50, 50, 0.8);
   border-radius: 10px;
   text-align: center;
@@ -154,9 +92,8 @@ header h1 {
 }
 
 header.light-mode h1 {
-  background-color: #ffffff; /* White background for better contrast */
-  color: hsl(var(--hue-value), 70%, 50%); /* Text color based on hue value */
-  border-color: transparent;
+  background-color: #ffffff;
+  color: hsl(var(--hue-value), 70%, 50%);
 }
 
 header.inverted h1 {
@@ -164,58 +101,119 @@ header.inverted h1 {
   color: #333;
 }
 
-#invert-button {
-  margin-top: 30px; /* Adjust margin */
-  margin-left: 15px;
-  padding: 0.6rem 1.2rem; /* Better padding */
+/* Button styles */
+button {
+  background-color: rgba(0, 16, 71, 0.4);
   color: var(--secondary-color);
-  font-size: 3rem; /* Adjust font size */
-  background-color: var(--button-background);
-  border-radius: 50%;
   border: none;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5); /* Static drop shadow */
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border-radius: 20px;
   text-align: center;
-  width: 50px; /* Adjust width */
-  height: 50px; /* Adjust height */
-  z-index: 6;
-  display: inline-block;
+  width: auto;
+  max-width: 90%;
+  white-space: nowrap;
+  margin-top: 10px;
+  z-index: 7;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+  text-shadow: none;
+  transition: background-color 0.2s, color 0.2s, transform 0.1s;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-sizing: border-box;
+  filter: brightness(85%);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+}
+
+button.light-mode {
+  background-color: rgba(224, 224, 224, 0.5);
+  color: #333333;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5);
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+}
+
+button:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: scale(1.05);
+}
+
+button.light-mode:hover {
+  background-color: var(--reset-button-hover-background);
+  color: #ffffff;
+}
+
+button:active {
+  transform: scale(0.95);
+}
+
+/* Specific button styles */
+#changeColor-button.inverted {
+  color: hsl(var(--hue-value), 70%, 50%);
+}
+
+#invert-button {
+  margin-top: 30px;
+  margin-left: 15px;
+  padding: 0.6rem 1.2rem;
+  color: var(--secondary-color);
+  font-size: 3rem;
+  background-color: var(--button-background);
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  z-index: 6;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   position: absolute;
-  top: 100px; /* Adjust as needed */
+  top: 100px;
   left: 50px;
   transform: translateX(-50%);
 }
 
 #invert-button.light-mode {
-  background-color: var(--button-light-background); /* Bright yellow for light mode */
-  color: #333333; /* Darker text color for contrast */
+  background-color: var(--button-light-background);
+  color: #333333;
 }
 
-#invert-button:hover {
-  background-color: var(--button-hover-background); /* Darker shade for hover */
-  color: #ffffff; /* Ensure text contrast */
+#reset-button {
+  position: absolute;
+  top: 100px;
+  right: 10px;
+  background-color: var(--reset-button-background);
+  padding: 0.8rem 1.2rem;
+  color: #ffffff;
+  font-size: 1rem;
+  border-radius: 20px;
+  margin-top: 20px;
+  z-index: 7;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5);
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
 }
 
-#invert-button.light-mode:hover {
-  background-color: var(--button-light-hover-background); /* Darker yellow for hover in light mode */
-  color: #333333; /* Ensure text contrast */
+#reset-button.light-mode {
+  background-color: rgba(224, 224, 224, 0.5);
+  color: #333333;
 }
 
-#invert-button.inverted {
-  background-color: rgba(255, 255, 255, 0.8);
-  color: #333;
+#reset-button.inverted {
+  background-color: #ffa07a;
+  color: #000000;
 }
 
+#back-button {
+  display: none;
+}
+
+/* Main styles */
 main {
   display: flex;
   flex-direction: column;
   align-items: center;
   width: 100%;
   max-width: 100%;
-  margin: 20px 0; /* Apply 20px margin for top and bottom */
+  margin: 20px 0;
   padding: 10px;
   box-sizing: border-box;
   height: 100%;
@@ -232,93 +230,34 @@ main.inverted {
   color: #333;
 }
 
+/* Score container styles */
 #score-container {
   position: absolute;
   top: 10px;
   right: 10px;
-  padding: 0.5rem 20px; /* Add 20px padding left and right */
+  padding: 0.5rem 20px;
   color: var(--secondary-color);
   font-size: 1rem;
-  background-color: rgba(50, 50, 50, 0.5); /* Glass effect background */
+  background-color: rgba(50, 50, 50, 0.5);
   border-radius: 10px;
   text-align: center;
   width: auto;
   max-width: 90%;
   z-index: 7;
-  margin-bottom: 20px; /* Added more space under the score box */
-  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
-  backdrop-filter: blur(10px); /* Glass effect */
+  margin-bottom: 20px;
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
 }
 
 #score-container.light-mode {
-  background-color: rgba(255, 255, 255, 0.5); /* Glass effect background for light mode */
-  color: #333333; /* Darker text color */
-  border-color: transparent;
-  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
-  backdrop-filter: blur(10px); /* Glass effect */
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+  background-color: rgba(255, 255, 255, 0.5);
+  color: #333333;
 }
 
 #score-container.inverted {
   background-color: rgba(255, 255, 255, 0.8);
   color: #333;
-}
-
-#reset-button {
-  position: absolute;
-  top: 100px; /* Adjust position */
-  right: 10px;
-  background-color: var(--reset-button-background); /* Lighter background color */
-  border: none;
-  padding: 0.8rem 1.2rem; /* Adjust padding for better mobile experience */
-  color: #ffffff; /* White text color */
-  font-size: 1rem; /* Adjust font size */
-  border-radius: 20px; /* Increase border radius */
-  text-align: center;
-  width: auto;
-  max-width: 90%;
-  margin-top: 20px; /* Added even space */
-  z-index: 7;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5); /* Static drop shadow */
-  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7); /* Add text glow */
-  transition: background-color 0.2s, color 0.2s, transform 0.1s; /* Faster transition */
-}
-
-#reset-button.light-mode {
-  background-color: rgba(224, 224, 224, 0.5); /* Updated background color */
-  color: #333333; /* Darker text color */
-  border: none; /* Remove border */
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5); /* Match reset button box shadow */
-  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7); /* Match reset button text glow */
-  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
-  backdrop-filter: blur(10px); /* Glass effect */
-  transition: background-color 0.2s, color 0.2s, transform 0.1s; /* Faster transition */
-}
-
-#reset-button.inverted {
-  background-color: #ffa07a; /* Even lighter color for inverted mode */
-  color: #000000; /* Black text color */
-}
-
-#reset-button:hover {
-  background-color: var(--reset-button-hover-background); /* Darker shade for hover */
-  color: #ffffff; /* Ensure text contrast */
-  transform: scale(1.05); /* Slightly increase size on hover */
-}
-
-#reset-button.light-mode:hover {
-  background-color: var(--reset-button-hover-background); /* Darker shade for hover */
-  color: #ffffff; /* Ensure text contrast */
-}
-
-#reset-button:active {
-  transform: scale(0.95); /* Slightly decrease size on active */
-}
-
-/* Remove back button styles */
-#back-button {
-  display: none; /* Ensure the button is not visible */
 }
 
 #score,
@@ -329,9 +268,9 @@ main.inverted {
 }
 
 #score {
-  color: var(--highlight-color); /* Pop more the current value color */
+  color: var(--highlight-color);
   font-size: 1.5rem;
-  text-shadow: none; /* Remove text shadow */
+  text-shadow: none;
 }
 
 #score.inverted,
@@ -340,127 +279,117 @@ main.inverted {
 }
 
 #best-score.light-mode {
-  color: #000000; /* Ensure text contrast in light mode */
+  color: #000000;
 }
 
+/* Board container styles */
 #board-container {
   display: grid;
-  -ms-grid-columns: repeat(var(--size), 1fr); /* IE 10+ */
   grid-template-columns: repeat(var(--size), 1fr);
-  gap: var(--gap); /* Ensure gap between tiles */
+  gap: var(--gap);
   width: 100%;
   height: 100%;
   max-width: 100%;
   max-height: 100%;
   background-color: rgba(50, 50, 50, 0.8);
   margin: 20px;
-  border: none; /* Remove black solid border */
   border-radius: 15px;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5),
-    0 0 20px rgba(255, 255, 255, 0.5), 0 0 30px rgba(255, 255, 255, 0.5);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5), 0 0 30px rgba(255, 255, 255, 0.5);
   box-sizing: border-box;
   margin: auto;
   position: relative;
-  padding: 0; /* Remove padding from the container */
-  margin-top: 120px; /* CHECK THIS */
+  padding: 0;
+  margin-top: 120px;
   z-index: 3;
-  overflow: hidden; /* Remove scroll option */
-  padding-right: var(--gap); /* Adjust right padding */
-  padding-bottom: var(--gap); /* Adjust bottom padding */
+  overflow: hidden;
+  padding-right: var(--gap);
+  padding-bottom: var(--gap);
 }
 
 #board-container.light-mode {
-  background-color: #ffffff; /* White background for better contrast */
+  background-color: #ffffff;
   border: 2px solid #cccccc;
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1), 0 0 20px rgba(0, 0, 0, 0.1),
-    0 0 30px rgba(0, 0, 0, 0.1);
-  padding-right: var(--gap); /* Adjust right padding */
-  padding-bottom: var(--gap); /* Adjust bottom padding */
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.1);
 }
 
 #board-container.inverted {
   background-color: rgba(255, 255, 255, 0.8);
   border: 2px solid rgba(0, 0, 0, 0.2);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 0, 0, 0.2),
-    0 0 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 0, 0, 0.2), 0 0 30px rgba(0, 0, 0, 0.2);
 }
 
+/* Tile styles */
 .tile {
-  background-color: transparent; /* Remove background color */
-  color: inherit; /* Remove color */
+  background-color: transparent;
+  color: inherit;
   font-weight: bold;
   display: flex;
-  -ms-flex-align: center; /* IE 10+ */
   align-items: center;
-  -ms-flex-pack: center; /* IE 10+ */
   justify-content: center;
   aspect-ratio: 1 / 1;
   border-radius: 15px;
-  font-size: calc(var(--tile-size) * 0.9); /* Increase font size */
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5),
-    0 0 20px rgba(255, 255, 255, 0.5), 0 0 30px rgba(255, 255, 255, 0.5),
-    0 0 40px rgba(255, 255, 255, 0.5);
-  transition: transform 0.05s ease-in-out, opacity 0.05s ease-in-out,
-    box-shadow 0.05s ease-in-out; /* Faster transition */
+  font-size: calc(var(--tile-size) * 0.9);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5), 0 0 30px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.5);
+  transition: transform 0.05s ease-in-out, opacity 0.05s ease-in-out, box-shadow 0.05s ease-in-out;
   overflow: hidden;
-  margin: 0; /* Remove margin from tiles */
+  margin: 0;
   width: calc((100% - var(--gap) * (var(--size) - 1)) / var(--size));
   height: calc((100% - var(--gap) * (var(--size) - 1)) / var(--size));
 }
 
 .tile[data-value="2"] {
-  background-color: #e0f7fa; /* Very light blue color for value 2 */
-  color: #776e65; /* Darker color for better contrast */
+  background-color: #e0f7fa;
+  color: #776e65;
 }
 
 .tile[data-value="4"] {
-  background-color: #add8e6; /* Light blue color for value 4 */
-  color: #776e65; /* Darker color for better contrast */
+  background-color: #add8e6;
+  color: #776e65;
 }
 
 .tile[data-value="8"] {
   background-color: #f2b179;
-  color: #f9f6f2; /* Light color for better contrast */
+  color: #f9f6f2;
 }
 
 .tile[data-value="16"] {
   background-color: #f59563;
-  color: #f9f6f2; /* Light color for better contrast */
+  color: #f9f6f2;
 }
 
 .tile[data-value="32"] {
   background-color: #f67c5f;
-  color: #f9f6f2; /* Light color for better contrast */
+  color: #f9f6f2;
 }
 
 .tile[data-value="64"] {
   background-color: #f65e3b;
-  color: #f9f6f2; /* Light color for better contrast */
+  color: #f9f6f2;
 }
 
 .tile[data-value="128"] {
   background-color: #edcf72;
-  color: #f9f6f2; /* Light color for better contrast */
+  color: #f9f6f2;
 }
 
 .tile[data-value="256"] {
   background-color: #edcc61;
-  color: #f9f6f2; /* Light color for better contrast */
+  color: #f9f6f2;
 }
 
 .tile[data-value="512"] {
   background-color: #edc850;
-  color: #f9f6f2; /* Light color for better contrast */
+  color: #f9f6f2;
 }
 
 .tile[data-value="1024"] {
   background-color: #edc53f;
-  color: #f9f6f2; /* Light color for better contrast */
+  color: #f9f6f2;
 }
 
 .tile[data-value="2048"] {
   background-color: #edc22e;
-  color: #f9f6f2; /* Light color for better contrast */
+  color: #f9f6f2;
 }
 
 .tile[data-value="4096"],
@@ -468,76 +397,24 @@ main.inverted {
 .tile[data-value="16384"],
 .tile[data-value="32768"],
 .tile[data-value="65536"] {
-  background-color: #3c3a32; /* Dark color for higher values */
-  color: #f9f6f2; /* Light color for better contrast */
-}
-
-/* Remove specific tile color rules */
-.tile[data-value="2"],
-.tile[data-value="4"],
-.tile[data-value="8"],
-.tile[data-value="16"],
-.tile[data-value="32"],
-.tile[data-value="64"],
-.tile[data-value="128"],
-.tile[data-value="256"],
-.tile[data-value="512"],
-.tile[data-value="1024"],
-.tile[data-value="2048"],
-.tile[data-value="4096"],
-.tile[data-value="8192"],
-.tile[data-value="16384"],
-.tile[data-value="32768"],
-.tile[data-value="65536"] {
-  background-color: transparent;
-  color: inherit;
-}
-
-/* Light mode specific tile color rules */
-.tile.light-mode[data-value="2"] {
-  background-color: #e0f7fa; /* Very light blue color for value 2 in light mode */
-  color: #776e65; /* Darker color for better contrast */
-}
-
-.tile.light-mode[data-value="4"] {
-  background-color: #add8e6; /* Light blue color for value 4 in light mode */
-  color: #776e65; /* Darker color for better contrast */
-}
-
-.tile.light-mode[data-value="8"],
-.tile.light-mode[data-value="16"],
-.tile.light-mode[data-value="32"],
-.tile.light-mode[data-value="64"],
-.tile.light-mode[data-value="128"],
-.tile.light-mode[data-value="256"],
-.tile.light-mode[data-value="512"],
-.tile.light-mode[data-value="1024"],
-.tile.light-mode[data-value="2048"],
-.tile.light-mode[data-value="4096"],
-.tile.light-mode[data-value="8192"],
-.tile.light-mode[data-value="16384"],
-.tile.light-mode[data-value="32768"],
-.tile.light-mode[data-value="65536"] {
-  background-color: transparent;
-  color: inherit;
+  background-color: #3c3a32;
+  color: #f9f6f2;
 }
 
 .tile.light-mode {
-  background-color: #f9f9f9; /* Light grey background for better contrast */
-  color: #333333; /* Darker text color for better visibility */
-  border: 2px solid #dddddd; /* Light grey border for better contrast */
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1), 0 0 20px rgba(0, 0, 0, 0.1),
-    0 0 30px rgba(0, 0, 0, 0.1);
-  font-size: calc(var(--tile-size) * 0.9); /* Increase font size */
+  background-color: #f9f9f9;
+  color: #333333;
+  border: 2px solid #dddddd;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1), 0 0 20px rgba(0, 0, 0, 0.1), 0 0 30px rgba(0, 0, 0, 0.1);
+  font-size: calc(var(--tile-size) * 0.9);
 }
 
 .tile:hover {
   transform: scale(1.05);
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.7),
-    0 0 25px rgba(255, 255, 255, 0.7), 0 0 35px rgba(255, 255, 255, 0.7),
-    0 0 45px rgba(255, 255, 255, 0.7);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.7), 0 0 25px rgba(255, 255, 255, 0.7), 0 0 35px rgba(255, 255, 255, 0.7), 0 0 45px rgba(255, 255, 255, 0.7);
 }
 
+/* Game over styles */
 #game-over {
   position: absolute;
   top: 50%;
@@ -587,8 +464,7 @@ main.inverted {
 .inverted #board-container {
   background-color: rgba(255, 255, 255, 0.8);
   border: 2px solid rgba(0, 0, 0, 0.2);
-  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 0, 0, 0.2),
-    0 0 30px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.2), 0 0 20px rgba(0, 0, 0, 0.2), 0 0 30px rgba(0, 0, 0, 0.2);
 }
 
 .inverted .tile {
@@ -662,8 +538,7 @@ main.inverted {
 
 .inverted .tile:hover {
   transform: scale(1.05);
-  box-shadow: 0 0 15px rgba(0, 0, 0, 0.7), 0 0 25px rgba(0, 0, 0, 0.7),
-    0 0 35px rgba(0, 0, 0, 0.7), 0 0 45px rgba(0, 0, 0, 0.7);
+  box-shadow: 0 0 15px rgba(0, 0, 0, 0.7), 0 0 25px rgba(0, 0, 0, 0.7), 0 0 35px rgba(0, 0, 0, 0.7), 0 0 45px rgba(0, 0, 0, 0.7);
 }
 
 /* Media queries for mobile optimization */
@@ -714,20 +589,20 @@ main.inverted {
   }
 
   #invert-button {
-    width: 35px; /* Further adjust width for smaller screens */
-    height: 35px; /* Further adjust height for smaller screens */
-    font-size: 0.7rem; /* Further adjust font size for smaller screens */
+    width: 35px;
+    height: 35px;
+    font-size: 0.7rem;
   }
 
   #reset-button {
-    padding: 0.6rem 1rem; /* Further adjust padding for smaller screens */
-    font-size: 0.9rem; /* Further adjust font size for smaller screens */
+    padding: 0.6rem 1rem;
+    font-size: 0.9rem;
   }
 
   #hue-slider {
-    height: 15px; /* Further adjust height for smaller screens */
-    width: 70%; /* Further adjust width for smaller screens */
-    max-width: 250px; /* Further adjust max-width for smaller screens */
+    height: 15px;
+    width: 70%;
+    max-width: 250px;
   }
 
   .grid-container {
@@ -761,11 +636,11 @@ main.inverted {
   }
 
   header h1 {
-    font-size: 1.5rem; /* Adjust font size for tablets */
+    font-size: 1.5rem;
   }
 
   #score-container {
-    font-size: 1rem; /* Adjust font size for tablets */
+    font-size: 1rem;
     padding: 0.5rem;
   }
 
@@ -778,16 +653,16 @@ main.inverted {
   }
 
   .tile {
-    font-size: 1rem; /* Adjust font size for tablets */
+    font-size: 1rem;
   }
 
   button {
-    font-size: 1rem; /* Adjust font size for tablets */
+    font-size: 1rem;
     padding: 10px 20px;
   }
 
   #game-over {
-    font-size: 1.5rem; /* Adjust font size for tablets */
+    font-size: 1.5rem;
   }
 
   main {
@@ -796,20 +671,20 @@ main.inverted {
   }
 
   #invert-button {
-    width: 50px; /* Adjust width for tablets */
-    height: 50px; /* Adjust height for tablets */
-    font-size: 1rem; /* Adjust font size for tablets */
+    width: 50px;
+    height: 50px;
+    font-size: 1rem;
   }
 
   #reset-button {
-    padding: 1rem 1.5rem; /* Adjust padding for tablets */
-    font-size: 1rem; /* Adjust font size for tablets */
+    padding: 1rem 1.5rem;
+    font-size: 1rem;
   }
 
   #hue-slider {
-    height: 20px; /* Adjust height for tablets */
-    width: 80%; /* Adjust width for tablets */
-    max-width: 300px; /* Adjust max-width for tablets */
+    height: 20px;
+    width: 80%;
+    max-width: 300px;
   }
 }
 
@@ -820,33 +695,33 @@ main.inverted {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    flex-direction: row; /* Adjust to row for landscape */
+    flex-direction: row;
   }
 
   main {
     max-width: 90vh;
     max-height: 90vh;
-    flex: 1; /* Ensure main takes up available space */
+    flex: 1;
   }
 
   header {
-    position: static; /* Remove absolute positioning */
-    margin: 0 20px; /* Add margin for spacing */
+    position: static;
+    margin: 0 20px;
   }
 
   #score-container {
-    position: static; /* Remove absolute positioning */
-    margin: 0 20px; /* Add margin for spacing */
+    position: static;
+    margin: 0 20px;
   }
 
   #reset-button {
-    position: static; /* Remove absolute positioning */
-    margin: 0 20px; /* Add margin for spacing */
+    position: static;
+    margin: 0 20px;
   }
 
   #invert-button {
-    position: static; /* Remove absolute positioning */
-    margin: 0 20px; /* Add margin for spacing */
+    position: static;
+    margin: 0 20px;
   }
 }
 
@@ -857,33 +732,33 @@ main.inverted {
     justify-content: center;
     align-items: center;
     height: 100vh;
-    flex-direction: column; /* Adjust to column for landscape */
+    flex-direction: column;
   }
 
   main {
     max-width: 90vh;
     max-height: 90vh;
-    flex: 1; /* Ensure main takes up available space */
+    flex: 1;
   }
 
   header {
-    position: static; /* Remove absolute positioning */
-    margin: 0 20px; /* Add margin for spacing */
+    position: static;
+    margin: 0 20px;
   }
 
   #score-container {
-    position: static; /* Remove absolute positioning */
-    margin: 0 20px; /* Add margin for spacing */
+    position: static;
+    margin: 0 20px;
   }
 
   #reset-button {
-    position: static; /* Remove absolute positioning */
-    margin: 0 20px; /* Add margin for spacing */
+    position: static;
+    margin: 0 20px;
   }
 
   #invert-button {
-    position: static; /* Remove absolute positioning */
-    margin: 0 20px; /* Add margin for spacing */
+    position: static;
+    margin: 0 20px;
   }
 }
 
@@ -931,7 +806,7 @@ main.inverted {
 
 #controls-container {
   display: flex;
-  justify-content: space-around; /* Distribute buttons evenly */
+  justify-content: space-around;
   align-items: center;
   position: fixed;
   top: 10px;
@@ -948,45 +823,45 @@ main.inverted {
   display: flex;
   justify-content: center;
   align-items: center;
-  margin-top: 10px; /* Adjust margin */
-  padding: 5px; /* Adjust padding for better mobile experience */
-  width: 100%; /* Ensure it spans the full width */
+  margin-top: 10px;
+  padding: 5px;
+  width: 100%;
   box-sizing: border-box;
 }
 
 #hue-slider {
-  width: 80%; /* Adjust width for better mobile experience */
-  max-width: 300px; /* Adjust max-width for better mobile experience */
-  height: 20px; /* Adjust height for better mobile experience */
-  -webkit-appearance: none; /* Remove default styling */
-  appearance: none; /* Remove default styling */
-  background: #c6c9d67d; /* Background color */
-  border-radius: 5px; /* Rounded corners */
-  outline: none; /* Remove outline */
-  opacity: 0.7; /* Slightly transparent */
-  transition: opacity 0.2s; /* Smooth transition */
+  width: 80%;
+  max-width: 300px;
+  height: 20px;
+  -webkit-appearance: none;
+  appearance: none;
+  background: #c6c9d67d;
+  border-radius: 5px;
+  outline: none;
+  opacity: 0.7;
+  transition: opacity 0.2s;
 }
 
 #hue-slider:hover {
-  opacity: 1; /* Fully opaque on hover */
+  opacity: 1;
 }
 
 #hue-slider::-webkit-slider-thumb {
-  -webkit-appearance: none; /* Remove default styling */
-  appearance: none; /* Remove default styling */
-  width: 25px; /* Thumb width */
-  height: 25px; /* Thumb height */
-  background: var(--button-background); /* Thumb color */
-  border-radius: 50%; /* Rounded thumb */
-  cursor: pointer; /* Pointer cursor */
+  -webkit-appearance: none;
+  appearance: none;
+  width: 25px;
+  height: 25px;
+  background: var(--button-background);
+  border-radius: 50%;
+  cursor: pointer;
 }
 
 #hue-slider::-moz-range-thumb {
-  width: 25px; /* Thumb width */
-  height: 25px; /* Thumb height */
-  background: var(--button-background); /* Thumb color */
-  border-radius: 50%; /* Rounded thumb */
-  cursor: pointer; /* Pointer cursor */
+  width: 25px;
+  height: 25px;
+  background: var(--button-background);
+  border-radius: 50%;
+  cursor: pointer;
 }
 
 /* Adjust hue for game-section */
@@ -1000,153 +875,152 @@ main.inverted {
   padding: var(--gap);
   box-sizing: border-box;
   position: relative;
-  margin-top: 20px; /* Adjust as needed to match tiles position */
+  margin-top: 20px;
 }
 
 #invert-button,
 #reset-button,
 #back-button {
-  background-color: rgba(0, 16, 71, 0.4); /* Glass effect background */
-  color: var(--secondary-color); /* Ensure text contrast */
+  background-color: rgba(0, 16, 71, 0.4);
+  color: var(--secondary-color);
   border: none;
-  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
-  backdrop-filter: blur(10px); /* Glass effect */
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-  transition: background-color 0.2s, color 0.2s; /* Faster transition */
+  transition: background-color 0.2s, color 0.2s;
 }
 
 #invert-button:hover,
 #reset-button:hover,
 #back-button:hover {
-  background-color: rgba(36, 47, 87, 0.7); /* Darker shade for hover */
-  color: #ffffff; /* Ensure text contrast */
+  background-color: rgba(36, 47, 87, 0.7);
+  color: #ffffff;
 }
 
 #invert-button.light-mode,
 #reset-button.light-mode,
 #back-button.light-mode,
 #changeColor-button.light-mode {
-  background-color: rgba(224, 224, 224, 0.5); /* Updated background color */
-  color: #000000; /* Darker text color */
-  border-color: transparent; /* Match reset button border color */
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5); /* Match reset button box shadow */
-  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7); /* Match reset button text glow */
-  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
-  backdrop-filter: blur(10px); /* Glass effect */
-  transition: background-color 0.2s, color 0.2s, transform 0.1s; /* Faster transition */
+  background-color: rgba(224, 224, 224, 0.5);
+  color: #000000;
+  border-color: transparent;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5);
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  transition: background-color 0.2s, color 0.2s, transform 0.1s;
 }
 
 #invert-button.light-mode:hover,
 #reset-button.light-mode:hover,
 #back-button.light-mode:hover {
-  background-color: rgba(192, 192, 192, 0.7); /* Darker shade for hover in light mode */
-  color: #000000; /* Ensure text contrast */
+  background-color: rgba(192, 192, 192, 0.7);
+  color: #000000;
 }
 
 #changeColor-button,
 #reset-button,
 #invert-button,
 #back-button {
-  border: none; /* Remove border */
+  border: none;
 }
 
 #changeColor-button.light-mode,
 #reset-button.light-mode,
 #invert-button.light-mode,
 #back-button.light-mode {
-  background-color: rgba(224, 224, 224, 0.5); /* Updated background color */
-  color: #333333; /* Darker text color */
-  border: none; /* Remove border */
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5); /* Match reset button box shadow */
-  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7); /* Match reset button text glow */
-  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
-  backdrop-filter: blur(10px); /* Glass effect */
-  transition: background-color 0.2s, color 0.2s, transform 0.1s; /* Faster transition */
+  background-color: rgba(224, 224, 224, 0.5);
+  color: #333333;
+  border: none;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5);
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
+  transition: background-color 0.2s, color 0.2s, transform 0.1s;
 }
 
 #changeColor-button:hover,
 #reset-button:hover,
 #invert-button:hover,
 #back-button:hover {
-  background-color: rgba(36, 47, 87, 0.7); /* Darker shade for hover */
-  color: #ffffff; /* Ensure text contrast */
+  background-color: rgba(36, 47, 87, 0.7);
+  color: #ffffff;
 }
 
 #changeColor-button.light-mode:hover,
 #reset-button.light-mode:hover,
 #invert-button.light-mode:hover,
 #back-button.light-mode:hover {
-  background-color: rgba(192, 192, 192, 0.7); /* Darker shade for hover in light mode */
-  color: #000000; /* Ensure text contrast */
+  background-color: rgba(192, 192, 192, 0.7);
+  color: #000000;
 }
 
 #changeColor-button:active,
 #reset-button:active,
 #invert-button:active,
 #back-button:active {
-  transform: scale(0.95); /* Slightly decrease size on active */
+  transform: scale(0.95);
 }
 
 #changeColor-button,
 #reset-button,
 #invert-button,
 #back-button {
-  background-color: rgba(0, 16, 71, 0.4); /* Glass effect background with alpha 0.4 */
-  color: var(--secondary-color); /* Ensure text contrast */
+  background-color: rgba(0, 16, 71, 0.4);
+  color: var(--secondary-color);
   border: none;
-  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
-  backdrop-filter: blur(10px); /* Glass effect */
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
   box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-  transition: background-color 0.2s, color 0.2s; /* Faster transition */
+  transition: background-color 0.2s, color 0.2s;
 }
 
 button {
-  background-color: rgba(0, 16, 71, 0.4); /* Glass effect background */
-  color: var(--secondary-color); /* Ensure text contrast */
+  background-color: rgba(0, 16, 71, 0.4);
+  color: var(--secondary-color);
   border: none;
-  padding: 0.5rem 1rem; /* Adjust padding */
-  font-size: 1rem; /* Adjust font size */
-  border-radius: 20px; /* Increase border radius */
+  padding: 0.5rem 1rem;
+  font-size: 1rem;
+  border-radius: 20px;
   text-align: center;
   width: auto;
   max-width: 90%;
-  white-space: nowrap; /* Ensure text fits in one line */
-  margin-top: 10px; /* Adjust margin */
+  white-space: nowrap;
+  margin-top: 10px;
   z-index: 7;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08); /* Static drop shadow */
-  text-shadow: none; /* Remove text glow */
-  transition: background-color 0.2s, color 0.2s, transform 0.1s; /* Faster transition */
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
+  text-shadow: none;
+  transition: background-color 0.2s, color 0.2s, transform 0.1s;
   display: flex;
   align-items: center;
   justify-content: center;
-  filter: brightness(85%); /* Add brightness effect */
-  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
-  backdrop-filter: blur(10px); /* Glass effect */
+  filter: brightness(85%);
+  -webkit-backdrop-filter: blur(10px);
+  backdrop-filter: blur(10px);
 }
 
 button.light-mode {
-  background-color: rgba(224, 224, 224, 0.5); /* Updated background color */
-  color: #333333; /* Darker text color */
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5); /* Match reset button box shadow */
-  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7); /* Match reset button text glow */
+  background-color: rgba(224, 224, 224, 0.5);
+  color: #333333;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5);
+  text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
 }
 
 button:hover {
-  background-color: rgba(255, 255, 255, 0.1); /* Slightly visible background on hover */
-  transform: scale(1.05); /* Slightly increase size on hover */
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: scale(1.05);
 }
 
 button.light-mode:hover {
-  background-color: var(--reset-button-hover-background); /* Match reset button hover background color */
-  color: #ffffff; /* Match reset button hover text color */
+  background-color: var(--reset-button-hover-background);
+  color: #ffffff;
 }
 
 button:active {
-  transform: scale(0.95); /* Slightly decrease size on active */
+  transform: scale(0.95);
 }
 
-/* ...existing code... */
-
+/* Media queries for mobile optimization */
 @media (max-width: 600px) {
   .grid-container {
     width: 90%;
@@ -1166,5 +1040,3 @@ button:active {
 
   /* Additional mobile layout adjustments */
 }
-
-/* ...existing code... */
