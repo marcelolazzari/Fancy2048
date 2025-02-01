@@ -21,7 +21,10 @@ class Game {
     }
   
     addEventListeners() {
-      document.getElementById('reset-button').addEventListener('click', this.reset.bind(this));
+      document.getElementById('reset-button').addEventListener('click', () => {
+        this.reset();
+        this.updateUI();
+      });
       window.addEventListener('keydown', this.handleKeyPress.bind(this));
       const boardContainer = document.querySelector('.board-container');
       boardContainer.addEventListener('touchstart', this.handleTouchStart.bind(this), false);
