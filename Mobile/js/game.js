@@ -11,6 +11,7 @@ class Game {
     this.stats = JSON.parse(localStorage.getItem('gameStats')) || [];
     this.startTime = null;
     this.hasSavedStats = false;
+    this.moves = 0;
     this.addEventListeners();
     this.reset();
     window.addEventListener('resize', () => this.refreshLayout());
@@ -165,6 +166,7 @@ class Game {
     this.score = 0;
     this.startTime = new Date();
     this.hasSavedStats = false;
+    this.moves = 0;
     this.updateUI();
     document.getElementById('game-over').classList.add('hidden');
     this.applyTheme();
@@ -232,6 +234,7 @@ class Game {
     if (hasChanged) {
       this.addRandomTile();
       this.updateBestScore();
+      this.moves++;
     }
 
     this.updateUI();
@@ -266,6 +269,7 @@ class Game {
     document.getElementById('score').textContent = this.score;
     document.getElementById('score').style.color = this.getScoreColor(this.score);
     document.getElementById('best-score').textContent = this.bestScore;
+    document.getElementById('moves').textContent = this.moves;
     this.updateTileSize();
     this.updateHeaderBackground(highestValue);
     this.updateHue();

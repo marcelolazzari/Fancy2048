@@ -224,6 +224,12 @@ main {
   font-size: 1.5rem;
 }
 
+#moves {
+  font-size: 1rem;
+  font-weight: bold;
+  color: var(--secondary-color);
+}
+
 /* Board container styles */
 #board-container {
   display: grid;
