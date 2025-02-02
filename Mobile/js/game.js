@@ -24,6 +24,7 @@ class Game {
     document.getElementById('reset-button').addEventListener('click', () => {
       this.reset();
       this.updateUI();
+      this.showGameState('reset');
     });
     window.addEventListener('keydown', this.handleKeyPress.bind(this));
     const boardContainer = document.getElementById('board-container');
@@ -81,6 +82,7 @@ class Game {
       setTimeout(() => {
         if (this.isGameOver()) {
           document.getElementById('game-over').classList.remove('hidden');
+          this.showGameState('game-over');
         }
       }, 0);
     }
@@ -112,6 +114,7 @@ class Game {
       setTimeout(() => {
         if (this.isGameOver()) {
           document.getElementById('game-over').classList.remove('hidden');
+          this.showGameState('game-over');
         }
       }, 0);
     }
@@ -411,6 +414,16 @@ class Game {
       newRow.push('');
     }
     return newRow;
+  }
+
+  showGameState(state) {
+    const stateContainer = document.createElement('div');
+    stateContainer.classList.add('game-state');
+    stateContainer.textContent = state === 'reset' ? 'Game Reset!' : 'Game Over!';
+    document.body.appendChild(stateContainer);
+    setTimeout(() => {
+      stateContainer.remove();
+    }, 2000);
   }
 }
 
