@@ -23,6 +23,7 @@
               <th>Score</th>
               <th>Best Score</th>
               <th>Time</th>
+              <th>Moves</th>
             </tr>
           </thead>
           <tbody>
@@ -47,17 +48,18 @@
             <td>${stat.score}</td>
             <td>${stat.bestScore}</td>
             <td>${stat.time}</td>
+            <td>${stat.moves}</td>
           `;
           statsTableBody.appendChild(row);
         });
 
         document.getElementById('save-csv-button').addEventListener('click', () => {
           const csvContent = "data:text/csv;charset=utf-8,"
-            + "Session,Best Tile,Score,Best Score,Time\n"
+            + "Session,Best Tile,Score,Best Score,Time,Moves\n"
             + uniqueStats.map(stat => {
               const date = new Date(stat.date);
               const formattedDate = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear().toString().slice(-2)} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-              return `${formattedDate},${stat.bestTile},${stat.score},${stat.bestScore},${stat.time}`;
+              return `${formattedDate},${stat.bestTile},${stat.score},${stat.bestScore},${stat.time},${stat.moves}`;
             }).join("\n");
           const encodedUri = encodeURI(csvContent);
           const link = document.createElement("a");
@@ -73,6 +75,7 @@
           location.reload();
         });
       });
+      
     </script>
   </body>
 </html>

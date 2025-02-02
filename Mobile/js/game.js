@@ -12,6 +12,7 @@ class Game {
     this.startTime = null;
     this.hasSavedStats = false;
     this.moves = 0;
+    this.moves = 0; // Add moves property
     this.addEventListeners();
     this.reset();
     window.addEventListener('resize', () => this.refreshLayout());
@@ -165,6 +166,7 @@ class Game {
     this.addRandomTile();
     this.score = 0;
     this.startTime = new Date();
+    this.moves = 0; // Reset moves
     this.hasSavedStats = false;
     this.moves = 0;
     this.updateUI();
@@ -234,7 +236,7 @@ class Game {
     if (hasChanged) {
       this.addRandomTile();
       this.updateBestScore();
-      this.moves++;
+      this.moves++; // Increment moves
     }
 
     this.updateUI();
@@ -380,15 +382,39 @@ class Game {
         bestTile: Math.max(...this.board.flat()),
         bestScore: this.bestScore,
         date: new Date().toISOString(),
-        time: time
+        time: time,
+        moves: this.moves // Save moves
       };
       this.stats.push(stat);
       localStorage.setItem('gameStats', JSON.stringify(this.stats));
     }
   }
+
+  optimizedSlideAndCombine(row) {
+    let newRow = [];
+    let i = 0;
+    while (i < row.length) {
+      if (row[i] !== '') {
+        if (row[i] === row[i + 1]) {
+          newRow.push(row[i] * 2);
+          this.score += row[i] * 2;
+          i += 2;
+        } else {
+          newRow.push(row[i]);
+          i++;
+        }
+      } else {
+        i++;
+      }
+    }
+    while (newRow.length < this.size) {
+      newRow.push('');
+    }
+    return newRow;
+  }
 }
 
-// Instantiate the game
+// Instantiate the game 
 document.addEventListener('DOMContentLoaded', () => {
   const game = new Game(4);
   game.refreshLayout();
