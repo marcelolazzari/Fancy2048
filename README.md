@@ -5,7 +5,6 @@
 Fancy2048 is a modded version of the classic 2048 game with enhanced features and improved user experience. This version includes:
 
 - **Light Mode**: Switch between dark and light themes for better visibility.
-- **Invert Mode**: Invert colors for a unique visual experience.
 - **Hue Adjustment**: Adjust the hue of the game elements to your preference using a slider.
 - **Responsive Design**: Optimized for mobile devices and different screen sizes.
 - **Undo Move**: Undo your last move to correct mistakes.
@@ -26,13 +25,10 @@ Fancy2048 is a modded version of the classic 2048 game with enhanced features an
 
 - **Arrow Keys**: Move tiles up, down, left, or right.
 - **Swipe Gestures**: Move tiles on touch devices.
-- **Invert Button**: Toggle invert mode.
+- **Change Color Button**: Adjust the hue of the game elements.
 - **Reset Button**: Restart the game.
 - **Back Button**: Undo the last move.
-- **Hue Slider**: Adjust the hue of the game elements.
-- **Sound Toggle**: Enable or disable sound effects.
 - **Leaderboard Button**: View the leaderboard.
-- **Change Color Button**: Change the hue of the game elements.
 
 ## Play Online
 
@@ -53,5 +49,25 @@ If you prefer to run the game locally, follow these steps:
    cd Fancy2048
    ```
 3. Open `index.html` in your preferred web browser to start playing.
+
+## Features
+
+- **Light Mode**: Toggle between light and dark themes for better visibility.
+- **Hue Adjustment**: Customize the hue of the game elements to your liking.
+- **Responsive Design**: The game is optimized for various screen sizes, including mobile devices.
+- **Undo Move**: Undo your last move to correct mistakes.
+- **Smooth Animations**: Enjoy smooth transitions and animations for a more engaging gameplay experience.
+- **Local Storage**: Your best score and theme preferences are saved locally.
+- **Leaderboard**: Compete with other players and see your ranking on the leaderboard.
+- **Change Color**: Change the hue of the game elements for a personalized experience.
+- **Game Statistics**: View detailed statistics of your game sessions, including best tile, score, best score, time, and moves.
+
+## Contributing
+
+Contributions are welcome! If you have any suggestions or improvements, feel free to open an issue or submit a pull request.
+
+## License
+
+This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
 
 Enjoy the enhanced 2048 experience with Fancy2048!
