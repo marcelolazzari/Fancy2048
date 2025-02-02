@@ -12,7 +12,7 @@ class Game {
     this.startTime = null;
     this.hasSavedStats = false;
     this.moves = 0;
-    this.moves = 0; // Add moves property
+    this.timerInterval = null;
     this.addEventListeners();
     this.reset();
     window.addEventListener('resize', () => this.refreshLayout());
@@ -24,7 +24,6 @@ class Game {
     document.getElementById('reset-button').addEventListener('click', () => {
       this.reset();
       this.updateUI();
-      this.showGameState('reset');
     });
     window.addEventListener('keydown', this.handleKeyPress.bind(this));
     const boardContainer = document.getElementById('board-container');
@@ -83,6 +82,7 @@ class Game {
         if (this.isGameOver()) {
           document.getElementById('game-over').classList.remove('hidden');
           this.showGameState('game-over');
+          clearInterval(this.timerInterval);
         }
       }, 0);
     }
@@ -115,6 +115,7 @@ class Game {
         if (this.isGameOver()) {
           document.getElementById('game-over').classList.remove('hidden');
           this.showGameState('game-over');
+          clearInterval(this.timerInterval);
         }
       }, 0);
     }
@@ -171,11 +172,11 @@ class Game {
     this.startTime = new Date();
     this.moves = 0; // Reset moves
     this.hasSavedStats = false;
-    this.moves = 0;
     this.updateUI();
     document.getElementById('game-over').classList.add('hidden');
     this.applyTheme();
     this.updateHue();
+    this.startTimer();
   }
 
   slideAndCombine(row) {
@@ -393,37 +394,27 @@ class Game {
     }
   }
 
-  optimizedSlideAndCombine(row) {
-    let newRow = [];
-    let i = 0;
-    while (i < row.length) {
-      if (row[i] !== '') {
-        if (row[i] === row[i + 1]) {
-          newRow.push(row[i] * 2);
-          this.score += row[i] * 2;
-          i += 2;
-        } else {
-          newRow.push(row[i]);
-          i++;
-        }
-      } else {
-        i++;
-      }
-    }
-    while (newRow.length < this.size) {
-      newRow.push('');
-    }
-    return newRow;
+  startTimer() {
+    clearInterval(this.timerInterval);
+    this.timerInterval = setInterval(() => {
+      const now = new Date();
+      const timeDiff = Math.floor((now - this.startTime) / 1000);
+      const minutes = Math.floor(timeDiff / 60).toString().padStart(2, '0');
+      const seconds = (timeDiff % 60).toString().padStart(2, '0');
+      document.getElementById('time').textContent = `${minutes}:${seconds}`;
+    }, 1000);
   }
 
   showGameState(state) {
-    const stateContainer = document.createElement('div');
-    stateContainer.classList.add('game-state');
-    stateContainer.textContent = state === 'reset' ? 'Game Reset!' : 'Game Over!';
-    document.body.appendChild(stateContainer);
-    setTimeout(() => {
-      stateContainer.remove();
-    }, 2000);
+    if (state === 'game-over') {
+      const stateContainer = document.createElement('div');
+      stateContainer.classList.add('game-state');
+      stateContainer.textContent = 'Game Over!';
+      document.body.appendChild(stateContainer);
+      setTimeout(() => {
+        stateContainer.remove();
+      }, 2000);
+    }
   }
 }
 

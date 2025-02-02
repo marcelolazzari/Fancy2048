@@ -116,8 +116,8 @@ button:active {
 /* Reset button styles */
 #reset-button {
   position: fixed;
-  top: 150px;
-  right: 10px;
+  top: 160px;
+  left: 30px; /* Ensure left alignment */
   background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent background */
   border: 1px solid rgba(255, 255, 255, 0.3); /* Semi-transparent border */
   padding: 0.8rem 1.2rem;
@@ -125,7 +125,7 @@ button:active {
   font-size: 1rem;
   border-radius: 15px; /* Match tile border radius */
   margin-top: 20px;
-  z-index: 5; /* Adjusted z-index */
+  z-index: 10; /* Fix z-index */
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.3), 0 0 20px rgba(255, 255, 255, 0.3); /* Reduced glow effect */
   text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
 }
@@ -203,13 +203,13 @@ main {
   background-color: rgba(255, 255, 255, 0.1); /* Better background color contrast */
   border-radius: 15px; /* Match tile border radius */
   text-align: left;
-  width: calc(fit-content + 20px); /* Width auto based on text with some space around */
-  max-width: 90%;
+  width: fit-content; /* Adjust width based on content */
+  max-width: calc(100% - 20px); /* Limit width to 100% - 20px */
   z-index: 7;
   -webkit-backdrop-filter: blur(10px);
   backdrop-filter: blur(10px);
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.3), 0 0 20px rgba(255, 255, 255, 0.3); /* Reduced glow effect */
-  border: 2px solid rgba(255, 255, 255, 0.3); /* Semi-transparent border */
+  border: 3px solid rgba(255, 255, 255, 0.3); /* Increased border width */
 }
 
 #score,
@@ -224,7 +224,8 @@ main {
   font-size: 1.5rem;
 }
 
-#moves {
+#moves,
+#time {
   font-size: 1rem;
   font-weight: bold;
   color: var(--secondary-color);
