@@ -11,6 +11,7 @@ class Game {
     this.stats = JSON.parse(localStorage.getItem('gameStats')) || [];
     this.startTime = null;
     this.hasSavedStats = false;
+    this.moves = 0; // Add moves property
     this.addEventListeners();
     this.reset();
     window.addEventListener('resize', () => this.refreshLayout());
@@ -164,6 +165,7 @@ class Game {
     this.addRandomTile();
     this.score = 0;
     this.startTime = new Date();
+    this.moves = 0; // Reset moves
     this.hasSavedStats = false;
     this.updateUI();
     document.getElementById('game-over').classList.add('hidden');
@@ -232,6 +234,7 @@ class Game {
     if (hasChanged) {
       this.addRandomTile();
       this.updateBestScore();
+      this.moves++; // Increment moves
     }
 
     this.updateUI();
@@ -376,7 +379,8 @@ class Game {
         bestTile: Math.max(...this.board.flat()),
         bestScore: this.bestScore,
         date: new Date().toISOString(),
-        time: time
+        time: time,
+        moves: this.moves // Save moves
       };
       this.stats.push(stat);
       localStorage.setItem('gameStats', JSON.stringify(this.stats));
