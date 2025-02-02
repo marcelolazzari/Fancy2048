@@ -13,6 +13,7 @@ class Game {
     this.hasSavedStats = false;
     this.moves = 0;
     this.timerInterval = null;
+    this.isRainbowMode = false; // Add a flag for Rainbow Mode
     this.addEventListeners();
     this.reset();
     window.addEventListener('resize', () => this.refreshLayout());
@@ -32,6 +33,21 @@ class Game {
     document.getElementById('changeColor-button').addEventListener('click', this.changeHue.bind(this));
     document.getElementById('back-button').addEventListener('click', this.undoMove.bind(this));
     document.getElementById('leaderboard-button').addEventListener('click', this.openLeaderboardPage.bind(this));
+    document.getElementById('rainbowMode-button').addEventListener('click', this.toggleRainbowMode.bind(this)); // Add event listener for Rainbow Mode
+  }
+
+  toggleRainbowMode() {
+    this.isRainbowMode = !this.isRainbowMode;
+    if (this.isRainbowMode) {
+      this.changeHueRandomly();
+    } else {
+      this.updateHue();
+    }
+  }
+
+  changeHueRandomly() {
+    this.hueValue = Math.floor(Math.random() * 360);
+    this.updateHue();
   }
 
   refreshLayout() {
@@ -241,6 +257,9 @@ class Game {
       this.addRandomTile();
       this.updateBestScore();
       this.moves++; // Increment moves
+      if (this.isRainbowMode) {
+        this.changeHueRandomly(); // Change hue randomly if in Rainbow Mode
+      }
     }
 
     this.updateUI();
@@ -254,8 +273,8 @@ class Game {
     const boardContainer = document.getElementById('board-container');
     boardContainer.innerHTML = '';
     let highestValue = 0;
-    this.board.forEach(row => {
-      row.forEach(value => {
+    this.board.forEach((row, rowIndex) => {
+      row.forEach((value, colIndex) => {
         const tile = document.createElement('div');
         tile.classList.add('tile');
         tile.textContent = value !== '' ? value : '';
@@ -269,6 +288,8 @@ class Game {
           tile.classList.add('light-mode');
           this.invertTileDigits(tile);
         }
+        tile.style.gridRowStart = rowIndex + 1;
+        tile.style.gridColumnStart = colIndex + 1;
         boardContainer.appendChild(tile);
       });
     });
