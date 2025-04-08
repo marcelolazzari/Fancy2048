@@ -228,9 +228,21 @@ main {
   justify-content: center;
   width: 100%;
   flex: 1;
-  padding: 10px;
+  padding: 20px;
   box-sizing: border-box;
   transition: padding var(--transition-duration);
+}
+
+/* Game section */
+.game-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  max-width: 600px;
+  margin: 20px auto;
+  transition: transform var(--transition-duration);
 }
 
 /* Score container styles */
@@ -249,8 +261,8 @@ main {
   transition: background-color var(--transition-duration), box-shadow var(--transition-duration);
 }
 
-#score,
-#best-score {
+#score-container p {
+  margin: 5px 0;
   font-size: 1rem;
   font-weight: bold;
   color: var(--secondary-color);
@@ -383,6 +395,32 @@ main {
 
 .hidden {
   display: none;
+}
+
+/* Footer styles */
+footer {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.5);
+}
+
+footer button {
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: var(--tile-border-radius);
+  background-color: var(--reset-button-background);
+  color: var(--secondary-color);
+  border: none;
+  cursor: pointer;
+  transition: transform var(--transition-duration), background-color var(--transition-duration);
+}
+
+footer button:hover {
+  background-color: var(--reset-button-hover-background);
+  transform: scale(1.1);
 }
 
 /* Responsive adjustments */
