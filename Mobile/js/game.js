@@ -3,7 +3,7 @@ class Game {
     this.size = size;
     this.board = this.createEmptyBoard();
     this.score = 0;
-    this.bestScore = localStorage.getItem('bestScore') || 0;
+    this.bestScore = +localStorage.getItem('bestScore') || 0;
     this.isLightMode = localStorage.getItem('isLightMode') === 'true';
     this.hueValue = 0;
     this.gameStateStack = [];
@@ -13,7 +13,8 @@ class Game {
     this.hasSavedStats = false;
     this.moves = 0;
     this.timerInterval = null;
-    this.isRainbowMode = false; // Add a flag for Rainbow Mode
+    this.isRainbowMode = false;
+
     this.addEventListeners();
     this.reset();
     window.addEventListener('resize', () => this.refreshLayout());
@@ -33,16 +34,12 @@ class Game {
     document.getElementById('changeColor-button').addEventListener('click', this.changeHue.bind(this));
     document.getElementById('back-button').addEventListener('click', this.undoMove.bind(this));
     document.getElementById('leaderboard-button').addEventListener('click', this.openLeaderboardPage.bind(this));
-    document.getElementById('rainbowMode-button').addEventListener('click', this.toggleRainbowMode.bind(this)); // Add event listener for Rainbow Mode
+    document.getElementById('rainbowMode-button').addEventListener('click', this.toggleRainbowMode.bind(this));
   }
 
   toggleRainbowMode() {
     this.isRainbowMode = !this.isRainbowMode;
-    if (this.isRainbowMode) {
-      this.changeHueRandomly();
-    } else {
-      this.updateHue();
-    }
+    this.isRainbowMode ? this.changeHueRandomly() : this.updateHue();
   }
 
   changeHueRandomly() {
@@ -72,9 +69,7 @@ class Game {
     ];
 
     elementsToToggle.forEach(element => {
-      if (element) {
-        element.classList.toggle('light-mode', this.isLightMode);
-      }
+      if (element) element.classList.toggle('light-mode', this.isLightMode);
     });
 
     document.querySelectorAll('.tile').forEach(tile => {
@@ -186,7 +181,7 @@ class Game {
     this.addRandomTile();
     this.score = 0;
     this.startTime = new Date();
-    this.moves = 0; // Reset moves
+    this.moves = 0;
     this.hasSavedStats = false;
     this.updateUI();
     document.getElementById('game-over').classList.add('hidden');
@@ -256,9 +251,9 @@ class Game {
     if (hasChanged) {
       this.addRandomTile();
       this.updateBestScore();
-      this.moves++; // Increment moves
+      this.moves++;
       if (this.isRainbowMode) {
-        this.changeHueRandomly(); // Change hue randomly if in Rainbow Mode
+        this.changeHueRandomly();
       }
     }
 
@@ -318,8 +313,7 @@ class Game {
   }
 
   getTextColor(value) {
-    if (value === 2) return '#776e65';
-    if (value === 4) return '#776e65';
+    if (value === 2 || value === 4) return '#776e65';
     return value >= 8 ? '#f9f6f2' : '#776e65';
   }
 
@@ -354,11 +348,7 @@ class Game {
     document.getElementById('best-score').style.filter = `hue-rotate(${hueRotation}deg)`;
     const buttons = [document.getElementById('changeColor-button'), document.getElementById('reset-button')];
     buttons.forEach(button => {
-      if (!this.isLightMode) {
-        button.style.filter = `hue-rotate(${hueRotation}deg)`;
-      } else {
-        button.style.filter = 'none';
-      }
+      button.style.filter = this.isLightMode ? 'none' : `hue-rotate(${hueRotation}deg)`;
     });
   }
 
@@ -408,7 +398,7 @@ class Game {
         bestScore: this.bestScore,
         date: new Date().toISOString(),
         time: time,
-        moves: this.moves // Save moves
+        moves: this.moves
       };
       this.stats.push(stat);
       localStorage.setItem('gameStats', JSON.stringify(this.stats));
