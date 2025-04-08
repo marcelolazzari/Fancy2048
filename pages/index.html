@@ -11,7 +11,7 @@
     <!-- Header section -->
     <header>
       <div class="container">
-        <h1>Fancy 2048</h1>
+        <h1 class="game-title">Fancy 2048</h1>
         <nav aria-label="Game controls">
           <ul id="controls-container" class="controls">
             <li>
@@ -57,8 +57,7 @@
     <!-- Main content section -->
     <main>
       <div class="overlay" aria-hidden="true"></div>
-      <section class="game-section" aria-labelledby="game-title">
-        <h2 id="game-title" class="visually-hidden">Game Board</h2>
+      <section class="game-section">
         <div id="board-container" class="board-container" role="grid" aria-label="Game Board"></div>
         <div id="game-over" class="hidden" role="alert">Game Over!</div>
       </section>

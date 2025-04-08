@@ -37,8 +37,9 @@ body {
 header {
   width: 100%;
   display: flex;
+  flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  justify-content: center;
   padding: 10px 20px;
   background-color: rgba(0, 0, 0, 0.7);
   position: sticky;
@@ -48,11 +49,20 @@ header {
   transition: background-color var(--transition-duration);
 }
 
-header h1 {
-  font-size: 1.5rem;
+header .game-title {
+  font-size: 2rem;
   color: var(--highlight-color);
-  margin: 0;
+  margin: 10px 0;
+  text-align: center;
   transition: color var(--transition-duration);
+}
+
+header nav {
+  width: 100%;
+  display: flex;
+  justify-content: center;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 /* Controls container */
@@ -160,8 +170,8 @@ footer button:hover {
 
 /* Responsive adjustments */
 @media (max-width: 768px) {
-  header h1 {
-    font-size: 1.2rem;
+  header .game-title {
+    font-size: 1.5rem;
   }
 
   #controls-container button {
@@ -188,7 +198,7 @@ footer button:hover {
     justify-content: space-between;
   }
 
-  header h1 {
+  header .game-title {
     font-size: 1.2rem;
   }
 
