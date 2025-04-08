@@ -1,6 +1,6 @@
 # Fancy2048
 
-[Play Fancy2048](https://marcelolazzari.github.io/Fancy2048/Mobile/)
+[Play Fancy2048](https://marcelolazzari.github.io/Fancy2048/pages/mobile_index.html)
 
 Fancy2048 is a modded version of the classic 2048 game with enhanced features and improved user experience. This version includes:
 
@@ -34,7 +34,7 @@ Fancy2048 is a modded version of the classic 2048 game with enhanced features an
 
 You can play Fancy2048 directly in your browser by visiting the following link:
 
-[Play Fancy2048](https://marcelolazzari.github.io/Fancy2048/Mobile/)
+[Play Fancy2048](https://marcelolazzari.github.io/Fancy2048/pages/mobile_index.html)
 
 ## Installation
 
@@ -43,31 +43,3 @@ If you prefer to run the game locally, follow these steps:
 1. Clone the repository:
    ```bash
    git clone https://github.com/marcelolazzari/Fancy2048.git
-   ```
-2. Open the project directory:
-   ```bash
-   cd Fancy2048
-   ```
-3. Open `index.html` in your preferred web browser to start playing.
-
-## Features
-
-- **Light Mode**: Toggle between light and dark themes for better visibility.
-- **Hue Adjustment**: Customize the hue of the game elements to your liking.
-- **Responsive Design**: The game is optimized for various screen sizes, including mobile devices.
-- **Undo Move**: Undo your last move to correct mistakes.
-- **Smooth Animations**: Enjoy smooth transitions and animations for a more engaging gameplay experience.
-- **Local Storage**: Your best score and theme preferences are saved locally.
-- **Leaderboard**: Compete with other players and see your ranking on the leaderboard.
-- **Change Color**: Change the hue of the game elements for a personalized experience.
-- **Game Statistics**: View detailed statistics of your game sessions, including best tile, score, best score, time, and moves.
-
-## Contributing
-
-Contributions are welcome! If you have any suggestions or improvements, feel free to open an issue or submit a pull request.
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
-Enjoy the enhanced 2048 experience with Fancy2048!
