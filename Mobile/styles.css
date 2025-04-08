@@ -12,25 +12,26 @@
   --reset-button-background: #ff7f50;
   --reset-button-hover-background: #ff4500;
   --overlay-dark: rgba(0, 16, 71, 0.8);
+  --transition-duration: 0.3s; /* Uniform transition duration */
+  --tile-border-radius: 10px;
 }
 
 /* Body styles */
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Roboto', Arial, sans-serif;
   background-color: var(--primary-color);
   color: var(--secondary-color);
   margin: 0;
-  padding: env(safe-area-inset-top) 10px env(safe-area-inset-bottom);
+  padding: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: space-between;
+  justify-content: flex-start;
   min-height: 100vh;
-  touch-action: none;
   overflow: hidden;
   max-width: 100vw;
-  height: 100vh;
   box-sizing: border-box;
+  transition: background-color var(--transition-duration);
 }
 
 /* Overlay styles */
@@ -47,29 +48,24 @@ body {
 
 /* Header styles */
 header {
+  width: 100%;
   display: flex;
-  flex-direction: column;
-  align-items: flex-start;
-  margin: 0;
-  padding: 10px;
-  text-align: left;
-  position: fixed;
-  top: 10px;
-  left: 10px;
-  z-index: 5;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 20px;
+  background-color: rgba(0, 0, 0, 0.7);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+  transition: background-color var(--transition-duration);
 }
 
 header h1 {
+  font-size: 1.5rem;
+  color: var(--highlight-color);
   margin: 0;
-  padding: 0.2rem 0.4rem;
-  font-size: 1rem;
-  width: auto;
-  box-sizing: border-box;
-  color: hsl(var(--hue-value), 70%, 50%);
-  background-color: rgba(50, 50, 50, 0.8);
-  border-radius: 10px;
-  text-align: center;
-  z-index: 6;
+  transition: color var(--transition-duration);
 }
 
 /* General button styles */
@@ -77,12 +73,12 @@ button {
   padding: 10px 20px;
   font-size: 16px;
   color: #ffffff;
-  border-radius: 15px; /* Match tile border radius */
+  border-radius: var(--tile-border-radius);
   border: none;
   background-color: rgba(255, 255, 255, 0.2); /* Semi-transparent background */
   cursor: pointer;
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.3), 0 0 20px rgba(255, 255, 255, 0.3); /* Reduced glow effect */
-  transition: background-color 0.2s, color 0.2s, transform 0.05s ease-in-out, opacity 0.05s ease-in-out, box-shadow 0.05s ease-in-out; /* Match tile transition */
+  transition: background-color var(--transition-duration), color var(--transition-duration), transform var(--transition-duration), opacity var(--transition-duration), box-shadow var(--transition-duration); /* Match tile transition */
   display: flex;
   align-items: center;
   justify-content: center;
@@ -123,7 +119,7 @@ button:active {
   padding: 0.8rem 1.2rem;
   color: #ffffff;
   font-size: 1rem;
-  border-radius: 15px; /* Match tile border radius */
+  border-radius: var(--tile-border-radius);
   margin-top: 20px;
   z-index: 10; /* Fix z-index */
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.3), 0 0 20px rgba(255, 255, 255, 0.3); /* Reduced glow effect */
@@ -144,7 +140,7 @@ button:active {
   padding: 0.8rem 1.2rem;
   color: #ffffff;
   font-size: 1rem;
-  border-radius: 15px; /* Match tile border radius */
+  border-radius: var(--tile-border-radius);
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.3), 0 0 20px rgba(255, 255, 255, 0.3); /* Reduced glow effect */
   text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
   font-size: 0.8rem; /* Specific font size for back button */
@@ -163,7 +159,7 @@ button:active {
   padding: 0.8rem 1.2rem;
   color: #ffffff;
   font-size: 1rem;
-  border-radius: 15px; /* Match tile border radius */
+  border-radius: var(--tile-border-radius);
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.3), 0 0 20px rgba(255, 255, 255, 0.3); /* Reduced glow effect */
   text-shadow: 0 0 5px rgba(255, 255, 255, 0.7);
 }
@@ -179,38 +175,28 @@ main {
   display: flex;
   flex-direction: column;
   align-items: center;
-  width: 100%;
-  max-width: 100%;
-  margin: 20px 0;
-  padding: 10px;
-  box-sizing: border-box;
-  height: 100%;
-  flex: 1;
   justify-content: center;
-  overflow: hidden;
-  color: var(--secondary-color);
-  position: relative;
-  z-index: 4;
+  width: 100%;
+  flex: 1;
+  padding: 20px;
+  box-sizing: border-box;
+  transition: padding var(--transition-duration);
 }
 
 /* Score container styles */
 #score-container {
-  position: fixed;
-  top: 10px;
-  right: 10px;
-  padding: 0.5rem 1rem; /* Add padding for space around the text */
-  color: var(--secondary-color);
-  font-size: 1rem;
-  background-color: rgba(255, 255, 255, 0.1); /* Better background color contrast */
-  border-radius: 15px; /* Match tile border radius */
-  text-align: left;
-  width: fit-content; /* Adjust width based on content */
-  max-width: calc(100% - 20px); /* Limit width to 100% - 20px */
-  z-index: 7;
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3), 0 0 20px rgba(255, 255, 255, 0.3); /* Reduced glow effect */
-  border: 3px solid rgba(255, 255, 255, 0.3); /* Increased border width */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px;
+  margin-top: 20px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: var(--tile-border-radius);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+  width: 100%;
+  max-width: 300px;
+  transition: background-color var(--transition-duration), box-shadow var(--transition-duration);
 }
 
 #score,
@@ -237,17 +223,14 @@ main {
   display: grid;
   grid-template-columns: repeat(var(--size), 1fr);
   gap: var(--gap);
-  width: calc(100vmin - var(--gap) * 2);
-  height: calc(100vmin - var(--gap) * 2);
+  width: 100%;
+  max-width: 90vmin;
+  aspect-ratio: 1;
   background-color: rgba(50, 50, 50, 0.1);
-  border-radius: 15px;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5), 0 0 30px rgba(255, 255, 255, 0.5);
-  box-sizing: border-box;
+  border-radius: var(--tile-border-radius);
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
   position: relative;
-  margin-top: 100px;
-  z-index: 3;
-  overflow: hidden;
-
+  transition: background-color var(--transition-duration), box-shadow var(--transition-duration);
 }
 
 /* Tile styles */
@@ -258,14 +241,11 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
-  aspect-ratio: 1 / 1;
-  border-radius: 15px;
+  aspect-ratio: 1;
+  border-radius: var(--tile-border-radius);
   font-size: calc(var(--tile-size) * 0.9);
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5), 0 0 20px rgba(255, 255, 255, 0.5), 0 0 30px rgba(255, 255, 255, 0.5), 0 0 40px rgba(255, 255, 255, 0.5);
-  transition: transform 0.05s ease-in-out, opacity 0.05s ease-in-out, box-shadow 0.05s ease-in-out;
-  overflow: auto;
-  margin: 0;
- 
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  transition: transform var(--transition-duration), opacity var(--transition-duration), box-shadow var(--transition-duration);
 }
 
 .tile[data-value="2"] {
@@ -353,6 +333,42 @@ main {
 
 .hidden {
   display: none;
+}
+
+/* Responsive adjustments */
+@media (max-width: 768px) {
+  header h1 {
+    font-size: 1.2rem;
+  }
+
+  #controls-container button {
+    font-size: 0.9rem;
+    padding: 5px;
+  }
+
+  #score-container {
+    font-size: 0.9rem;
+  }
+
+  .tile {
+    font-size: calc(var(--tile-size) * 0.7);
+  }
+}
+
+@media (min-width: 769px) {
+  main {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+
+  .game-section {
+    flex: 2;
+  }
+
+  #score-container {
+    flex: 1;
+    align-self: flex-start;
+  }
 }
 
 /* Media queries for mobile optimization */
@@ -597,22 +613,24 @@ main {
 }
 
 #controls-container {
-  display: flex; /* Use flexbox for alignment */
-  flex-direction: row; /* Align buttons horizontally */
-  justify-content: center; /* Center buttons horizontally */
-  align-items: center; /* Center buttons vertically */
-  gap: 5px; /* Adjust the spacing as needed */
-  margin-top: calc(10px + 1em); /* Add margin from the top based on h1 element */
-  padding: 5px; /* Add padding for better spacing */
+  display: flex;
+  gap: 10px;
 }
 
 #controls-container button {
-  padding: 5px 10px; /* Smaller padding for buttons */
-  font-size: 1rem; /* Adjust font size for buttons */
+  padding: 5px 10px;
+  font-size: 1rem;
+  border-radius: 10px;
+  background-color: var(--button-background);
+  color: var(--secondary-color);
+  border: none;
+  cursor: pointer;
+  transition: transform var(--transition-duration), background-color var(--transition-duration);
 }
 
-#controls-container button i {
-  font-size: 1.5rem; /* Adjust icon size */
+#controls-container button:hover {
+  background-color: var(--button-hover-background);
+  transform: scale(1.1);
 }
 
 #hue-slider-container {
@@ -662,16 +680,14 @@ main {
 
 /* Adjust hue for game-section */
 .game-section {
-  transition: filter 0.3s ease;
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
+  justify-content: center;
   width: 100%;
-  height: 100%;
-  padding: var(--gap);
-  box-sizing: border-box;
-  position: relative;
-  margin-top: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+  transition: transform var(--transition-duration);
 }
 
 #reset-button {

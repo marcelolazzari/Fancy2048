@@ -39,12 +39,19 @@ class Game {
 
   toggleRainbowMode() {
     this.isRainbowMode = !this.isRainbowMode;
-    this.isRainbowMode ? this.changeHueRandomly() : this.updateHue();
+    if (this.isRainbowMode) {
+      this.startRainbowEffect();
+    } else {
+      clearInterval(this.rainbowInterval);
+      this.updateHue();
+    }
   }
 
-  changeHueRandomly() {
-    this.hueValue = Math.floor(Math.random() * 360);
-    this.updateHue();
+  startRainbowEffect() {
+    this.rainbowInterval = setInterval(() => {
+      this.hueValue = (this.hueValue + 10) % 360;
+      this.updateHue();
+    }, 100);
   }
 
   refreshLayout() {
@@ -253,7 +260,7 @@ class Game {
       this.updateBestScore();
       this.moves++;
       if (this.isRainbowMode) {
-        this.changeHueRandomly();
+        this.startRainbowEffect();
       }
     }
 
@@ -295,6 +302,9 @@ class Game {
     this.updateTileSize();
     this.updateHeaderBackground(highestValue);
     this.updateHue();
+    if (this.isRainbowMode) {
+      this.startRainbowEffect();
+    }
   }
 
   getScoreColor(score) {

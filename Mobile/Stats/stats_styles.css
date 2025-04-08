@@ -7,19 +7,22 @@ body {
   display: flex;
   flex-direction: column;
   align-items: center;
-  justify-content: center;
+  justify-content: flex-start;
   min-height: 100vh;
   box-sizing: border-box;
+  transition: background-color 0.3s ease;
 }
 
 header {
+  width: 100%;
+  text-align: center;
   margin-bottom: 20px;
 }
 
 header h1 {
   font-size: 2rem;
   color: hsl(var(--hue-value), 70%, 50%);
-  text-align: center;
+  transition: color 0.3s ease;
 }
 
 .stats-section {
@@ -28,9 +31,9 @@ header h1 {
   background-color: rgba(50, 50, 50, 0.8);
   padding: 20px;
   border-radius: 10px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08);
-  -webkit-backdrop-filter: blur(10px);
-  backdrop-filter: blur(10px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  margin-bottom: 20px;
+  transition: background-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .stats-section h2 {
@@ -69,37 +72,27 @@ header h1 {
 }
 
 button {
-  background-color: rgba(0, 16, 71, 0.4); /* Glass effect background */
-  color: var(--secondary-color); /* Ensure text contrast */
+  padding: 10px 20px;
+  font-size: 1rem;
+  border-radius: 10px;
+  background-color: rgba(0, 16, 71, 0.4);
+  color: var(--secondary-color);
   border: none;
-  padding: 0.5rem 1rem; /* Adjust padding */
-  font-size: 1rem; /* Adjust font size */
-  border-radius: 20px; /* Increase border radius */
-  text-align: center;
-  width: auto;
-  max-width: 90%;
-  margin-top: 10px; /* Adjust margin */
-  z-index: 7;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1), 0 1px 3px rgba(0, 0, 0, 0.08); /* Static drop shadow */
-  transition: background-color 0.2s, color 0.2s, transform 0.1s; /* Faster transition */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  filter: brightness(85%); /* Add brightness effect */
-  -webkit-backdrop-filter: blur(10px); /* Glass effect for Safari */
-  backdrop-filter: blur(10px); /* Glass effect */
+  cursor: pointer;
+  transition: transform 0.3s ease, background-color 0.3s ease;
 }
 
 button:hover {
-  background-color: rgba(255, 255, 255, 0.1); /* Slightly visible background on hover */
-  transform: scale(1.05); /* Slightly increase size on hover */
+  background-color: rgba(255, 255, 255, 0.1);
+  transform: scale(1.1);
 }
 
 button:active {
-  transform: scale(0.95); /* Slightly decrease size on active */
+  transform: scale(0.95);
 }
 
-@media (max-width: 600px) {
+/* Responsive adjustments */
+@media (max-width: 768px) {
   body {
     padding: 10px;
   }
@@ -119,6 +112,6 @@ button:active {
 
   button {
     font-size: 0.9rem;
-    padding: 0.4rem 0.8rem;
+    padding: 5px 10px;
   }
 }
