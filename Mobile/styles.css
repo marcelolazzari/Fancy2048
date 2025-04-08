@@ -170,6 +170,56 @@ button:active {
   box-shadow: 0 0 15px rgba(255, 255, 255, 0.5), 0 0 25px rgba(255, 255, 255, 0.5); /* Reduced glow effect */
 }
 
+/* Controls container */
+#controls-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  justify-content: center;
+}
+
+#controls-container button {
+  padding: 10px;
+  font-size: 1rem;
+  border-radius: var(--tile-border-radius);
+  background-color: var(--button-background);
+  color: var(--secondary-color);
+  border: none;
+  cursor: pointer;
+  transition: transform var(--transition-duration), background-color var(--transition-duration);
+}
+
+#controls-container button:hover {
+  background-color: var(--button-hover-background);
+  transform: scale(1.1);
+}
+
+/* New button styles */
+#pause-button,
+#board-size-button,
+#theme-toggle-button {
+  background-color: var(--button-background);
+  color: var(--secondary-color);
+  border: none;
+  padding: 10px;
+  font-size: 1rem;
+  border-radius: var(--tile-border-radius);
+  cursor: pointer;
+  transition: transform var(--transition-duration), background-color var(--transition-duration);
+}
+
+#pause-button:hover,
+#board-size-button:hover,
+#theme-toggle-button:hover {
+  background-color: var(--button-hover-background);
+  transform: scale(1.1);
+}
+
+/* Paused state styles */
+#board-container[style*="pointer-events: none"] {
+  opacity: 0.5;
+}
+
 /* Main styles */
 main {
   display: flex;
@@ -178,7 +228,7 @@ main {
   justify-content: center;
   width: 100%;
   flex: 1;
-  padding: 20px;
+  padding: 10px;
   box-sizing: border-box;
   transition: padding var(--transition-duration);
 }
@@ -374,7 +424,6 @@ main {
 /* Media queries for mobile optimization */
 @media (max-width: 600px) {
   body {
-    overflow: hidden;
     padding: 5px;
     height: 100vh;
     display: flex;
@@ -610,27 +659,6 @@ main {
     padding: 0 5px;
     height: 100%;
   }
-}
-
-#controls-container {
-  display: flex;
-  gap: 10px;
-}
-
-#controls-container button {
-  padding: 5px 10px;
-  font-size: 1rem;
-  border-radius: 10px;
-  background-color: var(--button-background);
-  color: var(--secondary-color);
-  border: none;
-  cursor: pointer;
-  transition: transform var(--transition-duration), background-color var(--transition-duration);
-}
-
-#controls-container button:hover {
-  background-color: var(--button-hover-background);
-  transform: scale(1.1);
 }
 
 #hue-slider-container {

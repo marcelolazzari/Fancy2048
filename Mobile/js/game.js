@@ -14,6 +14,7 @@ class Game {
     this.moves = 0;
     this.timerInterval = null;
     this.isRainbowMode = false;
+    this.isPaused = false;
 
     this.addEventListeners();
     this.reset();
@@ -35,6 +36,9 @@ class Game {
     document.getElementById('back-button').addEventListener('click', this.undoMove.bind(this));
     document.getElementById('leaderboard-button').addEventListener('click', this.openLeaderboardPage.bind(this));
     document.getElementById('rainbowMode-button').addEventListener('click', this.toggleRainbowMode.bind(this));
+    document.getElementById('pause-button').addEventListener('click', this.togglePause.bind(this));
+    document.getElementById('board-size-button').addEventListener('click', this.changeBoardSize.bind(this));
+    document.getElementById('theme-toggle-button').addEventListener('click', this.toggleTheme.bind(this));
   }
 
   toggleRainbowMode() {
@@ -86,6 +90,10 @@ class Game {
 
     this.updateUI();
     this.updateHue();
+
+    document.getElementById('theme-toggle-button').innerHTML = this.isLightMode
+      ? '<i class="fas fa-sun"></i>'
+      : '<i class="fas fa-moon"></i>';
   }
 
   invertTileDigits(tile) {
@@ -230,6 +238,7 @@ class Game {
   }
 
   move(direction) {
+    if (this.isPaused) return; // Prevent moves when paused
     this.saveState();
     let hasChanged = false;
 
@@ -370,6 +379,29 @@ class Game {
     if (this.gameStateStack.length > 0) {
       this.board = JSON.parse(this.gameStateStack.pop());
       this.updateUI();
+    }
+  }
+
+  togglePause() {
+    this.isPaused = !this.isPaused;
+    const boardContainer = document.getElementById('board-container');
+    boardContainer.style.pointerEvents = this.isPaused ? 'none' : 'auto';
+    if (this.isPaused) {
+      clearInterval(this.timerInterval);
+      document.getElementById('pause-button').innerHTML = '<i class="fas fa-play"></i>';
+    } else {
+      this.startTimer();
+      document.getElementById('pause-button').innerHTML = '<i class="fas fa-pause"></i>';
+    }
+  }
+
+  changeBoardSize() {
+    const newSize = prompt('Enter board size (e.g., 3 for 3x3, 4 for 4x4):', this.size);
+    if (newSize && !isNaN(newSize) && newSize > 2 && newSize < 10) {
+      this.size = parseInt(newSize, 10);
+      this.reset();
+    } else {
+      alert('Invalid board size. Please enter a number between 3 and 9.');
     }
   }
 
