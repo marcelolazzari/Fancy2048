@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Fancy2048 Stats</title>
+    <link rel="stylesheet" href="../styles/main.css" />
+    <link rel="stylesheet" href="../styles/mobile_styles.css" media="(max-width: 768px)" />
+    <link rel="stylesheet" href="../styles/stats_styles.css" />
+  </head>
+  <body>
+    <header>
+      <h1>Fancy2048 Stats</h1>
+    </header>
+    <main>
+      <section class="stats-section">
+        <h2>Game Statistics</h2>
+        <button type="button" id="save-csv-button">Save as CSV</button>
+        <button type="button" id="reset-data-button">Reset Data</button>
+        <table id="statsTable">
+          <thead>
+            <tr>
+              <th>Session</th>
+              <th>Best Tile</th>
+              <th>Score</th>
+              <th>Best Score</th>
+              <th>Time</th>
+              <th>Moves</th>
+            </tr>
+          </thead>
+          <tbody>
+            <!-- Stats will be dynamically inserted here -->
+          </tbody>
+        </table>
+      </section>
+    </main>
+    <button type="button" onclick="window.location.href='index.html'" style="margin-top: 20px;">Back to Game</button>
+    <script src="../scripts/stats.js"></script>
+  </body>
+</html>

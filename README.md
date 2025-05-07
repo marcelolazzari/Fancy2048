@@ -34,7 +34,7 @@ Fancy2048 is a modded version of the classic 2048 game with enhanced features an
 
 You can play Fancy2048 directly in your browser by visiting the following link:
 
-[Play Fancy2048](https://marcelolazzari.github.io/Fancy2048/pages/mobile_index.html)
+[Play Fancy2048](https://marcelolazzari.github.io/Fancy2048/pages/index.html)
 
 ## Installation
 
@@ -43,3 +43,12 @@ If you prefer to run the game locally, follow these steps:
 1. Clone the repository:
    ```bash
    git clone https://github.com/marcelolazzari/Fancy2048.git
+   ```
+2. Open the project folder and navigate to the pages directory.
+3. Open index.html in your preferred browser.
+
+## Project Structure
+
+- `/pages` - HTML pages including the main game and leaderboard
+- `/scripts` - JavaScript files for game logic and leaderboard functionality
+- `/styles` - CSS files for styling the game interface and responsive design

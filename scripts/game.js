@@ -406,7 +406,7 @@ class Game {
   }
 
   openLeaderboardPage() {
-    window.location.href = 'Stats/leaderboard.html';
+    window.location.href = '../pages/leaderboard.html';
   }
 
   updateLeaderboard() {
