@@ -52,10 +52,11 @@ class Game {
   }
 
   startRainbowEffect() {
+    clearInterval(this.rainbowInterval);
     this.rainbowInterval = setInterval(() => {
-      this.hueValue = (this.hueValue + 10) % 360;
+      this.hueValue = (this.hueValue + 5) % 360;
       this.updateHue();
-    }, 100);
+    }, 300);
   }
 
   refreshLayout() {
@@ -410,20 +411,20 @@ class Game {
   }
 
   updateLeaderboard() {
-    this.leaderboard.push({ name: 'Player', score: this.score });
+    const entry = { 
+      name: 'Player', 
+      score: this.score,
+      bestTile: Math.max(...this.board.flat()),
+      date: new Date().toISOString(),
+      moves: this.moves
+    };
+    this.leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+    this.leaderboard.push(entry);
     this.leaderboard.sort((a, b) => b.score - a.score);
+    if (this.leaderboard.length > 20) {
+      this.leaderboard = this.leaderboard.slice(0, 20);
+    }
     localStorage.setItem('leaderboard', JSON.stringify(this.leaderboard));
-    this.updateLeaderboardModal();
-  }
-
-  updateLeaderboardModal() {
-    const leaderboardList = document.getElementById('leaderboardList');
-    leaderboardList.innerHTML = '';
-    this.leaderboard.forEach((entry, index) => {
-      const listItem = document.createElement('li');
-      listItem.textContent = `${index + 1}. ${entry.name}: ${entry.score}`;
-      leaderboardList.appendChild(listItem);
-    });
   }
 
   saveStats() {
@@ -434,13 +435,23 @@ class Game {
       const seconds = (timeDiff % 60).toString().padStart(2, '0');
       const time = `${minutes}:${seconds}`;
 
+      const leaderboard = JSON.parse(localStorage.getItem('leaderboard')) || [];
+      const isTopScore = leaderboard.length < 10 || this.score > (leaderboard[9]?.score || 0);
+      
+      let playerName = 'Player';
+      if (isTopScore) {
+        const promptName = prompt('Congratulations! You achieved a high score. Enter your name:', 'Player');
+        if (promptName) playerName = promptName;
+      }
+
       const stat = {
         score: this.score,
         bestTile: Math.max(...this.board.flat()),
         bestScore: this.bestScore,
         date: new Date().toISOString(),
         time: time,
-        moves: this.moves
+        moves: this.moves,
+        name: playerName
       };
       this.stats.push(stat);
       localStorage.setItem('gameStats', JSON.stringify(this.stats));

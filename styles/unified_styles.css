@@ -12,6 +12,7 @@
   --reset-button-hover-background: #ff4500;
   --overlay-dark: rgba(0, 16, 71, 0.8);
   --transition-duration: 0.3s;
+  --hue-transition-duration: 0.5s; /* Longer transition for hue changes */
   --tile-border-radius: 10px;
   --hue-value: 0;
 }
@@ -44,6 +45,7 @@ body {
   background: radial-gradient(circle at center, var(--overlay-dark) 0%, rgb(0, 0, 0) 150%);
   z-index: -1;
   pointer-events: none;
+  transition: filter var(--hue-transition-duration) ease;
 }
 
 /* Header styles */
@@ -82,7 +84,7 @@ header .game-title {
 header h1 {
   font-size: 2rem;
   color: hsl(var(--hue-value), 70%, 50%);
-  transition: color var(--transition-duration);
+  transition: color var(--transition-duration), filter var(--hue-transition-duration) ease;
 }
 
 header nav {
@@ -186,7 +188,7 @@ main {
   width: 100%;
   max-width: 600px;
   margin: 20px auto;
-  transition: transform var(--transition-duration);
+  transition: transform var(--transition-duration), filter var(--hue-transition-duration) ease;
 }
 
 /* Score container styles */
@@ -202,7 +204,7 @@ main {
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
   width: 100%;
   max-width: 300px;
-  transition: background-color var(--transition-duration), box-shadow var(--transition-duration);
+  transition: background-color var(--transition-duration), box-shadow var(--transition-duration), filter var(--hue-transition-duration) ease;
 }
 
 #score-container p {
@@ -215,6 +217,7 @@ main {
 #score {
   color: var(--highlight-color);
   font-size: 1.5rem;
+  transition: filter var(--hue-transition-duration) ease;
 }
 
 #moves,
@@ -236,7 +239,7 @@ main {
   border-radius: var(--tile-border-radius);
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
   position: relative;
-  transition: background-color var(--transition-duration), box-shadow var(--transition-duration);
+  transition: background-color var(--transition-duration), box-shadow var(--transition-duration), filter var(--hue-transition-duration) ease;
 }
 
 /* Tile styles */
@@ -404,229 +407,248 @@ main {
 .leaderboard-section h2 {
   font-size: 1.5rem;
   margin-bottom: 20px;
-  text-align: center;
+  text-align: center;{
 }
-
-#leaderboardList {
+apse: collapse;
+#leaderboardList {: 15px;
   list-style-position: inside;
   padding: 0;
   margin: 0;
-}
+}e td {
 
-#leaderboardList li {
-  padding: 10px;
-  border-bottom: 1px solid #444;
+#leaderboardList li {;
+  padding: 10px; border: 1px solid #444;
+  border-bottom: 1px solid #444;}
   font-size: 1.1rem;
 }
-
-#leaderboardList li:last-child {
+ background-color: #333;
+#leaderboardList li:last-child {  color: #f2f2f2;
   border-bottom: none;
 }
-
-#leaderboardList li:hover {
+leaderboardTable tr:nth-child(even) {
+#leaderboardList li:hover {  background-color: #2a2a2a;
   background-color: #444;
 }
-
-/* Media query for leaderboard on small screens */
+-child(odd) {
+/* Media query for leaderboard on small screens */: #1a1a1a;
 @media (max-width: 600px) {
   .leaderboard-section {
-    padding: 10px;
-  }
+    padding: 10px;{
+  }44;
   
   .leaderboard-section h2 {
     font-size: 1.2rem;
   }
-  
-  #leaderboardList li {
-    padding: 8px;
-    font-size: 0.9rem;
+  ce-between;
+  #leaderboardList li {argin-bottom: 15px;
+    padding: 8px; flex-wrap: wrap;
+    font-size: 0.9rem;  gap: 10px;
   }
 }
-
-/* Footer styles */
+dth: 600px) {
+/* Footer styles */ble th,
 footer {
-  width: 100%;
+  width: 100%;;
   display: flex;
   justify-content: center;
-  padding: 10px;
-  background-color: rgba(0, 0, 0, 0.7);
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.5);
+  padding: 10px; 
+  background-color: rgba(0, 0, 0, 0.7);  .button-container {
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.5); column;
 }
 
-footer .container {
+footer .container {ner button {
   width: 100%;
-  max-width: 1200px;
-  display: flex;
+  max-width: 1200px;   margin-bottom: 5px;
+  display: flex;  }
   justify-content: center;
 }
 
 /* Helper classes */
 .visually-hidden {
-  position: absolute;
-  width: 1px;
+  position: absolute;;
+  width: 1px;tent: center;
   height: 1px;
-  margin: -1px;
-  padding: 0;
+  margin: -1px;0, 0, 0, 0.7);
+  padding: 0;: 0 -2px 5px rgba(0, 0, 0, 0.5);
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   border: 0;
 }
-
+dth: 1200px;
 /* Responsive adjustments */
 @media (min-width: 769px) {
   main {
     flex-direction: row;
-    justify-content: space-between;
-    flex-wrap: wrap;
-  }
-
-  .game-section {
+    justify-content: space-between;/* Helper classes */
+    flex-wrap: wrap;{
+  }absolute;
+idth: 1px;
+  .game-section {  height: 1px;
     flex: 2;
-  }
+  };
 
-  #score-container {
-    flex: 1;
+  #score-container {0);
+    flex: 1;order: 0;
     align-self: flex-start;
     margin-left: 20px;
   }
 }
 
-/* Media queries for mobile optimization */
-@media (max-width: 768px) {
-  header .game-title, header h1 {
-    font-size: 1.5rem;
+/* Media queries for mobile optimization */w;
+@media (max-width: 768px) {t: space-between;
+  header .game-title, header h1 { flex-wrap: wrap;
+    font-size: 1.5rem;  }
     margin: 5px 0;
-  }
-
-  #controls-container {
+  }on {
+ flex: 2;
+  #controls-container {  }
     gap: 5px;
   }
 
-  #controls-container button {
-    font-size: 0.9rem;
+  #controls-container button { align-self: flex-start;
+    font-size: 0.9rem;    margin-left: 20px;
     padding: 8px;
   }
 
-  #score-container {
-    font-size: 0.9rem;
+  #score-container {/* Media queries for mobile optimization */
+    font-size: 0.9rem;ax-width: 768px) {
   }
-
-  .tile {
+ font-size: 1.5rem;
+  .tile {    margin: 5px 0;
     font-size: calc(var(--tile-size) * 0.7);
   }
-
-  main {
-    padding: 10px;
+controls-container {
+  main {   gap: 5px;
+    padding: 10px;  }
   }
-}
-
-@media (max-width: 600px) {
-  body {
+}ols-container button {
+0.9rem;
+@media (max-width: 600px) { padding: 8px;
+  body {  }
     padding: 0;
   }
-
-  header .game-title, header h1 {
+ font-size: 0.9rem;
+  header .game-title, header h1 {}
     font-size: 1.2rem;
   }
-  
-  header {
+   font-size: calc(var(--tile-size) * 0.7);
+  header {  }
     padding: 5px 10px;
   }
-
-  .controls {
+ padding: 10px;
+  .controls {  }
     gap: 5px;
   }
-
-  button {
-    padding: 8px 12px;
+px) {
+  button {ody {
+    padding: 8px 12px;    padding: 0;
     font-size: 0.8rem;
   }
-
-  button i {
+eader .game-title, header h1 {
+  button i {    font-size: 1.2rem;
     font-size: 1.2rem;
   }
 
-  #score-container {
+  #score-container {;
     font-size: 0.8rem;
     padding: 5px;
-    margin-top: 10px;
+    margin-top: 10px;s {
   }
 
   #score {
     font-size: 1.2rem;
   }
-
+em;
   #board-container {
     max-width: 85vmin;
-    margin: 10px 0;
-  }
+    margin: 10px 0; i {
+  }2rem;
 
   main {
-    padding: 5px;
+    padding: 5px;r {
   }
-
-  .game-section {
+ padding: 5px;
+  .game-section {    margin-top: 10px;
     margin: 10px auto;
   }
-
-  footer {
+score {
+  footer {    font-size: 1.2rem;
     padding: 5px;
   }
-
-  #game-over {
-    font-size: 1.5rem;
-    padding: 15px;
+ {
+  #game-over { max-width: 85vmin;
+    font-size: 1.5rem;   margin: 10px 0;
+    padding: 15px;  }
   }
 }
 
 /* Small phone screens */
 @media (max-width: 400px) {
-  header .game-title, header h1 {
-    font-size: 1rem;
+  header .game-title, header h1 {  .game-section {
+    font-size: 1rem;0px auto;
   }
 
-  .controls {
-    gap: 3px;
+  .controls {  footer {
+    gap: 3px;g: 5px;
   }
 
-  button {
-    padding: 6px 10px;
-    font-size: 0.7rem;
+  button {game-over {
+    padding: 6px 10px;    font-size: 1.5rem;
+    font-size: 0.7rem; 15px;
   }
 
   button i {
-    font-size: 1rem;
-  }
-
-  #board-container {
+    font-size: 1rem;ns */
+  }px) {
+eader .game-title, header h1 {
+  #board-container {    font-size: 1rem;
     max-width: 90vmin;
   }
-
-  .tile {
-    font-size: calc(var(--tile-size) * 0.6);
+controls {
+  .tile {   gap: 3px;
+    font-size: calc(var(--tile-size) * 0.6);  }
   }
 }
-
-/* Landscape orientation handling */
+ing: 6px 10px;
+/* Landscape orientation handling */rem;
 @media (orientation: landscape) and (max-height: 500px) {
   body {
-    height: 100vh;
-    overflow: auto;
+    height: 100vh;  button i {
+    overflow: auto;ize: 1rem;
   }
 
-  header {
-    position: static;
+  header {  #board-container {
+    position: static;width: 90vmin;
   }
 
   main {
-    flex-direction: row;
+    flex-direction: row;lc(var(--tile-size) * 0.6);
     justify-content: center;
-    align-items: center;
+    align-items: center;}
     padding: 5px;
+  }entation handling */
+ntation: landscape) and (max-height: 500px) {
+  .game-section {
+    margin: 5px; height: 100vh;
+    flex: 1;    overflow: auto;
+    max-width: 70vh;
   }
 
-  .game-section {
-    margin: 5px;
+  #score-container { position: static;
+    margin: 5px;  }
+    padding: 5px;
+  }
+ flex-direction: row;
+  #board-container {    justify-content: center;
+    max-height: 70vh;ms: center;
+  }
+
+  .controls {
+    flex-wrap: wrap;  .game-section {
+
+
+
+}  }    margin: 5px;
     flex: 1;
     max-width: 70vh;
   }
