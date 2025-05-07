@@ -6,6 +6,7 @@
   --primary-color: #1a1a1a;
   --secondary-color: #f2f2f2;
   --highlight-color: #ffcc00;
+  --highlight-color-rgb: 255, 204, 0;
   --button-background: rgba(0, 16, 71, 0.4);
   --button-hover-background: rgba(255, 255, 255, 0.1);
   --reset-button-background: #ff7f50;
@@ -433,6 +434,11 @@ main {
 
 #leaderboardList li:hover {
   background-color: #2a2a2a;
+}
+
+/* Add styling for highlighting current player in the leaderboard */
+.current-player {
+  background-color: rgba(var(--highlight-color-rgb), 0.15) !important;
 }
 
 /* Improved table responsiveness */
