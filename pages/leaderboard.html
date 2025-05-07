@@ -18,21 +18,23 @@
           <button type="button" id="clear-leaderboard">Clear Leaderboard</button>
           <button type="button" id="save-leaderboard-csv">Export to CSV</button>
         </div>
-        <table id="leaderboardTable">
-          <thead>
-            <tr>
-              <th>Rank</th>
-              <th>Player</th>
-              <th>Score</th>
-              <th>Best Tile</th>
-              <th>Date</th>
-              <th>Moves</th>
-            </tr>
-          </thead>
-          <tbody>
-            <!-- Leaderboard entries will be dynamically inserted here -->
-          </tbody>
-        </table>
+        <div class="table-container">
+          <table id="leaderboardTable">
+            <thead>
+              <tr>
+                <th>Rank</th>
+                <th>Player</th>
+                <th>Score</th>
+                <th>Best Tile</th>
+                <th class="optional-column">Date</th>
+                <th class="optional-column">Moves</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Leaderboard entries will be dynamically inserted here -->
+            </tbody>
+          </table>
+        </div>
       </section>
     </main>
     <footer>

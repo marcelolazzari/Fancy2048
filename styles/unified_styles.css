@@ -15,6 +15,8 @@
   --hue-transition-duration: 0.5s; /* Longer transition for hue changes */
   --tile-border-radius: 10px;
   --hue-value: 0;
+  --mobile-button-size: 36px;
+  --mobile-gap: 5px;
 }
 
 /* Body styles */
@@ -407,262 +409,420 @@ main {
 .leaderboard-section h2 {
   font-size: 1.5rem;
   margin-bottom: 20px;
-  text-align: center;{
+  text-align: center;
 }
-apse: collapse;
-#leaderboardList {: 15px;
+
+#leaderboardList {
   list-style-position: inside;
   padding: 0;
   margin: 0;
-}e td {
-
-#leaderboardList li {;
-  padding: 10px; border: 1px solid #444;
-  border-bottom: 1px solid #444;}
-  font-size: 1.1rem;
 }
- background-color: #333;
-#leaderboardList li:last-child {  color: #f2f2f2;
+
+#leaderboardList li {
+  padding: 10px;
+  border: 1px solid #444;
+  border-bottom: 1px solid #444;
+  font-size: 1.1rem;
+  background-color: #333;
+  color: #f2f2f2;
+}
+
+#leaderboardList li:last-child {
   border-bottom: none;
 }
-leaderboardTable tr:nth-child(even) {
-#leaderboardList li:hover {  background-color: #2a2a2a;
-  background-color: #444;
+
+#leaderboardList li:hover {
+  background-color: #2a2a2a;
 }
--child(odd) {
-/* Media query for leaderboard on small screens */: #1a1a1a;
+
+/* Improved table responsiveness */
+#leaderboardTable, #statsTable {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 15px;
+  table-layout: auto;
+}
+
+/* Media query for leaderboard on small screens */
 @media (max-width: 600px) {
   .leaderboard-section {
-    padding: 10px;{
-  }44;
-  
+    padding: 10px;
+  }
+
   .leaderboard-section h2 {
     font-size: 1.2rem;
   }
-  ce-between;
-  #leaderboardList li {argin-bottom: 15px;
-    padding: 8px; flex-wrap: wrap;
-    font-size: 0.9rem;  gap: 10px;
+
+  #leaderboardList li {
+    padding: 8px;
+    font-size: 0.9rem;
   }
 }
-dth: 600px) {
-/* Footer styles */ble th,
+
+/* Footer styles */
 footer {
-  width: 100%;;
+  width: 100%;
   display: flex;
   justify-content: center;
-  padding: 10px; 
-  background-color: rgba(0, 0, 0, 0.7);  .button-container {
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.5); column;
+  padding: 10px;
+  background-color: rgba(0, 0, 0, 0.7);
+  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.5);
 }
 
-footer .container {ner button {
+footer .container {
   width: 100%;
-  max-width: 1200px;   margin-bottom: 5px;
-  display: flex;  }
+  max-width: 1200px;
+  display: flex;
   justify-content: center;
 }
 
 /* Helper classes */
 .visually-hidden {
-  position: absolute;;
-  width: 1px;tent: center;
+  position: absolute;
+  width: 1px;
   height: 1px;
-  margin: -1px;0, 0, 0, 0.7);
-  padding: 0;: 0 -2px 5px rgba(0, 0, 0, 0.5);
+  margin: -1px;
+  padding: 0;
   overflow: hidden;
   clip: rect(0, 0, 0, 0);
   border: 0;
 }
-dth: 1200px;
+
 /* Responsive adjustments */
 @media (min-width: 769px) {
   main {
     flex-direction: row;
-    justify-content: space-between;/* Helper classes */
-    flex-wrap: wrap;{
-  }absolute;
-idth: 1px;
-  .game-section {  height: 1px;
-    flex: 2;
-  };
+    justify-content: space-between;
+    flex-wrap: wrap;
+    align-items: flex-start;
+    padding: 20px;
+  }
 
-  #score-container {0);
-    flex: 1;order: 0;
+  .game-section {
+    flex: 2;
+    margin-right: 20px;
+  }
+
+  #score-container {
+    flex: 1;
     align-self: flex-start;
     margin-left: 20px;
+    max-width: 300px;
   }
 }
 
-/* Media queries for mobile optimization */w;
-@media (max-width: 768px) {t: space-between;
-  header .game-title, header h1 { flex-wrap: wrap;
-    font-size: 1.5rem;  }
+/* Tablet styles */
+@media (max-width: 768px) {
+  header .game-title, header h1 {
+    font-size: 1.5rem;
     margin: 5px 0;
-  }on {
- flex: 2;
-  #controls-container {  }
+  }
+
+  #controls-container {
+    gap: 8px;
+  }
+
+  #controls-container button {
+    font-size: 0.9rem;
+    padding: 8px;
+    min-width: var(--mobile-button-size);
+    min-height: var(--mobile-button-size);
+  }
+
+  .controls {
+    gap: 8px;
+  }
+
+  main {
+    padding: 10px;
+    flex-direction: column;
+    align-items: center;
+  }
+
+  .game-section {
+    margin: 10px auto;
+    width: 100%;
+  }
+
+  #score-container {
+    width: 100%;
+    max-width: 400px;
+    margin: 10px auto;
+    padding: 10px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 5px;
   }
 
-  #controls-container button { align-self: flex-start;
-    font-size: 0.9rem;    margin-left: 20px;
-    padding: 8px;
+  #score-container p {
+    margin: 3px 0;
+    text-align: center;
   }
+  
+  .leaderboard-section, .stats-section {
+    padding: 15px;
+  }
+  
+  #leaderboardTable th, #leaderboardTable td,
+  #statsTable th, #statsTable td {
+    padding: 8px 5px;
+    font-size: 0.9rem;
+  }
+}
 
-  #score-container {/* Media queries for mobile optimization */
-    font-size: 0.9rem;ax-width: 768px) {
-  }
- font-size: 1.5rem;
-  .tile {    margin: 5px 0;
-    font-size: calc(var(--tile-size) * 0.7);
-  }
-controls-container {
-  main {   gap: 5px;
-    padding: 10px;  }
-  }
-}ols-container button {
-0.9rem;
-@media (max-width: 600px) { padding: 8px;
-  body {  }
+/* Phone styles */
+@media (max-width: 600px) {
+  body {
     padding: 0;
   }
- font-size: 0.9rem;
-  header .game-title, header h1 {}
+
+  header .game-title, header h1 {
     font-size: 1.2rem;
   }
-   font-size: calc(var(--tile-size) * 0.7);
-  header {  }
+  
+  header {
     padding: 5px 10px;
   }
- padding: 10px;
-  .controls {  }
+
+  .controls {
     gap: 5px;
   }
-px) {
-  button {ody {
-    padding: 8px 12px;    padding: 0;
+
+  button {
+    padding: 6px;
     font-size: 0.8rem;
+    min-width: var(--mobile-button-size);
+    min-height: var(--mobile-button-size);
   }
-eader .game-title, header h1 {
-  button i {    font-size: 1.2rem;
+
+  button i {
     font-size: 1.2rem;
   }
 
-  #score-container {;
+  #score-container {
     font-size: 0.8rem;
     padding: 5px;
-    margin-top: 10px;s {
+    margin-top: 10px;
   }
 
   #score {
     font-size: 1.2rem;
   }
-em;
+
   #board-container {
-    max-width: 85vmin;
-    margin: 10px 0; i {
-  }2rem;
+    max-width: 95vmin;
+    margin: 5px 0;
+  }
 
   main {
-    padding: 5px;r {
-  }
- padding: 5px;
-  .game-section {    margin-top: 10px;
-    margin: 10px auto;
-  }
-score {
-  footer {    font-size: 1.2rem;
     padding: 5px;
   }
- {
-  #game-over { max-width: 85vmin;
-    font-size: 1.5rem;   margin: 10px 0;
-    padding: 15px;  }
+
+  .game-section {
+    margin: 5px auto;
+  }
+
+  footer {
+    padding: 5px;
+  }
+
+  #game-over {
+    font-size: 1.5rem;
+    padding: 15px;
+  }
+  
+  /* Table special handling for very small screens */
+  #leaderboardTable, #statsTable {
+    font-size: 0.75rem;
+  }
+  
+  #leaderboardTable th, #leaderboardTable td,
+  #statsTable th, #statsTable td {
+    padding: 4px 2px;
+  }
+  
+  /* Hide less important columns on small screens */
+  #leaderboardTable th:nth-child(5), #leaderboardTable td:nth-child(5),
+  #leaderboardTable th:nth-child(6), #leaderboardTable td:nth-child(6),
+  #statsTable th:nth-child(5), #statsTable td:nth-child(5),
+  #statsTable th:nth-child(6), #statsTable td:nth-child(6) {
+    display: none;
+  }
+  
+  .button-container {
+    flex-direction: column;
+  }
+  
+  .button-container button {
+    width: 100%;
+    margin-bottom: 5px;
   }
 }
 
 /* Small phone screens */
 @media (max-width: 400px) {
-  header .game-title, header h1 {  .game-section {
-    font-size: 1rem;0px auto;
-  }
-
-  .controls {  footer {
-    gap: 3px;g: 5px;
-  }
-
-  button {game-over {
-    padding: 6px 10px;    font-size: 1.5rem;
-    font-size: 0.7rem; 15px;
-  }
-
-  button i {
-    font-size: 1rem;ns */
-  }px) {
-eader .game-title, header h1 {
-  #board-container {    font-size: 1rem;
-    max-width: 90vmin;
-  }
-controls {
-  .tile {   gap: 3px;
-    font-size: calc(var(--tile-size) * 0.6);  }
-  }
-}
-ing: 6px 10px;
-/* Landscape orientation handling */rem;
-@media (orientation: landscape) and (max-height: 500px) {
-  body {
-    height: 100vh;  button i {
-    overflow: auto;ize: 1rem;
-  }
-
-  header {  #board-container {
-    position: static;width: 90vmin;
-  }
-
-  main {
-    flex-direction: row;lc(var(--tile-size) * 0.6);
-    justify-content: center;
-    align-items: center;}
-    padding: 5px;
-  }entation handling */
-ntation: landscape) and (max-height: 500px) {
-  .game-section {
-    margin: 5px; height: 100vh;
-    flex: 1;    overflow: auto;
-    max-width: 70vh;
-  }
-
-  #score-container { position: static;
-    margin: 5px;  }
-    padding: 5px;
-  }
- flex-direction: row;
-  #board-container {    justify-content: center;
-    max-height: 70vh;ms: center;
+  header .game-title, header h1 {
+    font-size: 1rem;
   }
 
   .controls {
-    flex-wrap: wrap;  .game-section {
+    gap: 3px;
+  }
 
+  button {
+    padding: 4px;
+    font-size: 0.7rem;
+    min-width: 30px;
+    min-height: 30px;
+  }
 
+  button i {
+    font-size: 1rem;
+  }
 
-}  }    margin: 5px;
-    flex: 1;
+  #board-container {
+    max-width: 100%;
+    margin: 5px 0;
+  }
+
+  .tile {
+    font-size: calc(var(--tile-size) * 0.5);
+  }
+}
+
+/* Landscape orientation handling - improved */
+@media (orientation: landscape) and (max-height: 500px) {
+  body {
+    height: 100vh;
+    overflow: auto;
+  }
+
+  header {
+    position: static;
+    padding: 5px;
+  }
+  
+  header .container {
+    flex-direction: row;
+    justify-content: space-between;
+  }
+  
+  header .game-title {
+    font-size: 1.2rem;
+    margin: 0;
+  }
+  
+  .controls {
+    margin: 0;
+  }
+
+  main {
+    flex-direction: row;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+    gap: 10px;
+  }
+
+  .game-section {
+    margin: 0;
+    flex: 0 0 auto;
     max-width: 70vh;
   }
 
   #score-container {
-    margin: 5px;
+    margin: 0;
     padding: 5px;
+    height: auto;
+    flex: 0 0 auto;
+    display: flex;
+    flex-direction: column;
+  }
+  
+  #score-container p {
+    margin: 2px 0;
+    font-size: 0.9rem;
   }
 
   #board-container {
     max-height: 70vh;
+    max-width: 70vh;
   }
+  
+  footer {
+    padding: 2px;
+  }
+  
+  footer button {
+    margin: 0;
+    padding: 5px 10px;
+  }
+}
 
-  .controls {
-    flex-wrap: wrap;
+/* Tablet landscape optimization */
+@media (min-width: 768px) and (max-width: 1024px) and (orientation: landscape) {
+  main {
+    padding: 10px;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+  }
+  
+  .game-section {
+    flex: 0 0 auto;
+    margin-right: 20px;
+  }
+  
+  #score-container {
+    flex: 0 0 auto;
+    margin-top: 0;
+  }
+}
+
+/* High DPI screens */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) { 
+  button {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  .tile {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+}
+
+/* Touch-friendly improvements */
+@media (hover: none) and (pointer: coarse) {
+  button {
+    min-height: 44px; /* Apple recommended minimum touch target size */
+  }
+  
+  button:hover {
+    transform: none; /* Don't scale on hover for touch devices */
+  }
+  
+  button:active {
+    transform: scale(0.95); /* Only scale on active touch */
+    background-color: var(--button-hover-background);
+  }
+  
+  .tile:hover {
+    transform: none; /* Don't scale on hover for touch devices */
+    box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
+  }
+}
+
+/* Leaderboard and Stats tables responsive layouts */
+@media (max-width: 768px) {
+  .leaderboard-section, .stats-section {
+    overflow-x: auto; /* Enable horizontal scrolling if needed */
+    max-width: 95%;
+    margin: 0 auto 20px;
+  }
+  
+  #leaderboardTable, #statsTable {
+    min-width: 100%;
+    white-space: nowrap;
   }
 }
