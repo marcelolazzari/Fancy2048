@@ -1,6 +1,6 @@
 # Fancy2048
 
-[Play Fancy2048](pages/index.html)
+[Play Fancy2048](https://marcelolazzari.github.io/Fancy2048/pages/index.html)
 
 Fancy2048 is a modded version of the classic 2048 game with enhanced features and improved user experience. This version includes:
 

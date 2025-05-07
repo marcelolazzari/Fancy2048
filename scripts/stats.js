@@ -3,20 +3,30 @@ document.addEventListener('DOMContentLoaded', () => {
   const uniqueStats = Array.from(new Set(stats.map(stat => JSON.stringify(stat)))).map(stat => JSON.parse(stat));
   const statsTableBody = document.getElementById('statsTable').querySelector('tbody');
   
-  uniqueStats.forEach((stat) => {
+  // Clear the table first
+  statsTableBody.innerHTML = '';
+  
+  if (uniqueStats.length === 0) {
+    // Add a message if no stats are available
     const row = document.createElement('tr');
-    const date = new Date(stat.date);
-    const formattedDate = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear().toString().slice(-2)} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
-    row.innerHTML = `
-      <td>${formattedDate}</td>
-      <td>${stat.bestTile}</td>
-      <td>${stat.score}</td>
-      <td>${stat.bestScore}</td>
-      <td>${stat.time}</td>
-      <td>${stat.moves}</td>
-    `;
+    row.innerHTML = `<td colspan="6">No game statistics available yet. Play a game to see your stats here!</td>`;
     statsTableBody.appendChild(row);
-  });
+  } else {
+    uniqueStats.forEach((stat) => {
+      const row = document.createElement('tr');
+      const date = new Date(stat.date);
+      const formattedDate = `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear().toString().slice(-2)} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+      row.innerHTML = `
+        <td>${formattedDate}</td>
+        <td>${stat.bestTile}</td>
+        <td>${stat.score}</td>
+        <td>${stat.bestScore}</td>
+        <td>${stat.time}</td>
+        <td>${stat.moves}</td>
+      `;
+      statsTableBody.appendChild(row);
+    });
+  }
 
   document.getElementById('save-csv-button').addEventListener('click', () => {
     const csvContent = "data:text/csv;charset=utf-8,"
