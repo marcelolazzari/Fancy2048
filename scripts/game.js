@@ -113,7 +113,7 @@ class Game {
     }, 1000);
   }
 
-  // Board manipulation functions
+  // Board manipulation functions with improved grid creation
   createEmptyBoard() {
     const board = [];
     for (let i = 0; i < this.size; i++) {
@@ -145,6 +145,9 @@ class Game {
     const boardContainer = document.getElementById('board-container');
     boardContainer.innerHTML = '';
     
+    // Create the grid cells first for proper layout
+    this.createGridCells();
+    
     // Add initial tiles
     this.addRandomTile();
     this.addRandomTile();
@@ -162,6 +165,21 @@ class Game {
 
     // Enable back button if we have game states
     this.updateBackButtonState();
+  }
+
+  // Create grid cells for better visualization of the 4x4 grid
+  createGridCells() {
+    const boardContainer = document.getElementById('board-container');
+    
+    for (let i = 0; i < this.size; i++) {
+      for (let j = 0; j < this.size; j++) {
+        const cell = document.createElement('div');
+        cell.className = 'grid-cell';
+        cell.dataset.row = i;
+        cell.dataset.col = j;
+        boardContainer.appendChild(cell);
+      }
+    }
   }
 
   addRandomTile() {
@@ -198,11 +216,21 @@ class Game {
     tile.dataset.col = col;
     tile.textContent = value;
     
+    // Position the tile in the grid
+    const gridPosition = row * this.size + col;
+    const gridCell = boardContainer.children[gridPosition];
+    
+    if (gridCell) {
+      gridCell.appendChild(tile);
+    } else {
+      console.error(`No grid cell found at position ${row}, ${col}`);
+      boardContainer.appendChild(tile);
+    }
+    
     if (isNew) {
       tile.classList.add('new-tile');
     }
     
-    boardContainer.appendChild(tile);
     return tile;
   }
 
@@ -509,9 +537,14 @@ class Game {
     // Update best score if needed
     this.updateBestScore();
     
-    // Clear and redraw board
+    // Clear existing tiles but keep grid cells
     const boardContainer = document.getElementById('board-container');
-    boardContainer.innerHTML = '';
+    const gridCells = boardContainer.querySelectorAll('.grid-cell');
+    gridCells.forEach(cell => {
+      while (cell.firstChild) {
+        cell.removeChild(cell.firstChild);
+      }
+    });
     
     // Create tile elements
     for (let i = 0; i < this.size; i++) {
