@@ -222,6 +222,13 @@ class Game {
     
     if (gridCell) {
       gridCell.appendChild(tile);
+      
+      // Adjust font size for proper fit if needed (fallback for very large numbers)
+      if (value > 65536) {
+        const digitCount = Math.floor(Math.log10(value)) + 1;
+        const fontSize = Math.max(0.5 - (digitCount * 0.05), 0.15); // Decrease font size as digits increase
+        tile.style.fontSize = `calc(var(--tile-size) * ${fontSize})`;
+      }
     } else {
       console.error(`No grid cell found at position ${row}, ${col}`);
       boardContainer.appendChild(tile);

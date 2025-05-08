@@ -328,7 +328,7 @@ main {
   position: relative;
 }
 
-/* Tile styles - improved positioning and sizing */
+/* Improved tile styles with responsive font sizing */
 .tile {
   position: absolute;
   top: 0;
@@ -348,6 +348,79 @@ main {
               color var(--transition-duration),
               box-shadow var(--transition-duration);
   z-index: 1;
+  text-align: center;
+  line-height: 1;
+  padding: 0;
+  overflow: hidden;
+}
+
+/* Font size adjustments based on number length */
+.tile[data-value="2"],
+.tile[data-value="4"],
+.tile[data-value="8"] {
+  font-size: calc(var(--tile-size) * 0.5);
+}
+
+.tile[data-value="16"],
+.tile[data-value="32"],
+.tile[data-value="64"] {
+  font-size: calc(var(--tile-size) * 0.45);
+}
+
+.tile[data-value="128"],
+.tile[data-value="256"],
+.tile[data-value="512"] {
+  font-size: calc(var(--tile-size) * 0.35);
+}
+
+.tile[data-value="1024"],
+.tile[data-value="2048"] {
+  font-size: calc(var(--tile-size) * 0.3);
+}
+
+.tile[data-value="4096"],
+.tile[data-value="8192"] {
+  font-size: calc(var(--tile-size) * 0.25);
+}
+
+.tile[data-value="16384"],
+.tile[data-value="32768"],
+.tile[data-value="65536"] {
+  font-size: calc(var(--tile-size) * 0.2);
+}
+
+/* Keep tile appearance consistent across screen sizes */
+@media (max-width: 600px) {
+  .tile[data-value="2"],
+  .tile[data-value="4"],
+  .tile[data-value="8"] {
+    font-size: calc(var(--tile-size) * 0.45);
+  }
+  
+  .tile[data-value="16"],
+  .tile[data-value="32"],
+  .tile[data-value="64"] {
+    font-size: calc(var(--tile-size) * 0.4);
+  }
+  
+  .tile[data-value="128"],
+  .tile[data-value="256"],
+  .tile[data-value="512"] {
+    font-size: calc(var(--tile-size) * 0.3);
+  }
+  
+  .tile[data-value="1024"],
+  .tile[data-value="2048"] {
+    font-size: calc(var(--tile-size) * 0.25);
+  }
+  
+  .tile[data-value="4096"],
+  .tile[data-value="8192"],
+  .tile[data-value="16384"],
+  .tile[data-value="32768"],
+  .tile[data-value="65536"] {
+    font-size: calc(var(--tile-size) * 0.18);
+  }
 }
 
 .tile[data-value="2"] {
