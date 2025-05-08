@@ -225,7 +225,7 @@ class Game {
 
       // Adjust font size dynamically for large numbers
       if (value >= 128) {
-      const scaleFactor = Math.max(1 - Math.log10(value) * 0.1, 0.5); // Scale down based on log of value
+      const scaleFactor = Math.max(1 - Math.log10(value) * 0.05, 0.5); // Scale down based on log of value
       tile.style.fontSize = `calc(var(--tile-size) * ${scaleFactor})`;
       }
     } else {
