@@ -167,7 +167,7 @@ class Game {
     this.updateBackButtonState();
   }
 
-  // Create grid cells for better visualization of the 4x4 grid
+  // Create grid cells for better visualization
   createGridCells() {
     const boardContainer = document.getElementById('board-container');
     
