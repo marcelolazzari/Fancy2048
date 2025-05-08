@@ -1,6 +1,6 @@
 :root {
   --size: 4;
-  --gap: 10px;
+  --gap: 15px; /* Increased from 10px to make grid more visible */
   --tile-size: calc((100vmin - var(--gap) * (var(--size) + 1)) / var(--size));
   --game-size: calc(var(--tile-size) * var(--size) + var(--gap) * (var(--size) + 2));
   --primary-color: #1a1a1a;
@@ -299,7 +299,7 @@ main {
   color: var(--secondary-color);
 }
 
-/* Board container styles */
+/* Board container styles - enhanced for better grid visibility */
 #board-container {
   display: grid;
   grid-template-columns: repeat(var(--size), 1fr);
@@ -307,13 +307,14 @@ main {
   width: 100%;
   max-width: min(90vmin, var(--game-size));
   aspect-ratio: 1;
-  background-color: rgba(50, 50, 50, 0.1);
+  background-color: rgba(50, 50, 50, 0.3); /* Darker background for better contrast */
   border-radius: var(--tile-border-radius);
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
   position: relative;
   transition: background-color var(--transition-duration), box-shadow var(--transition-duration), filter var(--hue-transition-duration) ease;
   margin: 0 auto;
   touch-action: none;
+  padding: var(--gap); /* Add padding to ensure tiles don't touch the edges */
 }
 
 /* Tile styles with improved colors */
@@ -505,22 +506,29 @@ main {
   animation: slide-from-top var(--slide-animation-duration) ease-out forwards;
 }
 
-/* Enhanced game over modal */
+/* Game over message - improved visibility and styling */
 #game-over {
   position: absolute;
   top: 50%;
   left: 50%;
   transform: translate(-50%, -50%);
-  background-color: rgba(0, 0, 0, 0.75);
+  background-color: rgba(0, 0, 0, 0.85); /* Darker background for better visibility */
   color: white;
   font-size: 2rem;
-  z-index: 8;
+  z-index: 100; /* Higher z-index to ensure it appears above everything */
   padding: 30px;
   border-radius: 20px;
   text-align: center;
   animation: fade-in 0.5s ease;
   backdrop-filter: blur(5px);
-  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.5);
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.7);
+  border: 2px solid var(--highlight-color);
+  min-width: 250px;
+}
+
+/* Explicitly define the hidden class */
+.hidden {
+  display: none !important; /* Use !important to ensure it's hidden */
 }
 
 /* Score popup animation */

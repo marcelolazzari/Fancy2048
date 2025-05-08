@@ -152,8 +152,10 @@ class Game {
     // Update UI
     this.updateUI();
     
-    // Hide game over message
-    document.getElementById('game-over').classList.add('hidden');
+    // Hide game over message - ensure it's properly hidden
+    const gameOverElement = document.getElementById('game-over');
+    gameOverElement.classList.add('hidden');
+    gameOverElement.classList.remove('win-state');
     
     // Restart timer
     this.startTimer();
@@ -466,7 +468,8 @@ class Game {
   showGameOver() {
     const gameOverElement = document.getElementById('game-over');
     gameOverElement.textContent = 'Game Over!';
-    gameOverElement.classList.remove('hidden');
+    gameOverElement.classList.remove('hidden'); // Make sure we're removing the hidden class
+    gameOverElement.classList.remove('win-state'); // Remove win state if present
     
     if (!this.hasSavedStats) {
       this.saveStats();
