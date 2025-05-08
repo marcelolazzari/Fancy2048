@@ -40,6 +40,9 @@ class Game {
     this.applyTheme();
     this.updateHue();
     this.startTimer();
+
+    // Initialize resize observer for better font scaling
+    this.initializeResizeObserver();
   }
 
   addEventListeners() {
@@ -222,12 +225,8 @@ class Game {
     
     if (gridCell) {
       gridCell.appendChild(tile);
-
-      // Adjust font size dynamically for large numbers
-      if (value >= 128) {
-      const scaleFactor = Math.max(1 - Math.log10(value) * 0.05, 0.5); // Scale down based on log of value
-      tile.style.fontSize = `calc(var(--tile-size) * ${scaleFactor})`;
-      }
+      // Apply dynamic font sizing instead of relying on CSS
+      this.adjustTileFontSize(tile);
     } else {
       console.error(`No grid cell found at position ${row}, ${col}`);
       boardContainer.appendChild(tile);
@@ -238,6 +237,44 @@ class Game {
     }
     
     return tile;
+  }
+
+  // New method to adjust font size based on tile value and size
+  adjustTileFontSize(tileElement) {
+    const value = parseInt(tileElement.getAttribute('data-value'));
+    const numDigits = value.toString().length;
+    const tileWidth = tileElement.offsetWidth;
+    
+    // Calculate appropriate font size based on number of digits
+    // Start with smaller size for single digits and decrease more gradually for larger numbers
+    let fontSizePercent;
+    if (numDigits === 1) {
+      fontSizePercent = 0.45; // 45% of tile width for single digits (2, 4, 8)
+    } else if (numDigits === 2) {
+      fontSizePercent = 0.25; // 25% for double digits (16, 32, 64)
+    } else if (numDigits === 3) {
+      fontSizePercent = 0.2; // 20% for triple digits (128, 256, 512)
+    } else if (numDigits === 4) {
+      fontSizePercent = 0.15; // 15% for 4 digits (1024, 2048, 4096)
+    } else {
+      fontSizePercent = 0.1; // 10% for 5+ digits (16384, etc.)
+    }
+    
+    // Calculate and apply font size
+    const fontSize = Math.max(tileWidth * fontSizePercent, 12); // Minimum 12px
+    tileElement.style.fontSize = `${fontSize}px`;
+    
+    // Adjust padding for better visual centering
+    const paddingPercent = Math.min(5 + numDigits, 15);
+    tileElement.style.padding = `${paddingPercent}%`;
+  }
+
+  // Add method to update all tiles' font sizes
+  updateTileFontSizes() {
+    const tiles = document.querySelectorAll('.tile');
+    tiles.forEach(tile => {
+      this.adjustTileFontSize(tile);
+    });
   }
 
   // Game mechanics
@@ -568,6 +605,9 @@ class Game {
       }
     }
     
+    // Make sure tile sizes are properly adjusted
+    setTimeout(() => this.updateTileFontSizes(), 0);
+    
     // Update back button state
     this.updateBackButtonState();
   }
@@ -606,6 +646,9 @@ class Game {
     
     // Clear and redraw the board
     this.updateUI();
+    
+    // Make sure all tiles have proper font sizing
+    this.updateTileFontSizes();
   }
 
   // Event handlers
@@ -831,6 +874,29 @@ class Game {
       clearTimeout(timeout);
       timeout = setTimeout(later, wait);
     };
+  }
+
+  // New method to set up the resize observer
+  initializeResizeObserver() {
+    if (window.ResizeObserver) {
+      this.resizeObserver = new ResizeObserver(entries => {
+        // Only update if we're not in the middle of an animation
+        if (!this.animationInProgress) {
+          this.updateTileFontSizes();
+        }
+      });
+      
+      // Observe the board container to detect size changes
+      const boardContainer = document.getElementById('board-container');
+      this.resizeObserver.observe(boardContainer);
+    }
+  }
+
+  // Add cleanup for the observer
+  stopResizeObserver() {
+    if (this.resizeObserver) {
+      this.resizeObserver.disconnect();
+    }
   }
 }
 

@@ -328,7 +328,11 @@ main {
   position: relative;
 }
 
-/* Improved tile styles with responsive font sizing */
+/* ==================== */
+/* Tile Styling Section */
+/* ==================== */
+
+/* Base tile styles */
 .tile {
   position: absolute;
   top: 0;
@@ -340,7 +344,6 @@ main {
   justify-content: center;
   border-radius: var(--tile-border-radius);
   font-weight: bold;
-  font-size: calc(var(--tile-size) * 0.4);
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
   transition: transform var(--transition-duration), 
               opacity var(--transition-duration), 
@@ -348,91 +351,22 @@ main {
               color var(--transition-duration),
               box-shadow var(--transition-duration);
   z-index: 1;
+  overflow: hidden;
   text-align: center;
   line-height: 1;
-  padding: 0;
-  overflow: hidden;
+  box-sizing: border-box;
+  /* Font size will be set dynamically via JavaScript */
 }
 
-/* Font size adjustments based on number length */
-.tile[data-value="2"],
-.tile[data-value="4"],
-.tile[data-value="8"] {
-  font-size: calc(var(--tile-size) * 0.5);
-}
-
-.tile[data-value="16"],
-.tile[data-value="32"],
-.tile[data-value="64"] {
-  font-size: calc(var(--tile-size) * 0.45);
-}
-
-.tile[data-value="128"],
-.tile[data-value="256"],
-.tile[data-value="512"] {
-  font-size: calc(var(--tile-size) * 0.35);
-}
-
-.tile[data-value="1024"],
-.tile[data-value="2048"] {
-  font-size: calc(var(--tile-size) * 0.3);
-}
-
-.tile[data-value="4096"],
-.tile[data-value="8192"] {
-  font-size: calc(var(--tile-size) * 0.25);
-}
-
-.tile[data-value="16384"],
-.tile[data-value="32768"],
-.tile[data-value="65536"] {
-  font-size: calc(var(--tile-size) * 0.2);
-}
-
-/* Keep tile appearance consistent across screen sizes */
-@media (max-width: 600px) {
-  .tile[data-value="2"],
-  .tile[data-value="4"],
-  .tile[data-value="8"] {
-    font-size: calc(var(--tile-size) * 0.45);
-  }
-  
-  .tile[data-value="16"],
-  .tile[data-value="32"],
-  .tile[data-value="64"] {
-    font-size: calc(var(--tile-size) * 0.4);
-  }
-  
-  .tile[data-value="128"],
-  .tile[data-value="256"],
-  .tile[data-value="512"] {
-    font-size: calc(var(--tile-size) * 0.3);
-  }
-  
-  .tile[data-value="1024"],
-  .tile[data-value="2048"] {
-    font-size: calc(var(--tile-size) * 0.25);
-  }
-  
-  .tile[data-value="4096"],
-  .tile[data-value="8192"],
-  .tile[data-value="16384"],
-  .tile[data-value="32768"],
-  .tile[data-value="65536"] {
-    font-size: calc(var(--tile-size) * 0.18);
-  }
-}
-
+/* Common tile background and text colors */
 .tile[data-value="2"] {
   background-color: var(--tile-2-bg);
   color: var(--tile-2-text);
-  font-weight: bold;
 }
 
 .tile[data-value="4"] {
   background-color: var(--tile-4-bg);
   color: var(--tile-4-text);
-  font-weight: bold;
 }
 
 .tile[data-value="8"] {
@@ -458,41 +392,26 @@ main {
 .tile[data-value="128"] {
   background-color: var(--tile-128-bg);
   color: var(--tile-128-text);
-  font-size: calc(var(--tile-size) * 0.75);
-  box-shadow: 0 0 15px rgba(243, 215, 116, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.2);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 .tile[data-value="256"] {
   background-color: var(--tile-256-bg);
   color: var(--tile-256-text);
-  font-size: calc(var(--tile-size) * 0.75);
-  box-shadow: 0 0 15px rgba(243, 215, 116, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.2);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 .tile[data-value="512"] {
   background-color: var(--tile-512-bg);
   color: var(--tile-512-text);
-  font-size: calc(var(--tile-size) * 0.75);
-  box-shadow: 0 0 15px rgba(243, 215, 116, 0.5), inset 0 0 0 1px rgba(255, 255, 255, 0.2);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
 }
 
 .tile[data-value="1024"] {
   background-color: var(--tile-1024-bg);
   color: var(--tile-1024-text);
-  font-size: calc(var(--tile-size) * 0.6);
-  box-shadow: 0 0 15px rgba(243, 215, 116, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.2);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .tile[data-value="2048"] {
   background-color: var(--tile-2048-bg);
   color: var(--tile-2048-text);
-  font-size: calc(var(--tile-size) * 0.6);
-  box-shadow: 0 0 15px rgba(243, 215, 116, 0.7), inset 0 0 0 1px rgba(255, 255, 255, 0.3);
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
 }
 
 .tile[data-value="4096"],
@@ -502,18 +421,76 @@ main {
 .tile[data-value="65536"] {
   background-color: var(--tile-super-bg);
   color: var(--tile-super-text);
-  font-size: calc(var(--tile-size) * 0.5);
-  box-shadow: 0 0 15px rgba(140, 50, 250, 0.6), inset 0 0 0 1px rgba(255, 255, 255, 0.3);
-  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
 }
 
-/* Tile hover and focus styles */
+/* Tile hover effect */
 .tile:hover {
   transform: scale(1.05);
   box-shadow: 0 5px 15px rgba(0, 0, 0, 0.4);
   z-index: 2;
 }
 
+/* Tile animations */
+.tile.merged {
+  animation: pop var(--merge-animation-duration) ease forwards;
+}
+
+.tile.new-tile {
+  animation: appear var(--appear-animation-duration) ease forwards;
+}
+
+.tile.slide-right {
+  animation: slide-from-left var(--slide-animation-duration) ease-out forwards;
+}
+
+.tile.slide-left {
+  animation: slide-from-right var(--slide-animation-duration) ease-out forwards;
+}
+
+.tile.slide-up {
+  animation: slide-from-bottom var(--slide-animation-duration) ease-out forwards;
+}
+
+.tile.slide-down {
+  animation: slide-from-top var(--slide-animation-duration) ease-out forwards;
+}
+
+/* Responsive adjustments for tiles */
+@media (max-width: 600px) {
+  /* Slightly increase relative font size on small screens for better readability */
+  .tile[data-value^="2"],
+  .tile[data-value^="4"],
+  .tile[data-value^="8"] {
+    font-size: clamp(14px, calc(var(--tile-size) * 0.55), 64px);
+  }
+  
+  .tile[data-value^="16"],
+  .tile[data-value^="32"],
+  .tile[data-value^="64"] {
+    font-size: clamp(12px, calc(var(--tile-size) * 0.45), 56px);
+  }
+  
+  .tile[data-value^="128"],
+  .tile[data-value^="256"],
+  .tile[data-value^="512"] {
+    font-size: clamp(10px, calc(var(--tile-size) * 0.4), 48px);
+  }
+  
+  .tile[data-value^="1024"],
+  .tile[data-value^="2048"],
+  .tile[data-value^="4096"],
+  .tile[data-value^="8192"] {
+    font-size: clamp(8px, calc(var(--tile-size) * 0.35), 40px);
+  }
+}
+
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .tile:hover {
+    transform: none; /* Don't scale on hover for touch devices */
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  }
+}
 /* Enhanced Animations */
 @keyframes appear {
   0% {
@@ -564,30 +541,6 @@ main {
 @keyframes fade-in {
   0% { opacity: 0; }
   100% { opacity: 1; }
-}
-
-.tile.merged {
-  animation: pop var(--merge-animation-duration) ease forwards;
-}
-
-.tile.new-tile {
-  animation: appear var(--appear-animation-duration) ease forwards;
-}
-
-.tile.slide-right {
-  animation: slide-from-left var(--slide-animation-duration) ease-out forwards;
-}
-
-.tile.slide-left {
-  animation: slide-from-right var(--slide-animation-duration) ease-out forwards;
-}
-
-.tile.slide-up {
-  animation: slide-from-bottom var(--slide-animation-duration) ease-out forwards;
-}
-
-.tile.slide-down {
-  animation: slide-from-top var(--slide-animation-duration) ease-out forwards;
 }
 
 /* Game over message - improved visibility and styling */
