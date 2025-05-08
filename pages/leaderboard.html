@@ -3,94 +3,50 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Fancy2048 Stats & Leaderboard</title>
+    <title>Fancy2048 Game Statistics</title>
     <link rel="stylesheet" href="../styles/unified_styles.css" />
     <link rel="stylesheet" href="../styles/stats_styles.css" />
-    <style>
-      .tab-container {
-        display: flex;
-        justify-content: center;
-        margin-bottom: 20px;
-      }
-      
-      .tab {
-        padding: 10px 20px;
-        background-color: rgba(0, 16, 71, 0.3);
-        border: none;
-        margin: 0 5px;
-        cursor: pointer;
-        border-radius: 5px 5px 0 0;
-        transition: background-color 0.3s ease;
-      }
-      
-      .tab.active {
-        background-color: rgba(0, 16, 71, 0.6);
-        font-weight: bold;
-      }
-      
-      .tab-content {
-        display: none;
-      }
-      
-      .tab-content.active {
-        display: block;
-      }
-    </style>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   </head>
   <body>
     <header>
-      <h1>Fancy2048 Stats & Leaderboard</h1>
+      <h1>Fancy2048 Game Statistics</h1>
     </header>
     
     <main>
-      <div class="tab-container">
-        <button class="tab active" data-tab="leaderboard">Leaderboard</button>
-        <button class="tab" data-tab="stats">Game Statistics</button>
-      </div>
-      
-      <!-- Leaderboard Tab -->
-      <section id="leaderboard-tab" class="leaderboard-section tab-content active">
-        <h2>Top Scores</h2>
+      <section id="stats-section" class="stats-section">
+        <h2><i class="fas fa-chart-line"></i> Your Game History</h2>
+        
+        <div class="stats-summary">
+          <div class="stats-card">
+            <h3>Top Score</h3>
+            <p id="top-score">0</p>
+          </div>
+          <div class="stats-card">
+            <h3>Best Tile</h3>
+            <p id="best-tile">0</p>
+          </div>
+          <div class="stats-card">
+            <h3>Games Played</h3>
+            <p id="games-played">0</p>
+          </div>
+        </div>
+        
         <div class="button-container">
-          <button type="button" id="clear-leaderboard">Clear Leaderboard</button>
-          <button type="button" id="save-leaderboard-csv">Export to CSV</button>
+          <button type="button" id="save-csv-button"><i class="fas fa-download"></i> Export to CSV</button>
+          <button type="button" id="reset-data-button" class="warning-button"><i class="fas fa-trash-alt"></i> Reset Data</button>
         </div>
-        <div class="table-container">
-          <table id="leaderboardTable">
-            <thead>
-              <tr>
-                <th>Rank</th>
-                <th>Player</th>
-                <th>Score</th>
-                <th>Best Tile</th>
-                <th class="optional-column">Date</th>
-                <th class="optional-column">Moves</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- Leaderboard entries will be dynamically inserted here -->
-            </tbody>
-          </table>
-        </div>
-      </section>
-      
-      <!-- Stats Tab -->
-      <section id="stats-tab" class="stats-section tab-content">
-        <h2>Game Statistics</h2>
-        <div class="button-container">
-          <button type="button" id="save-csv-button">Save as CSV</button>
-          <button type="button" id="reset-data-button">Reset Data</button>
-        </div>
+        
         <div class="table-container">
           <table id="statsTable">
             <thead>
               <tr>
-                <th>Session</th>
+                <th>Date</th>
                 <th>Best Tile</th>
                 <th>Score</th>
                 <th>Best Score</th>
-                <th class="optional-column">Time</th>
-                <th class="optional-column">Moves</th>
+                <th>Duration</th>
+                <th>Moves</th>
               </tr>
             </thead>
             <tbody>
@@ -98,13 +54,18 @@
             </tbody>
           </table>
         </div>
+        
+        <div id="no-stats-message" class="message-container">
+          <i class="fas fa-gamepad"></i>
+          <p>No game statistics available yet. Play a game to see your stats!</p>
+        </div>
       </section>
     </main>
     
     <footer>
-      <button type="button" onclick="window.location.href='index.html'">Back to Game</button>
+      <button type="button" onclick="window.location.href='index.html'"><i class="fas fa-arrow-left"></i> Back to Game</button>
     </footer>
     
-    <script src="../scripts/leaderboard-stats.js"></script>
+    <script src="../scripts/statistics.js"></script>
   </body>
 </html>
