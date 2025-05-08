@@ -3,16 +3,53 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <title>Leaderboard</title>
+    <title>Fancy2048 Stats & Leaderboard</title>
     <link rel="stylesheet" href="../styles/unified_styles.css" />
     <link rel="stylesheet" href="../styles/stats_styles.css" />
+    <style>
+      .tab-container {
+        display: flex;
+        justify-content: center;
+        margin-bottom: 20px;
+      }
+      
+      .tab {
+        padding: 10px 20px;
+        background-color: rgba(0, 16, 71, 0.3);
+        border: none;
+        margin: 0 5px;
+        cursor: pointer;
+        border-radius: 5px 5px 0 0;
+        transition: background-color 0.3s ease;
+      }
+      
+      .tab.active {
+        background-color: rgba(0, 16, 71, 0.6);
+        font-weight: bold;
+      }
+      
+      .tab-content {
+        display: none;
+      }
+      
+      .tab-content.active {
+        display: block;
+      }
+    </style>
   </head>
   <body>
     <header>
-      <h1>Leaderboard</h1>
+      <h1>Fancy2048 Stats & Leaderboard</h1>
     </header>
+    
     <main>
-      <section class="leaderboard-section">
+      <div class="tab-container">
+        <button class="tab active" data-tab="leaderboard">Leaderboard</button>
+        <button class="tab" data-tab="stats">Game Statistics</button>
+      </div>
+      
+      <!-- Leaderboard Tab -->
+      <section id="leaderboard-tab" class="leaderboard-section tab-content active">
         <h2>Top Scores</h2>
         <div class="button-container">
           <button type="button" id="clear-leaderboard">Clear Leaderboard</button>
@@ -36,10 +73,38 @@
           </table>
         </div>
       </section>
+      
+      <!-- Stats Tab -->
+      <section id="stats-tab" class="stats-section tab-content">
+        <h2>Game Statistics</h2>
+        <div class="button-container">
+          <button type="button" id="save-csv-button">Save as CSV</button>
+          <button type="button" id="reset-data-button">Reset Data</button>
+        </div>
+        <div class="table-container">
+          <table id="statsTable">
+            <thead>
+              <tr>
+                <th>Session</th>
+                <th>Best Tile</th>
+                <th>Score</th>
+                <th>Best Score</th>
+                <th class="optional-column">Time</th>
+                <th class="optional-column">Moves</th>
+              </tr>
+            </thead>
+            <tbody>
+              <!-- Stats will be dynamically inserted here -->
+            </tbody>
+          </table>
+        </div>
+      </section>
     </main>
+    
     <footer>
       <button type="button" onclick="window.location.href='index.html'">Back to Game</button>
     </footer>
-    <script src="../scripts/leaderboard.js"></script>
+    
+    <script src="../scripts/leaderboard-stats.js"></script>
   </body>
 </html>
