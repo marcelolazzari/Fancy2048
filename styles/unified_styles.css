@@ -18,6 +18,10 @@
   --hue-value: 0;
   --mobile-button-size: 36px;
   --mobile-gap: 5px;
+  --window-height: 100vh;
+  --window-width: 100vw;
+  --safe-area-inset-top: env(safe-area-inset-top, 0);
+  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0);
 }
 
 /* Body styles */
@@ -31,11 +35,26 @@ body {
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
-  min-height: 100vh;
+  height: 100%;
+  min-height: var(--window-height);
+  max-height: var(--window-height);
   overflow: hidden;
-  max-width: 100vw;
+  width: 100%;
+  max-width: 100%;
   box-sizing: border-box;
   transition: background-color var(--transition-duration);
+  position: fixed;
+  touch-action: none;
+  -webkit-overflow-scrolling: none;
+  overscroll-behavior: none;
+}
+
+/* Add safe area insets for modern iOS devices */
+@supports (padding-top: env(safe-area-inset-top)) {
+  body {
+    padding-top: var(--safe-area-inset-top);
+    padding-bottom: var(--safe-area-inset-bottom);
+  }
 }
 
 /* Overlay styles */
@@ -177,9 +196,11 @@ main {
   justify-content: center;
   width: 100%;
   flex: 1;
-  padding: 20px;
+  padding: 10px;
   box-sizing: border-box;
   transition: padding var(--transition-duration);
+  overflow: hidden;
+  touch-action: none;
 }
 
 /* Game section */
@@ -236,13 +257,15 @@ main {
   grid-template-columns: repeat(var(--size), 1fr);
   gap: var(--gap);
   width: 100%;
-  max-width: 90vmin;
+  max-width: min(90vmin, var(--game-size));
   aspect-ratio: 1;
   background-color: rgba(50, 50, 50, 0.1);
   border-radius: var(--tile-border-radius);
   box-shadow: 0 0 10px rgba(255, 255, 255, 0.5);
   position: relative;
   transition: background-color var(--transition-duration), box-shadow var(--transition-duration), filter var(--hue-transition-duration) ease;
+  margin: 0 auto;
+  touch-action: none;
 }
 
 /* Tile styles */
@@ -580,6 +603,9 @@ footer .container {
 @media (max-width: 600px) {
   body {
     padding: 0;
+    height: var(--window-height);
+    min-height: var(--window-height);
+    max-height: var(--window-height);
   }
 
   header .game-title, header h1 {
@@ -597,8 +623,8 @@ footer .container {
   button {
     padding: 6px;
     font-size: 0.8rem;
-    min-width: var(--mobile-button-size);
-    min-height: var(--mobile-button-size);
+    min-width: 44px;
+    min-height: 44px;
   }
 
   button i {
@@ -616,8 +642,8 @@ footer .container {
   }
 
   #board-container {
-    max-width: 95vmin;
-    margin: 5px 0;
+    max-width: min(95vmin, var(--game-size));
+    margin: 5px auto;
   }
 
   main {
@@ -663,54 +689,60 @@ footer .container {
     width: 100%;
     margin-bottom: 5px;
   }
+
+  /* Adjust tile size for better visibility on small screens */
+  .tile {
+    font-size: calc(var(--tile-size) * 0.35);
+  }
 }
 
-/* Small phone screens */
-@media (max-width: 400px) {
-  header .game-title, header h1 {
-    font-size: 1rem;
+/* Special case for very tall narrow screens (iPhone X, etc.) */
+@media (max-height: 900px) and (max-width: 450px) {
+  header {
+    padding: 5px 10px;
   }
 
-  .controls {
-    gap: 3px;
-  }
-
-  button {
-    padding: 4px;
-    font-size: 0.7rem;
-    min-width: 30px;
-    min-height: 30px;
-  }
-
-  button i {
-    font-size: 1rem;
-  }
-
-  #board-container {
-    max-width: 100%;
+  header .game-title {
+    font-size: 1.2rem;
     margin: 5px 0;
   }
 
-  .tile {
-    font-size: calc(var(--tile-size) * 0.5);
+  #score-container {
+    padding: 5px;
+    margin-top: 5px;
+  }
+
+  #board-container {
+    margin: 5px auto;
+  }
+
+  footer {
+    padding: 5px;
   }
 }
 
 /* Landscape orientation handling - improved */
 @media (orientation: landscape) and (max-height: 500px) {
   body {
-    height: 100vh;
-    overflow: auto;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px;
   }
 
   header {
+    width: auto;
+    height: 100%;
     position: static;
     padding: 5px;
+    flex: 0 0 auto;
   }
   
   header .container {
-    flex-direction: row;
-    justify-content: space-between;
+    height: 100%;
+    flex-direction: column;
+    justify-content: center;
   }
   
   header .game-title {
@@ -723,26 +755,22 @@ footer .container {
   }
 
   main {
+    flex: 1;
+    padding: 5px;
     flex-direction: row;
     justify-content: center;
     align-items: center;
-    padding: 5px;
-    gap: 10px;
   }
 
   .game-section {
     margin: 0;
     flex: 0 0 auto;
-    max-width: 70vh;
   }
 
   #score-container {
-    margin: 0;
-    padding: 5px;
+    margin: 0 0 0 10px;
     height: auto;
     flex: 0 0 auto;
-    display: flex;
-    flex-direction: column;
   }
   
   #score-container p {
@@ -756,12 +784,10 @@ footer .container {
   }
   
   footer {
-    padding: 2px;
-  }
-  
-  footer button {
-    margin: 0;
-    padding: 5px 10px;
+    position: absolute;
+    bottom: 5px;
+    right: 5px;
+    width: auto;
   }
 }
 
@@ -782,6 +808,14 @@ footer .container {
   #score-container {
     flex: 0 0 auto;
     margin-top: 0;
+  }
+}
+
+/* Ensure board is visible on ultra-wide screens */
+@media (min-width: 1400px) {
+  main {
+    max-width: 1400px;
+    margin: 0 auto;
   }
 }
 

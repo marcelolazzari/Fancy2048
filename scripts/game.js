@@ -18,7 +18,8 @@ class Game {
 
     this.addEventListeners();
     this.reset();
-    window.addEventListener('resize', () => this.refreshLayout());
+    window.addEventListener('resize', this.debounce(() => this.refreshLayout(), 100));
+    window.addEventListener('orientationchange', () => setTimeout(() => this.refreshLayout(), 300));
     this.applyTheme();
     this.updateHue();
   }
@@ -32,6 +33,7 @@ class Game {
     const boardContainer = document.getElementById('board-container');
     boardContainer.addEventListener('touchstart', this.handleTouchStart.bind(this), false);
     boardContainer.addEventListener('touchend', this.handleTouchEnd.bind(this), false);
+    document.addEventListener('touchmove', this.preventScroll, { passive: false });
     document.getElementById('changeColor-button').addEventListener('click', this.changeHue.bind(this));
     document.getElementById('back-button').addEventListener('click', this.undoMove.bind(this));
     document.getElementById('leaderboard-button').addEventListener('click', this.openLeaderboardPage.bind(this));
@@ -39,6 +41,24 @@ class Game {
     document.getElementById('pause-button').addEventListener('click', this.togglePause.bind(this));
     document.getElementById('board-size-button').addEventListener('click', this.changeBoardSize.bind(this));
     document.getElementById('theme-toggle-button').addEventListener('click', this.toggleTheme.bind(this));
+  }
+
+  debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
+
+  preventScroll(e) {
+    if (e.target.closest('#board-container')) {
+      e.preventDefault();
+    }
   }
 
   toggleRainbowMode() {
@@ -60,8 +80,17 @@ class Game {
   }
 
   refreshLayout() {
+    const windowHeight = window.innerHeight;
+    const windowWidth = window.innerWidth;
+    const isLandscape = windowWidth > windowHeight;
+
+    document.documentElement.style.setProperty('--window-height', `${windowHeight}px`);
+    document.documentElement.style.setProperty('--window-width', `${windowWidth}px`);
+
     this.updateTileSize();
     this.updateUI();
+
+    document.body.style.height = `${windowHeight}px`;
   }
 
   toggleTheme() {
@@ -118,26 +147,47 @@ class Game {
   handleTouchStart(e) {
     this.touchStartX = e.touches[0].clientX;
     this.touchStartY = e.touches[0].clientY;
+    this.touchStartTime = Date.now();
+
+    if (e.target.closest('#board-container')) {
+      e.preventDefault();
+    }
   }
 
   handleTouchEnd(e) {
+    if (this.isPaused) return;
+
     const touchEndX = e.changedTouches[0].clientX;
     const touchEndY = e.changedTouches[0].clientY;
+    const touchEndTime = Date.now();
+
     const dx = touchEndX - this.touchStartX;
     const dy = touchEndY - this.touchStartY;
     const absDx = Math.abs(dx);
     const absDy = Math.abs(dy);
+    const swipeTime = touchEndTime - this.touchStartTime;
 
-    let direction = '';
-    if (absDx > absDy) {
-      direction = dx > 0 ? 'ArrowRight' : 'ArrowLeft';
-    } else {
-      direction = dy > 0 ? 'ArrowDown' : 'ArrowUp';
-    }
+    const swipeSpeed = Math.max(absDx, absDy) / swipeTime;
 
-    if (Math.max(absDx, absDy) > 50) {
+    const boardSize = document.getElementById('board-container').offsetWidth;
+    const minSwipeDistance = boardSize * 0.1;
+
+    if ((swipeSpeed > 0.2 && Math.max(absDx, absDy) > 10) || Math.max(absDx, absDy) > minSwipeDistance) {
+      let direction = '';
+
+      if (absDx > absDy * 0.8) {
+        direction = dx > 0 ? 'ArrowRight' : 'ArrowLeft';
+      } else if (absDy > absDx * 0.8) {
+        direction = dy > 0 ? 'ArrowDown' : 'ArrowUp';
+      } else {
+        direction = absDx > absDy ?
+          (dx > 0 ? 'ArrowRight' : 'ArrowLeft') :
+          (dy > 0 ? 'ArrowDown' : 'ArrowUp');
+      }
+
       this.move(direction);
       this.updateUI();
+
       setTimeout(() => {
         if (this.isGameOver()) {
           document.getElementById('game-over').classList.remove('hidden');
@@ -154,25 +204,36 @@ class Game {
 
   updateTileSize() {
     const boardContainer = document.getElementById('board-container');
-    const containerSize = Math.min(boardContainer.clientWidth, boardContainer.clientHeight);
-    const gap = parseInt(getComputedStyle(boardContainer).getPropertyValue('gap'));
-    const tileSize = (containerSize - (this.size - 1) * gap) / this.size;
+    const headerHeight = document.querySelector('header').offsetHeight;
+    const scoreHeight = document.getElementById('score-container').offsetHeight;
+    const footerHeight = document.querySelector('footer').offsetHeight;
 
-    document.querySelectorAll('.tile').forEach((tile, index) => {
-      tile.style.width = `${tileSize}px`;
-      tile.style.height = `${tileSize}px`;
-      tile.style.fontSize = `${tileSize * 0.4}px`;
-      if (tile.textContent.length > 3) {
-        tile.style.fontSize = `${tileSize * 0.3}px`;
+    const availableHeight = window.innerHeight - headerHeight - scoreHeight - footerHeight - 40;
+    const availableWidth = window.innerWidth - 40;
+
+    let containerSize = Math.min(availableHeight, availableWidth, 0.8 * window.innerWidth);
+    containerSize = Math.max(containerSize, 280);
+
+    boardContainer.style.width = `${containerSize}px`;
+    boardContainer.style.height = `${containerSize}px`;
+
+    const gap = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--gap'));
+    const tileSize = (containerSize - (this.size + 1) * gap) / this.size;
+
+    document.documentElement.style.setProperty('--tile-size', `${tileSize}px`);
+
+    document.querySelectorAll('.tile').forEach((tile) => {
+      const value = tile.textContent;
+      let fontSize = tileSize * 0.4;
+
+      if (value && value.length > 3) {
+        fontSize = tileSize * (0.4 - (value.length - 3) * 0.05);
       }
-      tile.style.msGridRow = Math.floor(index / this.size) + 1;
-      tile.style.msGridColumn = (index % this.size) + 1;
+
+      tile.style.fontSize = `${fontSize}px`;
     });
 
-    boardContainer.style.gridTemplateColumns = `repeat(${this.size}, ${tileSize}px)`;
-    boardContainer.style.msGridColumns = `repeat(${this.size}, ${tileSize}px)`;
-    boardContainer.style.gridTemplateRows = `repeat(${this.size}, ${tileSize}px)`;
-    boardContainer.style.msGridRows = `repeat(${this.size}, ${tileSize}px)`;
+    boardContainer.style.margin = '0 auto';
   }
 
   addRandomTile() {
@@ -239,7 +300,7 @@ class Game {
   }
 
   move(direction) {
-    if (this.isPaused) return; // Prevent moves when paused
+    if (this.isPaused) return;
     this.saveState();
     let hasChanged = false;
 
@@ -489,4 +550,12 @@ document.addEventListener('DOMContentLoaded', () => {
   game.applyTheme();
   game.updateHue();
   window.addEventListener('beforeunload', () => game.saveStats());
+  window.addEventListener('orientationchange', () => {
+    setTimeout(() => game.refreshLayout(), 300);
+  });
+  document.body.addEventListener('touchmove', function(e) {
+    if (e.target.closest('#board-container')) {
+      e.preventDefault();
+    }
+  }, { passive: false });
 });
