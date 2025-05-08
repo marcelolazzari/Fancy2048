@@ -246,18 +246,18 @@ class Game {
     const tileWidth = tileElement.offsetWidth;
     
     // Calculate appropriate font size based on number of digits
-    // Start with smaller size for single digits and decrease more gradually for larger numbers
+    // Start with larger size for single digits and decrease more gradually for larger numbers
     let fontSizePercent;
     if (numDigits === 1) {
-      fontSizePercent = 0.45; // 45% of tile width for single digits (2, 4, 8)
+      fontSizePercent = 0.6; // 60% of tile width for single digits (2, 4, 8)
     } else if (numDigits === 2) {
-      fontSizePercent = 0.25; // 25% for double digits (16, 32, 64)
+      fontSizePercent = 0.4; // 40% for double digits (16, 32, 64)
     } else if (numDigits === 3) {
-      fontSizePercent = 0.2; // 20% for triple digits (128, 256, 512)
+      fontSizePercent = 0.3; // 30% for triple digits (128, 256, 512)
     } else if (numDigits === 4) {
-      fontSizePercent = 0.15; // 15% for 4 digits (1024, 2048, 4096)
+      fontSizePercent = 0.25; // 25% for 4 digits (1024, 2048, 4096)
     } else {
-      fontSizePercent = 0.1; // 10% for 5+ digits (16384, etc.)
+      fontSizePercent = 0.2; // 20% for 5+ digits (16384, etc.)
     }
     
     // Calculate and apply font size
