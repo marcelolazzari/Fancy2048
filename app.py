@@ -2,6 +2,8 @@ from flask import Flask, render_template, send_from_directory, jsonify, request
 import random
 import uuid
 import time
+import json
+import os
 
 app = Flask(__name__, template_folder='pages')
 
@@ -10,16 +12,25 @@ games = {}
 
 class Game:
     def __init__(self, size=4):
+        # Core game properties
         self.size = size
         self.board = [[0 for _ in range(size)] for _ in range(size)]
         self.score = 0
         self.best_score = 0
         self.moves = 0
         self.state = 'playing'  # playing, won, over
+        
+        # Game history and stats
         self.previous_boards = []  # For undo functionality
         self.previous_scores = []
         self.previous_moves = []
         self.start_time = time.time()
+        self.has_saved_stats = False
+        
+        # Visual settings (stored but managed by frontend)
+        self.is_light_mode = False
+        self.hue_value = 0
+        self.is_rainbow_mode = False
         
         # Add initial two tiles
         self.add_random_tile()
@@ -46,8 +57,8 @@ class Game:
         self.previous_scores.append(self.score)
         self.previous_moves.append(self.moves)
         
-        # Keep only the last 10 states
-        if len(self.previous_boards) > 10:
+        # Limit the undo history (like maxUndoSteps in JS)
+        if len(self.previous_boards) > 20:
             self.previous_boards.pop(0)
             self.previous_scores.pop(0)
             self.previous_moves.pop(0)
@@ -85,165 +96,149 @@ class Game:
             self.moves += 1
             self.add_random_tile()
             self.check_game_state()
+            
+            # Update best score
+            if self.score > self.best_score:
+                self.best_score = self.score
         
         return moved
     
     def _move_left(self):
         """Move tiles left and merge where possible"""
+        merged_positions = []  # Track merged positions like lastMerged in JS
         moved = False
+        
         for row in range(self.size):
-            # Slide all non-zero tiles to the left
-            new_row = [tile for tile in self.board[row] if tile != 0]
-            # Pad with zeros
-            new_row += [0] * (self.size - len(new_row))
-            
-            # Check for merges
-            i = 0
-            while i < self.size - 1:
-                if new_row[i] == new_row[i+1] and new_row[i] != 0:
-                    new_row[i] *= 2
-                    self.score += new_row[i]
-                    new_row[i+1] = 0
-                    i += 2
-                else:
-                    i += 1
-            
-            # Slide again after merges
-            final_row = [tile for tile in new_row if tile != 0]
-            final_row += [0] * (self.size - len(final_row))
-            
-            # Check if the row changed
-            if final_row != self.board[row]:
-                moved = True
-            
-            # Update the board
-            self.board[row] = final_row
-            
+            for col in range(1, self.size):
+                if self.board[row][col] != 0:
+                    current_col = col
+                    
+                    # Continue moving left until hitting a wall, a different tile, or already merged tile
+                    while (current_col > 0 and 
+                           (self.board[row][current_col-1] == 0 or 
+                            self.board[row][current_col-1] == self.board[row][current_col]) and
+                           (row, current_col-1) not in merged_positions):
+                        
+                        if self.board[row][current_col-1] == 0:
+                            # Move to empty space
+                            self.board[row][current_col-1] = self.board[row][current_col]
+                            self.board[row][current_col] = 0
+                            current_col -= 1
+                            moved = True
+                        elif self.board[row][current_col-1] == self.board[row][current_col]:
+                            # Merge with matching tile
+                            self.board[row][current_col-1] *= 2
+                            self.score += self.board[row][current_col-1]
+                            self.board[row][current_col] = 0
+                            merged_positions.append((row, current_col-1))
+                            moved = True
+                            break
+        
         return moved
     
     def _move_right(self):
         """Move tiles right and merge where possible"""
+        merged_positions = []
         moved = False
+        
         for row in range(self.size):
-            # Slide all non-zero tiles to the right
-            new_row = [tile for tile in self.board[row] if tile != 0]
-            # Pad with zeros at the beginning
-            new_row = [0] * (self.size - len(new_row)) + new_row
-            
-            # Check for merges from right to left
-            i = self.size - 1
-            while i > 0:
-                if new_row[i] == new_row[i-1] and new_row[i] != 0:
-                    new_row[i] *= 2
-                    self.score += new_row[i]
-                    new_row[i-1] = 0
-                    i -= 2
-                else:
-                    i -= 1
-            
-            # Slide again after merges
-            final_row = [tile for tile in new_row if tile != 0]
-            final_row = [0] * (self.size - len(final_row)) + final_row
-            
-            # Check if the row changed
-            if final_row != self.board[row]:
-                moved = True
-            
-            # Update the board
-            self.board[row] = final_row
-            
+            for col in range(self.size-2, -1, -1):
+                if self.board[row][col] != 0:
+                    current_col = col
+                    
+                    while (current_col < self.size-1 and 
+                           (self.board[row][current_col+1] == 0 or 
+                            self.board[row][current_col+1] == self.board[row][current_col]) and
+                           (row, current_col+1) not in merged_positions):
+                        
+                        if self.board[row][current_col+1] == 0:
+                            # Move to empty space
+                            self.board[row][current_col+1] = self.board[row][current_col]
+                            self.board[row][current_col] = 0
+                            current_col += 1
+                            moved = True
+                        elif self.board[row][current_col+1] == self.board[row][current_col]:
+                            # Merge with matching tile
+                            self.board[row][current_col+1] *= 2
+                            self.score += self.board[row][current_col+1]
+                            self.board[row][current_col] = 0
+                            merged_positions.append((row, current_col+1))
+                            moved = True
+                            break
+        
         return moved
     
     def _move_up(self):
         """Move tiles up and merge where possible"""
+        merged_positions = []
         moved = False
         
-        # Transpose the board
-        transposed = list(zip(*self.board))
-        board_copy = [list(row) for row in transposed]
+        for col in range(self.size):
+            for row in range(1, self.size):
+                if self.board[row][col] != 0:
+                    current_row = row
+                    
+                    while (current_row > 0 and 
+                           (self.board[current_row-1][col] == 0 or 
+                            self.board[current_row-1][col] == self.board[current_row][col]) and
+                           (current_row-1, col) not in merged_positions):
+                        
+                        if self.board[current_row-1][col] == 0:
+                            # Move to empty space
+                            self.board[current_row-1][col] = self.board[current_row][col]
+                            self.board[current_row][col] = 0
+                            current_row -= 1
+                            moved = True
+                        elif self.board[current_row-1][col] == self.board[current_row][col]:
+                            # Merge with matching tile
+                            self.board[current_row-1][col] *= 2
+                            self.score += self.board[current_row-1][col]
+                            self.board[current_row][col] = 0
+                            merged_positions.append((current_row-1, col))
+                            moved = True
+                            break
         
-        # Move left on the transposed board (equivalent to moving up)
-        for row in range(self.size):
-            # Slide all non-zero tiles to the left
-            new_row = [tile for tile in board_copy[row] if tile != 0]
-            # Pad with zeros
-            new_row += [0] * (self.size - len(new_row))
-            
-            # Check for merges
-            i = 0
-            while i < self.size - 1:
-                if new_row[i] == new_row[i+1] and new_row[i] != 0:
-                    new_row[i] *= 2
-                    self.score += new_row[i]
-                    new_row[i+1] = 0
-                    i += 2
-                else:
-                    i += 1
-            
-            # Slide again after merges
-            final_row = [tile for tile in new_row if tile != 0]
-            final_row += [0] * (self.size - len(final_row))
-            
-            # Check if the row changed
-            if final_row != board_copy[row]:
-                moved = True
-            
-            # Update the transposed board
-            board_copy[row] = final_row
-        
-        # Transpose back
-        self.board = [list(row) for row in zip(*board_copy)]
-            
         return moved
     
     def _move_down(self):
         """Move tiles down and merge where possible"""
+        merged_positions = []
         moved = False
         
-        # Transpose the board
-        transposed = list(zip(*self.board))
-        board_copy = [list(row) for row in transposed]
+        for col in range(self.size):
+            for row in range(self.size-2, -1, -1):
+                if self.board[row][col] != 0:
+                    current_row = row
+                    
+                    while (current_row < self.size-1 and 
+                           (self.board[current_row+1][col] == 0 or 
+                            self.board[current_row+1][col] == self.board[current_row][col]) and
+                           (current_row+1, col) not in merged_positions):
+                        
+                        if self.board[current_row+1][col] == 0:
+                            # Move to empty space
+                            self.board[current_row+1][col] = self.board[current_row][col]
+                            self.board[current_row][col] = 0
+                            current_row += 1
+                            moved = True
+                        elif self.board[current_row+1][col] == self.board[current_row][col]:
+                            # Merge with matching tile
+                            self.board[current_row+1][col] *= 2
+                            self.score += self.board[current_row+1][col]
+                            self.board[current_row][col] = 0
+                            merged_positions.append((current_row+1, col))
+                            moved = True
+                            break
         
-        # Move right on the transposed board (equivalent to moving down)
-        for row in range(self.size):
-            # Slide all non-zero tiles to the right
-            new_row = [tile for tile in board_copy[row] if tile != 0]
-            # Pad with zeros at the beginning
-            new_row = [0] * (self.size - len(new_row)) + new_row
-            
-            # Check for merges from right to left
-            i = self.size - 1
-            while i > 0:
-                if new_row[i] == new_row[i-1] and new_row[i] != 0:
-                    new_row[i] *= 2
-                    self.score += new_row[i]
-                    new_row[i-1] = 0
-                    i -= 2
-                else:
-                    i -= 1
-            
-            # Slide again after merges
-            final_row = [tile for tile in new_row if tile != 0]
-            final_row = [0] * (self.size - len(final_row)) + final_row
-            
-            # Check if the row changed
-            if final_row != board_copy[row]:
-                moved = True
-            
-            # Update the transposed board
-            board_copy[row] = final_row
-        
-        # Transpose back
-        self.board = [list(row) for row in zip(*board_copy)]
-            
         return moved
     
     def check_game_state(self):
         """Check if game is won or over"""
         # Check for 2048 tile (win condition)
         for row in self.board:
-            if 2048 in row and self.state == 'playing':
+            if 2048 in row and self.state != 'won':
                 self.state = 'won'
+                self.save_stats()
                 return
         
         # Check if the board is full
@@ -251,24 +246,48 @@ class Game:
         
         if is_full:
             # Check if any moves are possible
-            can_move = False
-            
-            # Check for possible horizontal merges
-            for row in range(self.size):
-                for col in range(self.size - 1):
-                    if self.board[row][col] == self.board[row][col + 1]:
-                        can_move = True
-                        break
-            
-            # Check for possible vertical merges
-            for col in range(self.size):
-                for row in range(self.size - 1):
-                    if self.board[row][col] == self.board[row + 1][col]:
-                        can_move = True
-                        break
+            can_move = self.can_move('up') or self.can_move('down') or self.can_move('left') or self.can_move('right')
             
             if not can_move:
                 self.state = 'over'
+                self.save_stats()
+    
+    def can_move(self, direction):
+        """Check if a move in the given direction is possible"""
+        # Create a deep copy of the board
+        test_board = [row[:] for row in self.board]
+        
+        # Try the move on the copy
+        for i in range(self.size):
+            for j in range(self.size):
+                if self.board[i][j] != 0:
+                    row_delta, col_delta = 0, 0
+                    
+                    if direction == 'up':
+                        row_delta = -1
+                    elif direction == 'down':
+                        row_delta = 1
+                    elif direction == 'left':
+                        col_delta = -1
+                    elif direction == 'right':
+                        col_delta = 1
+                    
+                    new_row, new_col = i + row_delta, j + col_delta
+                    
+                    if (0 <= new_row < self.size and 0 <= new_col < self.size):
+                        # Can move to empty cell or merge with same value
+                        if (test_board[new_row][new_col] == 0 or 
+                            test_board[new_row][new_col] == test_board[i][j]):
+                            return True
+        
+        return False
+    
+    def save_stats(self):
+        """Save game statistics to localStorage equivalent (handled by endpoint)"""
+        if self.score > 0 and not self.has_saved_stats:
+            self.has_saved_stats = True
+            return True
+        return False
     
     def get_elapsed_time(self):
         """Return elapsed time as a formatted string"""
@@ -279,15 +298,35 @@ class Game:
     
     def get_state(self):
         """Return the complete game state as a dictionary"""
+        best_tile = max([max(row) for row in self.board]) if any(any(cell != 0 for cell in row) for row in self.board) else 0
+        
         return {
             'board': self.board,
             'score': self.score,
             'bestScore': self.best_score,
+            'bestTile': best_tile,
             'moves': self.moves,
             'gameState': self.state,
             'canUndo': len(self.previous_boards) > 0,
             'time': self.get_elapsed_time(),
-            'size': self.size
+            'size': self.size,
+            'isLightMode': self.is_light_mode,
+            'hueValue': self.hue_value,
+            'isRainbowMode': self.is_rainbow_mode
+        }
+    
+    def get_stats_data(self):
+        """Get data for statistics saving"""
+        time_str = self.get_elapsed_time()
+        best_tile = max([max(row) for row in self.board]) if any(any(cell != 0 for cell in row) for row in self.board) else 0
+        
+        return {
+            'score': self.score,
+            'bestTile': best_tile,
+            'bestScore': self.best_score,
+            'date': time.strftime('%Y-%m-%dT%H:%M:%S.000Z'),
+            'time': time_str,
+            'moves': self.moves
         }
 
 
@@ -418,6 +457,178 @@ def change_board_size():
     
     return jsonify({
         'gameState': games[game_id].get_state()
+    })
+
+# New endpoints for theme and visual settings
+@app.route('/api/change_theme', methods=['POST'])
+def change_theme():
+    """Toggle light/dark theme"""
+    data = request.json or {}
+    game_id = data.get('gameId')
+    
+    if not game_id or game_id not in games:
+        return jsonify({'error': 'Invalid request'}), 400
+    
+    games[game_id].is_light_mode = not games[game_id].is_light_mode
+    
+    return jsonify({
+        'gameState': games[game_id].get_state()
+    })
+
+@app.route('/api/change_hue', methods=['POST'])
+def change_hue():
+    """Change color hue"""
+    data = request.json or {}
+    game_id = data.get('gameId')
+    hue = data.get('hue')
+    
+    if not game_id or game_id not in games:
+        return jsonify({'error': 'Invalid request'}), 400
+    
+    if hue is not None:
+        games[game_id].hue_value = hue
+    else:
+        # Cycle through hue values like in JS
+        games[game_id].hue_value = (games[game_id].hue_value + 60) % 360
+    
+    return jsonify({
+        'gameState': games[game_id].get_state()
+    })
+
+@app.route('/api/toggle_rainbow', methods=['POST'])
+def toggle_rainbow():
+    """Toggle rainbow mode"""
+    data = request.json or {}
+    game_id = data.get('gameId')
+    
+    if not game_id or game_id not in games:
+        return jsonify({'error': 'Invalid request'}), 400
+    
+    games[game_id].is_rainbow_mode = not games[game_id].is_rainbow_mode
+    
+    return jsonify({
+        'gameState': games[game_id].get_state()
+    })
+
+# Stats and leaderboard endpoints
+@app.route('/api/save_stats', methods=['POST'])
+def save_game_stats():
+    """Save game statistics"""
+    data = request.json or {}
+    game_id = data.get('gameId')
+    
+    if not game_id or game_id not in games:
+        return jsonify({'error': 'Invalid request'}), 400
+    
+    game = games[game_id]
+    stats_data = game.get_stats_data()
+    
+    # Read existing stats from localStorage equivalent
+    try:
+        with open('game_stats.json', 'r') as f:
+            stats = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        stats = []
+    
+    # Add new stats
+    stats.append(stats_data)
+    
+    # Save stats back
+    with open('game_stats.json', 'w') as f:
+        json.dump(stats, f)
+    
+    return jsonify({
+        'success': True
+    })
+
+@app.route('/api/get_stats', methods=['GET'])
+def get_game_stats():
+    """Get all game statistics"""
+    try:
+        with open('game_stats.json', 'r') as f:
+            stats = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        stats = []
+    
+    return jsonify({
+        'stats': stats
+    })
+
+@app.route('/api/reset_stats', methods=['POST'])
+def reset_game_stats():
+    """Reset all game statistics"""
+    if os.path.exists('game_stats.json'):
+        os.remove('game_stats.json')
+    
+    return jsonify({
+        'success': True
+    })
+
+@app.route('/api/save_leaderboard', methods=['POST'])
+def save_to_leaderboard():
+    """Save a score to the leaderboard"""
+    data = request.json or {}
+    player_name = data.get('name', 'Player')
+    game_id = data.get('gameId')
+    
+    if not game_id or game_id not in games:
+        return jsonify({'error': 'Invalid request'}), 400
+    
+    game = games[game_id]
+    leaderboard_entry = {
+        'name': player_name,
+        'score': game.score,
+        'bestTile': max([max(row) for row in game.board]) if any(any(cell != 0 for cell in row) for row in game.board) else 0,
+        'date': time.strftime('%Y-%m-%dT%H:%M:%S.000Z'),
+        'moves': game.moves
+    }
+    
+    # Read existing leaderboard
+    try:
+        with open('leaderboard.json', 'r') as f:
+            leaderboard = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        leaderboard = []
+    
+    # Add new entry
+    leaderboard.append(leaderboard_entry)
+    
+    # Sort by score (highest first)
+    leaderboard.sort(key=lambda x: x['score'], reverse=True)
+    
+    # Limit to top 10
+    leaderboard = leaderboard[:10]
+    
+    # Save leaderboard back
+    with open('leaderboard.json', 'w') as f:
+        json.dump(leaderboard, f)
+    
+    return jsonify({
+        'success': True,
+        'leaderboard': leaderboard
+    })
+
+@app.route('/api/get_leaderboard', methods=['GET'])
+def get_leaderboard():
+    """Get the leaderboard"""
+    try:
+        with open('leaderboard.json', 'r') as f:
+            leaderboard = json.load(f)
+    except (FileNotFoundError, json.JSONDecodeError):
+        leaderboard = []
+    
+    return jsonify({
+        'leaderboard': leaderboard
+    })
+
+@app.route('/api/reset_leaderboard', methods=['POST'])
+def reset_leaderboard():
+    """Reset the leaderboard"""
+    if os.path.exists('leaderboard.json'):
+        os.remove('leaderboard.json')
+    
+    return jsonify({
+        'success': True
     })
 
 # Cleanup dead games periodically (not implemented in this simple version)
