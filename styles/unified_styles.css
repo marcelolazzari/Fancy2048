@@ -1048,3 +1048,161 @@ footer .container {
     white-space: nowrap;
   }
 }
+
+/* Accessibility and UX improvements */
+.skip-link {
+  position: absolute;
+  top: -40px;
+  left: 6px;
+  background: var(--highlight-color);
+  color: var(--primary-color);
+  padding: 8px;
+  text-decoration: none;
+  border-radius: 0 0 4px 0;
+  z-index: 1000;
+  font-weight: bold;
+  transition: top 0.3s;
+}
+
+.skip-link:focus {
+  top: 0;
+}
+
+.visually-hidden {
+  position: absolute !important;
+  width: 1px !important;
+  height: 1px !important;
+  padding: 0 !important;
+  margin: -1px !important;
+  overflow: hidden !important;
+  clip: rect(0, 0, 0, 0) !important;
+  white-space: nowrap !important;
+  border: 0 !important;
+}
+
+/* Loading screen styles */
+#loading-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: var(--primary-color);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 10000;
+  color: var(--secondary-color);
+  transition: opacity 0.5s ease;
+}
+
+.loading-spinner {
+  width: 40px;
+  height: 40px;
+  border: 4px solid var(--button-background);
+  border-top: 4px solid var(--highlight-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+#loading-screen p {
+  font-size: 1.2rem;
+  margin: 0;
+}
+
+/* Error handling styles */
+.error-message, #error-container {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background-color: rgba(180, 0, 0, 0.9);
+  color: white;
+  padding: 30px;
+  border-radius: 10px;
+  text-align: center;
+  z-index: 10000;
+  max-width: 90%;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.7);
+}
+
+.error-message h2, #error-container h2 {
+  margin-top: 0;
+  color: white;
+}
+
+/* Enhanced button styling with text labels */
+.button-text {
+  display: none;
+  margin-left: 8px;
+  font-size: 0.9rem;
+}
+
+@media (min-width: 1024px) {
+  .button-text {
+    display: inline;
+  }
+  
+  button {
+    padding: 12px 16px;
+  }
+}
+
+/* Score container improvements */
+.score-item {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin: 8px 0;
+  padding: 4px 8px;
+  background-color: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+  transition: background-color var(--transition-duration);
+}
+
+.score-item:hover {
+  background-color: rgba(255, 255, 255, 0.15);
+}
+
+.score-label {
+  font-weight: 600;
+  color: var(--secondary-color);
+}
+
+#score-container span[aria-live] {
+  font-weight: bold;
+  color: var(--highlight-color);
+  min-width: 60px;
+  text-align: right;
+}
+
+/* Enhanced game messages */
+#game-over, #win-message {
+  background-color: rgba(0, 0, 0, 0.9);
+  border: 2px solid var(--highlight-color);
+  padding: 30px;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 5px 25px rgba(0, 0, 0, 0.7);
+}
+
+#game-over h3, #win-message h3 {
+  margin-top: 0;
+  color: var(--highlight-color);
+  font-size: 1.8rem;
+}
+
+#win-message {
+  border-color: #00ff00;
+}
+
+#win-message h3 {
+  color: #00ff00;
+}

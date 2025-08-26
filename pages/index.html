@@ -2,53 +2,85 @@
 <html lang="en">
   <head>
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <meta name="apple-mobile-web-app-capable" content="yes" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <title>Fancy 2048</title>
+    <meta name="theme-color" content="#1a1a1a" />
+    <meta name="description" content="Fancy 2048 - Enhanced version of the classic 2048 puzzle game with themes, undo moves, and smooth animations" />
+    <meta name="keywords" content="2048, puzzle, game, tiles, merge, strategy" />
+    <title>Fancy 2048 - Enhanced Puzzle Game</title>
+    
+    <!-- Resource hints for performance -->
+    <link rel="preconnect" href="https://cdnjs.cloudflare.com" />
+    <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
+    
     <link rel="stylesheet" href="../styles/unified_styles.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" crossorigin="anonymous" />
   </head>
   <body>
+    <!-- Skip navigation for accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+    
+    <!-- Loading indicator -->
+    <div id="loading-screen" aria-live="polite" aria-label="Loading game">
+      <div class="loading-spinner"></div>
+      <p>Loading Fancy 2048...</p>
+    </div>
+    
+    <!-- JavaScript error fallback -->
+    <noscript>
+      <div class="error-message" role="alert">
+        <h2>JavaScript Required</h2>
+        <p>This game requires JavaScript to be enabled. Please enable JavaScript in your browser settings and refresh the page.</p>
+      </div>
+    </noscript>
+    
     <!-- Header section -->
-    <header>
+    <header role="banner">
       <div class="container">
         <h1 class="game-title">Fancy 2048</h1>
-        <nav aria-label="Game controls">
+        <nav aria-label="Game controls and options" role="navigation">
           <ul id="controls-container" class="controls">
             <li>
-              <button type="button" id="changeColor-button" aria-label="Change Color">
-                <i class="fas fa-palette"></i>
+              <button type="button" id="changeColor-button" aria-label="Change game color theme">
+                <i class="fas fa-palette" aria-hidden="true"></i>
+                <span class="button-text">Color</span>
               </button>
             </li>
             <li>
-              <button type="button" id="leaderboard-button" aria-label="View Statistics" onclick="window.location.href='leaderboard.html'">
-                <i class="fas fa-chart-line"></i>
+              <button type="button" id="leaderboard-button" aria-label="View game statistics and leaderboard" onclick="window.location.href='leaderboard.html'">
+                <i class="fas fa-chart-line" aria-hidden="true"></i>
+                <span class="button-text">Stats</span>
               </button>
             </li>
             <li>
-              <button type="button" id="rainbowMode-button" aria-label="Toggle Rainbow Mode">
-                <i class="fas fa-rainbow"></i>
+              <button type="button" id="rainbowMode-button" aria-label="Toggle rainbow color mode">
+                <i class="fas fa-rainbow" aria-hidden="true"></i>
+                <span class="button-text">Rainbow</span>
               </button>
             </li>
             <li>
-              <button type="button" id="back-button" aria-label="Undo Move">
-                <i class="fas fa-undo"></i>
+              <button type="button" id="back-button" aria-label="Undo last move">
+                <i class="fas fa-undo" aria-hidden="true"></i>
+                <span class="button-text">Undo</span>
               </button>
             </li>
             <li>
-              <button type="button" id="pause-button" aria-label="Pause Game">
-                <i class="fas fa-pause"></i>
+              <button type="button" id="pause-button" aria-label="Pause or resume game">
+                <i class="fas fa-pause" aria-hidden="true"></i>
+                <span class="button-text">Pause</span>
               </button>
             </li>
             <li>
-              <button type="button" id="board-size-button" aria-label="Change Board Size">
-                <i class="fas fa-th"></i>
+              <button type="button" id="board-size-button" aria-label="Change game board size">
+                <i class="fas fa-th" aria-hidden="true"></i>
+                <span class="button-text">Size</span>
               </button>
             </li>
             <li>
-              <button type="button" id="theme-toggle-button" aria-label="Toggle Theme">
-                <i class="fas fa-adjust"></i>
+              <button type="button" id="theme-toggle-button" aria-label="Toggle between light and dark theme">
+                <i class="fas fa-adjust" aria-hidden="true"></i>
+                <span class="button-text">Theme</span>
               </button>
             </li>
           </ul>
@@ -57,30 +89,96 @@
     </header>
 
     <!-- Main content section -->
-    <main>
+    <main id="main-content" role="main">
       <div class="overlay" aria-hidden="true"></div>
-      <section class="game-section">
-        <div id="board-container" class="board-container" role="grid" aria-label="Game Board"></div>
-        <div id="game-over" class="hidden" role="alert">Game Over!</div>
+      
+      <!-- Game section with proper heading hierarchy -->
+      <section class="game-section" aria-labelledby="game-title">
+        <h2 id="game-title" class="visually-hidden">Game Board</h2>
+        <div id="board-container" class="board-container" role="grid" aria-label="2048 game board with moveable tiles" aria-describedby="game-instructions"></div>
+        <div id="game-instructions" class="visually-hidden">Use arrow keys or swipe to move tiles. Combine tiles with the same number to reach 2048.</div>
+        <div id="game-over" class="hidden" role="alert" aria-live="assertive">
+          <h3>Game Over!</h3>
+          <p>No more moves available. Try again?</p>
+        </div>
+        <div id="win-message" class="hidden" role="alert" aria-live="assertive">
+          <h3>Congratulations!</h3>
+          <p>You reached 2048! Keep playing to get an even higher score.</p>
+        </div>
       </section>
 
-      <aside id="score-container" aria-labelledby="score-title">
-        <h2 id="score-title" class="visually-hidden">Score Information</h2>
-        <p>Score: <span id="score">0</span></p>
-        <p>Best: <span id="best-score">0</span></p>
-        <p>Moves: <span id="moves">0</span></p>
-        <p>Time: <span id="time">00:00</span></p>
+      <aside id="score-container" aria-labelledby="score-title" role="complementary">
+        <h2 id="score-title" class="visually-hidden">Game Statistics</h2>
+        <div class="score-item">
+          <span class="score-label">Score:</span>
+          <span id="score" aria-live="polite">0</span>
+        </div>
+        <div class="score-item">
+          <span class="score-label">Best:</span>
+          <span id="best-score" aria-live="polite">0</span>
+        </div>
+        <div class="score-item">
+          <span class="score-label">Moves:</span>
+          <span id="moves" aria-live="polite">0</span>
+        </div>
+        <div class="score-item">
+          <span class="score-label">Time:</span>
+          <span id="time" aria-live="polite">00:00</span>
+        </div>
       </aside>
     </main>
 
     <!-- Footer section -->
-    <footer>
+    <footer role="contentinfo">
       <div class="container">
-        <button type="button" id="reset-button" aria-label="Reset Game">Reset</button>
+        <button type="button" id="reset-button" aria-label="Reset game and start over">
+          <i class="fas fa-redo" aria-hidden="true"></i>
+          <span class="button-text">Reset</span>
+        </button>
       </div>
     </footer>
 
+    <!-- Error message container for JavaScript failures -->
+    <div id="error-container" class="hidden" role="alert" aria-live="assertive">
+      <h2>Game Error</h2>
+      <p id="error-message">Something went wrong. Please refresh the page to try again.</p>
+    </div>
+
     <!-- JavaScript file -->
-    <script src="../scripts/game.js"></script>
+    <script src="../scripts/game.js" onerror="handleScriptError()"></script>
+    
+    <!-- Inline script for basic error handling and loading management -->
+    <script>
+      function handleScriptError() {
+        document.getElementById('loading-screen').style.display = 'none';
+        document.getElementById('error-container').classList.remove('hidden');
+        document.getElementById('error-message').textContent = 'Failed to load game script. Please refresh the page or check your internet connection.';
+      }
+      
+      // Hide loading screen once everything is loaded
+      window.addEventListener('load', function() {
+        const loadingScreen = document.getElementById('loading-screen');
+        if (loadingScreen) {
+          loadingScreen.style.opacity = '0';
+          setTimeout(() => {
+            loadingScreen.style.display = 'none';
+          }, 500);
+        }
+      });
+      
+      // Handle keyboard navigation announcements
+      document.addEventListener('keydown', function(e) {
+        if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(e.key)) {
+          const announcement = document.createElement('div');
+          announcement.setAttribute('aria-live', 'polite');
+          announcement.className = 'visually-hidden';
+          announcement.textContent = 'Move made with ' + e.key.replace('Arrow', '') + ' arrow key';
+          document.body.appendChild(announcement);
+          setTimeout(() => {
+            document.body.removeChild(announcement);
+          }, 1000);
+        }
+      });
+    </script>
   </body>
 </html>
