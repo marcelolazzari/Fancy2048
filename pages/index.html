@@ -8,6 +8,7 @@
     <title>Fancy 2048</title>
     <link rel="stylesheet" href="../styles/unified_styles.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <meta name="description" content="Play Fancy 2048, a modern twist on the classic puzzle game. Track your stats and compete on the leaderboard!" />
   </head>
   <body>
     <!-- Header section -->
@@ -17,38 +18,38 @@
         <nav aria-label="Game controls">
           <ul id="controls-container" class="controls">
             <li>
-              <button type="button" id="changeColor-button" aria-label="Change Color">
-                <i class="fas fa-palette"></i>
+              <button type="button" id="changeColor-button" aria-label="Change Color" tabindex="0">
+                <i class="fas fa-palette" aria-hidden="true"></i>
               </button>
             </li>
             <li>
-              <button type="button" id="leaderboard-button" aria-label="View Statistics" onclick="window.location.href='leaderboard.html'">
-                <i class="fas fa-chart-line"></i>
+              <button type="button" id="leaderboard-button" aria-label="View Statistics" onclick="window.location.href='leaderboard.html'" tabindex="0">
+                <i class="fas fa-chart-line" aria-hidden="true"></i>
               </button>
             </li>
             <li>
-              <button type="button" id="rainbowMode-button" aria-label="Toggle Rainbow Mode">
-                <i class="fas fa-rainbow"></i>
+              <button type="button" id="rainbowMode-button" aria-label="Toggle Rainbow Mode" tabindex="0">
+                <i class="fas fa-rainbow" aria-hidden="true"></i>
               </button>
             </li>
             <li>
-              <button type="button" id="back-button" aria-label="Undo Move">
-                <i class="fas fa-undo"></i>
+              <button type="button" id="back-button" aria-label="Undo Move" tabindex="0">
+                <i class="fas fa-undo" aria-hidden="true"></i>
               </button>
             </li>
             <li>
-              <button type="button" id="pause-button" aria-label="Pause Game">
-                <i class="fas fa-pause"></i>
+              <button type="button" id="pause-button" aria-label="Pause Game" tabindex="0">
+                <i class="fas fa-pause" aria-hidden="true"></i>
               </button>
             </li>
             <li>
-              <button type="button" id="board-size-button" aria-label="Change Board Size">
-                <i class="fas fa-th"></i>
+              <button type="button" id="board-size-button" aria-label="Change Board Size" tabindex="0">
+                <i class="fas fa-th" aria-hidden="true"></i>
               </button>
             </li>
             <li>
-              <button type="button" id="theme-toggle-button" aria-label="Toggle Theme">
-                <i class="fas fa-adjust"></i>
+              <button type="button" id="theme-toggle-button" aria-label="Toggle Theme" tabindex="0">
+                <i class="fas fa-adjust" aria-hidden="true"></i>
               </button>
             </li>
           </ul>
@@ -60,8 +61,8 @@
     <main>
       <div class="overlay" aria-hidden="true"></div>
       <section class="game-section">
-        <div id="board-container" class="board-container" role="grid" aria-label="Game Board"></div>
-        <div id="game-over" class="hidden" role="alert">Game Over!</div>
+  <div id="board-container" class="board-container" role="grid" aria-label="Game Board" tabindex="0"></div>
+  <div id="game-over" class="hidden" role="alert" aria-live="assertive">Game Over!</div>
       </section>
 
       <aside id="score-container" aria-labelledby="score-title">
@@ -76,11 +77,12 @@
     <!-- Footer section -->
     <footer>
       <div class="container">
-        <button type="button" id="reset-button" aria-label="Reset Game">Reset</button>
+        <button type="button" id="reset-button" aria-label="Reset Game" tabindex="0">Reset</button>
       </div>
     </footer>
 
     <!-- JavaScript file -->
-    <script src="../scripts/game.js"></script>
+  <script src="../scripts/game.js"></script>
+  <script src="../scripts/test-links.js"></script>
   </body>
 </html>

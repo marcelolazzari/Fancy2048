@@ -7,6 +7,7 @@
     <link rel="stylesheet" href="../styles/unified_styles.css" />
     <link rel="stylesheet" href="../styles/stats_styles.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <meta name="description" content="View your Fancy2048 game statistics and leaderboard. Export your stats or reset your history." />
   </head>
   <body>
     <header>
@@ -33,12 +34,12 @@
         </div>
         
         <div class="button-container">
-          <button type="button" id="save-csv-button"><i class="fas fa-download"></i> Export to CSV</button>
-          <button type="button" id="reset-data-button" class="warning-button"><i class="fas fa-trash-alt"></i> Reset Data</button>
+          <button type="button" id="save-csv-button" aria-label="Export statistics to CSV" tabindex="0"><i class="fas fa-download" aria-hidden="true"></i> Export to CSV</button>
+          <button type="button" id="reset-data-button" class="warning-button" aria-label="Reset all statistics" tabindex="0"><i class="fas fa-trash-alt" aria-hidden="true"></i> Reset Data</button>
         </div>
         
         <div class="table-container">
-          <table id="statsTable">
+          <table id="statsTable" aria-label="Game statistics table">
             <thead>
               <tr>
                 <th>Date</th>
@@ -55,17 +56,18 @@
           </table>
         </div>
         
-        <div id="no-stats-message" class="message-container">
-          <i class="fas fa-gamepad"></i>
+        <div id="no-stats-message" class="message-container" style="display:none;">
+          <i class="fas fa-gamepad" aria-hidden="true"></i>
           <p>No game statistics available yet. Play a game to see your stats!</p>
         </div>
       </section>
     </main>
     
     <footer>
-      <button type="button" onclick="window.location.href='index.html'"><i class="fas fa-arrow-left"></i> Back to Game</button>
+      <button type="button" onclick="window.location.href='index.html'" aria-label="Back to Game" tabindex="0"><i class="fas fa-arrow-left" aria-hidden="true"></i> Back to Game</button>
     </footer>
     
     <script src="../scripts/statistics.js"></script>
+    <script src="../scripts/test-links.js"></script>
   </body>
 </html>

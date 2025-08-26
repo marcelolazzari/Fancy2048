@@ -21,11 +21,15 @@ class Game:
         self.state = 'playing'  # playing, won, over
         
         # Game history and stats
+        import time
+        import os
+        from flask_cors import CORS
         self.previous_boards = []  # For undo functionality
         self.previous_scores = []
+        CORS(app)
         self.previous_moves = []
         self.start_time = time.time()
-        self.has_saved_stats = False
+        games = {}
         
         # Visual settings (stored but managed by frontend)
         self.is_light_mode = False
