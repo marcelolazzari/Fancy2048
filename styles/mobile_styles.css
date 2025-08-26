@@ -43,7 +43,72 @@ body {
   font-family: 'Roboto', Arial, sans-serif;
   background-color: var(--primary-color);
   color: var(--secondary-color);
-  margin: 0;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+  color: #fff;
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+
+.gradient-text {
+  background: linear-gradient(90deg, #38f9d7, #b86adf);
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  text-fill-color: transparent;
+}
+
+.card {
+  background: #1e293b;
+  border-radius: 18px;
+  box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+  padding: 1.5em;
+  margin-bottom: 1.5em;
+  transition: box-shadow 0.2s;
+/* End of file - all braces closed correctly */
+.card:hover {
+  box-shadow: 0 8px 32px rgba(56,249,215,0.12);
+}
+
+.badge-relax {
+  background: linear-gradient(90deg, #38f9d7, #b86adf);
+  color: #fff;
+  border-radius: 12px;
+  padding: 0.3em 1em;
+  font-size: 0.85em;
+  font-weight: 600;
+}
+.badge-creative {
+  background: linear-gradient(90deg, #38f9d7, #43e97b);
+  color: #fff;
+  border-radius: 12px;
+  padding: 0.3em 1em;
+  font-size: 0.85em;
+  font-weight: 600;
+}
+.badge-protected {
+  background: #b86adf;
+  color: #fff;
+  border-radius: 12px;
+  padding: 0.3em 1em;
+  font-size: 0.85em;
+  font-weight: 600;
+}
+
+.navbar {
+  background: rgba(15,23,42,0.95);
+  color: #fff;
+  padding: 0.8em 1.2em;
+  border-bottom: 1px solid #232a3b;
+}
+
+.footer {
+  color: #94a3b8;
+  font-size: 0.95em;
+  background: transparent;
+  padding: 1em 0;
+  text-align: center;
+}
+
+.icon {
+  filter: drop-shadow(0 2px 6px #38f9d7);
   padding: 0;
   flex: 1 1 auto;
   width: 100vw;
@@ -863,4 +928,4 @@ footer button:hover {
 
 #back-button:active {
   transform: scale(0.95);
-}
+}}}
