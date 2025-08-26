@@ -1,3 +1,27 @@
+/* Accessibility: Focus styles for buttons and tiles */
+button:focus, .controls button:focus {
+  outline: 2px solid var(--highlight-color);
+  outline-offset: 2px;
+  background-color: var(--button-hover-background);
+  color: #222;
+}
+
+.tile:focus {
+  outline: 2px solid var(--highlight-color);
+  outline-offset: 2px;
+  background-color: var(--tile-8-bg);
+  color: #222;
+}
+
+/* Improve color contrast for visually hidden and highlight classes */
+.visually-hidden:focus {
+  outline: 2px solid var(--highlight-color);
+}
+
+.highlight-row {
+  background-color: rgba(255, 204, 0, 0.4) !important;
+  color: #222 !important;
+}
 :root {
   --size: 4;
   --gap: 15px; /* Increased from 10px to make grid more visible */

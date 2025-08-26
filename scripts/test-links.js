@@ -7,7 +7,7 @@ document.addEventListener('DOMContentLoaded', () => {
     if (document.styleSheets.length > 0) {
       console.log('CSS loaded successfully');
     } else {
-      console.error('CSS may not be loaded correctly');
+      console.warn('CSS may not be loaded correctly');
     }
     // Check if main elements exist
     const elementsToCheck = [
@@ -17,8 +17,10 @@ document.addEventListener('DOMContentLoaded', () => {
       'game-over'
     ];
     elementsToCheck.forEach(id => {
-      if (document.getElementById(id)) {
+      const el = document.getElementById(id);
+      if (el) {
         console.log(`Element #${id} found`);
+        el.setAttribute('tabindex', '0');
       } else {
         console.log(`Element #${id} not found - this may be normal if you're not on the main game page`);
       }

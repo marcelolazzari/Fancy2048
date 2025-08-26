@@ -11,7 +11,7 @@
   </head>
   <body>
     <header>
-      <h1>Fancy2048 Game Statistics</h1>
+      <h1 tabindex="0">Fancy2048 Game Statistics</h1>
     </header>
     
     <main>
@@ -39,15 +39,15 @@
         </div>
         
         <div class="table-container">
-          <table id="statsTable" aria-label="Game statistics table">
+          <table id="statsTable" aria-label="Game statistics table" role="table">
             <thead>
-              <tr>
-                <th>Date</th>
-                <th>Best Tile</th>
-                <th>Score</th>
-                <th>Best Score</th>
-                <th>Duration</th>
-                <th>Moves</th>
+              <tr role="row">
+                <th role="columnheader">Date</th>
+                <th role="columnheader">Best Tile</th>
+                <th role="columnheader">Score</th>
+                <th role="columnheader">Best Score</th>
+                <th role="columnheader">Duration</th>
+                <th role="columnheader">Moves</th>
               </tr>
             </thead>
             <tbody>
@@ -56,7 +56,7 @@
           </table>
         </div>
         
-        <div id="no-stats-message" class="message-container" style="display:none;">
+        <div id="no-stats-message" class="message-container" style="display:none;" role="status" aria-live="polite">
           <i class="fas fa-gamepad" aria-hidden="true"></i>
           <p>No game statistics available yet. Play a game to see your stats!</p>
         </div>

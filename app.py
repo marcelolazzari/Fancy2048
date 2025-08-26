@@ -1,11 +1,14 @@
 from flask import Flask, render_template, send_from_directory, jsonify, request
+from flask_cors import CORS
 import random
 import uuid
 import time
 import json
 import os
 
+
 app = Flask(__name__, template_folder='pages')
+CORS(app)
 
 # In-memory game storage
 games = {}
@@ -19,23 +22,18 @@ class Game:
         self.best_score = 0
         self.moves = 0
         self.state = 'playing'  # playing, won, over
-        
+
         # Game history and stats
-        import time
-        import os
-        from flask_cors import CORS
         self.previous_boards = []  # For undo functionality
         self.previous_scores = []
-        CORS(app)
         self.previous_moves = []
         self.start_time = time.time()
-        games = {}
-        
+
         # Visual settings (stored but managed by frontend)
         self.is_light_mode = False
         self.hue_value = 0
         self.is_rainbow_mode = False
-        
+
         # Add initial two tiles
         self.add_random_tile()
         self.add_random_tile()

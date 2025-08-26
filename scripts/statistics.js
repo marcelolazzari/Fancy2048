@@ -1,10 +1,13 @@
 document.addEventListener('DOMContentLoaded', () => {
+  // Accessibility: focus main heading on load
+  const mainHeading = document.querySelector('h1');
+  if (mainHeading) mainHeading.setAttribute('tabindex', '0');
 
   // Utility: safely get element by ID
   function $(id) {
     const el = document.getElementById(id);
     if (!el) {
-      console.error(`Element #${id} not found.`);
+      console.warn(`Element #${id} not found.`);
     }
     return el;
   }
@@ -79,6 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Add animation to the stats cards
     document.querySelectorAll('.stats-card').forEach(card => {
       card.classList.add('animate-in');
+      card.setAttribute('aria-live', 'polite');
     });
   }
 
@@ -130,7 +134,10 @@ document.addEventListener('DOMContentLoaded', () => {
   // Set up event listeners safely
   function safeAddEventListener(id, event, handler) {
     const el = $(id);
-    if (el) el.addEventListener(event, handler);
+    if (el) {
+      el.addEventListener(event, handler);
+      el.setAttribute('tabindex', '0');
+    }
   }
 
   // DOMContentLoaded main logic

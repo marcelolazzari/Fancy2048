@@ -1,54 +1,54 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
-    <meta name="apple-mobile-web-app-capable" content="yes" />
-    <meta name="mobile-web-app-capable" content="yes" />
-    <title>Fancy 2048</title>
-    <link rel="stylesheet" href="../styles/unified_styles.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="mobile-web-app-capable" content="yes" />
+  <title>Fancy 2048</title>
   <meta name="description" content="Play Fancy 2048, a modern twist on the classic puzzle game. Track your stats and compete on the leaderboard!" />
+  <link rel="stylesheet" href="../styles/unified_styles.css" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   </head>
   <body>
     <!-- Header section -->
     <header>
       <div class="container">
-        <h1 class="game-title">Fancy 2048</h1>
+        <h1 class="game-title" tabindex="0">Fancy 2048</h1>
         <nav aria-label="Game controls">
-          <ul id="controls-container" class="controls">
-            <li>
-              <button type="button" id="changeColor-button" aria-label="Change Color" tabindex="0">
+          <ul id="controls-container" class="controls" role="menubar">
+            <li role="none">
+              <button type="button" id="changeColor-button" aria-label="Change Color" tabindex="0" role="menuitem">
                 <i class="fas fa-palette" aria-hidden="true"></i>
               </button>
             </li>
-            <li>
-              <button type="button" id="leaderboard-button" aria-label="View Statistics" onclick="window.location.href='leaderboard.html'" tabindex="0">
+            <li role="none">
+              <button type="button" id="leaderboard-button" aria-label="View Statistics" onclick="window.location.href='leaderboard.html'" tabindex="0" role="menuitem">
                 <i class="fas fa-chart-line" aria-hidden="true"></i>
               </button>
             </li>
-            <li>
-              <button type="button" id="rainbowMode-button" aria-label="Toggle Rainbow Mode" tabindex="0">
+            <li role="none">
+              <button type="button" id="rainbowMode-button" aria-label="Toggle Rainbow Mode" tabindex="0" role="menuitem">
                 <i class="fas fa-rainbow" aria-hidden="true"></i>
               </button>
             </li>
-            <li>
-              <button type="button" id="back-button" aria-label="Undo Move" tabindex="0">
+            <li role="none">
+              <button type="button" id="back-button" aria-label="Undo Move" tabindex="0" role="menuitem">
                 <i class="fas fa-undo" aria-hidden="true"></i>
               </button>
             </li>
-            <li>
-              <button type="button" id="pause-button" aria-label="Pause Game" tabindex="0">
+            <li role="none">
+              <button type="button" id="pause-button" aria-label="Pause Game" tabindex="0" role="menuitem">
                 <i class="fas fa-pause" aria-hidden="true"></i>
               </button>
             </li>
-            <li>
-              <button type="button" id="board-size-button" aria-label="Change Board Size" tabindex="0">
+            <li role="none">
+              <button type="button" id="board-size-button" aria-label="Change Board Size" tabindex="0" role="menuitem">
                 <i class="fas fa-th" aria-hidden="true"></i>
               </button>
             </li>
-            <li>
-              <button type="button" id="theme-toggle-button" aria-label="Toggle Theme" tabindex="0">
+            <li role="none">
+              <button type="button" id="theme-toggle-button" aria-label="Toggle Theme" tabindex="0" role="menuitem">
                 <i class="fas fa-adjust" aria-hidden="true"></i>
               </button>
             </li>
@@ -67,10 +67,12 @@
 
       <aside id="score-container" aria-labelledby="score-title">
         <h2 id="score-title" class="visually-hidden">Score Information</h2>
-        <p>Score: <span id="score">0</span></p>
-        <p>Best: <span id="best-score">0</span></p>
-        <p>Moves: <span id="moves">0</span></p>
-        <p>Time: <span id="time">00:00</span></p>
+        <ul>
+          <li>Score: <span id="score">0</span></li>
+          <li>Best: <span id="best-score">0</span></li>
+          <li>Moves: <span id="moves">0</span></li>
+          <li>Time: <span id="time">00:00</span></li>
+        </ul>
       </aside>
     </main>
 
