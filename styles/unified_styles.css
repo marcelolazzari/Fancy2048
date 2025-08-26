@@ -5,6 +5,132 @@ button:focus, .controls button:focus {
   background-color: var(--button-hover-background);
   color: #222;
 }
+ 
+/* Improve color contrast for visually hidden and highlight classes */
+.visually-hidden:focus {
+  outline: 2px solid var(--highlight-color);
+}
+ 
+/* Header styles */
+header {
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 20px;
+  background-color: rgba(0, 0, 0, 0.7);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
+  transition: background-color var(--transition-duration);
+  box-sizing: border-box;
+}
+ 
+header .game-title {
+  font-size: 2rem;
+  color: var(--highlight-color);
+  margin: 10px 0;
+  text-align: center;
+  transition: color var(--transition-duration);
+}
+ 
+button {
+  padding: 10px 20px;
+  font-size: 16px;
+  color: #ffffff;
+  border-radius: var(--tile-border-radius);
+  border: none;
+  background-color: var(--button-background);
+  cursor: pointer;
+  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
+  transition: background-color var(--transition-duration), 
+              transform var(--transition-duration), 
+              box-shadow var(--transition-duration);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  filter: brightness(85%);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+ 
+button:hover {
+  background-color: var(--button-hover-background);
+  transform: scale(1.05);
+  box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+}
+ 
+/* Tile Styling Section */
+.tile {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--tile-border-radius);
+  font-weight: bold;
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  transition: transform var(--transition-duration), 
+              opacity var(--transition-duration), 
+              background-color var(--transition-duration),
+              color var(--transition-duration),
+              box-shadow var(--transition-duration);
+  z-index: 1;
+  overflow: hidden;
+  text-align: center;
+  line-height: 1;
+  box-sizing: border-box;
+}
+ 
+/* Responsive adjustments for tiles */
+@media (max-width: 600px) {
+  /* Slightly increase relative font size on small screens for better readability */
+  .tile[data-value^="2"],
+  .tile[data-value^="4"],
+  .tile[data-value^="8"] {
+    font-size: clamp(14px, calc(var(--tile-size) * 0.55), 64px);
+  }
+  
+  .tile[data-value^="16"],
+  .tile[data-value^="32"],
+  .tile[data-value^="64"] {
+    font-size: clamp(12px, calc(var(--tile-size) * 0.45), 56px);
+  }
+  
+  .tile[data-value^="128"],
+  .tile[data-value^="256"],
+  .tile[data-value^="512"] {
+    font-size: clamp(10px, calc(var(--tile-size) * 0.4), 48px);
+  }
+  
+  .tile[data-value^="1024"],
+  .tile[data-value^="2048"],
+  .tile[data-value^="4096"],
+  .tile[data-value^="8192"] {
+    font-size: clamp(8px, calc(var(--tile-size) * 0.35), 40px);
+  }
+}
+ 
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .tile:hover {
+    transform: none; /* Don't scale on hover for touch devices */
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  }
+}
+ 
+/* Accessibility: Focus styles for buttons and tiles */
+button:focus, .controls button:focus {
+  outline: 2px solid var(--highlight-color);
+  outline-offset: 2px;
+  background-color: var(--button-hover-background);
+  color: #222;
+}
 
 .tile:focus {
   outline: 2px solid var(--highlight-color);

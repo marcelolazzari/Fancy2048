@@ -36,14 +36,20 @@ header {
   width: 100%;
   text-align: center;
   margin-bottom: 20px;
+  background: linear-gradient(90deg, #1a1a1a 60%, #ffcc00 100%);
+  padding: 16px 8px;
+  border-bottom: 2px solid var(--highlight-color);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
 
 header h1 {
-  font-size: 2rem;
+  font-size: 2.2rem;
   color: var(--highlight-color);
-  transition: color 0.3s ease;
   margin: 10px 0;
-  text-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
+  letter-spacing: 2px;
+  font-weight: 700;
+  text-shadow: 0 2px 8px rgba(0,0,0,0.2);
+  transition: color 0.3s ease;
 }
 
 .stats-section {
@@ -81,34 +87,36 @@ header h1 {
 }
 
 .stats-card {
-  background-color: rgba(0, 0, 0, 0.3);
-  padding: 20px;
-  border-radius: 10px;
+  background: linear-gradient(90deg, rgba(0,0,0,0.3) 60%, rgba(255,204,0,0.2) 100%);
+  padding: 24px 20px;
+  border-radius: 12px;
   text-align: center;
   min-width: 140px;
   flex: 1;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
   transition: transform 0.3s ease, box-shadow 0.3s ease;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .stats-card:hover {
-  transform: translateY(-5px);
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.3);
+  transform: translateY(-7px) scale(1.03);
+  box-shadow: 0 8px 16px rgba(255,204,0,0.2);
 }
 
 .stats-card h3 {
-  font-size: 1.1rem;
+  font-size: 1.2rem;
   margin-top: 0;
   margin-bottom: 15px;
   color: var(--secondary-color);
+  font-weight: 600;
 }
 
 .stats-card p {
-  font-size: 1.8rem;
+  font-size: 2rem;
   font-weight: bold;
   margin: 0;
   color: var(--highlight-color);
+  text-shadow: 0 2px 8px rgba(0,0,0,0.1);
 }
 
 /* Animation for stats cards */
@@ -137,10 +145,10 @@ header h1 {
 }
 
 button {
-  padding: 12px 20px;
-  font-size: 1rem;
-  border-radius: 10px;
-  background-color: rgba(0, 16, 71, 0.6);
+  padding: 14px 24px;
+  font-size: 1.1rem;
+  border-radius: 12px;
+  background: linear-gradient(90deg, rgba(0,16,71,0.6) 60%, rgba(255,204,0,0.2) 100%);
   color: var(--secondary-color);
   border: none;
   cursor: pointer;
@@ -148,7 +156,7 @@ button {
   display: flex;
   align-items: center;
   gap: 8px;
-  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
 }
 
 button i {
@@ -156,9 +164,10 @@ button i {
 }
 
 button:hover {
-  background-color: rgba(0, 32, 120, 0.7);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.2);
+  background: linear-gradient(90deg, rgba(255,204,0,0.3) 40%, rgba(0,32,120,0.7) 100%);
+  color: #222;
+  transform: scale(1.07);
+  box-shadow: 0 8px 16px rgba(255,204,0,0.2);
 }
 
 button:active {
@@ -196,7 +205,7 @@ button:active {
 }
 
 #statsTable th {
-  background-color: rgba(0, 0, 0, 0.5);
+  background: linear-gradient(90deg, rgba(0,0,0,0.5) 60%, rgba(255,204,0,0.2) 100%);
   color: var(--highlight-color);
   font-weight: bold;
   position: sticky;
@@ -286,14 +295,17 @@ footer {
   }
 
   button {
-    font-size: 0.9rem;
+    font-size: 0.95rem;
     padding: 10px 15px;
   }
   
   #statsTable th,
   #statsTable td {
     padding: 8px 10px;
-    font-size: 0.9rem;
+    font-size: 0.95rem;
+  }
+  .stats-card p {
+    font-size: 1.5rem;
   }
 }
 

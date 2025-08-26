@@ -1,3 +1,23 @@
+/* Accessibility: Focus styles for buttons and tiles */
+button:focus, .controls button:focus {
+  outline: 2px solid var(--highlight-color);
+  outline-offset: 2px;
+  background-color: var(--button-hover-background);
+  color: #222;
+}
+
+.tile:focus {
+  outline: 2px solid var(--highlight-color);
+  outline-offset: 2px;
+  background-color: var(--highlight-color);
+  color: #222;
+}
+
+/* Improve color contrast for highlight rows */
+.highlight-row {
+  background-color: rgba(255, 204, 0, 0.4) !important;
+  color: #222 !important;
+}
 /* Root variables */
 :root {
   --size: 4;
@@ -57,6 +77,7 @@ header {
   position: sticky;
   top: 0;
   z-index: 10;
+    -webkit-tap-highlight-color: transparent;
   box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
   transition: background-color var(--transition-duration);
 }
