@@ -1,41 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=5.0, user-scalable=yes, viewport-fit=cover">
-  <meta name="description" content="Play Fancy 2048 - A beautiful, feature-rich version of the classic 2048 puzzle game with themes, animations, and enhanced gameplay.">
-  <meta name="keywords" content="2048, puzzle game, tile game, number game, brain game, fancy 2048, sliding puzzle, math game">
-  <meta name="author" content="Marcelo Lazzari">
-  <meta name="robots" content="index, follow">
-  <title>Fancy 2048 - Enhanced Puzzle Game</title>
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <title>Fancy 2048</title>
+    <link rel="stylesheet" href="../styles/unified_styles.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  </head>
+  <body>
+    <!-- Header section -->
+    <header>
+      <div class="container">
+        <h1 class="game-title">Fancy 2048</h1>
+        <nav aria-label="Game controls">
+          <ul id="controls-container" class="controls">
+            <li>
+              <button type="button" id="changeColor-button" aria-label="Change Color">
+                <i class="fas fa-palette"></i>
+              </button>
+            </li>
+            <li>
+              <button type="button" id="leaderboard-button" aria-label="View Statistics" onclick="window.location.href='leaderboard.html'">
+                <i class="fas fa-chart-line"></i>
+              </button>
+            </li>
+            <li>
+              <button type="button" id="rainbowMode-button" aria-label="Toggle Rainbow Mode">
+                <i class="fas fa-rainbow"></i>
+              </button>
+            </li>
+            <li>
+              <button type="button" id="back-button" aria-label="Undo Move">
+                <i class="fas fa-undo"></i>
+              </button>
+            </li>
+            <li>
+              <button type="button" id="pause-button" aria-label="Pause Game">
+                <i class="fas fa-pause"></i>
+              </button>
+            </li>
+            <li>
+              <button type="button" id="board-size-button" aria-label="Change Board Size">
+                <i class="fas fa-th"></i>
+              </button>
+            </li>
+            <li>
+              <button type="button" id="theme-toggle-button" aria-label="Toggle Theme">
+                <i class="fas fa-adjust"></i>
+              </button>
+            </li>
+          </ul>
+        </nav>
+      </div>
+    </header>
 
-  <link rel="stylesheet" href="../styles/unified_styles.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" integrity="sha512-iecdLmaskl7CVkqkXNQ/ZH/XLlvWZOJyj7Yy7tcenmpD1ypASozpmT/E0iPtmFIB46ZmdtAc9eNBvH0H/ZpiBw==" crossorigin="anonymous" referrerpolicy="no-referrer">
-</head>
-<body>
-  <header>
-    <div class="container">
-      <h1>Fancy 2048</h1>
-      <nav>
-        <ul>
-          <li><button id="changeColor-button" title="Change Color Theme">🎨</button></li>
-          <li><button id="leaderboard-button" title="View Leaderboard">📊</button></li>
-          <li><button id="rainbowMode-button" title="Rainbow Mode">🌈</button></li>
-        </ul>
-      </nav>
-    </div>
-  </header>
+    <!-- Main content section -->
+    <main>
+      <div class="overlay" aria-hidden="true"></div>
+      <section class="game-section">
+        <div id="board-container" class="board-container" role="grid" aria-label="Game Board"></div>
+        <div id="game-over" class="hidden" role="alert">Game Over!</div>
+      </section>
 
-  <main>
-    <div id="board-container">
-      <!-- Game grid will be inserted dynamically -->
-    </div>
-  </main>
+      <aside id="score-container" aria-labelledby="score-title">
+        <h2 id="score-title" class="visually-hidden">Score Information</h2>
+        <p>Score: <span id="score">0</span></p>
+        <p>Best: <span id="best-score">0</span></p>
+        <p>Moves: <span id="moves">0</span></p>
+        <p>Time: <span id="time">00:00</span></p>
+      </aside>
+    </main>
 
-  <footer>
-    <div class="container">
-      <p>&copy; 2024 Fancy 2048 by Marcelo Lazzari</p>
-    </div>
-  </footer>
-</body>
+    <!-- Footer section -->
+    <footer>
+      <div class="container">
+        <button type="button" id="reset-button" aria-label="Reset Game">Reset</button>
+      </div>
+    </footer>
+
+    <!-- JavaScript file -->
+    <script src="../scripts/game.js"></script>
+  </body>
 </html>
