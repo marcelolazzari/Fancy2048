@@ -1,54 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
   <head>
+    <!-- Basic meta tags -->
     <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    
+    <!-- SEO and description meta tags -->
+    <meta name="description" content="Play Fancy 2048 - A beautiful, feature-rich version of the classic 2048 puzzle game with themes, animations, and enhanced gameplay." />
+    <meta name="keywords" content="2048, puzzle game, tile game, number game, brain game, fancy 2048" />
+    <meta name="author" content="Marcelo Lazzari" />
+    <meta name="robots" content="index, follow" />
+    
+    <!-- Open Graph meta tags for social sharing -->
+    <meta property="og:title" content="Fancy 2048 - Enhanced Puzzle Game" />
+    <meta property="og:description" content="Play the most beautiful version of 2048 with themes, animations, and enhanced features." />
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://marcelolazzari.github.io/Fancy2048/" />
+    <meta property="og:image" content="https://marcelolazzari.github.io/Fancy2048/images/og-image.png" />
+    
+    <!-- Twitter Card meta tags -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Fancy 2048 - Enhanced Puzzle Game" />
+    <meta name="twitter:description" content="Play the most beautiful version of 2048 with themes, animations, and enhanced features." />
+    <meta name="twitter:image" content="https://marcelolazzari.github.io/Fancy2048/images/twitter-card.png" />
+    
+    <!-- PWA and mobile app meta tags -->
     <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Fancy 2048" />
     <meta name="mobile-web-app-capable" content="yes" />
-    <title>Fancy 2048</title>
+    <meta name="theme-color" content="#faf8ef" />
+    <meta name="msapplication-TileColor" content="#faf8ef" />
+    <meta name="application-name" content="Fancy 2048" />
+    
+    <!-- Security and privacy -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; style-src 'self' 'unsafe-inline' https://cdnjs.cloudflare.com; font-src 'self' https://cdnjs.cloudflare.com; script-src 'self' 'unsafe-inline'; img-src 'self' data:; connect-src 'self';" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+    
+    <title>Fancy 2048 - Enhanced Puzzle Game</title>
+    
+    <!-- Preload critical resources -->
+    <link rel="preload" href="../styles/unified_styles.css" as="style" />
+    <link rel="preload" href="../scripts/game.js" as="script" />
+    <link rel="preload" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" as="style" crossorigin />
+    
+    <!-- Stylesheets -->
     <link rel="stylesheet" href="../styles/unified_styles.css" />
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" integrity="sha512-Fo3rlrZj/k7ujTnHg4CGR2D7kSs0v4LLanw2qksYuRlEzO+tcaEPQogQ0KaoGN26/zrn20ImR1DfuLWnOo7aBA==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    
+    <!-- PWA manifest -->
+    <link rel="manifest" href="../manifest.json" />
+    
+    <!-- Favicons -->
+    <link rel="icon" type="image/x-icon" href="../favicon.ico" />
+    <link rel="apple-touch-icon" sizes="180x180" href="../images/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="../images/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="../images/favicon-16x16.png" />
   </head>
+  
   <body>
-    <!-- Header section -->
-    <header>
+    <!-- Skip navigation for accessibility -->
+    <a href="#main-content" class="skip-link visually-hidden-focusable">Skip to main content</a>
+    
+    <!-- Loading indicator -->
+    <div id="loading-indicator" class="loading-indicator" aria-hidden="true">
+      <div class="loading-spinner"></div>
+      <span>Loading Fancy 2048...</span>
+    </div>
+    
+    <!-- Header section with game controls -->
+    <header role="banner">
       <div class="container">
-        <h1 class="game-title">Fancy 2048</h1>
-        <nav aria-label="Game controls">
-          <ul id="controls-container" class="controls">
+        <h1 class="game-title">
+          <span class="game-name">Fancy 2048</span>
+          <span class="game-subtitle visually-hidden">Enhanced puzzle game</span>
+        </h1>
+        
+        <!-- Game controls navigation -->
+        <nav role="navigation" aria-label="Game controls and settings">
+          <ul id="controls-container" class="controls" role="toolbar" aria-label="Game action buttons">
             <li>
-              <button type="button" id="changeColor-button" aria-label="Change Color">
-                <i class="fas fa-palette"></i>
+              <button type="button" id="changeColor-button" class="control-btn" aria-label="Change color theme" title="Change Color Theme">
+                <i class="fas fa-palette" aria-hidden="true"></i>
+                <span class="btn-label visually-hidden">Color</span>
               </button>
             </li>
             <li>
-              <button type="button" id="leaderboard-button" aria-label="View Statistics" onclick="window.location.href='leaderboard.html'">
-                <i class="fas fa-chart-line"></i>
+              <button type="button" id="leaderboard-button" class="control-btn" aria-label="View statistics and leaderboard" title="Statistics" onclick="window.location.href='leaderboard.html'">
+                <i class="fas fa-chart-line" aria-hidden="true"></i>
+                <span class="btn-label visually-hidden">Stats</span>
               </button>
             </li>
             <li>
-              <button type="button" id="rainbowMode-button" aria-label="Toggle Rainbow Mode">
-                <i class="fas fa-rainbow"></i>
+              <button type="button" id="rainbowMode-button" class="control-btn" aria-label="Toggle rainbow mode animation" title="Rainbow Mode">
+                <i class="fas fa-rainbow" aria-hidden="true"></i>
+                <span class="btn-label visually-hidden">Rainbow</span>
               </button>
             </li>
             <li>
-              <button type="button" id="back-button" aria-label="Undo Move">
-                <i class="fas fa-undo"></i>
+              <button type="button" id="back-button" class="control-btn" aria-label="Undo last move" title="Undo Move (Ctrl+Z)">
+                <i class="fas fa-undo" aria-hidden="true"></i>
+                <span class="btn-label visually-hidden">Undo</span>
               </button>
             </li>
             <li>
-              <button type="button" id="pause-button" aria-label="Pause Game">
-                <i class="fas fa-pause"></i>
+              <button type="button" id="pause-button" class="control-btn" aria-label="Pause or resume game" title="Pause Game (Spacebar)">
+                <i class="fas fa-pause" aria-hidden="true"></i>
+                <span class="btn-label visually-hidden">Pause</span>
               </button>
             </li>
             <li>
-              <button type="button" id="board-size-button" aria-label="Change Board Size">
-                <i class="fas fa-th"></i>
+              <button type="button" id="board-size-button" class="control-btn" aria-label="Change board size" title="Board Size">
+                <i class="fas fa-th" aria-hidden="true"></i>
+                <span class="btn-label visually-hidden">Size</span>
               </button>
             </li>
             <li>
-              <button type="button" id="theme-toggle-button" aria-label="Toggle Theme">
-                <i class="fas fa-adjust"></i>
+              <button type="button" id="theme-toggle-button" class="control-btn" aria-label="Toggle light and dark theme" title="Toggle Theme">
+                <i class="fas fa-adjust" aria-hidden="true"></i>
+                <span class="btn-label visually-hidden">Theme</span>
               </button>
             </li>
           </ul>
@@ -56,31 +126,136 @@
       </div>
     </header>
 
-    <!-- Main content section -->
-    <main>
-      <div class="overlay" aria-hidden="true"></div>
-      <section class="game-section">
-        <div id="board-container" class="board-container" role="grid" aria-label="Game Board"></div>
-        <div id="game-over" class="hidden" role="alert">Game Over!</div>
+    <!-- Main game content -->
+    <main id="main-content" role="main">
+      <!-- Overlay for paused state or modals -->
+      <div id="overlay" class="overlay" aria-hidden="true"></div>
+      
+      <!-- Game board section -->
+      <section class="game-section" aria-labelledby="game-title">
+        <h2 id="game-title" class="visually-hidden">2048 Game Board</h2>
+        
+        <!-- Game board container -->
+        <div id="board-container" class="board-container" 
+             role="grid" 
+             aria-label="4x4 game board with numbered tiles. Use arrow keys or swipe to move tiles."
+             tabindex="0"
+             aria-describedby="game-instructions">
+        </div>
+        
+        <!-- Game over notification -->
+        <div id="game-over" class="game-over hidden" role="alert" aria-live="assertive">
+          <h3>Game Over!</h3>
+          <p id="final-score-message"></p>
+          <button type="button" id="play-again-btn" class="btn btn-primary">Play Again</button>
+        </div>
+        
+        <!-- Game won notification -->
+        <div id="game-won" class="game-won hidden" role="alert" aria-live="assertive">
+          <h3>Congratulations!</h3>
+          <p>You reached 2048! Continue playing or start a new game.</p>
+          <div class="win-actions">
+            <button type="button" id="continue-btn" class="btn btn-secondary">Continue</button>
+            <button type="button" id="new-game-btn" class="btn btn-primary">New Game</button>
+          </div>
+        </div>
       </section>
 
-      <aside id="score-container" aria-labelledby="score-title">
-        <h2 id="score-title" class="visually-hidden">Score Information</h2>
-        <p>Score: <span id="score">0</span></p>
-        <p>Best: <span id="best-score">0</span></p>
-        <p>Moves: <span id="moves">0</span></p>
-        <p>Time: <span id="time">00:00</span></p>
+      <!-- Game statistics sidebar -->
+      <aside id="score-container" class="score-panel" role="complementary" aria-labelledby="score-title">
+        <h2 id="score-title">Game Statistics</h2>
+        <div class="score-grid">
+          <div class="score-item">
+            <label for="score" class="score-label">Current Score</label>
+            <span id="score" class="score-value" aria-live="polite">0</span>
+          </div>
+          <div class="score-item">
+            <label for="best-score" class="score-label">Best Score</label>
+            <span id="best-score" class="score-value">0</span>
+          </div>
+          <div class="score-item">
+            <label for="moves" class="score-label">Moves</label>
+            <span id="moves" class="score-value" aria-live="polite">0</span>
+          </div>
+          <div class="score-item">
+            <label for="time" class="score-label">Time</label>
+            <span id="time" class="score-value" aria-live="polite">00:00</span>
+          </div>
+        </div>
       </aside>
+      
+      <!-- Game instructions for screen readers and first-time users -->
+      <div id="game-instructions" class="visually-hidden">
+        <h3>How to Play</h3>
+        <p>Use arrow keys or swipe to move tiles. When two tiles with the same number touch, they merge into one. Try to reach 2048!</p>
+        <p>Keyboard shortcuts: Arrow keys to move, Spacebar to pause, Ctrl+Z to undo, R to restart.</p>
+      </div>
     </main>
 
-    <!-- Footer section -->
-    <footer>
+    <!-- Footer with reset button and additional info -->
+    <footer role="contentinfo">
       <div class="container">
-        <button type="button" id="reset-button" aria-label="Reset Game">Reset</button>
+        <div class="footer-content">
+          <button type="button" id="reset-button" class="btn btn-danger" aria-label="Reset game and start over">
+            <i class="fas fa-refresh" aria-hidden="true"></i>
+            Reset Game
+          </button>
+          
+          <!-- Additional footer information -->
+          <div class="footer-info">
+            <p class="copyright">© 2024 Fancy 2048 by Marcelo Lazzari</p>
+            <div class="footer-links">
+              <button type="button" id="help-button" class="link-btn" aria-label="Show game help">Help</button>
+              <button type="button" id="about-button" class="link-btn" aria-label="About this game">About</button>
+            </div>
+          </div>
+        </div>
       </div>
     </footer>
+    
+    <!-- Error boundary for JavaScript errors -->
+    <div id="error-boundary" class="error-boundary hidden" role="alert">
+      <h3>Oops! Something went wrong</h3>
+      <p id="error-message">An unexpected error occurred. Please refresh the page to continue playing.</p>
+      <button type="button" id="reload-button" class="btn btn-primary" onclick="window.location.reload()">
+        Reload Game
+      </button>
+    </div>
 
-    <!-- JavaScript file -->
-    <script src="../scripts/game.js"></script>
+    <!-- JavaScript files -->
+    <script>
+      // Service Worker registration for offline support
+      if ('serviceWorker' in navigator) {
+        window.addEventListener('load', function() {
+          navigator.serviceWorker.register('../sw.js')
+            .then(function(registration) {
+              console.log('ServiceWorker registration successful');
+            })
+            .catch(function(err) {
+              console.log('ServiceWorker registration failed: ', err);
+            });
+        });
+      }
+      
+      // Error handling
+      window.addEventListener('error', function(e) {
+        const errorBoundary = document.getElementById('error-boundary');
+        const errorMessage = document.getElementById('error-message');
+        
+        if (errorBoundary && errorMessage) {
+          errorMessage.textContent = `Error: ${e.message} at line ${e.lineno}`;
+          errorBoundary.classList.remove('hidden');
+        }
+      });
+      
+      // Loading state management
+      window.addEventListener('DOMContentLoaded', function() {
+        const loadingIndicator = document.getElementById('loading-indicator');
+        if (loadingIndicator) {
+          loadingIndicator.style.display = 'none';
+        }
+      });
+    </script>
+    <script src="../scripts/game.js" defer></script>
   </body>
 </html>
