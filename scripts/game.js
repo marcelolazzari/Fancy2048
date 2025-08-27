@@ -59,10 +59,24 @@ class Game {
     this.setupResponsiveHandlers();
     await this.initGame();
     this.applyTheme();
-    this.updateHue();
+    this.updateHue(); // Load and apply saved hue values
     this.initializeResizeObserver();
     this.optimizeForDevice();
     this.isGameInitialized = true;
+    
+    // Apply initial color scheme
+    this.loadColorSettings();
+  }
+
+  loadColorSettings() {
+    // Load saved hue value from localStorage
+    const savedHue = localStorage.getItem('hueValue');
+    if (savedHue !== null) {
+      this.hueValue = parseInt(savedHue) || 0;
+    }
+    
+    // Apply the loaded hue immediately
+    this.updateHue();
   }
 
   detectMobile() {
@@ -539,8 +553,71 @@ class Game {
   }
 
   changeHue() {
+    // Increment hue by 30 degrees (12 different color schemes)
     this.hueValue = (this.hueValue + 30) % 360;
+    localStorage.setItem('hueValue', this.hueValue.toString());
     this.updateHue();
+    
+    // Show a brief feedback
+    this.showColorChangeEffect();
+  }
+
+  updateHue() {
+    const root = document.documentElement;
+    root.style.setProperty('--hue-rotation', this.hueValue);
+    root.style.setProperty('--hue-value', this.hueValue);
+    
+    // Update highlight color for immediate visual feedback
+    root.style.setProperty('--highlight-color', `hsl(${this.hueValue}, 100%, 60%)`);
+    root.style.setProperty('--accent-color', `hsl(${this.hueValue}, 80%, 50%)`);
+    root.style.setProperty('--button-background', `hsl(${this.hueValue}, 60%, 20%)`);
+    root.style.setProperty('--button-hover-background', `hsl(${this.hueValue}, 70%, 30%)`);
+    
+    // Force update all tile colors immediately
+    this.updateAllTileColors();
+  }
+
+  updateAllTileColors() {
+    // Update all existing tiles with new colors
+    const tiles = document.querySelectorAll('.tile');
+    tiles.forEach(tile => {
+      const value = tile.getAttribute('data-value');
+      if (value) {
+        // Force reflow to apply new CSS variables
+        tile.style.display = 'none';
+        tile.offsetHeight; // Trigger reflow
+        tile.style.display = 'flex';
+      }
+    });
+  }
+
+  showColorChangeEffect() {
+    // Create a brief visual effect when color changes
+    const changeButton = document.getElementById('changeColor-button');
+    if (changeButton) {
+      changeButton.style.transform = 'scale(1.2) rotate(180deg)';
+      changeButton.style.background = `hsl(${this.hueValue}, 100%, 60%)`;
+      
+      setTimeout(() => {
+        changeButton.style.transform = 'scale(1) rotate(0deg)';
+        changeButton.style.background = '';
+      }, 300);
+    }
+    
+    // Add a subtle screen flash effect
+    const overlay = document.querySelector('.overlay');
+    if (overlay) {
+      overlay.style.background = `hsla(${this.hueValue}, 100%, 80%, 0.2)`;
+      overlay.style.opacity = '1';
+      overlay.style.pointerEvents = 'none';
+      
+      setTimeout(() => {
+        overlay.style.opacity = '0';
+        setTimeout(() => {
+          overlay.style.background = '';
+        }, 300);
+      }, 150);
+    }
   }
 
   toggleRainbowMode() {
@@ -834,12 +911,22 @@ class Game {
   createGridCells() {
     const boardContainer = document.getElementById('board-container');
     
+    // Clear existing grid cells
+    const existingCells = boardContainer.querySelectorAll('.grid-cell');
+    existingCells.forEach(cell => cell.remove());
+    
+    // Create background grid cells for visual structure
     for (let i = 0; i < this.size; i++) {
       for (let j = 0; j < this.size; j++) {
         const cell = document.createElement('div');
         cell.className = 'grid-cell';
         cell.dataset.row = i;
         cell.dataset.col = j;
+        
+        // Position background cells using CSS Grid
+        cell.style.gridRow = i + 1;
+        cell.style.gridColumn = j + 1;
+        
         boardContainer.appendChild(cell);
       }
     }
@@ -879,18 +966,25 @@ class Game {
     tile.dataset.col = col;
     tile.textContent = value;
     
-    // Position the tile in the grid
-    const gridPosition = row * this.size + col;
-    const gridCell = boardContainer.children[gridPosition];
+    // Calculate absolute position within the board
+    const tileSize = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--tile-size'));
+    const gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gap'));
     
-    if (gridCell) {
-      gridCell.appendChild(tile);
-      // Apply dynamic font sizing instead of relying on CSS
-      this.adjustTileFontSize(tile);
-    } else {
-      console.error(`No grid cell found at position ${row}, ${col}`);
-      boardContainer.appendChild(tile);
-    }
+    // Position tile with absolute coordinates
+    const x = col * (tileSize + gap);
+    const y = row * (tileSize + gap);
+    
+    tile.style.position = 'absolute';
+    tile.style.left = `${x}px`;
+    tile.style.top = `${y}px`;
+    tile.style.width = `${tileSize}px`;
+    tile.style.height = `${tileSize}px`;
+    
+    // Add to board container directly
+    boardContainer.appendChild(tile);
+    
+    // Apply dynamic font sizing
+    this.adjustTileFontSize(tile);
     
     if (isNew) {
       tile.classList.add('new-tile');
@@ -1446,24 +1540,6 @@ class Game {
     this.isLightMode = !this.isLightMode;
     localStorage.setItem('isLightMode', this.isLightMode);
     this.applyTheme();
-  }
-
-  updateHue() {
-    document.documentElement.style.setProperty('--hue-value', this.hueValue);
-    
-    // Update color button color
-    const colorButton = document.getElementById('changeColor-button');
-    colorButton.style.color = `hsl(${this.hueValue}, 70%, 50%)`;
-    
-    if (this.isRainbowMode) {
-      this.startRainbowMode();
-    }
-  }
-
-  changeHue() {
-    // Cycle through hue values (0-360)
-    this.hueValue = (this.hueValue + 60) % 360;
-    this.updateHue();
   }
 
   toggleRainbowMode() {

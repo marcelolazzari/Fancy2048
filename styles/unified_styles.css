@@ -210,6 +210,8 @@ button:focus, .controls button:focus {
   /* Enhanced Color System */
   --primary-color: #1a1a1a;
   --secondary-color: #f2f2f2;
+  --hue-rotation: 0;
+  --hue-value: 45;
   --highlight-color: hsl(var(--hue-value, 45), 100%, 60%);
   --accent-color: hsl(var(--hue-value, 45), 80%, 50%);
   --button-background: hsl(var(--hue-value, 45), 60%, 20%);
@@ -217,6 +219,32 @@ button:focus, .controls button:focus {
   --reset-button-background: #ff7f50;
   --reset-button-hover-background: #ff4500;
   --overlay-dark: rgba(0, 16, 71, 0.8);
+  
+  /* Dynamic Tile Colors with Hue Rotation Support */
+  --tile-2-bg: hsl(calc(var(--hue-rotation, 0) + 45), 25%, 85%);
+  --tile-2-text: hsl(calc(var(--hue-rotation, 0) + 30), 15%, 45%);
+  --tile-4-bg: hsl(calc(var(--hue-rotation, 0) + 40), 35%, 80%);
+  --tile-4-text: hsl(calc(var(--hue-rotation, 0) + 30), 15%, 45%);
+  --tile-8-bg: hsl(calc(var(--hue-rotation, 0) + 25), 60%, 65%);
+  --tile-8-text: #f9f6f2;
+  --tile-16-bg: hsl(calc(var(--hue-rotation, 0) + 20), 70%, 60%);
+  --tile-16-text: #f9f6f2;
+  --tile-32-bg: hsl(calc(var(--hue-rotation, 0) + 15), 75%, 55%);
+  --tile-32-text: #f9f6f2;
+  --tile-64-bg: hsl(calc(var(--hue-rotation, 0) + 10), 80%, 50%);
+  --tile-64-text: #f9f6f2;
+  --tile-128-bg: linear-gradient(135deg, hsl(calc(var(--hue-rotation, 0) + 50), 70%, 65%), hsl(calc(var(--hue-rotation, 0) + 40), 75%, 60%));
+  --tile-128-text: #f9f6f2;
+  --tile-256-bg: linear-gradient(135deg, hsl(calc(var(--hue-rotation, 0) + 55), 75%, 60%), hsl(calc(var(--hue-rotation, 0) + 35), 80%, 55%));
+  --tile-256-text: #f9f6f2;
+  --tile-512-bg: linear-gradient(135deg, hsl(calc(var(--hue-rotation, 0) + 60), 80%, 55%), hsl(calc(var(--hue-rotation, 0) + 30), 85%, 50%));
+  --tile-512-text: #f9f6f2;
+  --tile-1024-bg: linear-gradient(135deg, hsl(calc(var(--hue-rotation, 0) + 65), 85%, 50%), hsl(calc(var(--hue-rotation, 0) + 25), 90%, 45%));
+  --tile-1024-text: #f9f6f2;
+  --tile-2048-bg: linear-gradient(135deg, hsl(calc(var(--hue-rotation, 0) + 70), 90%, 45%), hsl(calc(var(--hue-rotation, 0) + 20), 95%, 40%));
+  --tile-2048-text: #f9f6f2;
+  --tile-super-bg: linear-gradient(135deg, hsl(calc(var(--hue-rotation, 0) + 75), 95%, 40%), hsl(calc(var(--hue-rotation, 0) + 15), 100%, 35%), hsl(calc(var(--hue-rotation, 0) + 55), 85%, 55%));
+  --tile-super-text: #f9f6f2;
   
   /* Enhanced Typography */
   --base-font-size: clamp(14px, 4vw, 18px);
@@ -507,7 +535,7 @@ main {
   --base-font-size: clamp(16px, 2vw, 20px);
 }
 
-/* Enhanced Board Container */
+/* Enhanced Board Container with Better Positioning */
 #board-container {
   display: grid;
   grid-template-columns: repeat(var(--size), 1fr);
@@ -515,6 +543,8 @@ main {
   gap: var(--gap);
   width: var(--board-size);
   height: var(--board-size);
+  max-width: var(--board-size);
+  max-height: var(--board-size);
   background: linear-gradient(135deg, rgba(50, 50, 50, 0.4), rgba(30, 30, 30, 0.6));
   border-radius: var(--tile-border-radius);
   box-shadow: var(--shadow-heavy);
@@ -524,12 +554,19 @@ main {
   touch-action: none;
   padding: var(--gap);
   box-sizing: border-box;
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.15);
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
+  overflow: visible;
+  z-index: 1;
+  
+  /* Enhanced visual effects */
+  background-image: 
+    radial-gradient(circle at 25% 25%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+    radial-gradient(circle at 75% 75%, rgba(255, 255, 255, 0.05) 0%, transparent 50%);
 }
 
 #board-container:focus {
@@ -564,86 +601,127 @@ main {
 /* Tile Styling Section */
 /* ==================== */
 
-/* Base tile styles */
+/* Base tile styles with enhanced positioning */
 .tile {
   position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
+  width: var(--tile-size);
+  height: var(--tile-size);
   display: flex;
   align-items: center;
   justify-content: center;
   border-radius: var(--tile-border-radius);
   font-weight: bold;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
   transition: transform var(--transition-duration), 
               opacity var(--transition-duration), 
-              background-color var(--transition-duration),
+              background var(--transition-duration),
               color var(--transition-duration),
               box-shadow var(--transition-duration);
-  z-index: 1;
+  z-index: 2;
   overflow: hidden;
   text-align: center;
   line-height: 1;
   box-sizing: border-box;
-  /* Font size will be set dynamically via JavaScript */
+  font-family: 'Inter', 'Segoe UI', system-ui, sans-serif;
+  letter-spacing: -0.02em;
+  
+  /* Enhanced visual properties */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  transform-style: preserve-3d;
+  will-change: transform, opacity;
+  
+  /* Font size will be set dynamically based on value and tile size */
 }
 
-/* Common tile background and text colors */
+/* Common tile background and text colors with enhanced styling */
 .tile[data-value="2"] {
-  background-color: var(--tile-2-bg);
+  background: var(--tile-2-bg);
   color: var(--tile-2-text);
+  font-size: calc(var(--tile-size) * 0.55);
+  border: 1px solid hsl(calc(var(--hue-rotation, 0) + 45), 20%, 75%);
 }
 
 .tile[data-value="4"] {
-  background-color: var(--tile-4-bg);
+  background: var(--tile-4-bg);
   color: var(--tile-4-text);
+  font-size: calc(var(--tile-size) * 0.55);
+  border: 1px solid hsl(calc(var(--hue-rotation, 0) + 40), 25%, 70%);
 }
 
 .tile[data-value="8"] {
-  background-color: var(--tile-8-bg);
+  background: var(--tile-8-bg);
   color: var(--tile-8-text);
+  font-size: calc(var(--tile-size) * 0.55);
+  border: 1px solid hsl(calc(var(--hue-rotation, 0) + 25), 50%, 55%);
 }
 
 .tile[data-value="16"] {
-  background-color: var(--tile-16-bg);
+  background: var(--tile-16-bg);
   color: var(--tile-16-text);
+  font-size: calc(var(--tile-size) * 0.5);
+  border: 1px solid hsl(calc(var(--hue-rotation, 0) + 20), 60%, 50%);
 }
 
 .tile[data-value="32"] {
-  background-color: var(--tile-32-bg);
+  background: var(--tile-32-bg);
   color: var(--tile-32-text);
+  font-size: calc(var(--tile-size) * 0.5);
+  border: 1px solid hsl(calc(var(--hue-rotation, 0) + 15), 65%, 45%);
 }
 
 .tile[data-value="64"] {
-  background-color: var(--tile-64-bg);
+  background: var(--tile-64-bg);
   color: var(--tile-64-text);
+  font-size: calc(var(--tile-size) * 0.5);
+  border: 1px solid hsl(calc(var(--hue-rotation, 0) + 10), 70%, 40%);
 }
 
 .tile[data-value="128"] {
-  background-color: var(--tile-128-bg);
+  background: var(--tile-128-bg);
   color: var(--tile-128-text);
+  font-size: calc(var(--tile-size) * 0.45);
+  border: 1px solid hsl(calc(var(--hue-rotation, 0) + 45), 60%, 50%);
+  box-shadow: 0 0 20px 5px hsla(calc(var(--hue-rotation, 0) + 45), 70%, 60%, 0.4),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.2);
 }
 
 .tile[data-value="256"] {
-  background-color: var(--tile-256-bg);
+  background: var(--tile-256-bg);
   color: var(--tile-256-text);
+  font-size: calc(var(--tile-size) * 0.45);
+  border: 1px solid hsl(calc(var(--hue-rotation, 0) + 45), 65%, 45%);
+  box-shadow: 0 0 25px 8px hsla(calc(var(--hue-rotation, 0) + 45), 75%, 60%, 0.5),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.25);
 }
 
 .tile[data-value="512"] {
-  background-color: var(--tile-512-bg);
+  background: var(--tile-512-bg);
   color: var(--tile-512-text);
+  font-size: calc(var(--tile-size) * 0.4);
+  border: 1px solid hsl(calc(var(--hue-rotation, 0) + 45), 70%, 40%);
+  box-shadow: 0 0 30px 10px hsla(calc(var(--hue-rotation, 0) + 45), 80%, 55%, 0.6),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.3);
 }
 
 .tile[data-value="1024"] {
-  background-color: var(--tile-1024-bg);
+  background: var(--tile-1024-bg);
   color: var(--tile-1024-text);
+  font-size: calc(var(--tile-size) * 0.35);
+  border: 1px solid hsl(calc(var(--hue-rotation, 0) + 45), 75%, 35%);
+  box-shadow: 0 0 35px 12px hsla(calc(var(--hue-rotation, 0) + 45), 85%, 50%, 0.7),
+              inset 0 0 0 1px rgba(255, 255, 255, 0.35);
 }
 
 .tile[data-value="2048"] {
-  background-color: var(--tile-2048-bg);
+  background: var(--tile-2048-bg);
   color: var(--tile-2048-text);
+  font-size: calc(var(--tile-size) * 0.3);
+  font-weight: 900;
+  border: 2px solid hsl(calc(var(--hue-rotation, 0) + 45), 80%, 30%);
+  box-shadow: 0 0 40px 15px hsla(calc(var(--hue-rotation, 0) + 45), 90%, 50%, 0.8),
+              inset 0 0 0 2px rgba(255, 255, 255, 0.4);
+  animation: pulse-glow 2s ease-in-out infinite alternate;
 }
 
 .tile[data-value="4096"],
@@ -651,8 +729,28 @@ main {
 .tile[data-value="16384"],
 .tile[data-value="32768"],
 .tile[data-value="65536"] {
-  background-color: var(--tile-super-bg);
+  background: var(--tile-super-bg);
   color: var(--tile-super-text);
+  font-size: calc(var(--tile-size) * 0.25);
+  font-weight: 900;
+  border: 2px solid hsl(calc(var(--hue-rotation, 0) + 45), 85%, 25%);
+  box-shadow: 0 0 50px 20px hsla(calc(var(--hue-rotation, 0) + 45), 95%, 50%, 0.9),
+              inset 0 0 0 2px rgba(255, 255, 255, 0.5);
+  animation: pulse-glow 1.5s ease-in-out infinite alternate;
+}
+
+/* Pulsing glow animation for high-value tiles */
+@keyframes pulse-glow {
+  0% {
+    box-shadow: 0 0 20px 5px hsla(calc(var(--hue-rotation, 0) + 45), 80%, 50%, 0.6),
+                inset 0 0 0 2px rgba(255, 255, 255, 0.3);
+    transform: scale(1);
+  }
+  100% {
+    box-shadow: 0 0 40px 15px hsla(calc(var(--hue-rotation, 0) + 45), 90%, 60%, 0.9),
+                inset 0 0 0 2px rgba(255, 255, 255, 0.5);
+    transform: scale(1.02);
+  }
 }
 
 /* Tile hover effect */
