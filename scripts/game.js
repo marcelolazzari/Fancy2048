@@ -1,123 +1,50 @@
+/**
+ * Fancy2048 Frontend Client
+ * Handles UI interactions and communicates with Python backend for game logic
+ */
 class Game {
-  constructor(size) {
-    // Core game properties
+  constructor(size = 4) {
+    // Core properties
     this.size = size;
-    this.board = [];
-    this.score = 0;
-    this.bestScore = 0;
-    this.moves = 0;
-    this.startTime = null;
-
-    // Backend integration
     this.gameId = null;
-    this.useBackend = false; // Auto-detect if backend is available
     this.apiBase = window.location.origin;
-
-    // Enhanced game states
-    this.gameState = 'ready';
-    this.hasSavedStats = false;
-    this.hasShownContinuePopup = false;
+    
+    // UI state
+    this.animationInProgress = false;
     this.isPaused = false;
-    this.isGameInitialized = false;
-
-    // Visual settings with persistence
+    this.timerInterval = null;
+    this.startTime = null;
+    
+    // Visual settings (managed locally)
     this.isLightMode = localStorage.getItem('isLightMode') === 'true';
     this.hueValue = parseInt(localStorage.getItem('hueValue')) || 0;
     this.isRainbowMode = localStorage.getItem('isRainbowMode') === 'true';
-
-    // Enhanced game history and stats
-    this.gameStateStack = [];
-    this.maxUndoSteps = 20;
-    this.lastMoveScore = 0;
-    this.scoreDelta = 0;
-    this.lastMerged = [];
-    this.stats = [];
-    this.timerInterval = null;
-
-    // Animation and interaction properties
-    this.animationInProgress = false;
-    this.animationFrameId = null;
-    this.lastMoveDirection = null;
-    this.sessionId = null;
-
-    // Enhanced touch handling
-    this.touchStartX = 0;
-    this.touchStartY = 0;
-    this.touchEndX = 0;
-    this.touchEndY = 0;
-    this.minSwipeDistance = 30;
-    this.maxSwipeTime = 1000;
-    this.swipeStartTime = 0;
-
-    // Responsive design properties
-    this.viewportWidth = window.innerWidth;
-    this.viewportHeight = window.innerHeight;
+    this.rainbowInterval = null;
+    
+    // Device detection
     this.isMobile = this.detectMobile();
     this.isTablet = this.detectTablet();
-    this.currentOrientation = this.getOrientation();
-
+    
+    // Touch handling
+    this.touchStartX = 0;
+    this.touchStartY = 0;
+    this.minSwipeDistance = 30;
+    
     this.init();
   }
 
   async init() {
-    console.log('Starting game initialization...');
+    console.log('Initializing frontend...');
+    
     this.setupEventListeners();
-    this.setupResponsiveHandlers();
-    await this.checkBackendAvailability();
-    await this.initGame();
-    this.applyTheme();
-    this.updateHue(); // Load and apply saved hue values
-    this.initializeResizeObserver();
     this.optimizeForDevice();
-    
-    // Force an additional board update to ensure tiles are visible
-    setTimeout(() => {
-      console.log('Forcing board update after initialization...');
-      this.updateBoard();
-    }, 100);
-    
-    this.isGameInitialized = true;
-    
-    // Apply initial color scheme
-    this.loadColorSettings();
-    
-    console.log('Game initialization complete');
-  }
-
-  async checkBackendAvailability() {
-    try {
-      const response = await fetch(`${this.apiBase}/api/new_game`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ size: this.size })
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        this.useBackend = true;
-        this.gameId = data.gameId;
-        console.log('Backend detected, using server-side game logic');
-        return true;
-      }
-    } catch (error) {
-      console.log('Backend not available, using client-side game logic');
-    }
-    
-    this.useBackend = false;
-    return false;
-  }
-
-  loadColorSettings() {
-    // Load saved hue value from localStorage
-    const savedHue = localStorage.getItem('hueValue');
-    if (savedHue !== null) {
-      this.hueValue = parseInt(savedHue) || 0;
-    }
-    
-    // Apply the loaded hue immediately
+    this.applyTheme();
     this.updateHue();
+    
+    // Initialize game with backend
+    await this.initGame();
+    
+    console.log('Frontend initialization complete');
   }
 
   detectMobile() {
@@ -128,10 +55,6 @@ class Game {
   detectTablet() {
     return /iPad|Android/i.test(navigator.userAgent) && 
            window.innerWidth >= 768 && window.innerWidth <= 1024;
-  }
-
-  getOrientation() {
-    return window.innerWidth > window.innerHeight ? 'landscape' : 'portrait';
   }
 
   optimizeForDevice() {
