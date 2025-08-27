@@ -18,8 +18,8 @@ button:focus {
   color: #222 !important;
 }
 body {
-  font-family: 'Roboto', Arial, sans-serif;
-  background-color: #1a1a1a;
+  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+  background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
   color: #f2f2f2;
   margin: 0;
   padding: 20px;
@@ -29,18 +29,10 @@ body {
   justify-content: flex-start;
   min-height: 100vh;
   box-sizing: border-box;
-  transition: background-color 0.3s ease;
+  transition: background 0.3s ease;
 }
 
-header {
-  width: 100%;
-  text-align: center;
-  margin-bottom: 20px;
-  background: linear-gradient(90deg, #1a1a1a 60%, #ffcc00 100%);
-  padding: 16px 8px;
-  border-bottom: 2px solid var(--highlight-color);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
-}
+/* Removed stray closing brace and moved these properties to header selector above */
 
 header h1 {
   font-size: 2.2rem;
@@ -55,13 +47,14 @@ header h1 {
 .stats-section {
   width: 100%;
   max-width: 900px;
-  background-color: rgba(50, 50, 50, 0.8);
-  padding: 25px;
-  border-radius: 15px;
-  box-shadow: 0 8px 16px rgba(0, 0, 0, 0.2);
+  background: rgba(255,255,255,0.15);
+  border-radius: 18px;
+  box-shadow: 0 8px 32px 0 rgba(31,38,135,0.18);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  padding: 28px 22px;
   margin-bottom: 20px;
   transition: all 0.3s ease;
-  backdrop-filter: blur(10px);
 }
 
 .stats-section h2 {
@@ -87,15 +80,17 @@ header h1 {
 }
 
 .stats-card {
-  background: linear-gradient(90deg, rgba(0,0,0,0.3) 60%, rgba(255,204,0,0.2) 100%);
-  padding: 24px 20px;
-  border-radius: 12px;
+  background: rgba(255,255,255,0.18);
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
   text-align: center;
   min-width: 140px;
   flex: 1;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 24px 20px;
+  transition: transform 0.3s, box-shadow 0.3s;
+  border: 1px solid rgba(255,255,255,0.18);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 
 .stats-card:hover {
@@ -103,46 +98,50 @@ header h1 {
   box-shadow: 0 8px 16px rgba(255,204,0,0.2);
 }
 
-.stats-card h3 {
-  font-size: 1.2rem;
-  margin-top: 0;
-  margin-bottom: 15px;
+button {
+  padding: 14px 28px;
+  font-size: 1.1rem;
+  border-radius: 14px;
+  background: rgba(0,16,71,0.35);
   color: var(--secondary-color);
-  font-weight: 600;
-}
-
-.stats-card p {
-  font-size: 2rem;
-  font-weight: bold;
-  margin: 0;
-  color: var(--highlight-color);
-  text-shadow: 0 2px 8px rgba(0,0,0,0.1);
-}
-
-/* Animation for stats cards */
-@keyframes fadeInUp {
-  from {
-    opacity: 0;
-    transform: translateY(20px);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
-}
-
-.animate-in {
-  animation: fadeInUp 0.5s ease forwards;
-}
-
-/* Button styling */
-.button-container {
+  border: none;
+  cursor: pointer;
+  transition: background 0.3s, box-shadow 0.3s, color 0.3s, transform 0.2s;
   display: flex;
-  justify-content: center;
-  gap: 15px;
-  margin-bottom: 25px;
-  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid rgba(255,255,255,0.18);
 }
+
+button i {
+  font-size: 1.1rem;
+}
+
+button:hover {
+  background: rgba(255,204,0,0.18);
+  color: #222;
+  transform: scale(1.07);
+  box-shadow: 0 8px 24px rgba(255,204,0,0.12);
+}
+
+button:active {
+  background: rgba(255,204,0,0.28);
+  color: #222;
+  transform: scale(0.97);
+}
+
+.warning-button {
+  background: rgba(180,0,0,0.45);
+  color: #fff;
+}
+.warning-button:hover {
+  background: rgba(220,0,0,0.65);
+  color: #fff;
+}
+/* Removed stray closing brace and duplicate .button-container block */
 
 button {
   padding: 14px 24px;
@@ -187,8 +186,11 @@ button:active {
 .table-container {
   overflow-x: auto;
   margin-bottom: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 14px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.10);
+  background: rgba(255,255,255,0.10);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
 }
 
 #statsTable {
