@@ -347,7 +347,7 @@ main {
   gap: var(--gap);
   padding: var(--gap);
   margin: 0 auto;
-  overflow: hidden;
+  overflow: visible; /* Changed from hidden to visible to ensure tiles are shown */
   transition: all var(--transition-duration) ease;
 }
 
@@ -377,8 +377,8 @@ main {
 /* Base tile styles with enhanced positioning */
 .tile {
   position: absolute;
-  top: var(--gap);
-  left: var(--gap);
+  top: 0; /* Will be overridden by JavaScript */
+  left: 0; /* Will be overridden by JavaScript */
   width: var(--tile-size);
   height: var(--tile-size);
   display: flex;
@@ -394,6 +394,9 @@ main {
   z-index: 10;
   backdrop-filter: blur(10px);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  /* Ensure tiles are always visible */
+  opacity: 1;
+  visibility: visible;
 }
 
 /* Common tile background and text colors with enhanced styling */

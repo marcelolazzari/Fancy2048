@@ -60,6 +60,7 @@ class Game {
   }
 
   async init() {
+    console.log('Starting game initialization...');
     this.setupEventListeners();
     this.setupResponsiveHandlers();
     await this.checkBackendAvailability();
@@ -68,10 +69,19 @@ class Game {
     this.updateHue(); // Load and apply saved hue values
     this.initializeResizeObserver();
     this.optimizeForDevice();
+    
+    // Force an additional board update to ensure tiles are visible
+    setTimeout(() => {
+      console.log('Forcing board update after initialization...');
+      this.updateBoard();
+    }, 100);
+    
     this.isGameInitialized = true;
     
     // Apply initial color scheme
     this.loadColorSettings();
+    
+    console.log('Game initialization complete');
   }
 
   async checkBackendAvailability() {
@@ -293,6 +303,8 @@ class Game {
   }
 
   initLocalGame() {
+    console.log('Starting local game initialization...');
+    
     // Create empty board
     this.board = this.createEmptyBoard();
     this.score = 0;
@@ -300,15 +312,20 @@ class Game {
     this.gameState = 'playing';
     this.bestScore = +localStorage.getItem('bestScore') || 0;
     
+    console.log('Empty board created:', this.board);
+    
     // Add initial tiles
-    this.addRandomTile();
-    this.addRandomTile();
+    const tile1Added = this.addRandomTile();
+    const tile2Added = this.addRandomTile();
+    
+    console.log('Initial tiles added:', tile1Added, tile2Added);
+    console.log('Board after initial tiles:', this.board);
     
     // Update the UI
     this.updateUI();
     this.startTimer();
     
-    console.log('Local game initialized successfully');
+    console.log('Local game initialized successfully with board:', this.board);
   }
 
   loadState(state) {
@@ -500,10 +517,14 @@ class Game {
     
     if (emptyCells.length > 0) {
       const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-      this.board[randomCell.row][randomCell.col] = Math.random() < 0.9 ? 2 : 4;
+      const value = Math.random() < 0.9 ? 2 : 4;
+      this.board[randomCell.row][randomCell.col] = value;
+      console.log(`Added tile ${value} at position (${randomCell.row}, ${randomCell.col})`);
+      console.log('Current board state:', this.board);
       return true;
     }
     
+    console.log('No empty cells available for new tile');
     return false;
   }
 
@@ -538,21 +559,40 @@ class Game {
 
   updateBoard() {
     const boardContainer = document.getElementById('board-container');
-    boardContainer.innerHTML = '';
+    if (!boardContainer) {
+      console.error('Board container not found');
+      return;
+    }
     
-    this.createGridCells();
+    // Clear existing tiles but keep grid cells
+    const existingTiles = boardContainer.querySelectorAll('.tile');
+    existingTiles.forEach(tile => tile.remove());
     
+    // Ensure board container is properly configured
+    boardContainer.style.position = 'relative';
+    
+    // Create grid cells if they don't exist
+    const existingGridCells = boardContainer.querySelectorAll('.grid-cell');
+    if (existingGridCells.length !== this.size * this.size) {
+      // Clear all and recreate
+      boardContainer.innerHTML = '';
+      this.createGridCells();
+    }
+    
+    // Create tiles for non-zero values
     for (let row = 0; row < this.size; row++) {
       for (let col = 0; col < this.size; col++) {
         const value = this.board[row][col];
         if (value > 0) {
           const tile = this.createTileElement(row, col, value);
           boardContainer.appendChild(tile);
+          console.log(`Created tile at (${row}, ${col}) with value ${value}`);
         }
       }
     }
     
     this.updateTileFontSizes();
+    console.log('Board updated with', document.querySelectorAll('.tile').length, 'tiles');
   }
 
   createGridCells() {
@@ -574,6 +614,23 @@ class Game {
     tile.className = 'tile';
     tile.setAttribute('data-value', value);
     tile.textContent = value;
+    
+    // Calculate position based on tile size and gap
+    const tileSize = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--tile-size').replace('px', '')) || 100;
+    const gap = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--gap').replace('px', '')) || 15;
+    
+    const left = col * (tileSize + gap) + gap;
+    const top = row * (tileSize + gap) + gap;
+    
+    // Use absolute positioning
+    tile.style.position = 'absolute';
+    tile.style.left = `${left}px`;
+    tile.style.top = `${top}px`;
+    tile.style.width = `${tileSize}px`;
+    tile.style.height = `${tileSize}px`;
+    tile.style.zIndex = '10';
+    
+    // Add grid position as fallback
     tile.style.gridRow = row + 1;
     tile.style.gridColumn = col + 1;
     
