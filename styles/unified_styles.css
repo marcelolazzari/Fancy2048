@@ -207,18 +207,49 @@ button:focus, .controls button:focus {
   --tile-size: calc((var(--board-size) - var(--gap) * (var(--size) + 1)) / var(--size));
   --game-size: calc(var(--tile-size) * var(--size) + var(--gap) * (var(--size) + 2));
   
-  /* Enhanced Color System */
+  /* Enhanced Color System with Comprehensive Hue Support */
   --primary-color: #1a1a1a;
   --secondary-color: #f2f2f2;
   --hue-rotation: 0;
   --hue-value: 45;
-  --highlight-color: hsl(var(--hue-value, 45), 100%, 60%);
-  --accent-color: hsl(var(--hue-value, 45), 80%, 50%);
-  --button-background: hsl(var(--hue-value, 45), 60%, 20%);
-  --button-hover-background: hsl(var(--hue-value, 45), 70%, 30%);
-  --reset-button-background: #ff7f50;
-  --reset-button-hover-background: #ff4500;
-  --overlay-dark: rgba(0, 16, 71, 0.8);
+  
+  /* Dynamic UI Colors Based on Hue */
+  --highlight-color: hsl(calc(var(--hue-rotation, 0)), 100%, 60%);
+  --accent-color: hsl(calc(var(--hue-rotation, 0)), 80%, 50%);
+  --button-background: hsl(calc(var(--hue-rotation, 0)), 60%, 25%);
+  --button-hover-background: hsl(calc(var(--hue-rotation, 0)), 70%, 35%);
+  --button-active-background: hsl(calc(var(--hue-rotation, 0)), 80%, 45%);
+  
+  /* Header Colors */
+  --header-background: linear-gradient(135deg, 
+    hsla(calc(var(--hue-rotation, 0)), 20%, 10%, 0.9), 
+    hsla(calc(var(--hue-rotation, 0)), 30%, 5%, 0.95));
+  --title-color: hsl(calc(var(--hue-rotation, 0)), 100%, 70%);
+  --title-shadow: 0 2px 10px hsla(calc(var(--hue-rotation, 0)), 100%, 50%, 0.3);
+  
+  /* Score Container Colors */
+  --score-background: linear-gradient(135deg, 
+    hsla(calc(var(--hue-rotation, 0)), 15%, 15%, 0.8), 
+    hsla(calc(var(--hue-rotation, 0)), 25%, 10%, 0.9));
+  --score-text-color: hsl(calc(var(--hue-rotation, 0)), 90%, 80%);
+  --score-value-color: hsl(calc(var(--hue-rotation, 0)), 100%, 75%);
+  --score-border: 1px solid hsla(calc(var(--hue-rotation, 0)), 50%, 50%, 0.3);
+  
+  /* Board Colors */
+  --board-background: linear-gradient(135deg, 
+    hsla(calc(var(--hue-rotation, 0)), 10%, 20%, 0.4), 
+    hsla(calc(var(--hue-rotation, 0)), 20%, 10%, 0.6));
+  --board-border: 1px solid hsla(calc(var(--hue-rotation, 0)), 40%, 60%, 0.2);
+  --board-shadow: 0 8px 32px hsla(calc(var(--hue-rotation, 0)), 30%, 20%, 0.3);
+  
+  /* Grid Cell Colors */
+  --grid-cell-background: linear-gradient(135deg, 
+    hsla(calc(var(--hue-rotation, 0)), 5%, 25%, 0.3), 
+    hsla(calc(var(--hue-rotation, 0)), 15%, 20%, 0.4));
+  --grid-cell-border: 1px solid hsla(calc(var(--hue-rotation, 0)), 20%, 40%, 0.2);
+  --grid-cell-hover-background: linear-gradient(135deg, 
+    hsla(calc(var(--hue-rotation, 0)), 10%, 35%, 0.4), 
+    hsla(calc(var(--hue-rotation, 0)), 20%, 30%, 0.5));
   
   /* Dynamic Tile Colors with Hue Rotation Support */
   --tile-2-bg: hsl(calc(var(--hue-rotation, 0) + 45), 25%, 85%);
@@ -245,6 +276,24 @@ button:focus, .controls button:focus {
   --tile-2048-text: #f9f6f2;
   --tile-super-bg: linear-gradient(135deg, hsl(calc(var(--hue-rotation, 0) + 75), 95%, 40%), hsl(calc(var(--hue-rotation, 0) + 15), 100%, 35%), hsl(calc(var(--hue-rotation, 0) + 55), 85%, 55%));
   --tile-super-text: #f9f6f2;
+  
+  /* Game Over and Popup Colors */
+  --popup-background: linear-gradient(135deg, 
+    hsla(calc(var(--hue-rotation, 0)), 20%, 15%, 0.95), 
+    hsla(calc(var(--hue-rotation, 0)), 30%, 10%, 0.98));
+  --popup-border: 2px solid hsl(calc(var(--hue-rotation, 0)), 60%, 50%);
+  --popup-text-color: hsl(calc(var(--hue-rotation, 0)), 80%, 90%);
+  --popup-shadow: 0 20px 60px hsla(calc(var(--hue-rotation, 0)), 40%, 20%, 0.4);
+  
+  /* Footer Colors */
+  --footer-background: linear-gradient(135deg, 
+    hsla(calc(var(--hue-rotation, 0)), 15%, 10%, 0.8), 
+    hsla(calc(var(--hue-rotation, 0)), 25%, 5%, 0.9));
+  
+  /* Reset Button Special Colors */
+  --reset-button-background: hsl(15, 80%, 55%);
+  --reset-button-hover-background: hsl(15, 85%, 45%);
+  --reset-button-active-background: hsl(15, 90%, 35%);
   
   /* Enhanced Typography */
   --base-font-size: clamp(14px, 4vw, 18px);
@@ -343,13 +392,29 @@ header {
   align-items: center;
   justify-content: center;
   padding: 10px 20px;
-  background-color: rgba(0, 0, 0, 0.7);
+  background: var(--header-background);
   position: sticky;
   top: 0;
   z-index: 10;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-  transition: background-color var(--transition-duration);
+  box-shadow: var(--shadow-medium);
+  border-bottom: 2px solid var(--highlight-color);
+  transition: all var(--transition-duration);
   box-sizing: border-box;
+  overflow: hidden;
+}
+
+header::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, 
+    transparent, 
+    hsla(calc(var(--hue-rotation, 0)), 50%, 50%, 0.1), 
+    transparent);
+  pointer-events: none;
 }
 
 header .container {
@@ -358,20 +423,43 @@ header .container {
   display: flex;
   flex-direction: column;
   align-items: center;
+  position: relative;
+  z-index: 2;
 }
 
 header .game-title {
-  font-size: 2rem;
-  color: var(--highlight-color);
+  font-size: var(--title-font-size);
   margin: 10px 0;
+  font-weight: 700;
   text-align: center;
-  transition: color var(--transition-duration);
+  color: var(--title-color);
+  text-shadow: var(--title-shadow);
+  letter-spacing: 2px;
+  background: linear-gradient(45deg, 
+    hsl(calc(var(--hue-rotation, 0)), 100%, 70%), 
+    hsl(calc(var(--hue-rotation, 0) + 60), 100%, 60%), 
+    hsl(calc(var(--hue-rotation, 0) + 120), 100%, 70%));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+  animation: title-glow 3s ease-in-out infinite alternate;
+  transition: all var(--transition-duration);
+}
+
+@keyframes title-glow {
+  0% {
+    filter: drop-shadow(0 0 5px hsla(calc(var(--hue-rotation, 0)), 100%, 50%, 0.3));
+  }
+  100% {
+    filter: drop-shadow(0 0 15px hsla(calc(var(--hue-rotation, 0)), 100%, 50%, 0.6));
+  }
 }
 
 header h1 {
-  font-size: 2rem;
-  color: hsl(var(--hue-value), 70%, 50%);
-  transition: color var(--transition-duration), filter var(--hue-transition-duration) ease;
+  font-size: var(--title-font-size);
+  color: var(--title-color);
+  text-shadow: var(--title-shadow);
+  transition: all var(--transition-duration);
 }
 
 header nav {
@@ -392,38 +480,65 @@ header nav {
 
 /* General button styles */
 button {
-  padding: 10px 20px;
-  font-size: 16px;
-  color: #ffffff;
-  border-radius: var(--tile-border-radius);
-  border: none;
-  background-color: var(--button-background);
+  padding: clamp(8px, 2vw, 12px) clamp(12px, 3vw, 16px);
+  font-size: var(--button-font-size);
+  color: var(--secondary-color);
+  border-radius: var(--button-border-radius);
+  border: 1px solid var(--highlight-color);
+  background: var(--button-background);
   cursor: pointer;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-  transition: background-color var(--transition-duration), 
-              transform var(--transition-duration), 
-              box-shadow var(--transition-duration);
+  box-shadow: var(--shadow-light);
+  transition: all var(--transition-duration) ease;
   display: flex;
   align-items: center;
   justify-content: center;
-  filter: brightness(85%);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
+  gap: 6px;
+  font-weight: 500;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  position: relative;
+  overflow: hidden;
+}
+
+button::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: -100%;
+  width: 100%;
+  height: 100%;
+  background: linear-gradient(90deg, 
+    transparent, 
+    hsla(calc(var(--hue-rotation, 0)), 100%, 60%, 0.3), 
+    transparent);
+  transition: left 0.5s ease;
+}
+
+button:hover::before {
+  left: 100%;
 }
 
 button i {
-  font-size: 1.5rem;
-  color: #ffffff;
+  font-size: 1.2em;
+  color: var(--secondary-color);
+  transition: transform var(--transition-duration) ease;
 }
 
 button:hover {
-  background-color: var(--button-hover-background);
-  transform: scale(1.05);
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
+  background: var(--button-hover-background);
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: var(--shadow-medium);
+  border-color: var(--accent-color);
+}
+
+button:hover i {
+  transform: scale(1.1) rotate(5deg);
 }
 
 button:active {
-  transform: scale(0.95);
+  transform: translateY(0) scale(0.98);
+  box-shadow: var(--shadow-light);
+  background: var(--button-active-background);
 }
 
 /* Controls container */
@@ -482,38 +597,73 @@ main {
 
 /* Score container styles */
 #score-container {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 10px;
-  margin-top: 20px;
-  background-color: rgba(255, 255, 255, 0.1);
+  background: var(--score-background);
+  border: var(--score-border);
   border-radius: var(--tile-border-radius);
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-  width: 100%;
-  max-width: 300px;
-  transition: background-color var(--transition-duration), box-shadow var(--transition-duration), filter var(--hue-transition-duration) ease;
+  padding: clamp(12px, 3vw, 20px);
+  margin: clamp(10px, 2vw, 20px) auto;
+  max-width: min(400px, 90vw);
+  box-shadow: var(--shadow-medium);
+  backdrop-filter: blur(10px);
+  position: relative;
+  overflow: hidden;
+  transition: all var(--transition-duration);
+}
+
+#score-container::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, 
+    hsla(calc(var(--hue-rotation, 0)), 30%, 60%, 0.1), 
+    hsla(calc(var(--hue-rotation, 0) + 60), 30%, 60%, 0.05));
+  pointer-events: none;
+}
+
+#score-container ul {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 15px;
+  position: relative;
+  z-index: 2;
+}
+
+#score-container li {
+  text-align: center;
+  flex: 1;
+  min-width: 80px;
 }
 
 #score-container p {
   margin: 5px 0;
-  font-size: 1rem;
-  font-weight: bold;
-  color: var(--secondary-color);
+  font-size: var(--base-font-size);
+  color: var(--score-text-color);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 1px;
 }
 
 #score {
-  color: var(--highlight-color);
-  font-size: 1.5rem;
-  transition: filter var(--hue-transition-duration) ease;
+  font-size: clamp(1.2rem, 4vw, 1.8rem);
+  font-weight: bold;
+  color: var(--score-value-color);
+  text-shadow: 0 2px 8px hsla(calc(var(--hue-rotation, 0)), 50%, 50%, 0.3);
+  margin: 8px 0;
 }
 
 #moves,
 #time {
-  font-size: 1rem;
-  font-weight: bold;
-  color: var(--secondary-color);
+  font-size: clamp(1rem, 3vw, 1.4rem);
+  color: var(--score-value-color);
+  font-weight: 600;
+  margin: 5px 0;
 }
 
 /* Device-Specific Optimizations */
@@ -545,9 +695,10 @@ main {
   height: var(--board-size);
   max-width: var(--board-size);
   max-height: var(--board-size);
-  background: linear-gradient(135deg, rgba(50, 50, 50, 0.4), rgba(30, 30, 30, 0.6));
+  background: var(--board-background);
+  border: var(--board-border);
   border-radius: var(--tile-border-radius);
-  box-shadow: var(--shadow-heavy);
+  box-shadow: var(--board-shadow);
   position: relative;
   transition: all var(--transition-duration) ease;
   margin: clamp(10px, 3vh, 30px) auto;
@@ -1005,9 +1156,26 @@ footer {
   width: 100%;
   display: flex;
   justify-content: center;
-  padding: 10px;
-  background-color: rgba(0, 0, 0, 0.7);
-  box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.5);
+  padding: 20px 10px;
+  background: var(--footer-background);
+  border-top: 1px solid var(--highlight-color);
+  box-shadow: 0 -2px 15px hsla(calc(var(--hue-rotation, 0)), 30%, 20%, 0.3);
+  position: relative;
+  overflow: hidden;
+}
+
+footer::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(45deg, 
+    transparent, 
+    hsla(calc(var(--hue-rotation, 0)), 30%, 30%, 0.1), 
+    transparent);
+  pointer-events: none;
 }
 
 footer .container {
@@ -1015,6 +1183,8 @@ footer .container {
   max-width: 1200px;
   display: flex;
   justify-content: center;
+  position: relative;
+  z-index: 2;
 }
 
 /* Enhanced Game Popup Styles */
