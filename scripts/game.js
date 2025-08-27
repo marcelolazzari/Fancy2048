@@ -8,6 +8,11 @@ class Game {
     this.moves = 0;
     this.startTime = null;
 
+    // Backend integration
+    this.gameId = null;
+    this.useBackend = false; // Auto-detect if backend is available
+    this.apiBase = window.location.origin;
+
     // Enhanced game states
     this.gameState = 'ready';
     this.hasSavedStats = false;
@@ -57,6 +62,7 @@ class Game {
   async init() {
     this.setupEventListeners();
     this.setupResponsiveHandlers();
+    await this.checkBackendAvailability();
     await this.initGame();
     this.applyTheme();
     this.updateHue(); // Load and apply saved hue values
@@ -66,6 +72,31 @@ class Game {
     
     // Apply initial color scheme
     this.loadColorSettings();
+  }
+
+  async checkBackendAvailability() {
+    try {
+      const response = await fetch(`${this.apiBase}/api/new_game`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ size: this.size })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        this.useBackend = true;
+        this.gameId = data.gameId;
+        console.log('Backend detected, using server-side game logic');
+        return true;
+      }
+    } catch (error) {
+      console.log('Backend not available, using client-side game logic');
+    }
+    
+    this.useBackend = false;
+    return false;
   }
 
   loadColorSettings() {
@@ -200,9 +231,65 @@ class Game {
   }
 
   async initGame() {
-    // Initialize the game locally since we don't have a backend
-    console.log('Initializing local game...');
-    this.initLocalGame();
+    if (this.useBackend && this.gameId) {
+      console.log('Initializing game with backend...');
+      await this.initBackendGame();
+    } else {
+      console.log('Initializing local game...');
+      this.initLocalGame();
+    }
+  }
+
+  async initBackendGame() {
+    try {
+      const response = await fetch(`${this.apiBase}/api/get_state?gameId=${this.gameId}`);
+      if (response.ok) {
+        const data = await response.json();
+        this.loadServerState(data.gameState);
+        console.log('Backend game initialized successfully');
+      } else {
+        console.warn('Failed to get initial state from backend, falling back to local');
+        this.useBackend = false;
+        this.initLocalGame();
+      }
+    } catch (error) {
+      console.warn('Backend error, falling back to local:', error);
+      this.useBackend = false;
+      this.initLocalGame();
+    }
+  }
+
+  loadServerState(state) {
+    this.board = state.board;
+    this.score = state.score;
+    this.bestScore = state.bestScore || parseInt(localStorage.getItem('bestScore')) || 0;
+    this.moves = state.moves;
+    this.gameState = state.gameState;
+    this.size = state.size;
+    this.isLightMode = state.isLightMode;
+    this.hueValue = state.hueValue;
+    this.isRainbowMode = state.isRainbowMode;
+    
+    // Update localStorage with backend values
+    localStorage.setItem('bestScore', this.bestScore.toString());
+    localStorage.setItem('isLightMode', this.isLightMode.toString());
+    localStorage.setItem('hueValue', this.hueValue.toString());
+    localStorage.setItem('isRainbowMode', this.isRainbowMode.toString());
+    
+    this.updateUI();
+    this.startTimer();
+    
+    const gameOverElement = document.getElementById('game-over');
+    if (this.gameState === 'over') {
+      gameOverElement.classList.remove('hidden');
+    } else {
+      gameOverElement.classList.add('hidden');
+    }
+    
+    if (this.gameState === 'won' && !this.hasShownContinuePopup) {
+      this.hasShownContinuePopup = true;
+      this.showContinuePopup();
+    }
   }
 
   initLocalGame() {
@@ -311,12 +398,12 @@ class Game {
       const direction = keyMap[event.code];
       if (direction) {
         event.preventDefault();
-        this.move(direction);
+        this.move(direction).catch(console.error);
       }
       
       if (event.code === 'KeyZ' && (event.ctrlKey || event.metaKey)) {
         event.preventDefault();
-        this.undoMove();
+        this.undoMove().catch(console.error);
       }
       
       if (event.code === 'KeyR' && (event.ctrlKey || event.metaKey)) {
@@ -373,13 +460,13 @@ class Game {
       direction = deltaY > 0 ? 'down' : 'up';
     }
     
-    this.move(direction);
+    this.move(direction).catch(console.error);
   }
 
   setupButtonListeners() {
     const buttons = {
-      'reset-button': () => this.reset(),
-      'back-button': () => this.undoMove(),
+      'reset-button': () => this.reset().catch(console.error),
+      'back-button': () => this.undoMove().catch(console.error),
       'leaderboard-button': () => this.openStatisticsPage(),
       'changeColor-button': () => this.changeHue(),
       'rainbowMode-button': () => this.toggleRainbowMode(),
@@ -680,9 +767,49 @@ class Game {
   }
 
   // Game control methods (simplified versions for now)
-  move(direction) {
+  async move(direction) {
     if (this.animationInProgress || this.gameState !== 'playing') return false;
     
+    if (this.useBackend && this.gameId) {
+      return await this.moveWithBackend(direction);
+    } else {
+      return this.moveLocal(direction);
+    }
+  }
+
+  async moveWithBackend(direction) {
+    try {
+      const response = await fetch(`${this.apiBase}/api/move`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ 
+          gameId: this.gameId, 
+          direction: direction 
+        })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.moved) {
+          this.loadServerState(data.gameState);
+          return true;
+        }
+        return false;
+      } else {
+        console.warn('Backend move failed, falling back to local');
+        this.useBackend = false;
+        return this.moveLocal(direction);
+      }
+    } catch (error) {
+      console.warn('Backend move error, falling back to local:', error);
+      this.useBackend = false;
+      return this.moveLocal(direction);
+    }
+  }
+
+  moveLocal(direction) {
     this.lastMoveDirection = direction;
     this.saveGameState();
     
@@ -729,7 +856,41 @@ class Game {
     return moved;
   }
 
-  reset() {
+  async reset() {
+    if (this.useBackend && this.gameId) {
+      await this.resetWithBackend();
+    } else {
+      this.resetLocal();
+    }
+  }
+
+  async resetWithBackend() {
+    try {
+      const response = await fetch(`${this.apiBase}/api/reset`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ gameId: this.gameId })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        this.loadServerState(data.gameState);
+        console.log('Game reset via backend');
+      } else {
+        console.warn('Backend reset failed, falling back to local');
+        this.useBackend = false;
+        this.resetLocal();
+      }
+    } catch (error) {
+      console.warn('Backend reset error, falling back to local:', error);
+      this.useBackend = false;
+      this.resetLocal();
+    }
+  }
+
+  resetLocal() {
     // Clear the timer
     if (this.timerInterval) {
       clearInterval(this.timerInterval);
@@ -1547,7 +1708,42 @@ class Game {
     }
   }
 
-  undoMove() {
+  async undoMove() {
+    if (this.useBackend && this.gameId) {
+      await this.undoWithBackend();
+    } else {
+      this.undoLocal();
+    }
+  }
+
+  async undoWithBackend() {
+    try {
+      const response = await fetch(`${this.apiBase}/api/undo`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ gameId: this.gameId })
+      });
+      
+      if (response.ok) {
+        const data = await response.json();
+        if (data.success) {
+          this.loadServerState(data.gameState);
+        }
+      } else {
+        console.warn('Backend undo failed, falling back to local');
+        this.useBackend = false;
+        this.undoLocal();
+      }
+    } catch (error) {
+      console.warn('Backend undo error, falling back to local:', error);
+      this.useBackend = false;
+      this.undoLocal();
+    }
+  }
+
+  undoLocal() {
     if (this.gameStateStack.length === 0 || this.animationInProgress) return;
     
     // Get the last game state

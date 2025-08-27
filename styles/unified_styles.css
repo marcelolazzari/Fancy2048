@@ -1,104 +1,49 @@
-/* Accessibility: Focus styles for buttons and tiles */
-button:focus, .controls button:focus {
-  outline: 2px solid var(--highlight-color);
-  outline-offset: 2px;
-  background-color: var(--button-hover-background);
-  color: #222;
+/* Enhanced Root Variables for Better Scaling */
+:root {
+  --size: 4;
+  --gap: 15px;
+  --tile-size: 100px;
+  --board-size: calc(var(--tile-size) * var(--size) + var(--gap) * (var(--size) + 1));
+  --game-size: var(--board-size);
+
+  /* Enhanced Color Scheme */
+  --primary-color: #0f172a;
+  --secondary-color: #f8fafc;
+  --highlight-color: #38f9d7;
+  --button-background: rgba(56, 249, 215, 0.1);
+  --button-hover-background: rgba(56, 249, 215, 0.2);
+  --reset-button-background: #ef4444;
+  --reset-button-hover-background: #dc2626;
+  --overlay-dark: rgba(15, 23, 42, 0.95);
+  --transition-duration: 0.3s;
+  --tile-border-radius: 8px;
+  
+  /* Base font size that scales with board */
+  --base-font-size: clamp(12px, calc(var(--tile-size) * 0.25), 20px);
 }
- 
-/* Improve color contrast for visually hidden and highlight classes */
-.visually-hidden:focus {
-  outline: 2px solid var(--highlight-color);
+
+/* Light mode color overrides */
+body.light-mode {
+  --primary-color: #ffffff;
+  --secondary-color: #1e293b;
+  --overlay-dark: rgba(255, 255, 255, 0.95);
 }
- 
-/* Header styles */
-header {
-  width: 100%;
+
+/* Enhanced Body Styles with Better Mobile Support */
+body {
+  font-family: 'Inter', 'Segoe UI', 'Helvetica Neue', Arial, sans-serif;
+  background: linear-gradient(135deg, var(--primary-color) 0%, #1e293b 100%);
+  color: var(--secondary-color);
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  min-height: 100vh;
   display: flex;
   flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  padding: 10px 20px;
-  background-color: rgba(0, 0, 0, 0.7);
-  position: sticky;
-  top: 0;
-  z-index: 10;
-  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.5);
-  transition: background-color var(--transition-duration);
-  box-sizing: border-box;
+  user-select: none;
+  overflow-x: hidden;
+  transition: all var(--transition-duration) ease;
 }
- 
-header .game-title {
-  font-size: 2rem;
-  color: var(--highlight-color);
-  margin: 10px 0;
-  text-align: center;
-  transition: color var(--transition-duration);
-}
- 
-button {
-  padding: 10px 20px;
-  font-size: 16px;
-  color: #ffffff;
-  border-radius: var(--tile-border-radius);
-  border: none;
-  background-color: var(--button-background);
-  cursor: pointer;
-  box-shadow: 0 0 10px rgba(255, 255, 255, 0.3);
-  transition: background-color var(--transition-duration), 
-              transform var(--transition-duration), 
-              box-shadow var(--transition-duration);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  filter: brightness(85%);
-  backdrop-filter: blur(10px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-}
- 
-button:hover {
-  background-color: var(--button-hover-background);
-  transform: scale(1.05);
-  box-shadow: 0 0 15px rgba(255, 255, 255, 0.5);
-}
- 
-/* Tile Styling Section */
-.tile {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border-radius: var(--tile-border-radius);
-  font-weight: bold;
-  box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
-  transition: transform var(--transition-duration), 
-              opacity var(--transition-duration), 
-              background-color var(--transition-duration),
-              color var(--transition-duration),
-              box-shadow var(--transition-duration);
-  z-index: 1;
-  overflow: hidden;
-  text-align: center;
-  line-height: 1;
-  box-sizing: border-box;
-}
- 
-/* Responsive adjustments for tiles */
-@media (max-width: 600px) {
-  /* Slightly increase relative font size on small screens for better readability */
-  .tile[data-value^="2"],
-  .tile[data-value^="4"],
-  .tile[data-value^="8"] {
-    font-size: clamp(14px, calc(var(--tile-size) * 0.55), 64px);
-  }
-  
-  .tile[data-value^="16"],
-  .tile[data-value^="32"],
-  .tile[data-value^="64"] {
     font-size: clamp(12px, calc(var(--tile-size) * 0.45), 56px);
   }
   
