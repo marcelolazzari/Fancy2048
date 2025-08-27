@@ -200,33 +200,28 @@ class Game {
   }
 
   async initGame() {
-    try {
-      const res = await fetch('/api/new_game', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ size: this.size })
-      });
-      const data = await res.json();
-      if (data.state) {
-        this.loadState(data.state);
-      }
-    } catch (error) {
-      console.error('Failed to initialize game:', error);
-      this.initLocalGame();
-    }
+    // Initialize the game locally since we don't have a backend
+    console.log('Initializing local game...');
+    this.initLocalGame();
   }
 
   initLocalGame() {
+    // Create empty board
     this.board = this.createEmptyBoard();
     this.score = 0;
     this.moves = 0;
     this.gameState = 'playing';
     this.bestScore = +localStorage.getItem('bestScore') || 0;
     
+    // Add initial tiles
     this.addRandomTile();
     this.addRandomTile();
+    
+    // Update the UI
     this.updateUI();
     this.startTimer();
+    
+    console.log('Local game initialized successfully');
   }
 
   loadState(state) {
@@ -432,9 +427,26 @@ class Game {
   }
 
   updateScore() {
-    document.getElementById('score').textContent = this.score;
-    document.getElementById('best-score').textContent = this.bestScore;
-    document.getElementById('moves').textContent = this.moves;
+    const scoreElement = document.getElementById('score');
+    const bestScoreElement = document.getElementById('best-score');
+    const movesElement = document.getElementById('moves');
+    const timeElement = document.getElementById('time');
+    
+    if (scoreElement) scoreElement.textContent = this.score;
+    if (bestScoreElement) bestScoreElement.textContent = this.bestScore;
+    if (movesElement) movesElement.textContent = this.moves;
+    if (timeElement) timeElement.textContent = this.getFormattedTime();
+  }
+
+  getFormattedTime() {
+    if (!this.startTime) return '00:00';
+    
+    const now = Date.now();
+    const elapsed = Math.floor((now - this.startTime) / 1000);
+    const minutes = Math.floor(elapsed / 60);
+    const seconds = elapsed % 60;
+    
+    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
   }
 
   updateBoard() {
@@ -652,77 +664,106 @@ class Game {
       clearInterval(this.timerInterval);
     }
     
-    this.startTime = this.startTime || new Date();
-    const timeElement = document.getElementById('time');
+    this.startTime = this.startTime || Date.now();
     
     this.timerInterval = setInterval(() => {
-      timeElement.textContent = this.getElapsedTime();
+      this.updateScore(); // This will update the time display
     }, 1000);
   }
 
   getElapsedTime() {
     if (!this.startTime) return '00:00';
-    const elapsed = Math.floor((Date.now() - this.startTime.getTime()) / 1000);
+    const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
     const min = Math.floor(elapsed / 60).toString().padStart(2, '0');
     const sec = (elapsed % 60).toString().padStart(2, '0');
     return `${min}:${sec}`;
   }
 
   // Game control methods (simplified versions for now)
-  async move(direction) {
-    if (this.animationInProgress || this.gameState !== 'playing') return;
+  move(direction) {
+    if (this.animationInProgress || this.gameState !== 'playing') return false;
     
-    this.animationInProgress = true;
+    this.lastMoveDirection = direction;
+    this.saveGameState();
     
-    try {
-      const res = await fetch('/api/move', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ direction })
-      });
-      const data = await res.json();
+    let moved = false;
+    this.lastMerged = []; // Reset merged tiles tracking
+    this.lastMoveScore = this.score; // Store score before move
+    
+    switch (direction) {
+      case 'up':
+        moved = this.moveUp();
+        break;
+      case 'down':
+        moved = this.moveDown();
+        break;
+      case 'left':
+        moved = this.moveLeft();
+        break;
+      case 'right':
+        moved = this.moveRight();
+        break;
+    }
+    
+    if (moved) {
+      this.moves++;
+      this.addRandomTile();
+      this.updateUI();
       
-      if (data.state) {
-        this.loadState(data.state);
-        if (this.gameState === 'over') {
-          await this.saveStats();
-        }
+      // Calculate score delta for popup
+      this.scoreDelta = this.score - this.lastMoveScore;
+      if (this.scoreDelta > 0) {
+        this.showScorePopup(this.scoreDelta);
       }
-    } catch (error) {
-      console.error('Move failed:', error);
+      
+      // Check game state after move
+      this.checkGameState();
+      
+      // Update best score if needed
+      if (this.score > this.bestScore) {
+        this.bestScore = this.score;
+        localStorage.setItem('bestScore', this.bestScore);
+      }
     }
     
-    setTimeout(() => {
-      this.animationInProgress = false;
-    }, 150);
+    return moved;
   }
 
-  async reset() {
-    try {
-      const res = await fetch('/api/reset', { method: 'POST' });
-      const data = await res.json();
-      if (data.state) {
-        this.hasShownContinuePopup = false;
-        this.loadState(data.state);
-      }
-    } catch (error) {
-      console.error('Reset failed:', error);
+  reset() {
+    // Clear the timer
+    if (this.timerInterval) {
+      clearInterval(this.timerInterval);
+      this.timerInterval = null;
     }
-  }
-
-  async undoMove() {
-    try {
-      const res = await fetch('/api/undo', { method: 'POST' });
-      const data = await res.json();
-      if (data.state) {
-        this.loadState(data.state);
-      }
-    } catch (error) {
-      console.error('Undo failed:', error);
+    
+    // Reset game state
+    this.board = this.createEmptyBoard();
+    this.score = 0;
+    this.moves = 0;
+    this.gameState = 'playing';
+    this.hasShownContinuePopup = false;
+    this.startTime = null;
+    this.gameStateStack = [];
+    this.lastMerged = [];
+    
+    // Add initial tiles
+    this.addRandomTile();
+    this.addRandomTile();
+    
+    // Update UI and start timer
+    this.updateUI();
+    this.startTimer();
+    
+    // Hide game over message if visible
+    const gameOverElement = document.getElementById('game-over');
+    if (gameOverElement) {
+      gameOverElement.classList.add('hidden');
     }
+    
+    console.log('Game reset successfully');
   }
 
-  async saveStats() {
+  saveStats() {
     if (this.score > 0 && !this.hasSavedStats) {
       const stat = {
         date: new Date().toISOString(),
