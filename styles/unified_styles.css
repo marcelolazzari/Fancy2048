@@ -106,209 +106,66 @@ button:hover {
   .tile[data-value^="256"],
   .tile[data-value^="512"] {
     font-size: clamp(10px, calc(var(--tile-size) * 0.4), 48px);
-  /* Accessibility: Focus styles for buttons and tiles */
-  button:focus, .controls button:focus {
-    outline: 2px solid var(--highlight-color);
-    outline-offset: 2px;
-    background: rgba(255,255,255,0.25);
-    color: #222;
-    box-shadow: 0 0 0 4px rgba(255,204,0,0.2);
   }
-
-  /* Glassmorphism effect for containers and overlays */
-  .glass {
-    background: rgba(255,255,255,0.15);
-    border-radius: 16px;
-    box-shadow: 0 8px 32px 0 rgba(31,38,135,0.37);
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    border: 1px solid rgba(255,255,255,0.18);
+  
+  .tile[data-value^="1024"],
+  .tile[data-value^="2048"],
+  .tile[data-value^="4096"],
+  .tile[data-value^="8192"] {
+    font-size: clamp(8px, calc(var(--tile-size) * 0.35), 40px);
   }
-
-  /* Improve color contrast for visually hidden and highlight classes */
-  .visually-hidden:focus {
-    outline: 2px solid var(--highlight-color);
+}
+ 
+/* Touch device optimizations */
+@media (hover: none) and (pointer: coarse) {
+  .tile:hover {
+    transform: none; /* Don't scale on hover for touch devices */
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
   }
+}
+ 
+/* Accessibility: Focus styles for buttons and tiles */
+button:focus, .controls button:focus {
+  outline: 2px solid var(--highlight-color);
+  outline-offset: 2px;
+  background-color: var(--button-hover-background);
+  color: #222;
+}
 
-  /* Header styles with glassmorphism */
-  header {
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 10px 20px;
-    background: rgba(0, 0, 0, 0.45);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.25);
-    position: sticky;
-    top: 0;
-    z-index: 10;
-    border-radius: 0 0 18px 18px;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    box-sizing: border-box;
-  }
+.tile:focus {
+  outline: 2px solid var(--highlight-color);
+  outline-offset: 2px;
+  background-color: var(--tile-8-bg);
+  color: #222;
+}
 
-  header .game-title {
-    font-size: 2.2rem;
-    color: var(--highlight-color);
-    margin: 10px 0;
-    text-align: center;
-    transition: color var(--transition-duration);
-    text-shadow: 0 2px 8px rgba(255,204,0,0.15);
-  }
+/* Improve color contrast for visually hidden and highlight classes */
+.visually-hidden:focus {
+  outline: 2px solid var(--highlight-color);
+}
 
-  /* Button styles with glassmorphism */
-  button {
-    padding: 12px 24px;
-    font-size: 1rem;
+.highlight-row {
+  background-color: rgba(255, 204, 0, 0.4) !important;
+    background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
     color: #fff;
-    border-radius: 14px;
-    border: none;
-    background: rgba(0,16,71,0.35);
-    box-shadow: 0 4px 16px rgba(0,0,0,0.18);
-    cursor: pointer;
-    transition: background 0.3s, box-shadow 0.3s, color 0.3s, transform 0.2s;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    border: 1px solid rgba(255,255,255,0.18);
+    font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
   }
 
-  button i {
-    margin-right: 8px;
-    font-size: 1.1em;
+  .gradient-text {
+    background: linear-gradient(90deg, #38f9d7, #b86adf);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    text-fill-color: transparent;
   }
 
-  button:hover {
-    background: rgba(255,204,0,0.18);
-    color: #222;
-    transform: scale(1.07);
-    box-shadow: 0 8px 24px rgba(255,204,0,0.12);
-  }
-
-  button:active {
-    background: rgba(255,204,0,0.28);
-    color: #222;
-    transform: scale(0.97);
-  }
-
-  /* Dedicated button styles for each function */
-  #changeColor-button {
-    background: linear-gradient(90deg, #38f9d7 0%, #b86adf 100%);
-    color: #fff;
-  }
-  #changeColor-button:hover {
-    background: linear-gradient(90deg, #b86adf 0%, #38f9d7 100%);
-  }
-
-  #leaderboard-button {
-    background: linear-gradient(90deg, #ffcc00 0%, #001047 100%);
-    color: #222;
-  }
-  #leaderboard-button:hover {
-    background: linear-gradient(90deg, #001047 0%, #ffcc00 100%);
-    color: #fff;
-  }
-
-  #rainbowMode-button {
-    background: linear-gradient(90deg, #b86adf 0%, #43e97b 100%);
-    color: #fff;
-  }
-  #rainbowMode-button:hover {
-    background: linear-gradient(90deg, #43e97b 0%, #b86adf 100%);
-  }
-
-  #back-button {
-    background: linear-gradient(90deg, #ff7f50 0%, #ffcc00 100%);
-    color: #222;
-  }
-  #back-button:hover {
-    background: linear-gradient(90deg, #ffcc00 0%, #ff7f50 100%);
-    color: #fff;
-  }
-
-  #pause-button {
-    background: linear-gradient(90deg, #001047 0%, #ffcc00 100%);
-    color: #fff;
-  }
-  #pause-button:hover {
-    background: linear-gradient(90deg, #ffcc00 0%, #001047 100%);
-    color: #222;
-  }
-
-  #board-size-button {
-    background: linear-gradient(90deg, #38f9d7 0%, #ffcc00 100%);
-    color: #222;
-  }
-  #board-size-button:hover {
-    background: linear-gradient(90deg, #ffcc00 0%, #38f9d7 100%);
-    color: #fff;
-  }
-
-  #theme-toggle-button {
-    background: linear-gradient(90deg, #b86adf 0%, #001047 100%);
-    color: #fff;
-  }
-  #theme-toggle-button:hover {
-    background: linear-gradient(90deg, #001047 0%, #b86adf 100%);
-    color: #ffcc00;
-  }
-
-  #reset-button {
-    background: linear-gradient(90deg, #ff7f50 0%, #ff4500 100%);
-    color: #fff;
-  }
-  #reset-button:hover {
-    background: linear-gradient(90deg, #ff4500 0%, #ff7f50 100%);
-    color: #fff;
-  }
-
-  /* Controls container glassmorphism */
-  #controls-container {
-    background: rgba(255,255,255,0.10);
-    border-radius: 14px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    padding: 8px 0;
-  }
-
-  /* Overlay glassmorphism */
-  .overlay {
-    background: rgba(255,255,255,0.18);
-    backdrop-filter: blur(12px);
-    -webkit-backdrop-filter: blur(12px);
-  }
-
-  /* Score container glassmorphism */
-  #score-container {
-    background: rgba(255,255,255,0.12);
-    border-radius: 14px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-    padding: 12px 18px;
-  }
-
-  /* Footer glassmorphism */
-  footer .container {
-    background: rgba(255,255,255,0.10);
-    border-radius: 14px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.10);
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-    padding: 8px 0;
-  }
-
-  /* Responsive adjustments for glassmorphism */
-  @media (max-width: 600px) {
-    #score-container, #controls-container, footer .container {
-      border-radius: 10px;
-      padding: 6px 4px;
-    }
+  .card {
+    background: #1e293b;
+    border-radius: 18px;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.18);
+    padding: 1.5em;
+    margin-bottom: 1.5em;
+    transition: box-shadow 0.2s;
   }
   .card:hover {
     box-shadow: 0 8px 32px rgba(56,249,215,0.12);
@@ -1391,6 +1248,4 @@ footer .container {
     min-width: 100%;
     white-space: nowrap;
   }
-}
-}
 }
