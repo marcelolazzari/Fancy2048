@@ -568,9 +568,6 @@ class Game {
     const existingTiles = boardContainer.querySelectorAll('.tile');
     existingTiles.forEach(tile => tile.remove());
     
-    // Ensure board container is properly configured
-    boardContainer.style.position = 'relative';
-    
     // Create grid cells if they don't exist
     const existingGridCells = boardContainer.querySelectorAll('.grid-cell');
     if (existingGridCells.length !== this.size * this.size) {
@@ -615,22 +612,7 @@ class Game {
     tile.setAttribute('data-value', value);
     tile.textContent = value;
     
-    // Calculate position based on tile size and gap
-    const tileSize = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--tile-size').replace('px', '')) || 100;
-    const gap = parseInt(getComputedStyle(document.documentElement).getPropertyValue('--gap').replace('px', '')) || 15;
-    
-    const left = col * (tileSize + gap) + gap;
-    const top = row * (tileSize + gap) + gap;
-    
-    // Use absolute positioning
-    tile.style.position = 'absolute';
-    tile.style.left = `${left}px`;
-    tile.style.top = `${top}px`;
-    tile.style.width = `${tileSize}px`;
-    tile.style.height = `${tileSize}px`;
-    tile.style.zIndex = '10';
-    
-    // Add grid position as fallback
+    // Use CSS Grid positioning instead of absolute positioning
     tile.style.gridRow = row + 1;
     tile.style.gridColumn = col + 1;
     
