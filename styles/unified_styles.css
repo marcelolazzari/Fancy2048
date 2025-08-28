@@ -201,7 +201,7 @@ button:focus, .controls button:focus {
 /* End of file - all braces closed correctly */
 :root {
   --size: 4;
-  --gap: 15px; /* Increased from 10px to make grid more visible */
+  --gap: 15px; /* Responsive gap, adjusted by JavaScript */
   --tile-size: calc((100vmin - var(--gap) * (var(--size) + 1)) / var(--size));
   --game-size: calc(var(--tile-size) * var(--size) + var(--gap) * (var(--size) + 2));
   --primary-color: #1a1a1a;
@@ -214,63 +214,112 @@ button:focus, .controls button:focus {
   --reset-button-hover-background: #ff4500;
   --overlay-dark: rgba(0, 16, 71, 0.8);
   --transition-duration: 0.3s;
-  --hue-transition-duration: 0.5s; /* Longer transition for hue changes */
-  --tile-border-radius: 10px;
+  --hue-transition-duration: 0.5s; /* Smooth hue transitions */
+  --tile-border-radius: 10px; /* Responsive border radius */
   --hue-value: 0;
-  --mobile-button-size: 36px;
-  --mobile-gap: 5px;
+  --mobile-button-size: 44px; /* Touch-friendly button size */
+  --mobile-gap: 8px;
+  --desktop-gap: 15px;
   --window-height: 100vh;
   --window-width: 100vw;
   --safe-area-inset-top: env(safe-area-inset-top, 0);
   --safe-area-inset-bottom: env(safe-area-inset-bottom, 0);
 
-  /* Enhanced color palette */
-  --tile-2-bg: hsl(180, 60%, 95%);
+  /* Enhanced responsive color palette with CSS custom properties */
+  --tile-2-bg: hsl(calc(180 + var(--hue-value)), 50%, 95%);
   --tile-2-text: hsl(30, 20%, 30%);
-  --tile-4-bg: hsl(180, 60%, 90%);
-  --tile-4-text: hsl(30, 25%, 25%);
-  --tile-8-bg: hsl(35, 90%, 65%);
-  --tile-8-text: hsl(0, 0%, 100%);
-  --tile-16-bg: hsl(25, 90%, 60%);
-  --tile-16-text: hsl(0, 0%, 100%);
-  --tile-32-bg: hsl(15, 90%, 60%);
-  --tile-32-text: hsl(0, 0%, 100%);
-  --tile-64-bg: hsl(5, 90%, 60%);
-  --tile-64-text: hsl(0, 0%, 100%);
-  --tile-128-bg: hsl(50, 70%, 65%);
-  --tile-128-text: hsl(0, 0%, 100%);
-  --tile-256-bg: hsl(50, 75%, 60%);
-  --tile-256-text: hsl(0, 0%, 100%);
-  --tile-512-bg: hsl(50, 80%, 55%);
-  --tile-512-text: hsl(0, 0%, 100%);
-  --tile-1024-bg: hsl(50, 85%, 50%);
-  --tile-1024-text: hsl(0, 0%, 100%);
-  --tile-2048-bg: hsl(50, 90%, 45%);
-  --tile-2048-text: hsl(0, 0%, 100%);
-  --tile-super-bg: hsl(285, 70%, 40%);
-  --tile-super-text: hsl(0, 0%, 100%);
+  --tile-2-glow: 0 0 8px hsla(calc(180 + var(--hue-value)), 50%, 80%, 0.3);
   
-  /* Animation timing */
+  --tile-4-bg: hsl(calc(190 + var(--hue-value)), 55%, 90%);
+  --tile-4-text: hsl(30, 25%, 25%);
+  --tile-4-glow: 0 0 10px hsla(calc(190 + var(--hue-value)), 55%, 75%, 0.3);
+  
+  --tile-8-bg: linear-gradient(135deg, hsl(calc(35 + var(--hue-value)), 85%, 65%) 0%, hsl(calc(45 + var(--hue-value)), 85%, 60%) 100%);
+  --tile-8-text: hsl(0, 0%, 100%);
+  --tile-8-glow: 0 0 12px hsla(calc(35 + var(--hue-value)), 85%, 60%, 0.4);
+  
+  --tile-16-bg: linear-gradient(135deg, hsl(calc(25 + var(--hue-value)), 85%, 60%) 0%, hsl(calc(35 + var(--hue-value)), 85%, 55%) 100%);
+  --tile-16-text: hsl(0, 0%, 100%);
+  --tile-16-glow: 0 0 14px hsla(calc(25 + var(--hue-value)), 85%, 55%, 0.4);
+  
+  --tile-32-bg: linear-gradient(135deg, hsl(calc(15 + var(--hue-value)), 90%, 60%) 0%, hsl(calc(25 + var(--hue-value)), 90%, 55%) 100%);
+  --tile-32-text: hsl(0, 0%, 100%);
+  --tile-32-glow: 0 0 16px hsla(calc(15 + var(--hue-value)), 90%, 55%, 0.5);
+  
+  --tile-64-bg: linear-gradient(135deg, hsl(calc(5 + var(--hue-value)), 90%, 60%) 0%, hsl(calc(15 + var(--hue-value)), 90%, 55%) 100%);
+  --tile-64-text: hsl(0, 0%, 100%);
+  --tile-64-glow: 0 0 18px hsla(calc(5 + var(--hue-value)), 90%, 55%, 0.5);
+  
+  --tile-128-bg: linear-gradient(135deg, hsl(calc(50 + var(--hue-value)), 75%, 65%) 0%, hsl(calc(60 + var(--hue-value)), 75%, 60%) 100%);
+  --tile-128-text: hsl(0, 0%, 100%);
+  --tile-128-glow: 0 0 20px hsla(calc(50 + var(--hue-value)), 75%, 60%, 0.6);
+  
+  --tile-256-bg: linear-gradient(135deg, hsl(calc(50 + var(--hue-value)), 80%, 60%) 0%, hsl(calc(60 + var(--hue-value)), 80%, 55%) 100%);
+  --tile-256-text: hsl(0, 0%, 100%);
+  --tile-256-glow: 0 0 22px hsla(calc(50 + var(--hue-value)), 80%, 55%, 0.6);
+  
+  --tile-512-bg: linear-gradient(135deg, hsl(calc(50 + var(--hue-value)), 85%, 55%) 0%, hsl(calc(60 + var(--hue-value)), 85%, 50%) 100%);
+  --tile-512-text: hsl(0, 0%, 100%);
+  --tile-512-glow: 0 0 24px hsla(calc(50 + var(--hue-value)), 85%, 50%, 0.7);
+  
+  --tile-1024-bg: linear-gradient(135deg, hsl(calc(50 + var(--hue-value)), 90%, 50%) 0%, hsl(calc(60 + var(--hue-value)), 90%, 45%) 100%);
+  --tile-1024-text: hsl(0, 0%, 100%);
+  --tile-1024-glow: 0 0 26px hsla(calc(50 + var(--hue-value)), 90%, 45%, 0.7);
+  
+  --tile-2048-bg: linear-gradient(135deg, hsl(calc(45 + var(--hue-value)), 95%, 45%) 0%, hsl(calc(55 + var(--hue-value)), 95%, 40%) 100%);
+  --tile-2048-text: hsl(0, 0%, 100%);
+  --tile-2048-glow: 0 0 28px hsla(calc(45 + var(--hue-value)), 95%, 40%, 0.8);
+  
+  --tile-super-bg: linear-gradient(135deg, hsl(calc(280 + var(--hue-value)), 80%, 40%) 0%, hsl(calc(300 + var(--hue-value)), 80%, 35%) 100%);
+  --tile-super-text: hsl(0, 0%, 100%);
+  --tile-super-glow: 0 0 30px hsla(calc(280 + var(--hue-value)), 80%, 35%, 0.9);
+  
+  /* Animation timing and easing */
   --slide-animation-duration: 150ms;
   --merge-animation-duration: 200ms;
   --appear-animation-duration: 200ms;
+  --hue-change-duration: 500ms;
+  
+  /* Enhanced easing curves */
+  --ease-out-back: cubic-bezier(0.34, 1.56, 0.64, 1);
+  --ease-in-out-back: cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --ease-smooth: cubic-bezier(0.25, 0.46, 0.45, 0.94);
 }
 
-/* Light mode color overrides */
+/* Light mode responsive adjustments */
 body.light-mode {
-  --primary-color: #f9f9f9;
-  --secondary-color: #333333;
-  --overlay-dark: rgba(230, 240, 255, 0.8);
+  --primary-color: #f8f9fa;
+  --secondary-color: #2d3748;
+  --button-background: rgba(255, 255, 255, 0.8);
+  --button-hover-background: rgba(0, 0, 0, 0.1);
   
-  /* Light mode tile colors */
-  --tile-2-bg: hsl(180, 30%, 95%);
-  --tile-2-text: hsl(30, 30%, 20%);
-  --tile-4-bg: hsl(180, 35%, 85%);
-  --tile-4-text: hsl(30, 35%, 15%);
-  --tile-8-bg: hsl(35, 85%, 60%);
-  --tile-8-text: hsl(0, 0%, 100%);
-  --tile-16-bg: hsl(25, 85%, 55%);
-  /* Other tile colors remain the same */
+  /* Light mode tile adjustments with better contrast */
+  --tile-2-bg: hsl(calc(180 + var(--hue-value)), 40%, 90%);
+  --tile-2-text: hsl(0, 0%, 20%);
+  --tile-4-bg: hsl(calc(190 + var(--hue-value)), 50%, 80%);
+  --tile-4-text: hsl(0, 0%, 15%);
+}
+
+/* Light mode responsive adjustments */
+body.light-mode {
+  --primary-color: #f8f9fa;
+  --secondary-color: #2d3748;
+  --button-background: rgba(255, 255, 255, 0.8);
+  --button-hover-background: rgba(0, 0, 0, 0.1);
+  
+  /* Light mode tile adjustments with better contrast */
+  --tile-2-bg: hsl(calc(180 + var(--hue-value)), 40%, 90%);
+  --tile-2-text: hsl(0, 0%, 20%);
+  --tile-4-bg: hsl(calc(190 + var(--hue-value)), 50%, 80%);
+  --tile-4-text: hsl(0, 0%, 15%);
+}
+
+/* Enhanced hue transition class */
+body.hue-transitioning * {
+  transition: background-color var(--hue-change-duration) var(--ease-smooth),
+              color var(--hue-change-duration) var(--ease-smooth),
+              border-color var(--hue-change-duration) var(--ease-smooth),
+              box-shadow var(--hue-change-duration) var(--ease-smooth) !important;
 }
 
 /* Body styles */
@@ -1247,5 +1296,153 @@ footer .container {
   #leaderboardTable, #statsTable {
     min-width: 100%;
     white-space: nowrap;
+  }
+}
+
+/* ==================== */
+/* Enhanced Animations */
+/* ==================== */
+
+/* Pulse glow effect for high-value tiles */
+@keyframes pulse-glow {
+  0% { box-shadow: var(--tile-glow, 0 0 10px rgba(255, 255, 255, 0.3)); }
+  100% { box-shadow: var(--tile-glow, 0 0 20px rgba(255, 255, 255, 0.6)); }
+}
+
+/* Enhanced slide animations with better physics */
+@keyframes slide-from-up {
+  0% { transform: translateY(-100px) scale(0.9); opacity: 0.7; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@keyframes slide-from-down {
+  0% { transform: translateY(100px) scale(0.9); opacity: 0.7; }
+  100% { transform: translateY(0) scale(1); opacity: 1; }
+}
+
+@keyframes slide-from-left {
+  0% { transform: translateX(-100px) scale(0.9); opacity: 0.7; }
+  100% { transform: translateX(0) scale(1); opacity: 1; }
+}
+
+@keyframes slide-from-right {
+  0% { transform: translateX(100px) scale(0.9); opacity: 0.7; }
+  100% { transform: translateX(0) scale(1); opacity: 1; }
+}
+
+/* Color change ripple effect */
+@keyframes color-ripple {
+  0% { 
+    width: 0; 
+    height: 0; 
+    opacity: 0.6; 
+  }
+  50% { 
+    opacity: 0.4; 
+  }
+  100% { 
+    width: 200px; 
+    height: 200px; 
+    opacity: 0; 
+  }
+}
+
+.color-change-ripple {
+  animation: color-ripple 0.6s ease-out;
+}
+
+/* Enhanced tile animations */
+.tile.new-tile {
+  animation: appear var(--appear-animation-duration) var(--ease-out-back);
+}
+
+.tile.merged {
+  animation: merge var(--merge-animation-duration) var(--ease-out-back);
+}
+
+.tile.slide-from-up {
+  animation: slide-from-up var(--slide-animation-duration) var(--ease-smooth);
+}
+
+.tile.slide-from-down {
+  animation: slide-from-down var(--slide-animation-duration) var(--ease-smooth);
+}
+
+.tile.slide-from-left {
+  animation: slide-from-left var(--slide-animation-duration) var(--ease-smooth);
+}
+
+.tile.slide-from-right {
+  animation: slide-from-right var(--slide-animation-duration) var(--ease-smooth);
+}
+
+/* Swipe indicator animation */
+.swipe-indicator {
+  animation: swipe-fade 0.3s ease-out;
+}
+
+@keyframes swipe-fade {
+  0% { opacity: 0.8; transform: translate(-50%, -50%) scale(1); }
+  100% { opacity: 0; transform: translate(-50%, -50%) scale(1.5); }
+}
+
+/* Enhanced button hover effects */
+button:hover {
+  transform: translateY(-2px) scale(1.05);
+  box-shadow: 0 4px 15px rgba(255, 255, 255, 0.3);
+}
+
+button:active {
+  transform: translateY(0) scale(0.98);
+}
+
+/* Change color button specific animations */
+#changeColor-button {
+  transition: all var(--transition-duration) var(--ease-smooth);
+}
+
+#changeColor-button:hover {
+  transform: translateY(-3px) scale(1.1) rotate(5deg);
+  box-shadow: 0 6px 20px hsla(var(--hue-value), 70%, 50%, 0.4);
+}
+
+/* Board container responsive scaling */
+#board-container {
+  transition: transform var(--transition-duration) var(--ease-smooth),
+              box-shadow var(--hue-transition-duration) var(--ease-smooth);
+}
+
+#board-container:focus {
+  transform: scale(1.02);
+}
+
+/* Game section responsive enhancements */
+.game-section {
+  transition: transform var(--transition-duration) var(--ease-smooth),
+              filter var(--hue-transition-duration) var(--ease-smooth);
+}
+
+/* Score container enhancements */
+#score-container {
+  transition: background-color var(--hue-transition-duration) var(--ease-smooth),
+              box-shadow var(--hue-transition-duration) var(--ease-smooth);
+}
+
+/* Accessibility: Reduce motion for users who prefer it */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  
+  .tile {
+    animation: none !important;
+    transition: none !important;
+  }
+  
+  button:hover {
+    transform: none;
   }
 }

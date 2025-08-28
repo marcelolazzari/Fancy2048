@@ -31,21 +31,84 @@ class Game {
     this.animationFrameId = null;
     this.lastMoveDirection = null;
 
+    // Touch handling properties
+    this.touchStartX = null;
+    this.touchStartY = null;
+    this.touchStartTime = null;
+    this.touchMoved = false;
+
+    // Mouse handling properties (for desktop drag support)
+    this.mouseStartX = null;
+    this.mouseStartY = null;
+    this.mouseStartTime = null;
+    this.isDragging = false;
+
+    // Resize observer for responsive design
+    this.resizeObserver = null;
+
+    // Performance optimization
+    this.debounceTimeout = null;
+
     // Initialize the game
     this.addEventListeners();
     this.applyTheme();
     this.updateHue(); // This will call updateTileColors()
     this.reset(); // Reset after theme and colors are set
-    window.addEventListener('resize', this.debounce(() => this.refreshLayout(), 100));
-    window.addEventListener('orientationchange', () => setTimeout(() => this.refreshLayout(), 300));
+    
+    // Enhanced responsive handling
+    this.setupResponsiveHandlers();
+    
     this.startTimer();
 
     // Initialize resize observer for better font scaling
     this.initializeResizeObserver();
   }
 
+  setupResponsiveHandlers() {
+    // Enhanced window resize handling
+    window.addEventListener('resize', this.debounce(() => {
+      this.refreshLayout();
+      this.updateTileFontSizes();
+    }, 150));
+    
+    // Orientation change handling with delay for mobile
+    window.addEventListener('orientationchange', () => {
+      setTimeout(() => {
+        this.refreshLayout();
+        this.updateTileFontSizes();
+      }, 300);
+    });
+
+    // Viewport meta tag adjustment for mobile
+    if (this.isMobileDevice()) {
+      this.adjustViewportForMobile();
+    }
+
+    // Handle visibility changes to pause/resume timer
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        if (!this.isPaused && this.gameState === 'playing') {
+          this.togglePause();
+        }
+      }
+    });
+  }
+
+  adjustViewportForMobile() {
+    // Dynamic viewport adjustment for better mobile experience
+    const viewport = document.querySelector('meta[name="viewport"]');
+    if (viewport) {
+      viewport.content = 'width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover';
+    }
+
+    // Prevent iOS Safari bounce scrolling
+    document.body.style.position = 'fixed';
+    document.body.style.width = '100%';
+    document.body.style.height = '100%';
+  }
+
   addEventListeners() {
-    // Add event listeners with null checks
+    // Add event listeners with null checks and improved touch handling
     const resetButton = document.getElementById('reset-button');
     if (resetButton) {
       resetButton.addEventListener('click', () => {
@@ -58,20 +121,46 @@ class Game {
     
     const boardContainer = document.getElementById('board-container');
     if (boardContainer) {
-      boardContainer.addEventListener('touchstart', this.handleTouchStart.bind(this), false);
-      boardContainer.addEventListener('touchend', this.handleTouchEnd.bind(this), false);
+      // Enhanced touch event handling with passive options for better performance
+      boardContainer.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false });
+      boardContainer.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
+      boardContainer.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: false });
+      boardContainer.addEventListener('touchcancel', this.resetTouchState.bind(this), { passive: true });
+      
+      // Add mouse events for desktop drag simulation (optional)
+      boardContainer.addEventListener('mousedown', this.handleMouseStart.bind(this));
+      boardContainer.addEventListener('mousemove', this.handleMouseMove.bind(this));
+      boardContainer.addEventListener('mouseup', this.handleMouseEnd.bind(this));
+      boardContainer.addEventListener('mouseleave', this.resetMouseState.bind(this));
     }
     
+    // Prevent page scrolling and zooming on mobile during gameplay
     document.addEventListener('touchmove', this.preventScroll, { passive: false });
+    document.addEventListener('gesturestart', e => e.preventDefault());
+    document.addEventListener('gesturechange', e => e.preventDefault());
+    document.addEventListener('gestureend', e => e.preventDefault());
     
     const changeColorButton = document.getElementById('changeColor-button');
     if (changeColorButton) {
       changeColorButton.addEventListener('click', this.changeHue.bind(this));
+      // Add keyboard accessibility
+      changeColorButton.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          this.changeHue();
+        }
+      });
     }
     
     const backButton = document.getElementById('back-button');
     if (backButton) {
       backButton.addEventListener('click', this.undoMove.bind(this));
+      backButton.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          this.undoMove();
+        }
+      });
     }
     
     const leaderboardButton = document.getElementById('leaderboard-button');
@@ -82,6 +171,12 @@ class Game {
     const pauseButton = document.getElementById('pause-button');
     if (pauseButton) {
       pauseButton.addEventListener('click', this.togglePause.bind(this));
+      pauseButton.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          this.togglePause();
+        }
+      });
     }
     
     const boardSizeButton = document.getElementById('board-size-button');
@@ -92,6 +187,137 @@ class Game {
     const themeToggleButton = document.getElementById('theme-toggle-button');
     if (themeToggleButton) {
       themeToggleButton.addEventListener('click', this.toggleTheme.bind(this));
+      themeToggleButton.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          this.toggleTheme();
+        }
+      });
+    }
+    
+    // Add advanced keyboard shortcuts
+    document.addEventListener('keydown', (e) => {
+      if (e.ctrlKey || e.metaKey) {
+        switch (e.key) {
+          case 'z':
+            e.preventDefault();
+            this.undoMove();
+            break;
+          case 'r':
+            e.preventDefault();
+            this.reset();
+            break;
+          case 'p':
+            e.preventDefault();
+            this.togglePause();
+            break;
+        }
+      }
+    });
+    
+    // Add focus management for accessibility
+    this.setupFocusManagement();
+  }
+
+  setupFocusManagement() {
+    // Improve focus management for screen readers and keyboard navigation
+    const focusableElements = document.querySelectorAll('button, [tabindex]:not([tabindex="-1"])');
+    
+    focusableElements.forEach(element => {
+      element.addEventListener('focus', (e) => {
+        e.target.style.outline = '2px solid var(--highlight-color)';
+        e.target.style.outlineOffset = '2px';
+      });
+      
+      element.addEventListener('blur', (e) => {
+        e.target.style.outline = '';
+        e.target.style.outlineOffset = '';
+      });
+    });
+    
+    // Add board container focus for keyboard navigation
+    const boardContainer = document.getElementById('board-container');
+    if (boardContainer) {
+      boardContainer.setAttribute('tabindex', '0');
+      boardContainer.setAttribute('aria-label', `${this.size}x${this.size} game board`);
+      boardContainer.addEventListener('focus', () => {
+        boardContainer.style.boxShadow = `0 0 0 3px var(--highlight-color)`;
+      });
+      boardContainer.addEventListener('blur', () => {
+        boardContainer.style.boxShadow = '';
+      });
+    }
+  }
+
+  // Mouse event handlers for desktop drag support (optional enhancement)
+  handleMouseStart(event) {
+    if (this.isPaused || this.gameState !== 'playing') return;
+    
+    this.mouseStartX = event.clientX;
+    this.mouseStartY = event.clientY;
+    this.mouseStartTime = Date.now();
+    this.isDragging = false;
+    
+    event.preventDefault();
+  }
+
+  handleMouseMove(event) {
+    if (!this.mouseStartX || !this.mouseStartY) return;
+    
+    const deltaX = Math.abs(event.clientX - this.mouseStartX);
+    const deltaY = Math.abs(event.clientY - this.mouseStartY);
+    
+    if (deltaX > 5 || deltaY > 5) {
+      this.isDragging = true;
+    }
+    
+    event.preventDefault();
+  }
+
+  handleMouseEnd(event) {
+    if (!this.mouseStartX || !this.mouseStartY || this.isPaused || this.gameState !== 'playing') return;
+    
+    const deltaX = event.clientX - this.mouseStartX;
+    const deltaY = event.clientY - this.mouseStartY;
+    const deltaTime = Date.now() - this.mouseStartTime;
+    
+    // Only process as swipe if mouse was dragged and released quickly
+    if (this.isDragging && deltaTime < 500) {
+      const minSwipeDistance = 30;
+      const swipeDistance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+      
+      if (swipeDistance >= minSwipeDistance) {
+        if (Math.abs(deltaX) > Math.abs(deltaY)) {
+          this.move(deltaX > 0 ? 'right' : 'left');
+        } else {
+          this.move(deltaY > 0 ? 'down' : 'up');
+        }
+      }
+    }
+    
+    this.resetMouseState();
+    event.preventDefault();
+  }
+
+  resetMouseState() {
+    this.mouseStartX = null;
+    this.mouseStartY = null;
+    this.mouseStartTime = null;
+    this.isDragging = false;
+  }
+
+  preventScroll(event) {
+    // Enhanced scroll prevention with better target detection
+    const target = event.target;
+    const gameArea = document.querySelector('main');
+    
+    if (gameArea && gameArea.contains(target)) {
+      // Allow scrolling in score containers and controls, but prevent elsewhere
+      const allowScrollElements = target.closest('#score-container, #controls-container, .stats-section');
+      
+      if (!allowScrollElements) {
+        event.preventDefault();
+      }
     }
   }
 
@@ -360,6 +586,9 @@ class Game {
   move(direction) {
     if (this.animationInProgress || this.gameState !== 'playing') return false;
     
+    // Start animation lock
+    this.animationInProgress = true;
+    
     this.lastMoveDirection = direction;
     this.saveGameState();
     
@@ -367,37 +596,314 @@ class Game {
     this.lastMerged = []; // Reset merged tiles tracking
     this.lastMoveScore = this.score; // Store score before move
     
-    switch (direction) {
-      case 'up':
-        moved = this.moveUp();
-        break;
-      case 'down':
-        moved = this.moveDown();
-        break;
-      case 'left':
-        moved = this.moveLeft();
-        break;
-      case 'right':
-        moved = this.moveRight();
-        break;
-    }
+    // Create move promise for animation coordination
+    const movePromise = new Promise((resolve) => {
+      switch (direction) {
+        case 'up':
+          moved = this.moveUp();
+          break;
+        case 'down':
+          moved = this.moveDown();
+          break;
+        case 'left':
+          moved = this.moveLeft();
+          break;
+        case 'right':
+          moved = this.moveRight();
+          break;
+      }
+      resolve(moved);
+    });
     
-    if (moved) {
-      this.moves++;
-      this.addRandomTile();
-      this.updateUI();
+    movePromise.then((moved) => {
+      if (moved) {
+        this.moves++;
+        
+        // Calculate score delta for popup
+        this.scoreDelta = this.score - this.lastMoveScore;
+        if (this.scoreDelta > 0) {
+          this.showScorePopup(this.scoreDelta);
+        }
+        
+        // Update UI first, then add new tile after animation
+        this.updateUI();
+        
+        // Add slight delay for better visual feedback
+        setTimeout(() => {
+          this.addRandomTile();
+          this.updateUI();
+          
+          // Check game state after move
+          setTimeout(() => {
+            this.checkGameState();
+            this.animationInProgress = false;
+          }, 100);
+        }, 150);
+      } else {
+        this.animationInProgress = false;
+      }
+    });
+    
+    return movePromise;
+  }
+
+  // Enhanced tile creation with better animations
+  createTileElement(row, col, value, isNew = false) {
+    const boardContainer = document.getElementById('board-container');
+    const tile = document.createElement('div');
+    tile.className = 'tile';
+    tile.setAttribute('data-value', value);
+    tile.dataset.row = row;
+    tile.dataset.col = col;
+    tile.textContent = value;
+    
+    // Add accessibility attributes
+    tile.setAttribute('role', 'gridcell');
+    tile.setAttribute('aria-label', `Tile with value ${value}`);
+    
+    // Position the tile in the grid
+    const gridPosition = row * this.size + col;
+    const gridCell = boardContainer.children[gridPosition];
+    
+    if (gridCell) {
+      gridCell.appendChild(tile);
       
-      // Calculate score delta for popup
-      this.scoreDelta = this.score - this.lastMoveScore;
-      if (this.scoreDelta > 0) {
-        this.showScorePopup(this.scoreDelta);
+      // Apply dynamic font sizing
+      this.adjustTileFontSize(tile);
+      
+      // Apply glow effect based on value
+      this.applyTileGlow(tile, value);
+      
+      // Add entrance animation for new tiles
+      if (isNew) {
+        tile.classList.add('new-tile');
+        tile.style.transform = 'scale(0)';
+        tile.style.opacity = '0';
+        
+        // Animate entrance
+        requestAnimationFrame(() => {
+          tile.style.transform = 'scale(1.1)';
+          tile.style.opacity = '1';
+          tile.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
+          
+          setTimeout(() => {
+            tile.style.transform = 'scale(1)';
+          }, 100);
+        });
       }
       
-      // Check game state after move
-      this.checkGameState();
+      // Add merge animation for merged tiles
+      if (this.lastMerged.some(pos => pos.row === row && pos.col === col)) {
+        tile.classList.add('merged');
+        setTimeout(() => {
+          tile.style.transform = 'scale(1.15)';
+          tile.style.transition = 'transform 0.15s ease';
+          
+          setTimeout(() => {
+            tile.style.transform = 'scale(1)';
+          }, 150);
+        }, 50);
+      }
+    } else {
+      console.error(`No grid cell found at position ${row}, ${col}`);
+      boardContainer.appendChild(tile);
     }
     
-    return moved;
+    return tile;
+  }
+
+  applyTileGlow(tile, value) {
+    // Apply enhanced glow effects based on tile value
+    if (value >= 128) {
+      const glowProperty = value >= 4096 ? '--tile-super-glow' : `--tile-${value}-glow`;
+      const glowValue = getComputedStyle(document.documentElement).getPropertyValue(glowProperty);
+      
+      if (glowValue.trim()) {
+        tile.style.boxShadow = glowValue;
+        
+        // Add pulsing effect for high-value tiles
+        if (value >= 1024) {
+          tile.style.animation = `pulse-glow 2s ease-in-out infinite alternate`;
+        }
+      }
+    }
+  }
+
+  // Enhanced font sizing with better scaling
+  adjustTileFontSize(tileElement) {
+    const value = parseInt(tileElement.getAttribute('data-value'));
+    const numDigits = value.toString().length;
+    
+    // Get actual tile dimensions for more accurate scaling
+    const rect = tileElement.getBoundingClientRect();
+    const tileSize = Math.min(rect.width, rect.height);
+    
+    if (tileSize === 0) {
+      // Fallback to CSS-calculated size if element not yet rendered
+      const computedSize = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--tile-size'));
+      const actualTileSize = computedSize || Math.min(window.innerWidth, window.innerHeight) / (this.size + 1);
+      this.setFontSizeForTile(tileElement, actualTileSize, numDigits, value);
+    } else {
+      this.setFontSizeForTile(tileElement, tileSize, numDigits, value);
+    }
+  }
+
+  setFontSizeForTile(tileElement, tileSize, numDigits, value) {
+    // Enhanced font size calculation with better progression
+    let fontSizePercent;
+    
+    if (numDigits === 1) {
+      fontSizePercent = 0.65; // Larger for single digits
+    } else if (numDigits === 2) {
+      fontSizePercent = 0.5;  // Good size for double digits
+    } else if (numDigits === 3) {
+      fontSizePercent = 0.38; // Smaller for triple digits
+    } else if (numDigits === 4) {
+      fontSizePercent = 0.32; // Even smaller for 4 digits
+    } else {
+      fontSizePercent = 0.28; // Minimum for 5+ digits
+    }
+    
+    // Apply responsive scaling based on device type
+    const scaleFactor = this.isMobileDevice() ? 0.9 : 1.0;
+    fontSizePercent *= scaleFactor;
+    
+    // Calculate final font size with constraints
+    const baseFontSize = tileSize * fontSizePercent;
+    const minFontSize = this.isMobileDevice() ? 10 : 12;
+    const maxFontSize = tileSize * 0.7;
+    
+    const fontSize = Math.max(minFontSize, Math.min(baseFontSize, maxFontSize));
+    tileElement.style.fontSize = `${fontSize}px`;
+    
+    // Adjust line height for better centering
+    tileElement.style.lineHeight = '1';
+    
+    // Dynamic padding based on font size
+    const paddingPercent = Math.max(5, Math.min(15, 10 + numDigits));
+    tileElement.style.padding = `${paddingPercent}%`;
+    
+    // Add font weight adjustment for better readability
+    if (numDigits >= 4) {
+      tileElement.style.fontWeight = '700';
+    } else {
+      tileElement.style.fontWeight = '600';
+    }
+    
+    // Add text shadow for better contrast on light backgrounds
+    if (value >= 8) {
+      tileElement.style.textShadow = '0 1px 3px rgba(0,0,0,0.3)';
+    }
+  }
+
+  // Enhanced UI update with smoother animations
+  updateUI() {
+    // Update score display with animation
+    this.updateScoreDisplay();
+    
+    // Update best score if needed
+    this.updateBestScore();
+    
+    // Clear existing tiles but keep grid cells
+    const boardContainer = document.getElementById('board-container');
+    if (boardContainer) {
+      const gridCells = boardContainer.querySelectorAll('.grid-cell');
+      gridCells.forEach(cell => {
+        // Remove tiles with fade out animation
+        const tiles = cell.querySelectorAll('.tile');
+        tiles.forEach(tile => {
+          tile.style.transition = 'opacity 0.1s ease';
+          tile.style.opacity = '0';
+          setTimeout(() => {
+            if (tile.parentNode) {
+              tile.parentNode.removeChild(tile);
+            }
+          }, 100);
+        });
+      });
+    }
+    
+    // Create new tiles after slight delay
+    setTimeout(() => {
+      for (let i = 0; i < this.size; i++) {
+        for (let j = 0; j < this.size; j++) {
+          if (this.board[i][j] !== 0) {
+            const tile = this.createTileElement(i, j, this.board[i][j]);
+            
+            // Add slide animation based on last move direction
+            if (this.lastMoveDirection && !this.lastMerged.some(pos => pos.row === i && pos.col === j)) {
+              tile.classList.add(`slide-from-${this.getOppositeDirection(this.lastMoveDirection)}`);
+            }
+          }
+        }
+      }
+      
+      // Update tile fonts after rendering
+      setTimeout(() => this.updateTileFontSizes(), 50);
+    }, 110);
+    
+    // Update back button state
+    this.updateBackButtonState();
+  }
+
+  updateScoreDisplay() {
+    const scoreElement = document.getElementById('score');
+    const bestScoreElement = document.getElementById('best-score');
+    const movesElement = document.getElementById('moves');
+    
+    if (scoreElement) {
+      // Animate score changes
+      const oldScore = parseInt(scoreElement.textContent) || 0;
+      if (oldScore !== this.score) {
+        this.animateNumberChange(scoreElement, oldScore, this.score);
+      }
+    }
+    
+    if (bestScoreElement) {
+      const oldBestScore = parseInt(bestScoreElement.textContent) || 0;
+      if (oldBestScore !== this.bestScore) {
+        this.animateNumberChange(bestScoreElement, oldBestScore, this.bestScore);
+        // Add highlight effect for new best score
+        bestScoreElement.style.color = `hsl(${this.hueValue}, 80%, 60%)`;
+        setTimeout(() => {
+          bestScoreElement.style.color = '';
+        }, 1000);
+      }
+    }
+    
+    if (movesElement) {
+      movesElement.textContent = this.moves;
+    }
+  }
+
+  animateNumberChange(element, fromValue, toValue) {
+    const duration = 300;
+    const steps = 20;
+    const stepValue = (toValue - fromValue) / steps;
+    let currentStep = 0;
+    
+    const animate = () => {
+      if (currentStep < steps) {
+        const currentValue = Math.round(fromValue + (stepValue * currentStep));
+        element.textContent = currentValue;
+        currentStep++;
+        requestAnimationFrame(animate);
+      } else {
+        element.textContent = toValue;
+      }
+    };
+    
+    animate();
+  }
+
+  getOppositeDirection(direction) {
+    const opposites = {
+      'up': 'down',
+      'down': 'up',
+      'left': 'right',
+      'right': 'left'
+    };
+    return opposites[direction] || direction;
   }
 
   moveUp() {
@@ -722,62 +1228,281 @@ class Game {
     }
   }
 
-  // Touch handling for mobile
+  // Enhanced touch handling for mobile with better gesture recognition
   handleTouchStart(event) {
     if (this.isPaused || this.gameState !== 'playing') return;
     
-    this.touchStartX = event.touches[0].clientX;
-    this.touchStartY = event.touches[0].clientY;
+    // Support multi-touch by using first touch only
+    const touch = event.touches[0];
+    this.touchStartX = touch.clientX;
+    this.touchStartY = touch.clientY;
+    this.touchStartTime = Date.now();
+    this.touchMoved = false;
     
-    // Prevent default behavior to avoid scrolling
+    // Add visual feedback for touch start
+    const boardContainer = document.getElementById('board-container');
+    if (boardContainer) {
+      boardContainer.style.transform = 'scale(0.98)';
+      boardContainer.style.transition = 'transform 0.1s ease';
+    }
+    
+    // Prevent default behavior to avoid scrolling and context menus
+    event.preventDefault();
+  }
+
+  handleTouchMove(event) {
+    if (!this.touchStartX || !this.touchStartY) return;
+    
+    // Mark that touch has moved (helps distinguish from taps)
+    this.touchMoved = true;
+    
+    // Prevent scrolling during swipe
     event.preventDefault();
   }
 
   handleTouchEnd(event) {
     if (!this.touchStartX || !this.touchStartY || this.isPaused || this.gameState !== 'playing') return;
     
-    const touchEndX = event.changedTouches[0].clientX;
-    const touchEndY = event.changedTouches[0].clientY;
+    const boardContainer = document.getElementById('board-container');
+    if (boardContainer) {
+      boardContainer.style.transform = '';
+      boardContainer.style.transition = '';
+    }
+    
+    const touch = event.changedTouches[0];
+    const touchEndX = touch.clientX;
+    const touchEndY = touch.clientY;
+    const touchEndTime = Date.now();
     
     const deltaX = touchEndX - this.touchStartX;
     const deltaY = touchEndY - this.touchStartY;
+    const deltaTime = touchEndTime - this.touchStartTime;
     
-    // Require minimum swipe distance to trigger move
-    const minSwipeDistance = 30;
+    // Calculate swipe velocity for better gesture recognition
+    const velocity = Math.sqrt(deltaX * deltaX + deltaY * deltaY) / deltaTime;
     
-    if (Math.abs(deltaX) < minSwipeDistance && Math.abs(deltaY) < minSwipeDistance) {
-      return; // Too small movement, ignore
+    // Enhanced swipe detection parameters
+    const minSwipeDistance = Math.max(30, Math.min(window.innerWidth, window.innerHeight) * 0.05);
+    const maxSwipeTime = 1000; // Maximum time for a swipe
+    const minVelocity = 0.1; // Minimum velocity to register as intentional swipe
+    
+    // Check if this qualifies as a swipe
+    const swipeDistance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    const isValidSwipe = swipeDistance >= minSwipeDistance && 
+                        deltaTime <= maxSwipeTime && 
+                        velocity >= minVelocity;
+    
+    if (!isValidSwipe) {
+      this.resetTouchState();
+      return;
     }
     
-    // Determine swipe direction based on which axis had larger movement
-    if (Math.abs(deltaX) > Math.abs(deltaY)) {
-      // Horizontal swipe
-      if (deltaX > 0) {
-        this.move('right');
-      } else {
-        this.move('left');
+    // Determine swipe direction with improved accuracy
+    const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+    const absAngle = Math.abs(angle);
+    
+    let direction = null;
+    
+    // Use angle-based direction detection for more accurate swipe recognition
+    if (absAngle <= 45) {
+      direction = 'right';
+    } else if (absAngle >= 135) {
+      direction = 'left';
+    } else if (angle > 45 && angle < 135) {
+      direction = 'down';
+    } else if (angle < -45 && angle > -135) {
+      direction = 'up';
+    }
+    
+    if (direction) {
+      // Add haptic feedback on supported devices
+      if (navigator.vibrate) {
+        navigator.vibrate(50);
       }
-    } else {
-      // Vertical swipe
-      if (deltaY > 0) {
-        this.move('down');
-      } else {
-        this.move('up');
+      
+      // Perform the move with visual feedback
+      const moved = this.move(direction);
+      
+      if (moved) {
+        // Add swipe direction indicator
+        this.showSwipeIndicator(direction);
       }
     }
     
-    // Reset touch start position
-    this.touchStartX = null;
-    this.touchStartY = null;
-    
-    // Prevent default behavior
+    this.resetTouchState();
     event.preventDefault();
   }
 
-  preventScroll(event) {
-    // Prevent scrolling when touching the game board
-    if (event.target.closest('#board-container')) {
-      event.preventDefault();
+  resetTouchState() {
+    this.touchStartX = null;
+    this.touchStartY = null;
+    this.touchStartTime = null;
+    this.touchMoved = false;
+  }
+
+  showSwipeIndicator(direction) {
+    // Visual feedback for swipe direction
+    const indicator = document.createElement('div');
+    indicator.className = 'swipe-indicator';
+    indicator.innerHTML = this.getDirectionIcon(direction);
+    
+    const boardContainer = document.getElementById('board-container');
+    const rect = boardContainer.getBoundingClientRect();
+    
+    indicator.style.position = 'fixed';
+    indicator.style.left = `${rect.left + rect.width / 2}px`;
+    indicator.style.top = `${rect.top + rect.height / 2}px`;
+    indicator.style.transform = 'translate(-50%, -50%)';
+    indicator.style.fontSize = '2rem';
+    indicator.style.color = `hsl(${this.hueValue}, 70%, 50%)`;
+    indicator.style.opacity = '0.8';
+    indicator.style.pointerEvents = 'none';
+    indicator.style.zIndex = '1000';
+    indicator.style.transition = 'opacity 0.3s ease, transform 0.3s ease';
+    indicator.style.textShadow = '0 2px 4px rgba(0,0,0,0.5)';
+    
+    document.body.appendChild(indicator);
+    
+    // Animate indicator
+    requestAnimationFrame(() => {
+      indicator.style.opacity = '0';
+      indicator.style.transform = `translate(-50%, -50%) scale(1.5) translate${this.getDirectionOffset(direction)}`;
+    });
+    
+    setTimeout(() => {
+      if (indicator.parentNode) {
+        indicator.parentNode.removeChild(indicator);
+      }
+    }, 300);
+  }
+
+  getDirectionIcon(direction) {
+    const icons = {
+      up: '↑',
+      down: '↓',
+      left: '←',
+      right: '→'
+    };
+    return icons[direction] || '•';
+  }
+
+  getDirectionOffset(direction) {
+    const offsets = {
+      up: '(0, -20px)',
+      down: '(0, 20px)',
+      left: '(-20px, 0)',
+      right: '(20px, 0)'
+    };
+    return offsets[direction] || '(0, 0)';
+  }
+
+  // Enhanced responsive layout management
+  refreshLayout() {
+    // Update CSS variables for responsive layout
+    document.documentElement.style.setProperty('--size', this.size);
+    
+    // Calculate optimal sizes based on viewport
+    const vmin = Math.min(window.innerWidth, window.innerHeight);
+    const availableSpace = vmin * 0.85; // Use 85% of smallest viewport dimension
+    const gap = Math.max(8, Math.min(20, availableSpace * 0.02)); // Responsive gap
+    
+    document.documentElement.style.setProperty('--gap', `${gap}px`);
+    
+    // Adjust tile border radius based on size
+    const borderRadius = Math.max(8, Math.min(15, gap * 0.8));
+    document.documentElement.style.setProperty('--tile-border-radius', `${borderRadius}px`);
+    
+    // Update mobile-specific measurements
+    if (this.isMobileDevice()) {
+      this.applyMobileOptimizations();
+    } else {
+      this.applyDesktopOptimizations();
+    }
+    
+    // Clear and redraw the board
+    this.updateUI();
+    
+    // Ensure proper font sizing after layout change
+    setTimeout(() => this.updateTileFontSizes(), 100);
+  }
+
+  isMobileDevice() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+           ('ontouchstart' in window) ||
+           (navigator.maxTouchPoints > 0);
+  }
+
+  applyMobileOptimizations() {
+    // Mobile-specific optimizations
+    const controlsContainer = document.getElementById('controls-container');
+    const scoreContainer = document.getElementById('score-container');
+    
+    if (controlsContainer) {
+      controlsContainer.style.gap = '8px';
+      controlsContainer.style.padding = '8px';
+    }
+    
+    if (scoreContainer) {
+      scoreContainer.style.fontSize = '0.9rem';
+      scoreContainer.style.padding = '8px';
+    }
+    
+    // Adjust header for mobile
+    const header = document.querySelector('header');
+    if (header) {
+      header.style.padding = '8px 16px';
+    }
+    
+    // Enable touch-friendly button sizes
+    const buttons = document.querySelectorAll('button');
+    buttons.forEach(button => {
+      button.style.minWidth = '44px';
+      button.style.minHeight = '44px';
+      button.style.padding = '8px 12px';
+    });
+    
+    // Optimize main layout for mobile
+    const main = document.querySelector('main');
+    if (main) {
+      main.style.padding = '8px';
+      main.style.gap = '12px';
+    }
+  }
+
+  applyDesktopOptimizations() {
+    // Desktop-specific optimizations
+    const controlsContainer = document.getElementById('controls-container');
+    const scoreContainer = document.getElementById('score-container');
+    
+    if (controlsContainer) {
+      controlsContainer.style.gap = '15px';
+      controlsContainer.style.padding = '10px';
+    }
+    
+    if (scoreContainer) {
+      scoreContainer.style.fontSize = '1rem';
+      scoreContainer.style.padding = '15px';
+    }
+    
+    // Reset header for desktop
+    const header = document.querySelector('header');
+    if (header) {
+      header.style.padding = '10px 20px';
+    }
+    
+    // Reset button sizes for desktop
+    const buttons = document.querySelectorAll('button');
+    buttons.forEach(button => {
+      button.style.minWidth = '';
+      button.style.minHeight = '';
+      button.style.padding = '10px 20px';
+    });
+    
+    // Optimize main layout for desktop
+    const main = document.querySelector('main');
+    if (main) {
+      main.style.padding = '10px';
+      main.style.gap = '20px';
     }
   }
 
@@ -838,81 +1563,246 @@ class Game {
   }
 
   updateHue() {
-    // Update the CSS custom property
+    // Update the CSS custom property with smooth transition
     document.documentElement.style.setProperty('--hue-value', this.hueValue);
     
-    // Update color button color to reflect current hue
+    // Update color button with animated gradient to reflect current hue
     const colorButton = document.getElementById('changeColor-button');
     if (colorButton) {
-      colorButton.style.color = `hsl(${this.hueValue}, 70%, 50%)`;
+      const currentHue = this.hueValue;
+      const nextHue = (this.hueValue + 30) % 360;
+      colorButton.style.background = `linear-gradient(45deg, hsl(${currentHue}, 70%, 50%) 30%, hsl(${nextHue}, 70%, 50%) 70%)`;
+      colorButton.style.color = '#ffffff';
+      colorButton.style.textShadow = '0 1px 2px rgba(0,0,0,0.5)';
     }
+    
+    // Update background elements with subtle hue shift
+    this.updateBackgroundHue();
     
     // Update all tile colors dynamically based on hue
     this.updateTileColors();
   }
 
+  updateBackgroundHue() {
+    // Apply subtle hue shifts to game elements for cohesive theming
+    const gameSection = document.querySelector('.game-section');
+    const scoreContainer = document.getElementById('score-container');
+    const boardContainer = document.getElementById('board-container');
+    
+    if (gameSection) {
+      gameSection.style.filter = `hue-rotate(${this.hueValue * 0.1}deg) brightness(${1 + this.hueValue * 0.0002})`;
+    }
+    
+    if (scoreContainer) {
+      scoreContainer.style.background = `rgba(${this.getHueRGB()}, 0.1)`;
+      scoreContainer.style.boxShadow = `0 0 15px rgba(${this.getHueRGB()}, 0.3)`;
+    }
+    
+    if (boardContainer) {
+      boardContainer.style.boxShadow = `0 0 20px rgba(${this.getHueRGB()}, 0.4)`;
+    }
+  }
+
+  getHueRGB() {
+    // Convert current hue to RGB values for use in rgba()
+    const hsl = { h: this.hueValue, s: 70, l: 50 };
+    const rgb = this.hslToRgb(hsl.h, hsl.s, hsl.l);
+    return `${rgb.r}, ${rgb.g}, ${rgb.b}`;
+  }
+
+  hslToRgb(h, s, l) {
+    h /= 360;
+    s /= 100;
+    l /= 100;
+    const a = s * Math.min(l, 1 - l);
+    const f = n => {
+      const k = (n + h * 12) % 12;
+      const color = l - a * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+      return Math.round(255 * color);
+    };
+    return { r: f(0), g: f(8), b: f(4) };
+  }
+
   updateTileColors() {
-    // Define base hues for each tile value (these will be offset by the current hue)
+    // Enhanced tile color configurations with better visual progression
     const tileColorConfig = {
-      2: { baseHue: 180, saturation: 60, lightness: 95, textColor: 'hsl(30, 20%, 30%)' },
-      4: { baseHue: 180, saturation: 60, lightness: 90, textColor: 'hsl(30, 25%, 25%)' },
-      8: { baseHue: 35, saturation: 90, lightness: 65, textColor: 'hsl(0, 0%, 100%)' },
-      16: { baseHue: 25, saturation: 90, lightness: 60, textColor: 'hsl(0, 0%, 100%)' },
-      32: { baseHue: 15, saturation: 90, lightness: 60, textColor: 'hsl(0, 0%, 100%)' },
-      64: { baseHue: 5, saturation: 90, lightness: 60, textColor: 'hsl(0, 0%, 100%)' },
-      128: { baseHue: 50, saturation: 70, lightness: 65, textColor: 'hsl(0, 0%, 100%)' },
-      256: { baseHue: 50, saturation: 75, lightness: 60, textColor: 'hsl(0, 0%, 100%)' },
-      512: { baseHue: 50, saturation: 80, lightness: 55, textColor: 'hsl(0, 0%, 100%)' },
-      1024: { baseHue: 50, saturation: 85, lightness: 50, textColor: 'hsl(0, 0%, 100%)' },
-      2048: { baseHue: 50, saturation: 90, lightness: 45, textColor: 'hsl(0, 0%, 100%)' },
-      super: { baseHue: 285, saturation: 70, lightness: 40, textColor: 'hsl(0, 0%, 100%)' }
+      2: { 
+        baseHue: 200, saturation: 50, lightness: 95, 
+        textColor: this.isLightMode ? 'hsl(0, 0%, 20%)' : 'hsl(30, 20%, 30%)',
+        glowIntensity: 0.1
+      },
+      4: { 
+        baseHue: 190, saturation: 55, lightness: 90, 
+        textColor: this.isLightMode ? 'hsl(0, 0%, 15%)' : 'hsl(30, 25%, 25%)',
+        glowIntensity: 0.15
+      },
+      8: { 
+        baseHue: 35, saturation: 85, lightness: this.isLightMode ? 70 : 65, 
+        textColor: 'hsl(0, 0%, 100%)',
+        glowIntensity: 0.2
+      },
+      16: { 
+        baseHue: 25, saturation: 85, lightness: this.isLightMode ? 65 : 60, 
+        textColor: 'hsl(0, 0%, 100%)',
+        glowIntensity: 0.25
+      },
+      32: { 
+        baseHue: 15, saturation: 90, lightness: this.isLightMode ? 65 : 60, 
+        textColor: 'hsl(0, 0%, 100%)',
+        glowIntensity: 0.3
+      },
+      64: { 
+        baseHue: 5, saturation: 90, lightness: this.isLightMode ? 65 : 60, 
+        textColor: 'hsl(0, 0%, 100%)',
+        glowIntensity: 0.35
+      },
+      128: { 
+        baseHue: 50, saturation: 75, lightness: this.isLightMode ? 75 : 65, 
+        textColor: 'hsl(0, 0%, 100%)',
+        glowIntensity: 0.4
+      },
+      256: { 
+        baseHue: 50, saturation: 80, lightness: this.isLightMode ? 70 : 60, 
+        textColor: 'hsl(0, 0%, 100%)',
+        glowIntensity: 0.45
+      },
+      512: { 
+        baseHue: 50, saturation: 85, lightness: this.isLightMode ? 65 : 55, 
+        textColor: 'hsl(0, 0%, 100%)',
+        glowIntensity: 0.5
+      },
+      1024: { 
+        baseHue: 50, saturation: 90, lightness: this.isLightMode ? 60 : 50, 
+        textColor: 'hsl(0, 0%, 100%)',
+        glowIntensity: 0.6
+      },
+      2048: { 
+        baseHue: 45, saturation: 95, lightness: this.isLightMode ? 55 : 45, 
+        textColor: 'hsl(0, 0%, 100%)',
+        glowIntensity: 0.7
+      },
+      super: { 
+        baseHue: 280, saturation: 80, lightness: this.isLightMode ? 50 : 40, 
+        textColor: 'hsl(0, 0%, 100%)',
+        glowIntensity: 0.8
+      }
     };
 
-    // Apply light mode adjustments if needed
-    if (this.isLightMode) {
-      // In light mode, adjust saturation and lightness for better contrast
-      tileColorConfig[2] = { baseHue: 180, saturation: 40, lightness: 90, textColor: 'hsl(0, 0%, 20%)' };
-      tileColorConfig[4] = { baseHue: 180, saturation: 50, lightness: 80, textColor: 'hsl(0, 0%, 15%)' };
-      tileColorConfig[8] = { baseHue: 35, saturation: 80, lightness: 65, textColor: 'hsl(0, 0%, 100%)' };
-      tileColorConfig[16] = { baseHue: 25, saturation: 80, lightness: 60, textColor: 'hsl(0, 0%, 100%)' };
-      tileColorConfig[32] = { baseHue: 15, saturation: 85, lightness: 60, textColor: 'hsl(0, 0%, 100%)' };
-      tileColorConfig[64] = { baseHue: 5, saturation: 85, lightness: 60, textColor: 'hsl(0, 0%, 100%)' };
-      tileColorConfig[128] = { baseHue: 50, saturation: 65, lightness: 70, textColor: 'hsl(0, 0%, 100%)' };
-      tileColorConfig[256] = { baseHue: 50, saturation: 70, lightness: 65, textColor: 'hsl(0, 0%, 100%)' };
-      tileColorConfig[512] = { baseHue: 50, saturation: 75, lightness: 60, textColor: 'hsl(0, 0%, 100%)' };
-      tileColorConfig[1024] = { baseHue: 50, saturation: 80, lightness: 55, textColor: 'hsl(0, 0%, 100%)' };
-      tileColorConfig[2048] = { baseHue: 50, saturation: 85, lightness: 50, textColor: 'hsl(0, 0%, 100%)' };
-      tileColorConfig.super = { baseHue: 285, saturation: 65, lightness: 45, textColor: 'hsl(0, 0%, 100%)' };
-    }
-
-    // Update CSS custom properties for each tile value
+    // Update CSS custom properties with enhanced visual effects
     Object.entries(tileColorConfig).forEach(([value, config]) => {
+      const adjustedHue = (config.baseHue + this.hueValue) % 360;
+      const glowColor = `hsl(${adjustedHue}, ${config.saturation}%, ${Math.min(config.lightness + 20, 95)}%)`;
+      
       if (value === 'super') {
-        // Handle super tiles (4096+)
-        const adjustedHue = (config.baseHue + this.hueValue) % 360;
+        // Enhanced super tiles with gradient and glow
         document.documentElement.style.setProperty(
           '--tile-super-bg', 
-          `hsl(${adjustedHue}, ${config.saturation}%, ${config.lightness}%)`
+          `linear-gradient(135deg, 
+            hsl(${adjustedHue}, ${config.saturation}%, ${config.lightness}%) 0%,
+            hsl(${(adjustedHue + 15) % 360}, ${config.saturation}%, ${config.lightness - 5}%) 100%)`
         );
         document.documentElement.style.setProperty('--tile-super-text', config.textColor);
+        document.documentElement.style.setProperty('--tile-super-glow', 
+          `0 0 ${20 * config.glowIntensity}px ${glowColor}`);
       } else {
-        // Handle regular tiles
-        const adjustedHue = (config.baseHue + this.hueValue) % 360;
-        document.documentElement.style.setProperty(
-          `--tile-${value}-bg`, 
-          `hsl(${adjustedHue}, ${config.saturation}%, ${config.lightness}%)`
-        );
+        // Enhanced regular tiles with subtle gradients for higher values
+        const isHighValue = parseInt(value) >= 128;
+        const bgValue = isHighValue ? 
+          `linear-gradient(135deg, 
+            hsl(${adjustedHue}, ${config.saturation}%, ${config.lightness}%) 0%,
+            hsl(${(adjustedHue + 10) % 360}, ${config.saturation}%, ${config.lightness - 3}%) 100%)` :
+          `hsl(${adjustedHue}, ${config.saturation}%, ${config.lightness}%)`;
+        
+        document.documentElement.style.setProperty(`--tile-${value}-bg`, bgValue);
         document.documentElement.style.setProperty(`--tile-${value}-text`, config.textColor);
+        document.documentElement.style.setProperty(`--tile-${value}-glow`, 
+          `0 0 ${15 * config.glowIntensity}px ${glowColor}`);
+      }
+    });
+
+    // Update tiles with glow effects
+    this.applyTileGlowEffects();
+  }
+
+  applyTileGlowEffects() {
+    // Apply glow effects to existing tiles
+    const tiles = document.querySelectorAll('.tile');
+    tiles.forEach(tile => {
+      const value = tile.getAttribute('data-value');
+      const glowProperty = value >= 4096 ? '--tile-super-glow' : `--tile-${value}-glow`;
+      const glowValue = getComputedStyle(document.documentElement).getPropertyValue(glowProperty);
+      if (glowValue.trim()) {
+        tile.style.boxShadow = glowValue;
       }
     });
   }
 
   changeHue() {
-    // Increment hue by 30 degrees and wrap around at 360
+    // Enhanced hue change with smooth animation
+    const oldHue = this.hueValue;
     this.hueValue = (this.hueValue + 30) % 360;
+    
+    // Animate the hue transition
+    this.animateHueTransition(oldHue, this.hueValue);
+    
+    // Update immediately but also set up transition
     this.updateHue();
-    // Force a UI update to refresh tile colors
-    this.updateUI();
+    
+    // Force a UI update to refresh tile colors after a brief delay
+    setTimeout(() => this.updateUI(), 100);
+  }
+
+  animateHueTransition(fromHue, toHue) {
+    // Add transition class to body for smooth color changes
+    document.body.classList.add('hue-transitioning');
+    
+    // Remove transition class after animation completes
+    setTimeout(() => {
+      document.body.classList.remove('hue-transitioning');
+    }, 500);
+    
+    // Create ripple effect from color button
+    this.createColorChangeRipple();
+  }
+
+  createColorChangeRipple() {
+    const colorButton = document.getElementById('changeColor-button');
+    if (!colorButton) return;
+    
+    const ripple = document.createElement('div');
+    ripple.className = 'color-change-ripple';
+    
+    const rect = colorButton.getBoundingClientRect();
+    ripple.style.position = 'fixed';
+    ripple.style.left = `${rect.left + rect.width / 2}px`;
+    ripple.style.top = `${rect.top + rect.height / 2}px`;
+    ripple.style.width = '0px';
+    ripple.style.height = '0px';
+    ripple.style.borderRadius = '50%';
+    ripple.style.background = `radial-gradient(circle, 
+      hsla(${this.hueValue}, 70%, 50%, 0.3) 0%,
+      hsla(${this.hueValue}, 70%, 50%, 0.1) 50%,
+      transparent 100%)`;
+    ripple.style.pointerEvents = 'none';
+    ripple.style.zIndex = '1000';
+    ripple.style.transform = 'translate(-50%, -50%)';
+    ripple.style.transition = 'width 0.6s ease-out, height 0.6s ease-out, opacity 0.6s ease-out';
+    
+    document.body.appendChild(ripple);
+    
+    // Animate ripple expansion
+    requestAnimationFrame(() => {
+      ripple.style.width = '200px';
+      ripple.style.height = '200px';
+      ripple.style.opacity = '0';
+    });
+    
+    // Remove ripple after animation
+    setTimeout(() => {
+      if (ripple.parentNode) {
+        ripple.parentNode.removeChild(ripple);
+      }
+    }, 600);
   }
 
   togglePause() {
