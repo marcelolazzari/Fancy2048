@@ -18,6 +18,7 @@ button:focus, .controls button:focus {
   background-color: rgba(255, 204, 0, 0.4) !important;
   color: #222 !important;
 }
+
 /* Root variables */
 :root {
   --size: 4;
@@ -32,27 +33,28 @@ button:focus, .controls button:focus {
   --reset-button-background: #ff7f50;
   --reset-button-hover-background: #ff4500;
   --overlay-dark: rgba(0, 16, 71, 0.8);
-  --transition-duration: 0.3s; /* Uniform transition duration */
+  --transition-duration: 0.3s;
   --tile-border-radius: 10px;
 }
 
 /* Body styles */
 body {
   font-family: 'Roboto', Arial, sans-serif;
-body {
-  font-family: 'Roboto', Arial, sans-serif;
   background-color: var(--primary-color);
   color: var(--secondary-color);
+  margin: 0;
+  padding: 0;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
   background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
-  color: #fff;
-  font-family: 'Inter', 'Segoe UI', Arial, sans-serif;
+}
 
 .gradient-text {
   background: linear-gradient(90deg, #38f9d7, #b86adf);
   -webkit-background-clip: text;
   background-clip: text;
   -webkit-text-fill-color: transparent;
-  text-fill-color: transparent;
 }
 
 .card {
@@ -928,4 +930,4 @@ footer button:hover {
 
 #back-button:active {
   transform: scale(0.95);
-}}}
+}

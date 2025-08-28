@@ -2162,7 +2162,7 @@ document.addEventListener('DOMContentLoaded', () => {
   let gameInitialized = false;
   
   function initializeGame() {
-    if (!gameInitialized && window.userManager && window.userManager.isLoggedIn()) {
+    if (!gameInitialized) {
       gameInitialized = true;
       setTimeout(() => {
         window.game = new Game(4);
