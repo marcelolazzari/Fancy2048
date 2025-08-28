@@ -15,8 +15,7 @@ class Game {
 
     // Visual settings
     this.isLightMode = localStorage.getItem('isLightMode') === 'true';
-    this.hueValue = 0;
-    this.isRainbowMode = false;
+    this.hueValue = parseInt(localStorage.getItem('hueValue')) || 0;
 
     // Game history and stats
     this.gameStateStack = [];
@@ -38,7 +37,7 @@ class Game {
     window.addEventListener('resize', this.debounce(() => this.refreshLayout(), 100));
     window.addEventListener('orientationchange', () => setTimeout(() => this.refreshLayout(), 300));
     this.applyTheme();
-    this.updateHue();
+    this.updateHue(); // This will call updateTileColors()
     this.startTimer();
 
     // Initialize resize observer for better font scaling
@@ -58,7 +57,6 @@ class Game {
     document.getElementById('changeColor-button').addEventListener('click', this.changeHue.bind(this));
     document.getElementById('back-button').addEventListener('click', this.undoMove.bind(this));
     document.getElementById('leaderboard-button').addEventListener('click', this.openStatisticsPage.bind(this));
-    document.getElementById('rainbowMode-button').addEventListener('click', this.toggleRainbowMode.bind(this));
     document.getElementById('pause-button').addEventListener('click', this.togglePause.bind(this));
     document.getElementById('board-size-button').addEventListener('click', this.changeBoardSize.bind(this));
     document.getElementById('theme-toggle-button').addEventListener('click', this.toggleTheme.bind(this));
@@ -786,52 +784,76 @@ class Game {
     this.isLightMode = !this.isLightMode;
     localStorage.setItem('isLightMode', this.isLightMode);
     this.applyTheme();
+    // Update tile colors for the new theme
+    this.updateTileColors();
   }
 
   updateHue() {
+    // Store the hue value in localStorage for persistence
+    localStorage.setItem('hueValue', this.hueValue);
+    
+    // Update the CSS custom property
     document.documentElement.style.setProperty('--hue-value', this.hueValue);
     
-    // Update color button color
+    // Update color button color to reflect current hue
     const colorButton = document.getElementById('changeColor-button');
     colorButton.style.color = `hsl(${this.hueValue}, 70%, 50%)`;
     
-    if (this.isRainbowMode) {
-      this.startRainbowMode();
+    // Update all tile colors dynamically based on hue
+    this.updateTileColors();
+  }
+
+  updateTileColors() {
+    // Define base hues for each tile value (these will be offset by the current hue)
+    const tileColorConfig = {
+      2: { baseHue: 180, saturation: 60, lightness: 95, textColor: 'hsl(30, 20%, 30%)' },
+      4: { baseHue: 180, saturation: 60, lightness: 90, textColor: 'hsl(30, 25%, 25%)' },
+      8: { baseHue: 35, saturation: 90, lightness: 65, textColor: 'hsl(0, 0%, 100%)' },
+      16: { baseHue: 25, saturation: 90, lightness: 60, textColor: 'hsl(0, 0%, 100%)' },
+      32: { baseHue: 15, saturation: 90, lightness: 60, textColor: 'hsl(0, 0%, 100%)' },
+      64: { baseHue: 5, saturation: 90, lightness: 60, textColor: 'hsl(0, 0%, 100%)' },
+      128: { baseHue: 50, saturation: 70, lightness: 65, textColor: 'hsl(0, 0%, 100%)' },
+      256: { baseHue: 50, saturation: 75, lightness: 60, textColor: 'hsl(0, 0%, 100%)' },
+      512: { baseHue: 50, saturation: 80, lightness: 55, textColor: 'hsl(0, 0%, 100%)' },
+      1024: { baseHue: 50, saturation: 85, lightness: 50, textColor: 'hsl(0, 0%, 100%)' },
+      2048: { baseHue: 50, saturation: 90, lightness: 45, textColor: 'hsl(0, 0%, 100%)' },
+      super: { baseHue: 285, saturation: 70, lightness: 40, textColor: 'hsl(0, 0%, 100%)' }
+    };
+
+    // Apply light mode adjustments if needed
+    if (this.isLightMode) {
+      tileColorConfig[2] = { baseHue: 180, saturation: 30, lightness: 95, textColor: 'hsl(30, 30%, 20%)' };
+      tileColorConfig[4] = { baseHue: 180, saturation: 35, lightness: 85, textColor: 'hsl(30, 35%, 15%)' };
+      tileColorConfig[8] = { baseHue: 35, saturation: 85, lightness: 60, textColor: 'hsl(0, 0%, 100%)' };
+      tileColorConfig[16] = { baseHue: 25, saturation: 85, lightness: 55, textColor: 'hsl(0, 0%, 100%)' };
     }
+
+    // Update CSS custom properties for each tile value
+    Object.entries(tileColorConfig).forEach(([value, config]) => {
+      if (value === 'super') {
+        // Handle super tiles (4096+)
+        const adjustedHue = (config.baseHue + this.hueValue) % 360;
+        document.documentElement.style.setProperty(
+          '--tile-super-bg', 
+          `hsl(${adjustedHue}, ${config.saturation}%, ${config.lightness}%)`
+        );
+        document.documentElement.style.setProperty('--tile-super-text', config.textColor);
+      } else {
+        // Handle regular tiles
+        const adjustedHue = (config.baseHue + this.hueValue) % 360;
+        document.documentElement.style.setProperty(
+          `--tile-${value}-bg`, 
+          `hsl(${adjustedHue}, ${config.saturation}%, ${config.lightness}%)`
+        );
+        document.documentElement.style.setProperty(`--tile-${value}-text`, config.textColor);
+      }
+    });
   }
 
   changeHue() {
-    // Cycle through hue values (0-360)
-    this.hueValue = (this.hueValue + 60) % 360;
+    // Increment hue by 30 degrees and wrap around at 360
+    this.hueValue = (this.hueValue + 30) % 360;
     this.updateHue();
-  }
-
-  toggleRainbowMode() {
-    this.isRainbowMode = !this.isRainbowMode;
-    
-    if (this.isRainbowMode) {
-      this.startRainbowMode();
-    } else {
-      this.stopRainbowMode();
-    }
-  }
-
-  startRainbowMode() {
-    if (this.rainbowInterval) {
-      clearInterval(this.rainbowInterval);
-    }
-    
-    this.rainbowInterval = setInterval(() => {
-      this.hueValue = (this.hueValue + 1) % 360;
-      this.updateHue();
-    }, 50);
-  }
-
-  stopRainbowMode() {
-    if (this.rainbowInterval) {
-      clearInterval(this.rainbowInterval);
-      this.rainbowInterval = null;
-    }
   }
 
   togglePause() {

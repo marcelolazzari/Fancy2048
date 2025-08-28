@@ -32,7 +32,6 @@ class Game:
         # Visual settings (stored but managed by frontend)
         self.is_light_mode = False
         self.hue_value = 0
-        self.is_rainbow_mode = False
 
         # Add initial two tiles
         self.add_random_tile()
@@ -313,8 +312,7 @@ class Game:
             'time': self.get_elapsed_time(),
             'size': self.size,
             'isLightMode': self.is_light_mode,
-            'hueValue': self.hue_value,
-            'isRainbowMode': self.is_rainbow_mode
+            'hueValue': self.hue_value
         }
     
     def get_stats_data(self):
@@ -492,21 +490,6 @@ def change_hue():
     else:
         # Cycle through hue values like in JS
         games[game_id].hue_value = (games[game_id].hue_value + 60) % 360
-    
-    return jsonify({
-        'gameState': games[game_id].get_state()
-    })
-
-@app.route('/api/toggle_rainbow', methods=['POST'])
-def toggle_rainbow():
-    """Toggle rainbow mode"""
-    data = request.json or {}
-    game_id = data.get('gameId')
-    
-    if not game_id or game_id not in games:
-        return jsonify({'error': 'Invalid request'}), 400
-    
-    games[game_id].is_rainbow_mode = not games[game_id].is_rainbow_mode
     
     return jsonify({
         'gameState': games[game_id].get_state()
