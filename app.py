@@ -5,7 +5,6 @@ import uuid
 import time
 import json
 import os
-import hashlib
 
 
 app = Flask(__name__, template_folder='pages')
@@ -19,9 +18,8 @@ user_stats = {}  # username -> [list of game stats]
 user_leaderboards = {}  # username -> [list of best scores]
 
 class User:
-    def __init__(self, username, password=None):
+    def __init__(self, username):
         self.username = username
-        self.password_hash = self._hash_password(password) if password else None
         self.created_at = time.time()
         self.last_active = time.time()
         self.total_games = 0
@@ -32,18 +30,6 @@ class User:
             'hue_value': 60,
             'default_grid_size': 4
         }
-    
-    def _hash_password(self, password):
-        """Hash password for basic security"""
-        if password:
-            return hashlib.sha256(password.encode()).hexdigest()
-        return None
-    
-    def check_password(self, password):
-        """Check if provided password matches stored hash"""
-        if not self.password_hash:
-            return True  # No password set (guest mode)
-        return self._hash_password(password) == self.password_hash
     
     def update_activity(self):
         """Update last active timestamp"""
@@ -83,6 +69,7 @@ class Game:
         self.previous_scores = []
         self.previous_moves = []
         self.start_time = time.time()
+        self.has_saved_stats = False  # Track if stats have been saved
 
         # Visual settings (stored but managed by frontend)
         self.is_light_mode = False
@@ -402,19 +389,17 @@ def index():
 def leaderboard():
     return render_template('leaderboard.html', title='Leaderboard')
 
-# User management API endpoints
 @app.route('/api/create_user', methods=['POST'])
 def create_user():
     """Create a new user account"""
     data = request.json or {}
     username = data.get('username', '').strip()
-    password = data.get('password', '').strip()
     
     if not username:
         return jsonify({'success': False, 'error': 'Username is required'}), 400
     
-    if len(username) < 3:
-        return jsonify({'success': False, 'error': 'Username must be at least 3 characters long'}), 400
+    if len(username) < 2:
+        return jsonify({'success': False, 'error': 'Username must be at least 2 characters long'}), 400
     
     if len(username) > 20:
         return jsonify({'success': False, 'error': 'Username must be no more than 20 characters long'}), 400
@@ -422,8 +407,8 @@ def create_user():
     if username in users:
         return jsonify({'success': False, 'error': 'Username already exists'}), 400
     
-    # Create new user
-    user = User(username, password if password else None)
+    # Create new user (no password needed)
+    user = User(username)
     users[username] = user
     user_stats[username] = []
     user_leaderboards[username] = []
@@ -439,20 +424,17 @@ def create_user():
 
 @app.route('/api/login', methods=['POST'])
 def login():
-    """Login user"""
+    """Login user (username only)"""
     data = request.json or {}
     username = data.get('username', '').strip()
-    password = data.get('password', '').strip()
     
     if not username:
         return jsonify({'success': False, 'error': 'Username is required'}), 400
     
     if username not in users:
-        return jsonify({'success': False, 'error': 'User not found'}), 404
+        return jsonify({'success': False, 'error': 'User not found. Please create a new account.'}), 404
     
     user = users[username]
-    if not user.check_password(password):
-        return jsonify({'success': False, 'error': 'Invalid password'}), 401
     
     # Update activity and set session
     user.update_activity()
@@ -605,12 +587,13 @@ def reset_game():
     if not game_id or game_id not in games:
         return jsonify({'error': 'Invalid request'}), 400
     
-    # Store best score from current game
+    # Store best score and username from current game
     best_score = games[game_id].best_score
+    username = games[game_id].username
     
-    # Create a new game with the same size
+    # Create a new game with the same size and user
     size = games[game_id].size
-    games[game_id] = Game(size)
+    games[game_id] = Game(size, username)
     
     # Restore best score
     games[game_id].best_score = best_score
@@ -629,11 +612,12 @@ def change_board_size():
     if not game_id or game_id not in games:
         return jsonify({'error': 'Invalid request'}), 400
     
-    # Store best score from current game
+    # Store best score and username from current game
     best_score = games[game_id].best_score
+    username = games[game_id].username
     
-    # Create a new game with the new size
-    games[game_id] = Game(size)
+    # Create a new game with the new size and user
+    games[game_id] = Game(size, username)
     
     # Restore best score
     games[game_id].best_score = best_score

@@ -2012,3 +2012,308 @@ button:active {
     padding: 15px;
   }
 }
+
+/* ==================== */
+/* Modal and Form Styles */
+/* ==================== */
+
+.modal {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+  transition: opacity 0.3s ease;
+}
+
+.modal.hidden {
+  display: none;
+}
+
+.modal-content {
+  background: linear-gradient(135deg, #2c2c2c, #1a1a1a);
+  border-radius: 15px;
+  max-width: 400px;
+  width: 90%;
+  max-height: 90vh;
+  overflow-y: auto;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+  border: 1px solid rgba(255, 204, 0, 0.3);
+}
+
+.modal-header {
+  padding: 20px 25px 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.modal-header h2 {
+  margin: 0;
+  color: var(--highlight-color);
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.modal-close {
+  background: none;
+  border: none;
+  font-size: 1.5rem;
+  color: #ccc;
+  cursor: pointer;
+  padding: 0;
+  width: 30px;
+  height: 30px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: background-color 0.3s ease, color 0.3s ease;
+}
+
+.modal-close:hover {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #fff;
+}
+
+.modal-body {
+  padding: 25px;
+}
+
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  color: #f0f0f0;
+  font-weight: 500;
+  font-size: 0.9rem;
+}
+
+.form-group input {
+  width: 100%;
+  padding: 12px 15px;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  border-radius: 8px;
+  background-color: rgba(255, 255, 255, 0.05);
+  color: #fff;
+  font-size: 1rem;
+  transition: border-color 0.3s ease, background-color 0.3s ease;
+  box-sizing: border-box;
+}
+
+.form-group input:focus {
+  outline: none;
+  border-color: var(--highlight-color);
+  background-color: rgba(255, 255, 255, 0.08);
+  box-shadow: 0 0 0 2px rgba(255, 204, 0, 0.2);
+}
+
+.form-group small {
+  display: block;
+  margin-top: 5px;
+  color: #aaa;
+  font-size: 0.8rem;
+}
+
+form button[type="submit"] {
+  width: 100%;
+  padding: 12px;
+  font-size: 1rem;
+  font-weight: 600;
+  background: linear-gradient(45deg, var(--highlight-color), #ffd700);
+  color: #000;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin-bottom: 15px;
+}
+
+form button[type="submit"]:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 204, 0, 0.3);
+}
+
+.form-switch {
+  text-align: center;
+  color: #ccc;
+  margin: 15px 0;
+  font-size: 0.9rem;
+}
+
+.form-switch button {
+  background: none;
+  border: none;
+  color: var(--highlight-color);
+  cursor: pointer;
+  text-decoration: underline;
+  font-size: inherit;
+  padding: 0;
+  margin: 0 5px;
+}
+
+.form-switch button:hover {
+  color: #ffd700;
+}
+
+/* User info in header */
+.user-info {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  position: absolute;
+  right: 20px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+.user-info.hidden {
+  display: none;
+}
+
+.user-info span {
+  color: var(--highlight-color);
+  font-weight: 500;
+}
+
+#user-menu-button {
+  background: rgba(255, 204, 0, 0.1);
+  border: 1px solid var(--highlight-color);
+  color: var(--highlight-color);
+  padding: 8px 12px;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+#user-menu-button:hover {
+  background: rgba(255, 204, 0, 0.2);
+  transform: scale(1.05);
+}
+
+.user-menu {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  background: linear-gradient(135deg, #2c2c2c, #1a1a1a);
+  border: 1px solid rgba(255, 204, 0, 0.3);
+  border-radius: 8px;
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.4);
+  z-index: 1001;
+  min-width: 150px;
+  margin-top: 5px;
+}
+
+.user-menu.hidden {
+  display: none;
+}
+
+.user-menu button {
+  display: block;
+  width: 100%;
+  padding: 12px 15px;
+  background: none;
+  border: none;
+  color: #f0f0f0;
+  text-align: left;
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  border-radius: 0;
+  margin: 0;
+}
+
+.user-menu button:hover {
+  background-color: rgba(255, 204, 0, 0.1);
+}
+
+.user-menu button:first-child {
+  border-radius: 8px 8px 0 0;
+}
+
+.user-menu button:last-child {
+  border-radius: 0 0 8px 8px;
+}
+
+/* Message system */
+.message {
+  position: fixed;
+  top: 20px;
+  right: 20px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  color: #fff;
+  font-weight: 500;
+  z-index: 2000;
+  transform: translateX(400px);
+  transition: transform 0.3s ease;
+  max-width: 300px;
+  word-wrap: break-word;
+}
+
+.message.show {
+  transform: translateX(0);
+}
+
+.message.success {
+  background-color: #4caf50;
+  border-left: 4px solid #388e3c;
+}
+
+.message.error {
+  background-color: #f44336;
+  border-left: 4px solid #d32f2f;
+}
+
+.message.info {
+  background-color: #2196f3;
+  border-left: 4px solid #1976d2;
+}
+
+/* Responsive modal styles */
+@media (max-width: 480px) {
+  .modal-content {
+    width: 95%;
+    margin: 20px;
+  }
+  
+  .modal-header {
+    padding: 15px 20px 10px;
+  }
+  
+  .modal-header h2 {
+    font-size: 1.3rem;
+  }
+  
+  .modal-body {
+    padding: 20px;
+  }
+  
+  .user-info {
+    position: relative;
+    right: 0;
+    top: 0;
+    transform: none;
+    margin-top: 10px;
+  }
+  
+  .message {
+    right: 10px;
+    left: 10px;
+    max-width: none;
+    transform: translateY(-100px);
+  }
+  
+  .message.show {
+    transform: translateY(0);
+  }
+}

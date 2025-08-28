@@ -48,6 +48,43 @@ class UserManager {
     // Form containers
     this.loginContainer = document.getElementById('login-form');
     this.registerContainer = document.getElementById('register-form');
+    
+    // Create simplified form HTML
+    this.createFormHTML();
+  }
+  
+  createFormHTML() {
+    // Create login form
+    if (this.loginForm) {
+      this.loginForm.innerHTML = `
+        <div class="form-group">
+          <label for="login-username">Username:</label>
+          <input type="text" id="login-username" name="username" required maxlength="20">
+        </div>
+        <button type="submit">Login</button>
+        <p class="form-switch">
+          Don't have an account? <button type="button" id="show-register">Create one</button>
+        </p>
+        <p class="form-switch">
+          Or <button type="button" id="guest-login">Play as Guest</button>
+        </p>
+      `;
+    }
+    
+    // Create register form
+    if (this.registerForm) {
+      this.registerForm.innerHTML = `
+        <div class="form-group">
+          <label for="register-username">Username:</label>
+          <input type="text" id="register-username" name="username" required maxlength="20" minlength="2">
+          <small>Choose a unique username (2-20 characters)</small>
+        </div>
+        <button type="submit">Create Account</button>
+        <p class="form-switch">
+          Already have an account? <button type="button" id="show-login">Login</button>
+        </p>
+      `;
+    }
   }
   
   setupEventListeners() {
@@ -138,31 +175,33 @@ class UserManager {
     
     const formData = new FormData(e.target);
     const loginData = {
-      username: formData.get('username').trim(),
-      password: formData.get('password').trim()
+      username: formData.get('username').trim()
     };
     
+    if (!loginData.username) {
+      this.showMessage('Please enter a username', 'error');
+      return;
+    }
+    
     try {
-      const response = await fetch(`${this.gameApiUrl}/login`, {
+      const response = await fetch('/api/login', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(loginData)
       });
       
-      const data = await response.json();
+      const result = await response.json();
       
-      if (data.success) {
-        this.currentUser = data.user;
+      if (result.success) {
+        this.currentUser = result.user;
         this.hideLoginModal();
         this.updateUserDisplay();
-        this.showMessage('Login successful!', 'success');
-        
-        // Trigger game initialization or refresh
         this.onUserLogin();
+        this.showMessage(`Welcome back, ${this.currentUser.username}!`, 'success');
       } else {
-        this.showMessage(data.error || 'Login failed', 'error');
+        this.showMessage(result.error || 'Login failed', 'error');
       }
     } catch (error) {
       console.error('Login error:', error);
@@ -175,31 +214,38 @@ class UserManager {
     
     const formData = new FormData(e.target);
     const registerData = {
-      username: formData.get('username').trim(),
-      password: formData.get('password').trim()
+      username: formData.get('username').trim()
     };
     
+    if (!registerData.username) {
+      this.showMessage('Please enter a username', 'error');
+      return;
+    }
+    
+    if (registerData.username.length < 2) {
+      this.showMessage('Username must be at least 2 characters long', 'error');
+      return;
+    }
+    
     try {
-      const response = await fetch(`${this.gameApiUrl}/create_user`, {
+      const response = await fetch('/api/create_user', {
         method: 'POST',
         headers: {
-          'Content-Type': 'application/json',
+          'Content-Type': 'application/json'
         },
         body: JSON.stringify(registerData)
       });
       
-      const data = await response.json();
+      const result = await response.json();
       
-      if (data.success) {
-        this.currentUser = data.user;
+      if (result.success) {
+        this.currentUser = result.user;
         this.hideLoginModal();
         this.updateUserDisplay();
-        this.showMessage('Account created successfully!', 'success');
-        
-        // Trigger game initialization
         this.onUserLogin();
+        this.showMessage(`Account created! Welcome, ${this.currentUser.username}!`, 'success');
       } else {
-        this.showMessage(data.error || 'Registration failed', 'error');
+        this.showMessage(result.error || 'Registration failed', 'error');
       }
     } catch (error) {
       console.error('Registration error:', error);
