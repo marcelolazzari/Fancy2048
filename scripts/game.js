@@ -33,11 +33,11 @@ class Game {
 
     // Initialize the game
     this.addEventListeners();
-    this.reset();
-    window.addEventListener('resize', this.debounce(() => this.refreshLayout(), 100));
-    window.addEventListener('orientationchange', () => setTimeout(() => this.refreshLayout(), 300));
     this.applyTheme();
     this.updateHue(); // This will call updateTileColors()
+    this.reset(); // Reset after theme and colors are set
+    window.addEventListener('resize', this.debounce(() => this.refreshLayout(), 100));
+    window.addEventListener('orientationchange', () => setTimeout(() => this.refreshLayout(), 300));
     this.startTimer();
 
     // Initialize resize observer for better font scaling
@@ -45,21 +45,54 @@ class Game {
   }
 
   addEventListeners() {
-    document.getElementById('reset-button').addEventListener('click', () => {
-      this.reset();
-      this.updateUI();
-    });
+    // Add event listeners with null checks
+    const resetButton = document.getElementById('reset-button');
+    if (resetButton) {
+      resetButton.addEventListener('click', () => {
+        this.reset();
+        this.updateUI();
+      });
+    }
+    
     window.addEventListener('keydown', this.handleKeyPress.bind(this));
+    
     const boardContainer = document.getElementById('board-container');
-    boardContainer.addEventListener('touchstart', this.handleTouchStart.bind(this), false);
-    boardContainer.addEventListener('touchend', this.handleTouchEnd.bind(this), false);
+    if (boardContainer) {
+      boardContainer.addEventListener('touchstart', this.handleTouchStart.bind(this), false);
+      boardContainer.addEventListener('touchend', this.handleTouchEnd.bind(this), false);
+    }
+    
     document.addEventListener('touchmove', this.preventScroll, { passive: false });
-    document.getElementById('changeColor-button').addEventListener('click', this.changeHue.bind(this));
-    document.getElementById('back-button').addEventListener('click', this.undoMove.bind(this));
-    document.getElementById('leaderboard-button').addEventListener('click', this.openStatisticsPage.bind(this));
-    document.getElementById('pause-button').addEventListener('click', this.togglePause.bind(this));
-    document.getElementById('board-size-button').addEventListener('click', this.changeBoardSize.bind(this));
-    document.getElementById('theme-toggle-button').addEventListener('click', this.toggleTheme.bind(this));
+    
+    const changeColorButton = document.getElementById('changeColor-button');
+    if (changeColorButton) {
+      changeColorButton.addEventListener('click', this.changeHue.bind(this));
+    }
+    
+    const backButton = document.getElementById('back-button');
+    if (backButton) {
+      backButton.addEventListener('click', this.undoMove.bind(this));
+    }
+    
+    const leaderboardButton = document.getElementById('leaderboard-button');
+    if (leaderboardButton) {
+      leaderboardButton.addEventListener('click', this.openStatisticsPage.bind(this));
+    }
+    
+    const pauseButton = document.getElementById('pause-button');
+    if (pauseButton) {
+      pauseButton.addEventListener('click', this.togglePause.bind(this));
+    }
+    
+    const boardSizeButton = document.getElementById('board-size-button');
+    if (boardSizeButton) {
+      boardSizeButton.addEventListener('click', this.changeBoardSize.bind(this));
+    }
+    
+    const themeToggleButton = document.getElementById('theme-toggle-button');
+    if (themeToggleButton) {
+      themeToggleButton.addEventListener('click', this.toggleTheme.bind(this));
+    }
   }
 
   updateBestScore() {
@@ -104,7 +137,7 @@ class Game {
     const timeElement = document.getElementById('time');
     
     this.timerInterval = setInterval(() => {
-      if (!this.isPaused) {
+      if (!this.isPaused && timeElement) {
         const currentTime = new Date();
         const timeDiff = Math.floor((currentTime - this.startTime) / 1000);
         const minutes = Math.floor(timeDiff / 60).toString().padStart(2, '0');
@@ -144,10 +177,12 @@ class Game {
     
     // Clear any existing tiles
     const boardContainer = document.getElementById('board-container');
-    boardContainer.innerHTML = '';
-    
-    // Create the grid cells first for proper layout
-    this.createGridCells();
+    if (boardContainer) {
+      boardContainer.innerHTML = '';
+      
+      // Create the grid cells first for proper layout
+      this.createGridCells();
+    }
     
     // Add initial tiles
     this.addRandomTile();
@@ -158,8 +193,10 @@ class Game {
     
     // Hide game over message - ensure it's properly hidden
     const gameOverElement = document.getElementById('game-over');
-    gameOverElement.classList.add('hidden');
-    gameOverElement.classList.remove('win-state');
+    if (gameOverElement) {
+      gameOverElement.classList.add('hidden');
+      gameOverElement.classList.remove('win-state');
+    }
     
     // Restart timer
     this.startTimer();
@@ -570,22 +607,28 @@ class Game {
 
   // UI and visual functions
   updateUI() {
-    // Update score display
-    document.getElementById('score').textContent = this.score;
-    document.getElementById('best-score').textContent = this.bestScore;
-    document.getElementById('moves').textContent = this.moves;
+    // Update score display with null checks
+    const scoreElement = document.getElementById('score');
+    const bestScoreElement = document.getElementById('best-score');
+    const movesElement = document.getElementById('moves');
+    
+    if (scoreElement) scoreElement.textContent = this.score;
+    if (bestScoreElement) bestScoreElement.textContent = this.bestScore;
+    if (movesElement) movesElement.textContent = this.moves;
     
     // Update best score if needed
     this.updateBestScore();
     
     // Clear existing tiles but keep grid cells
     const boardContainer = document.getElementById('board-container');
-    const gridCells = boardContainer.querySelectorAll('.grid-cell');
-    gridCells.forEach(cell => {
-      while (cell.firstChild) {
-        cell.removeChild(cell.firstChild);
-      }
-    });
+    if (boardContainer) {
+      const gridCells = boardContainer.querySelectorAll('.grid-cell');
+      gridCells.forEach(cell => {
+        while (cell.firstChild) {
+          cell.removeChild(cell.firstChild);
+        }
+      });
+    }
     
     // Create tile elements
     for (let i = 0; i < this.size; i++) {
@@ -612,7 +655,9 @@ class Game {
 
   updateBackButtonState() {
     const backButton = document.getElementById('back-button');
-    backButton.style.display = this.gameStateStack.length > 0 ? 'flex' : 'none';
+    if (backButton) {
+      backButton.style.display = this.gameStateStack.length > 0 ? 'flex' : 'none';
+    }
   }
 
   showScorePopup(value) {
@@ -854,6 +899,8 @@ class Game {
     // Increment hue by 30 degrees and wrap around at 360
     this.hueValue = (this.hueValue + 30) % 360;
     this.updateHue();
+    // Force a UI update to refresh tile colors
+    this.updateUI();
   }
 
   togglePause() {
@@ -924,5 +971,8 @@ class Game {
 
 // Initialize the game when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-  window.game = new Game(4);
+  // Add a small delay to ensure all elements are ready
+  setTimeout(() => {
+    window.game = new Game(4);
+  }, 100);
 });
