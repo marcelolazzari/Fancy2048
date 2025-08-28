@@ -1,968 +1,67 @@
-/**
- * Fancy2048 Frontend Client
- * Handles UI interactions and communicates with Python backend for game logic
- */
 class Game {
-  constructor(size = 4) {
-    // Core properties
+  constructor(size) {
+    // Core game properties
     this.size = size;
-    this.gameId = null;
-    this.apiBase = window.location.origin;
-    
-    // UI state
-    this.animationInProgress = false;
-    this.isPaused = false;
-    this.timerInterval = null;
-    this.startTime = null;
-    
-    // Visual settings (managed locally)
-    this.isLightMode = localStorage.getItem('isLightMode') === 'true';
-    this.hueValue = parseInt(localStorage.getItem('hueValue')) || 0;
-    this.isRainbowMode = localStorage.getItem('isRainbowMode') === 'true';
-    this.rainbowInterval = null;
-    
-    // Device detection
-    this.isMobile = this.detectMobile();
-    this.isTablet = this.detectTablet();
-    
-    // Touch handling
-    this.touchStartX = 0;
-    this.touchStartY = 0;
-    this.minSwipeDistance = 30;
-    
-    this.init();
-  }
-
-  async init() {
-    console.log('Initializing frontend...');
-    
-    this.setupEventListeners();
-    this.optimizeForDevice();
-    this.applyTheme();
-    this.updateHue();
-    
-    // Initialize game with backend
-    await this.initGame();
-    
-    console.log('Frontend initialization complete');
-  }
-
-  detectMobile() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-           window.innerWidth <= 768;
-  }
-
-  detectTablet() {
-    return /iPad|Android/i.test(navigator.userAgent) && 
-           window.innerWidth >= 768 && window.innerWidth <= 1024;
-  }
-
-  optimizeForDevice() {
-    const root = document.documentElement;
-    
-    if (this.isMobile) {
-      root.classList.add('mobile-device');
-      this.optimizeForMobile();
-    }
-    
-    if (this.isTablet) {
-      root.classList.add('tablet-device');
-      this.optimizeForTablet();
-    }
-    
-    if (!this.isMobile && !this.isTablet) {
-      root.classList.add('desktop-device');
-      this.optimizeForDesktop();
-    }
-  }
-
-  optimizeForMobile() {
-    const root = document.documentElement;
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    
-    const boardSize = Math.min(vw * 0.9, vh * 0.5);
-    const tileSize = (boardSize - (this.size + 1) * 8) / this.size;
-    
-    root.style.setProperty('--board-size', `${boardSize}px`);
-    root.style.setProperty('--tile-size', `${tileSize}px`);
-    root.style.setProperty('--gap', '8px');
-    
-    const baseFontSize = Math.max(12, Math.min(16, vw * 0.04));
-    root.style.setProperty('--base-font-size', `${baseFontSize}px`);
-  }
-
-  optimizeForTablet() {
-    const root = document.documentElement;
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    
-    const boardSize = Math.min(vw * 0.7, vh * 0.6);
-    const tileSize = (boardSize - (this.size + 1) * 12) / this.size;
-    
-    root.style.setProperty('--board-size', `${boardSize}px`);
-    root.style.setProperty('--tile-size', `${tileSize}px`);
-    root.style.setProperty('--gap', '12px');
-    
-    const baseFontSize = Math.max(14, Math.min(18, vw * 0.025));
-    root.style.setProperty('--base-font-size', `${baseFontSize}px`);
-  }
-
-  optimizeForDesktop() {
-    const root = document.documentElement;
-    const vw = window.innerWidth;
-    const vh = window.innerHeight;
-    
-    const maxBoardSize = Math.min(600, Math.min(vw * 0.6, vh * 0.7));
-    const boardSize = Math.max(400, maxBoardSize);
-    const tileSize = (boardSize - (this.size + 1) * 15) / this.size;
-    
-    root.style.setProperty('--board-size', `${boardSize}px`);
-    root.style.setProperty('--tile-size', `${tileSize}px`);
-    root.style.setProperty('--gap', '15px');
-    
-    const baseFontSize = Math.max(16, Math.min(20, boardSize * 0.035));
-    root.style.setProperty('--base-font-size', `${baseFontSize}px`);
-  }
-
-  setupResponsiveHandlers() {
-    const resizeHandler = this.debounce(() => {
-      this.handleResize();
-    }, 150);
-
-    const orientationHandler = () => {
-      setTimeout(() => {
-        this.handleOrientationChange();
-      }, 300);
-    };
-
-    window.addEventListener('resize', resizeHandler);
-    window.addEventListener('orientationchange', orientationHandler);
-    
-    if (screen && screen.orientation) {
-      screen.orientation.addEventListener('change', orientationHandler);
-    }
-  }
-
-  handleResize() {
-    this.viewportWidth = window.innerWidth;
-    this.viewportHeight = window.innerHeight;
-    this.isMobile = this.detectMobile();
-    this.isTablet = this.detectTablet();
-    
-    this.optimizeForDevice();
-    this.refreshLayout();
-    this.updateTileFontSizes();
-  }
-
-  handleOrientationChange() {
-    const newOrientation = this.getOrientation();
-    if (newOrientation !== this.currentOrientation) {
-      this.currentOrientation = newOrientation;
-      this.handleResize();
-    }
-  }
-
-  async initGame() {
-    if (this.useBackend && this.gameId) {
-      console.log('Initializing game with backend...');
-      await this.initBackendGame();
-    } else {
-      console.log('Initializing local game...');
-      this.initLocalGame();
-    }
-  }
-
-  async initBackendGame() {
-    try {
-      const response = await fetch(`${this.apiBase}/api/get_state?gameId=${this.gameId}`);
-      if (response.ok) {
-        const data = await response.json();
-        this.loadServerState(data.gameState);
-        console.log('Backend game initialized successfully');
-      } else {
-        console.warn('Failed to get initial state from backend, falling back to local');
-        this.useBackend = false;
-        this.initLocalGame();
-      }
-    } catch (error) {
-      console.warn('Backend error, falling back to local:', error);
-      this.useBackend = false;
-      this.initLocalGame();
-    }
-  }
-
-  loadServerState(state) {
-    this.board = state.board;
-    this.score = state.score;
-    this.bestScore = state.bestScore || parseInt(localStorage.getItem('bestScore')) || 0;
-    this.moves = state.moves;
-    this.gameState = state.gameState;
-    this.size = state.size;
-    this.isLightMode = state.isLightMode;
-    this.hueValue = state.hueValue;
-    this.isRainbowMode = state.isRainbowMode;
-    
-    // Update localStorage with backend values
-    localStorage.setItem('bestScore', this.bestScore.toString());
-    localStorage.setItem('isLightMode', this.isLightMode.toString());
-    localStorage.setItem('hueValue', this.hueValue.toString());
-    localStorage.setItem('isRainbowMode', this.isRainbowMode.toString());
-    
-    this.updateUI();
-    this.startTimer();
-    
-    const gameOverElement = document.getElementById('game-over');
-    if (this.gameState === 'over') {
-      gameOverElement.classList.remove('hidden');
-    } else {
-      gameOverElement.classList.add('hidden');
-    }
-    
-    if (this.gameState === 'won' && !this.hasShownContinuePopup) {
-      this.hasShownContinuePopup = true;
-      this.showContinuePopup();
-    }
-  }
-
-  initLocalGame() {
-    console.log('Starting local game initialization...');
-    
-    // Create empty board
     this.board = this.createEmptyBoard();
     this.score = 0;
-    this.moves = 0;
-    this.gameState = 'playing';
     this.bestScore = +localStorage.getItem('bestScore') || 0;
-    
-    console.log('Empty board created:', this.board);
-    
-    // Add initial tiles
-    const tile1Added = this.addRandomTile();
-    const tile2Added = this.addRandomTile();
-    
-    console.log('Initial tiles added:', tile1Added, tile2Added);
-    console.log('Board after initial tiles:', this.board);
-    
-    // Update the UI
-    this.updateUI();
-    this.startTimer();
-    
-    console.log('Local game initialized successfully with board:', this.board);
-  }
-
-  loadState(state) {
-    this.board = state.board;
-    this.score = state.score;
-    this.bestScore = state.bestScore;
-    this.moves = state.moves;
-    this.gameState = state.state;
-    this.size = state.size;
-    this.startTime = new Date(Date.now() - (state.elapsedTime * 1000));
-    
-    this.updateUI();
-    this.startTimer();
-    
-    const gameOverElement = document.getElementById('game-over');
-    if (this.gameState === 'over') {
-      gameOverElement.classList.remove('hidden');
-    } else {
-      gameOverElement.classList.add('hidden');
-    }
-    
-    if (this.gameState === 'won' && !this.hasShownContinuePopup) {
-      this.hasShownContinuePopup = true;
-      this.showContinuePopup();
-    }
-  }
-
-  showContinuePopup() {
-    if (document.getElementById('continue-popup')) return;
-    
-    const popup = this.createPopup('continue-popup');
-    popup.innerHTML = `
-      <div class="popup-content">
-        <h2>🎉 Congratulations!</h2>
-        <p>You've reached the 2048 tile!<br>Do you want to continue playing?</p>
-        <div class="popup-buttons">
-          <button id="continue-yes" class="popup-btn primary">Continue</button>
-          <button id="continue-no" class="popup-btn secondary">End Game</button>
-        </div>
-      </div>
-    `;
-    
-    document.body.appendChild(popup);
-    
-    document.getElementById('continue-yes').onclick = () => {
-      document.body.removeChild(popup);
-      this.gameState = 'playing';
-      this.updateUI();
-    };
-    
-    document.getElementById('continue-no').onclick = () => {
-      document.body.removeChild(popup);
-      this.gameState = 'over';
-      this.updateUI();
-      this.saveStats();
-    };
-  }
-
-  createPopup(id) {
-    const popup = document.createElement('div');
-    popup.id = id;
-    popup.className = 'game-popup';
-    return popup;
-  }
-
-  setupEventListeners() {
-    this.setupKeyboardListeners();
-    this.setupTouchListeners();
-    this.setupButtonListeners();
-  }
-
-  setupKeyboardListeners() {
-    document.addEventListener('keydown', (event) => {
-      if (this.gameState !== 'playing' || this.animationInProgress) return;
-      
-      const keyMap = {
-        'ArrowUp': 'up',
-        'ArrowDown': 'down', 
-        'ArrowLeft': 'left',
-        'ArrowRight': 'right',
-        'KeyW': 'up',
-        'KeyS': 'down',
-        'KeyA': 'left',
-        'KeyD': 'right'
-      };
-      
-      const direction = keyMap[event.code];
-      if (direction) {
-        event.preventDefault();
-        this.move(direction).catch(console.error);
-      }
-      
-      if (event.code === 'KeyZ' && (event.ctrlKey || event.metaKey)) {
-        event.preventDefault();
-        this.undoMove().catch(console.error);
-      }
-      
-      if (event.code === 'KeyR' && (event.ctrlKey || event.metaKey)) {
-        event.preventDefault();
-        this.reset();
-      }
-    });
-  }
-
-  setupTouchListeners() {
-    const boardContainer = document.getElementById('board-container');
-    
-    boardContainer.addEventListener('touchstart', (event) => {
-      if (this.gameState !== 'playing' || this.animationInProgress) return;
-      
-      event.preventDefault();
-      const touch = event.touches[0];
-      this.touchStartX = touch.clientX;
-      this.touchStartY = touch.clientY;
-      this.swipeStartTime = Date.now();
-    }, { passive: false });
-    
-    boardContainer.addEventListener('touchend', (event) => {
-      if (this.gameState !== 'playing' || this.animationInProgress) return;
-      
-      event.preventDefault();
-      const touch = event.changedTouches[0];
-      this.touchEndX = touch.clientX;
-      this.touchEndY = touch.clientY;
-      
-      this.handleSwipe();
-    }, { passive: false });
-    
-    boardContainer.addEventListener('touchmove', (event) => {
-      event.preventDefault();
-    }, { passive: false });
-  }
-
-  handleSwipe() {
-    const swipeTime = Date.now() - this.swipeStartTime;
-    if (swipeTime > this.maxSwipeTime) return;
-    
-    const deltaX = this.touchEndX - this.touchStartX;
-    const deltaY = this.touchEndY - this.touchStartY;
-    const absDeltaX = Math.abs(deltaX);
-    const absDeltaY = Math.abs(deltaY);
-    
-    if (Math.max(absDeltaX, absDeltaY) < this.minSwipeDistance) return;
-    
-    let direction;
-    if (absDeltaX > absDeltaY) {
-      direction = deltaX > 0 ? 'right' : 'left';
-    } else {
-      direction = deltaY > 0 ? 'down' : 'up';
-    }
-    
-    this.move(direction).catch(console.error);
-  }
-
-  setupButtonListeners() {
-    const buttons = {
-      'reset-button': () => this.reset().catch(console.error),
-      'back-button': () => this.undoMove().catch(console.error),
-      'leaderboard-button': () => this.openStatisticsPage(),
-      'changeColor-button': () => this.changeHue(),
-      'rainbowMode-button': () => this.toggleRainbowMode(),
-      'pause-button': () => this.togglePause(),
-      'board-size-button': () => this.changeBoardSize(),
-      'theme-toggle-button': () => this.toggleTheme()
-    };
-    
-    Object.entries(buttons).forEach(([id, handler]) => {
-      const element = document.getElementById(id);
-      if (element) {
-        element.addEventListener('click', handler);
-      }
-    });
-  }
-
-  // Continue with all other methods...
-  createEmptyBoard() {
-    return Array(this.size).fill().map(() => Array(this.size).fill(0));
-  }
-
-  addRandomTile() {
-    const emptyCells = [];
-    for (let i = 0; i < this.size; i++) {
-      for (let j = 0; j < this.size; j++) {
-        if (this.board[i][j] === 0) {
-          emptyCells.push({ row: i, col: j });
-        }
-      }
-    }
-    
-    if (emptyCells.length > 0) {
-      const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-      const value = Math.random() < 0.9 ? 2 : 4;
-      this.board[randomCell.row][randomCell.col] = value;
-      console.log(`Added tile ${value} at position (${randomCell.row}, ${randomCell.col})`);
-      console.log('Current board state:', this.board);
-      return true;
-    }
-    
-    console.log('No empty cells available for new tile');
-    return false;
-  }
-
-  updateUI() {
-    this.updateScore();
-    this.updateBoard();
-    this.updateBackButtonState();
-  }
-
-  updateScore() {
-    const scoreElement = document.getElementById('score');
-    const bestScoreElement = document.getElementById('best-score');
-    const movesElement = document.getElementById('moves');
-    const timeElement = document.getElementById('time');
-    
-    if (scoreElement) scoreElement.textContent = this.score;
-    if (bestScoreElement) bestScoreElement.textContent = this.bestScore;
-    if (movesElement) movesElement.textContent = this.moves;
-    if (timeElement) timeElement.textContent = this.getFormattedTime();
-  }
-
-  getFormattedTime() {
-    if (!this.startTime) return '00:00';
-    
-    const now = Date.now();
-    const elapsed = Math.floor((now - this.startTime) / 1000);
-    const minutes = Math.floor(elapsed / 60);
-    const seconds = elapsed % 60;
-    
-    return `${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
-  }
-
-  updateBoard() {
-    const boardContainer = document.getElementById('board-container');
-    if (!boardContainer) {
-      console.error('Board container not found');
-      return;
-    }
-    
-    // Clear existing tiles but keep grid cells
-    const existingTiles = boardContainer.querySelectorAll('.tile');
-    existingTiles.forEach(tile => tile.remove());
-    
-    // Create grid cells if they don't exist
-    const existingGridCells = boardContainer.querySelectorAll('.grid-cell');
-    if (existingGridCells.length !== this.size * this.size) {
-      // Clear all and recreate
-      boardContainer.innerHTML = '';
-      this.createGridCells();
-    }
-    
-    // Create tiles for non-zero values
-    for (let row = 0; row < this.size; row++) {
-      for (let col = 0; col < this.size; col++) {
-        const value = this.board[row][col];
-        if (value > 0) {
-          const tile = this.createTileElement(row, col, value);
-          boardContainer.appendChild(tile);
-          console.log(`Created tile at (${row}, ${col}) with value ${value}`);
-        }
-      }
-    }
-    
-    this.updateTileFontSizes();
-    console.log('Board updated with', document.querySelectorAll('.tile').length, 'tiles');
-  }
-
-  createGridCells() {
-    const boardContainer = document.getElementById('board-container');
-    
-    for (let row = 0; row < this.size; row++) {
-      for (let col = 0; col < this.size; col++) {
-        const gridCell = document.createElement('div');
-        gridCell.className = 'grid-cell';
-        gridCell.style.gridRow = row + 1;
-        gridCell.style.gridColumn = col + 1;
-        boardContainer.appendChild(gridCell);
-      }
-    }
-  }
-
-  createTileElement(row, col, value, isNew = false) {
-    const tile = document.createElement('div');
-    tile.className = 'tile';
-    tile.setAttribute('data-value', value);
-    tile.textContent = value;
-    
-    // Use CSS Grid positioning instead of absolute positioning
-    tile.style.gridRow = row + 1;
-    tile.style.gridColumn = col + 1;
-    
-    if (isNew) {
-      tile.classList.add('new-tile');
-    }
-    
-    this.adjustTileFontSize(tile);
-    return tile;
-  }
-
-  adjustTileFontSize(tileElement) {
-    const value = parseInt(tileElement.getAttribute('data-value'));
-    const baseSize = this.isMobile ? 0.4 : 0.5;
-    let fontSize = baseSize;
-    
-    if (value >= 1000) fontSize = baseSize * 0.7;
-    if (value >= 10000) fontSize = baseSize * 0.6;
-    if (value >= 100000) fontSize = baseSize * 0.5;
-    
-    tileElement.style.fontSize = `${fontSize}rem`;
-  }
-
-  updateTileFontSizes() {
-    document.querySelectorAll('.tile').forEach(tile => {
-      this.adjustTileFontSize(tile);
-    });
-  }
-
-  debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-      const later = () => {
-        clearTimeout(timeout);
-        func(...args);
-      };
-      clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
-    };
-  }
-
-  refreshLayout() {
-    this.optimizeForDevice();
-    setTimeout(() => {
-      this.updateBoard();
-    }, 100);
-  }
-
-  initializeResizeObserver() {
-    if ('ResizeObserver' in window) {
-      this.resizeObserver = new ResizeObserver(this.debounce(() => {
-        this.refreshLayout();
-      }, 100));
-      
-      const boardContainer = document.getElementById('board-container');
-      if (boardContainer) {
-        this.resizeObserver.observe(boardContainer);
-      }
-    }
-  }
-
-  // Theme methods
-  applyTheme() {
-    document.body.classList.toggle('light-mode', this.isLightMode);
-    localStorage.setItem('isLightMode', this.isLightMode);
-  }
-
-  toggleTheme() {
-    this.isLightMode = !this.isLightMode;
-    this.applyTheme();
-  }
-
-  updateHue() {
-    document.documentElement.style.setProperty('--hue-value', this.hueValue);
-    localStorage.setItem('hueValue', this.hueValue);
-  }
-
-  changeHue() {
-    // Increment hue by 30 degrees (12 different color schemes)
-    this.hueValue = (this.hueValue + 30) % 360;
-    localStorage.setItem('hueValue', this.hueValue.toString());
-    this.updateHue();
-    
-    // Show a brief feedback
-    this.showColorChangeEffect();
-  }
-
-  updateHue() {
-    const root = document.documentElement;
-    root.style.setProperty('--hue-rotation', this.hueValue);
-    root.style.setProperty('--hue-value', this.hueValue);
-    
-    // Update highlight color for immediate visual feedback
-    root.style.setProperty('--highlight-color', `hsl(${this.hueValue}, 100%, 60%)`);
-    root.style.setProperty('--accent-color', `hsl(${this.hueValue}, 80%, 50%)`);
-    root.style.setProperty('--button-background', `hsl(${this.hueValue}, 60%, 20%)`);
-    root.style.setProperty('--button-hover-background', `hsl(${this.hueValue}, 70%, 30%)`);
-    
-    // Force update all tile colors immediately
-    this.updateAllTileColors();
-  }
-
-  updateAllTileColors() {
-    // Update all existing tiles with new colors
-    const tiles = document.querySelectorAll('.tile');
-    tiles.forEach(tile => {
-      const value = tile.getAttribute('data-value');
-      if (value) {
-        // Force reflow to apply new CSS variables
-        tile.style.display = 'none';
-        tile.offsetHeight; // Trigger reflow
-        tile.style.display = 'flex';
-      }
-    });
-  }
-
-  showColorChangeEffect() {
-    // Create a brief visual effect when color changes
-    const changeButton = document.getElementById('changeColor-button');
-    if (changeButton) {
-      changeButton.style.transform = 'scale(1.2) rotate(180deg)';
-      changeButton.style.background = `hsl(${this.hueValue}, 100%, 60%)`;
-      
-      setTimeout(() => {
-        changeButton.style.transform = 'scale(1) rotate(0deg)';
-        changeButton.style.background = '';
-      }, 300);
-    }
-    
-    // Add a subtle screen flash effect
-    const overlay = document.querySelector('.overlay');
-    if (overlay) {
-      overlay.style.background = `hsla(${this.hueValue}, 100%, 80%, 0.2)`;
-      overlay.style.opacity = '1';
-      overlay.style.pointerEvents = 'none';
-      
-      setTimeout(() => {
-        overlay.style.opacity = '0';
-        setTimeout(() => {
-          overlay.style.background = '';
-        }, 300);
-      }, 150);
-    }
-  }
-
-  toggleRainbowMode() {
-    this.isRainbowMode = !this.isRainbowMode;
-    localStorage.setItem('isRainbowMode', this.isRainbowMode);
-    
-    if (this.isRainbowMode) {
-      this.startRainbowMode();
-    } else {
-      this.stopRainbowMode();
-    }
-  }
-
-  startRainbowMode() {
-    if (this.rainbowInterval) return;
-    
-    this.rainbowInterval = setInterval(() => {
-      this.hueValue = (this.hueValue + 1) % 360;
-      this.updateHue();
-    }, 50);
-  }
-
-  stopRainbowMode() {
-    if (this.rainbowInterval) {
-      clearInterval(this.rainbowInterval);
-      this.rainbowInterval = null;
-    }
-  }
-
-  startTimer() {
-    if (this.timerInterval) {
-      clearInterval(this.timerInterval);
-    }
-    
-    this.startTime = this.startTime || Date.now();
-    
-    this.timerInterval = setInterval(() => {
-      this.updateScore(); // This will update the time display
-    }, 1000);
-  }
-
-  getElapsedTime() {
-    if (!this.startTime) return '00:00';
-    const elapsed = Math.floor((Date.now() - this.startTime) / 1000);
-    const min = Math.floor(elapsed / 60).toString().padStart(2, '0');
-    const sec = (elapsed % 60).toString().padStart(2, '0');
-    return `${min}:${sec}`;
-  }
-
-  // Game control methods (simplified versions for now)
-  async move(direction) {
-    if (this.animationInProgress || this.gameState !== 'playing') return false;
-    
-    if (this.useBackend && this.gameId) {
-      return await this.moveWithBackend(direction);
-    } else {
-      return this.moveLocal(direction);
-    }
-  }
-
-  async moveWithBackend(direction) {
-    try {
-      const response = await fetch(`${this.apiBase}/api/move`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ 
-          gameId: this.gameId, 
-          direction: direction 
-        })
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data.moved) {
-          this.loadServerState(data.gameState);
-          return true;
-        }
-        return false;
-      } else {
-        console.warn('Backend move failed, falling back to local');
-        this.useBackend = false;
-        return this.moveLocal(direction);
-      }
-    } catch (error) {
-      console.warn('Backend move error, falling back to local:', error);
-      this.useBackend = false;
-      return this.moveLocal(direction);
-    }
-  }
-
-  moveLocal(direction) {
-    this.lastMoveDirection = direction;
-    this.saveGameState();
-    
-    let moved = false;
-    this.lastMerged = []; // Reset merged tiles tracking
-    this.lastMoveScore = this.score; // Store score before move
-    
-    switch (direction) {
-      case 'up':
-        moved = this.moveUp();
-        break;
-      case 'down':
-        moved = this.moveDown();
-        break;
-      case 'left':
-        moved = this.moveLeft();
-        break;
-      case 'right':
-        moved = this.moveRight();
-        break;
-    }
-    
-    if (moved) {
-      this.moves++;
-      this.addRandomTile();
-      this.updateUI();
-      
-      // Calculate score delta for popup
-      this.scoreDelta = this.score - this.lastMoveScore;
-      if (this.scoreDelta > 0) {
-        this.showScorePopup(this.scoreDelta);
-      }
-      
-      // Check game state after move
-      this.checkGameState();
-      
-      // Update best score if needed
-      if (this.score > this.bestScore) {
-        this.bestScore = this.score;
-        localStorage.setItem('bestScore', this.bestScore);
-      }
-    }
-    
-    return moved;
-  }
-
-  async reset() {
-    if (this.useBackend && this.gameId) {
-      await this.resetWithBackend();
-    } else {
-      this.resetLocal();
-    }
-  }
-
-  async resetWithBackend() {
-    try {
-      const response = await fetch(`${this.apiBase}/api/reset`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ gameId: this.gameId })
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        this.loadServerState(data.gameState);
-        console.log('Game reset via backend');
-      } else {
-        console.warn('Backend reset failed, falling back to local');
-        this.useBackend = false;
-        this.resetLocal();
-      }
-    } catch (error) {
-      console.warn('Backend reset error, falling back to local:', error);
-      this.useBackend = false;
-      this.resetLocal();
-    }
-  }
-
-  resetLocal() {
-    // Clear the timer
-    if (this.timerInterval) {
-      clearInterval(this.timerInterval);
-      this.timerInterval = null;
-    }
-    
-    // Reset game state
-    this.board = this.createEmptyBoard();
-    this.score = 0;
     this.moves = 0;
-    this.gameState = 'playing';
-    this.hasShownContinuePopup = false;
     this.startTime = null;
+
+    // Game states
+    this.gameState = 'ready'; // ready, playing, paused, over, won
+    this.hasSavedStats = false;
+    this.isPaused = false;
+
+    // Visual settings
+    this.isLightMode = localStorage.getItem('isLightMode') === 'true';
+    this.hueValue = 0;
+    this.isRainbowMode = false;
+
+    // Game history and stats
     this.gameStateStack = [];
-    this.lastMerged = [];
-    
-    // Add initial tiles
-    this.addRandomTile();
-    this.addRandomTile();
-    
-    // Update UI and start timer
-    this.updateUI();
+    this.maxUndoSteps = 20; // Allow multiple undos up to a limit
+    this.lastMoveScore = 0;
+    this.scoreDelta = 0;
+    this.lastMerged = []; // Track merged positions for animations
+    this.stats = JSON.parse(localStorage.getItem('gameStats')) || [];
+    this.timerInterval = null;
+
+    // Animation properties
+    this.animationInProgress = false;
+    this.animationFrameId = null;
+    this.lastMoveDirection = null;
+
+    // Initialize the game
+    this.addEventListeners();
+    this.reset();
+    window.addEventListener('resize', this.debounce(() => this.refreshLayout(), 100));
+    window.addEventListener('orientationchange', () => setTimeout(() => this.refreshLayout(), 300));
+    this.applyTheme();
+    this.updateHue();
     this.startTimer();
-    
-    // Hide game over message if visible
-    const gameOverElement = document.getElementById('game-over');
-    if (gameOverElement) {
-      gameOverElement.classList.add('hidden');
-    }
-    
-    console.log('Game reset successfully');
+
+    // Initialize resize observer for better font scaling
+    this.initializeResizeObserver();
   }
 
-  saveStats() {
-    if (this.score > 0 && !this.hasSavedStats) {
-      const stat = {
-        date: new Date().toISOString(),
-        bestTile: Math.max(...this.board.flat()),
-        score: this.score,
-        bestScore: this.bestScore,
-        time: this.getElapsedTime(),
-        moves: this.moves
-      };
-      
-      try {
-        await fetch('/api/save_stats', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(stat)
-        });
-      } catch (error) {
-        const stats = JSON.parse(localStorage.getItem('gameStats') || '[]');
-        stats.push(stat);
-        localStorage.setItem('gameStats', JSON.stringify(stats));
-      }
-      
-      this.hasSavedStats = true;
-    }
-  }
-
-  openStatisticsPage() {
-    window.location.href = '../pages/leaderboard.html';
-  }
-
-  updateBackButtonState() {
-    const backButton = document.getElementById('back-button');
-    if (backButton) {
-      backButton.disabled = this.gameStateStack.length === 0;
-    }
-  }
-
-  togglePause() {
-    this.isPaused = !this.isPaused;
+  addEventListeners() {
+    document.getElementById('reset-button').addEventListener('click', () => {
+      this.reset();
+      this.updateUI();
+    });
+    window.addEventListener('keydown', this.handleKeyPress.bind(this));
     const boardContainer = document.getElementById('board-container');
-    
-    if (this.isPaused) {
-      boardContainer.style.pointerEvents = 'none';
-      boardContainer.style.filter = 'blur(2px)';
-      if (this.timerInterval) {
-        clearInterval(this.timerInterval);
-      }
-    } else {
-      boardContainer.style.pointerEvents = 'auto';
-      boardContainer.style.filter = 'none';
-      this.startTimer();
-    }
-  }
-
-  async changeBoardSize() {
-    const newSize = prompt('Enter new board size (3-8):', this.size);
-    const size = parseInt(newSize);
-    
-    if (size && size >= 3 && size <= 8 && size !== this.size) {
-      try {
-        const res = await fetch('/api/change_size', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ size })
-        });
-        const data = await res.json();
-        if (data.state) {
-          this.size = size;
-          this.hasShownContinuePopup = false;
-          this.loadState(data.state);
-          this.optimizeForDevice();
-        }
-      } catch (error) {
-        console.error('Size change failed:', error);
-      }
-    }
+    boardContainer.addEventListener('touchstart', this.handleTouchStart.bind(this), false);
+    boardContainer.addEventListener('touchend', this.handleTouchEnd.bind(this), false);
+    document.addEventListener('touchmove', this.preventScroll, { passive: false });
+    document.getElementById('changeColor-button').addEventListener('click', this.changeHue.bind(this));
+    document.getElementById('back-button').addEventListener('click', this.undoMove.bind(this));
+    document.getElementById('leaderboard-button').addEventListener('click', this.openStatisticsPage.bind(this));
+    document.getElementById('rainbowMode-button').addEventListener('click', this.toggleRainbowMode.bind(this));
+    document.getElementById('pause-button').addEventListener('click', this.togglePause.bind(this));
+    document.getElementById('board-size-button').addEventListener('click', this.changeBoardSize.bind(this));
+    document.getElementById('theme-toggle-button').addEventListener('click', this.toggleTheme.bind(this));
   }
 
   updateBestScore() {
@@ -1075,22 +174,12 @@ class Game {
   createGridCells() {
     const boardContainer = document.getElementById('board-container');
     
-    // Clear existing grid cells
-    const existingCells = boardContainer.querySelectorAll('.grid-cell');
-    existingCells.forEach(cell => cell.remove());
-    
-    // Create background grid cells for visual structure
     for (let i = 0; i < this.size; i++) {
       for (let j = 0; j < this.size; j++) {
         const cell = document.createElement('div');
         cell.className = 'grid-cell';
         cell.dataset.row = i;
         cell.dataset.col = j;
-        
-        // Position background cells using CSS Grid
-        cell.style.gridRow = i + 1;
-        cell.style.gridColumn = j + 1;
-        
         boardContainer.appendChild(cell);
       }
     }
@@ -1130,25 +219,18 @@ class Game {
     tile.dataset.col = col;
     tile.textContent = value;
     
-    // Calculate absolute position within the board
-    const tileSize = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--tile-size'));
-    const gap = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--gap'));
+    // Position the tile in the grid
+    const gridPosition = row * this.size + col;
+    const gridCell = boardContainer.children[gridPosition];
     
-    // Position tile with absolute coordinates
-    const x = col * (tileSize + gap);
-    const y = row * (tileSize + gap);
-    
-    tile.style.position = 'absolute';
-    tile.style.left = `${x}px`;
-    tile.style.top = `${y}px`;
-    tile.style.width = `${tileSize}px`;
-    tile.style.height = `${tileSize}px`;
-    
-    // Add to board container directly
-    boardContainer.appendChild(tile);
-    
-    // Apply dynamic font sizing
-    this.adjustTileFontSize(tile);
+    if (gridCell) {
+      gridCell.appendChild(tile);
+      // Apply dynamic font sizing instead of relying on CSS
+      this.adjustTileFontSize(tile);
+    } else {
+      console.error(`No grid cell found at position ${row}, ${col}`);
+      boardContainer.appendChild(tile);
+    }
     
     if (isNew) {
       tile.classList.add('new-tile');
@@ -1670,42 +752,7 @@ class Game {
     }
   }
 
-  async undoMove() {
-    if (this.useBackend && this.gameId) {
-      await this.undoWithBackend();
-    } else {
-      this.undoLocal();
-    }
-  }
-
-  async undoWithBackend() {
-    try {
-      const response = await fetch(`${this.apiBase}/api/undo`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({ gameId: this.gameId })
-      });
-      
-      if (response.ok) {
-        const data = await response.json();
-        if (data.success) {
-          this.loadServerState(data.gameState);
-        }
-      } else {
-        console.warn('Backend undo failed, falling back to local');
-        this.useBackend = false;
-        this.undoLocal();
-      }
-    } catch (error) {
-      console.warn('Backend undo error, falling back to local:', error);
-      this.useBackend = false;
-      this.undoLocal();
-    }
-  }
-
-  undoLocal() {
+  undoMove() {
     if (this.gameStateStack.length === 0 || this.animationInProgress) return;
     
     // Get the last game state
@@ -1739,6 +786,24 @@ class Game {
     this.isLightMode = !this.isLightMode;
     localStorage.setItem('isLightMode', this.isLightMode);
     this.applyTheme();
+  }
+
+  updateHue() {
+    document.documentElement.style.setProperty('--hue-value', this.hueValue);
+    
+    // Update color button color
+    const colorButton = document.getElementById('changeColor-button');
+    colorButton.style.color = `hsl(${this.hueValue}, 70%, 50%)`;
+    
+    if (this.isRainbowMode) {
+      this.startRainbowMode();
+    }
+  }
+
+  changeHue() {
+    // Cycle through hue values (0-360)
+    this.hueValue = (this.hueValue + 60) % 360;
+    this.updateHue();
   }
 
   toggleRainbowMode() {

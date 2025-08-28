@@ -22,7 +22,6 @@ class Game:
         self.best_score = 0
         self.moves = 0
         self.state = 'playing'  # playing, won, over
-        self.has_saved_stats = False
 
         # Game history and stats
         self.previous_boards = []  # For undo functionality
