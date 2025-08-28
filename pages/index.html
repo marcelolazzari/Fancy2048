@@ -11,7 +11,8 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   </head>
   <body>
-
+    <!-- Skip to main content for accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
 
     <!-- Header section -->
     <header>
@@ -20,32 +21,32 @@
         <nav aria-label="Game controls">
           <ul id="controls-container" class="controls" role="menubar">
             <li role="none">
-              <button type="button" id="changeColor-button" aria-label="Change Color" tabindex="0" role="menuitem">
+              <button type="button" id="changeColor-button" aria-label="Change Color" tabindex="0" role="menuitem" data-tooltip="Change game colors">
                 <i class="fas fa-palette" aria-hidden="true"></i>
               </button>
             </li>
             <li role="none">
-              <button type="button" id="leaderboard-button" aria-label="View Statistics" onclick="window.location.href='leaderboard.html'" tabindex="0" role="menuitem">
+              <button type="button" id="leaderboard-button" aria-label="View Statistics" onclick="window.location.href='leaderboard.html'" tabindex="0" role="menuitem" data-tooltip="View statistics and leaderboard">
                 <i class="fas fa-chart-line" aria-hidden="true"></i>
               </button>
             </li>
             <li role="none">
-              <button type="button" id="back-button" aria-label="Undo Move" tabindex="0" role="menuitem">
+              <button type="button" id="back-button" aria-label="Undo Move" tabindex="0" role="menuitem" data-tooltip="Undo last move">
                 <i class="fas fa-undo" aria-hidden="true"></i>
               </button>
             </li>
             <li role="none">
-              <button type="button" id="pause-button" aria-label="Pause Game" tabindex="0" role="menuitem">
+              <button type="button" id="pause-button" aria-label="Pause Game" tabindex="0" role="menuitem" data-tooltip="Pause/Resume game">
                 <i class="fas fa-pause" aria-hidden="true"></i>
               </button>
             </li>
             <li role="none">
-              <button type="button" id="board-size-button" aria-label="Change Board Size" tabindex="0" role="menuitem">
+              <button type="button" id="board-size-button" aria-label="Change Board Size" tabindex="0" role="menuitem" data-tooltip="Change board size">
                 <i class="fas fa-th" aria-hidden="true"></i>
               </button>
             </li>
             <li role="none">
-              <button type="button" id="theme-toggle-button" aria-label="Toggle Theme" tabindex="0" role="menuitem">
+              <button type="button" id="theme-toggle-button" aria-label="Toggle Theme" tabindex="0" role="menuitem" data-tooltip="Toggle light/dark theme">
                 <i class="fas fa-adjust" aria-hidden="true"></i>
               </button>
             </li>
@@ -55,7 +56,7 @@
     </header>
 
     <!-- Main content section -->
-    <main>
+    <main id="main-content">
       <div class="overlay" aria-hidden="true"></div>
       <section class="game-section">
   <div id="board-container" class="board-container" role="grid" aria-label="Game Board" tabindex="0"></div>
@@ -76,7 +77,7 @@
     <!-- Footer section -->
     <footer>
       <div class="container">
-        <button type="button" id="reset-button" aria-label="Reset Game" tabindex="0">Reset</button>
+        <button type="button" id="reset-button" aria-label="Reset Game" tabindex="0" data-tooltip="Start a new game">Reset</button>
       </div>
     </footer>
 

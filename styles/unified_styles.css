@@ -949,26 +949,751 @@ footer .container {
   border: 0;
 }
 
-/* Responsive adjustments */
+/* ==================== */
+/* Desktop Responsive Layout Improvements */
+/* ==================== */
+
+/* Enhanced desktop layout for better space utilization */
 @media (min-width: 769px) {
-  main {
+  body {
+    overflow: auto;
+    height: auto;
+    min-height: 100vh;
+    max-height: none;
+    position: relative;
+  }
+
+  header {
+    position: static;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(26, 26, 26, 0.95) 100%);
+    padding: 20px 30px;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  }
+
+  header .container {
+    max-width: 1400px;
+    margin: 0 auto;
     flex-direction: row;
     justify-content: space-between;
-    flex-wrap: wrap;
+    align-items: center;
+  }
+
+  header .game-title {
+    font-size: 2.5rem;
+    margin: 0;
+    background: linear-gradient(45deg, var(--highlight-color), #ffdd44);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: var(--highlight-color); /* Fallback for browsers that don't support text fill */
+  }
+
+/* Enhanced desktop controls layout */
+@media (min-width: 769px) {
+  .controls {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 12px;
+    width: auto;
+    min-width: 200px;
+  }
+
+  #controls-container button {
+    padding: 12px 16px;
+    font-size: 1rem;
+    min-width: 48px;
+    min-height: 48px;
+    border-radius: 12px;
+    backdrop-filter: blur(15px);
+    position: relative;
+    overflow: hidden;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  #controls-container button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.1), transparent);
+    transition: left 0.5s;
+  }
+
+  #controls-container button:hover::before {
+    left: 100%;
+  }
+
+  #controls-container button:hover {
+    transform: translateY(-3px) scale(1.05);
+    box-shadow: 0 8px 25px rgba(255, 204, 0, 0.3);
+  }
+
+  /* Specific button positioning in grid */
+  #changeColor-button {
+    grid-column: 1;
+    grid-row: 1;
+  }
+
+  #leaderboard-button {
+    grid-column: 2;
+    grid-row: 1;
+  }
+
+  #back-button {
+    grid-column: 3;
+    grid-row: 1;
+  }
+
+  #pause-button {
+    grid-column: 1;
+    grid-row: 2;
+  }
+
+  #board-size-button {
+    grid-column: 2;
+    grid-row: 2;
+  }
+
+  #theme-toggle-button {
+    grid-column: 3;
+    grid-row: 2;
+  }
+}
+
+/* Desktop keyboard navigation enhancements */
+@media (min-width: 769px) {
+  button:focus-visible {
+    outline: 3px solid var(--highlight-color);
+    outline-offset: 3px;
+    transform: translateY(-2px) scale(1.02);
+    box-shadow: 0 6px 20px rgba(255, 204, 0, 0.4);
+  }
+
+  .tile:focus-visible {
+    outline: 3px solid var(--highlight-color);
+    outline-offset: 2px;
+    transform: scale(1.02);
+    z-index: 10;
+  }
+}
+
+/* Enhanced desktop game board presentation */
+@media (min-width: 769px) {
+  #board-container {
+    position: relative;
+  }
+
+  #board-container::before {
+    content: '';
+    position: absolute;
+    top: -4px;
+    left: -4px;
+    right: -4px;
+    bottom: -4px;
+    background: linear-gradient(45deg, var(--highlight-color), #ffdd44, var(--highlight-color));
+    border-radius: calc(var(--tile-border-radius) + 4px);
+    z-index: -1;
+    opacity: 0.6;
+    animation: borderGlow 3s ease-in-out infinite;
+  }
+}
+
+@keyframes borderGlow {
+  0%, 100% {
+    opacity: 0.3;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.6;
+    transform: scale(1.005);
+  }
+}
+
+  main {
+    flex-direction: row;
     align-items: flex-start;
-    padding: 20px;
+    justify-content: center;
+    gap: 40px;
+    padding: 40px 30px;
+    max-width: 1400px;
+    margin: 0 auto;
+    min-height: calc(100vh - 200px);
+    overflow: visible;
+    touch-action: auto;
   }
 
   .game-section {
-    flex: 2;
-    margin-right: 20px;
+    flex: 0 0 auto;
+    margin: 0;
+    max-width: 600px;
+  }
+
+  #board-container {
+    max-width: min(70vh, 600px);
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    border: 2px solid rgba(255, 204, 0, 0.2);
+  }
+
+/* Desktop Typography and Visual Enhancements */
+@media (min-width: 769px) {
+  /* Enhanced tile font sizing for desktop */
+  .tile {
+    font-size: clamp(16px, calc(var(--tile-size) * 0.4), 72px);
+    letter-spacing: -0.02em;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+
+  .tile[data-value="2"],
+  .tile[data-value="4"] {
+    font-size: clamp(18px, calc(var(--tile-size) * 0.45), 76px);
+  }
+
+  .tile[data-value="8"],
+  .tile[data-value="16"],
+  .tile[data-value="32"] {
+    font-size: clamp(16px, calc(var(--tile-size) * 0.42), 72px);
+  }
+
+  .tile[data-value="64"],
+  .tile[data-value="128"],
+  .tile[data-value="256"] {
+    font-size: clamp(14px, calc(var(--tile-size) * 0.38), 68px);
+  }
+
+  .tile[data-value="512"],
+  .tile[data-value="1024"] {
+    font-size: clamp(12px, calc(var(--tile-size) * 0.34), 62px);
+  }
+
+  .tile[data-value="2048"],
+  .tile[data-value="4096"],
+  .tile[data-value="8192"],
+  .tile[data-value="16384"],
+  .tile[data-value="32768"],
+  .tile[data-value="65536"] {
+    font-size: clamp(10px, calc(var(--tile-size) * 0.3), 56px);
+  }
+
+  /* Desktop-specific tile enhancements */
+  .tile:hover {
+    transform: scale(1.02);
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.3);
+    z-index: 5;
+  }
+}
+
+/* Desktop Game Over Modal Enhancement */
+@media (min-width: 769px) {
+  #game-over {
+    font-size: 2.5rem;
+    padding: 50px 40px;
+    border-radius: 25px;
+    min-width: 400px;
+    backdrop-filter: blur(20px);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.8);
+    border: 3px solid var(--highlight-color);
+    animation: gameOverAppear 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+}
+
+@keyframes gameOverAppear {
+  0% {
+    opacity: 0;
+    transform: translate(-50%, -50%) scale(0.8) rotate(5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: translate(-50%, -50%) scale(1) rotate(0deg);
+  }
+}
+
+/* Desktop-specific animations */
+@media (min-width: 769px) and (prefers-reduced-motion: no-preference) {
+  .tile.new-tile {
+    animation: appearDesktop var(--appear-animation-duration) var(--ease-out-back);
+  }
+
+  .tile.merged {
+    animation: mergeDesktop var(--merge-animation-duration) var(--ease-out-back);
+  }
+}
+
+@keyframes appearDesktop {
+  0% {
+    opacity: 0;
+    transform: scale(0) rotate(45deg);
+  }
+  50% {
+    opacity: 1;
+    transform: scale(1.15) rotate(22.5deg);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+@keyframes mergeDesktop {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.3) rotate(5deg);
+  }
+  100% {
+    transform: scale(1) rotate(0deg);
+  }
+}
+
+  #score-container {
+    flex: 0 0 280px;
+    margin: 0;
+    align-self: flex-start;
+    position: sticky;
+    top: 20px;
+    background: linear-gradient(135deg, rgba(50, 50, 50, 0.95) 0%, rgba(30, 30, 30, 0.98) 100%);
+    border: 2px solid rgba(255, 204, 0, 0.2);
+    backdrop-filter: blur(20px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    padding: 25px;
+    border-radius: 20px;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+
+  #score-container::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, rgba(255, 204, 0, 0.3), rgba(255, 221, 68, 0.3));
+    border-radius: 22px;
+    z-index: -1;
+    opacity: 0.5;
+  }
+
+  #score-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+  }
+
+  #score-container ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+
+  #score-container li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 12px 0;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    font-size: 1.1rem;
+    font-weight: 600;
+    transition: all 0.2s ease;
+  }
+
+  #score-container li:last-child {
+    border-bottom: none;
+  }
+
+  #score-container li:hover {
+    color: var(--highlight-color);
+    padding-left: 5px;
+  }
+
+  #score-container span {
+    color: var(--highlight-color);
+    font-size: 1.3rem;
+    font-weight: 700;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  footer {
+    position: static;
+    background: linear-gradient(135deg, rgba(0, 0, 0, 0.9) 0%, rgba(26, 26, 26, 0.95) 100%);
+    padding: 20px 30px;
+    margin-top: auto;
+  }
+
+  footer .container {
+    max-width: 1400px;
+    margin: 0 auto;
+  }
+
+  #reset-button {
+    padding: 12px 24px;
+    font-size: 1.1rem;
+    border-radius: 12px;
+    background: linear-gradient(45deg, var(--reset-button-background), #ff6b47);
+    box-shadow: 0 4px 15px rgba(255, 127, 80, 0.3);
+  }
+
+  #reset-button:hover {
+    background: linear-gradient(45deg, var(--reset-button-hover-background), var(--reset-button-background));
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(255, 127, 80, 0.4);
+  }
+}
+
+/* Medium desktop screens - balanced layout */
+@media (min-width: 769px) and (max-width: 1199px) {
+  header {
+    padding: 18px 25px;
+  }
+
+  header .game-title {
+    font-size: 2.2rem;
+  }
+
+  main {
+    gap: 35px;
+    padding: 35px 25px;
   }
 
   #score-container {
-    flex: 1;
-    align-self: flex-start;
-    margin-left: 20px;
-    max-width: 300px;
+    flex: 0 0 260px;
+    padding: 22px;
+  }
+
+  .controls {
+    gap: 10px;
+    min-width: 180px;
+  }
+
+  #controls-container button {
+    min-width: 44px;
+    min-height: 44px;
+    padding: 10px 14px;
+  }
+}
+
+/* Large desktop screens - optimize for ultra-wide displays */
+@media (min-width: 1200px) {
+  header {
+    padding: 25px 40px;
+  }
+
+  header .game-title {
+    font-size: 3rem;
+  }
+
+  main {
+    gap: 60px;
+    padding: 60px 40px;
+  }
+
+  #score-container {
+    flex: 0 0 320px;
+    padding: 30px;
+  }
+
+  #score-container li {
+    padding: 15px 0;
+    font-size: 1.2rem;
+  }
+
+  #score-container span {
+    font-size: 1.4rem;
+  }
+
+  #board-container {
+    max-width: min(65vh, 700px);
+  }
+
+  /* Enhanced desktop sidebar with additional stats */
+  #score-container::before {
+    content: '';
+    position: absolute;
+    top: -2px;
+    left: -2px;
+    right: -2px;
+    bottom: -2px;
+    background: linear-gradient(45deg, rgba(255, 204, 0, 0.3), rgba(255, 221, 68, 0.3));
+    border-radius: 22px;
+    z-index: -1;
+    opacity: 0.5;
+  }
+
+  /* Desktop-specific hover effects for score panel */
+  #score-container:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 15px 40px rgba(0, 0, 0, 0.4);
+  }
+}
+
+/* Extra large screens - maximize visual impact */
+@media (min-width: 1600px) {
+  header .container,
+  main,
+  footer .container {
+    max-width: 1600px;
+  }
+
+  header .game-title {
+    font-size: 3.5rem;
+  }
+
+  main {
+    gap: 80px;
+    padding: 80px 60px;
+  }
+
+  #score-container {
+    flex: 0 0 360px;
+    padding: 35px;
+  }
+
+  #board-container {
+    max-width: min(60vh, 800px);
+  }
+}
+
+/* Desktop-specific improvements for visual hierarchy */
+@media (min-width: 769px) {
+  /* Add subtle background patterns */
+  body::before {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: 
+      radial-gradient(circle at 25% 25%, rgba(255, 204, 0, 0.02) 0%, transparent 50%),
+      radial-gradient(circle at 75% 75%, rgba(255, 204, 0, 0.02) 0%, transparent 50%);
+    z-index: -2;
+    pointer-events: none;
+  }
+
+  /* Desktop footer enhancements */
+  footer {
+    border-top: 1px solid rgba(255, 204, 0, 0.1);
+  }
+
+  #reset-button {
+    position: relative;
+    overflow: hidden;
+  }
+
+  #reset-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.15), transparent);
+    transition: left 0.6s;
+  }
+
+  #reset-button:hover::before {
+    left: 100%;
+  }
+
+  /* Desktop game state indicators */
+  .game-section {
+    position: relative;
+  }
+
+  .game-section::after {
+    content: '';
+    position: absolute;
+    top: -10px;
+    left: -10px;
+    right: -10px;
+    bottom: -10px;
+    border-radius: calc(var(--tile-border-radius) + 10px);
+    background: linear-gradient(135deg, rgba(255, 204, 0, 0.05), transparent, rgba(255, 204, 0, 0.05));
+    z-index: -1;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+  }
+
+/* Desktop cursor and interaction enhancements */
+@media (min-width: 769px) and (hover: hover) and (pointer: fine) {
+  /* Custom cursor for game board */
+  #board-container {
+    cursor: pointer;
+  }
+
+  #board-container:active {
+    cursor: grabbing;
+  }
+
+  /* Button cursor enhancements */
+  button {
+    cursor: pointer;
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  /* Tile interaction feedback */
+  .tile {
+    cursor: default;
+    user-select: none;
+  }
+
+  /* Score panel interactivity */
+  #score-container {
+    cursor: default;
+    user-select: none;
+  }
+
+  /* Smooth transitions for all interactive elements */
+  button, .tile, #score-container, #board-container {
+    transition-property: transform, box-shadow, background-color, color, border-color;
+    transition-duration: 0.2s;
+    transition-timing-function: cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  }
+}
+
+/* Desktop tooltip system */
+@media (min-width: 769px) {
+  [data-tooltip] {
+    position: relative;
+  }
+
+  [data-tooltip]:hover::after {
+    content: attr(data-tooltip);
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.9);
+    color: white;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.85rem;
+    white-space: nowrap;
+    z-index: 1000;
+    pointer-events: none;
+    opacity: 0;
+    animation: tooltipFadeIn 0.3s ease forwards;
+  }
+
+  [data-tooltip]:hover::before {
+    content: '';
+    position: absolute;
+    bottom: 100%;
+    left: 50%;
+    transform: translateX(-50%) translateY(100%);
+    width: 0;
+    height: 0;
+    border-left: 6px solid transparent;
+    border-right: 6px solid transparent;
+    border-top: 6px solid rgba(0, 0, 0, 0.9);
+    z-index: 1000;
+    pointer-events: none;
+    opacity: 0;
+    animation: tooltipFadeIn 0.3s ease forwards;
+  }
+}
+
+@keyframes tooltipFadeIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+/* Desktop performance optimizations */
+@media (min-width: 769px) {
+  /* Enable hardware acceleration for smooth animations */
+  .tile,
+  button,
+  #board-container,
+  #score-container {
+    will-change: transform;
+  }
+
+  /* Optimize rendering for desktop */
+  * {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  /* Improve text rendering */
+  body {
+    text-rendering: optimizeLegibility;
+  }
+}
+
+/* Desktop-specific accessibility improvements */
+@media (min-width: 769px) {
+  /* Enhanced focus indicators for desktop */
+  button:focus-visible,
+  .tile:focus-visible {
+    outline: 3px solid var(--highlight-color);
+    outline-offset: 3px;
+  }
+
+  /* Skip to main content link for keyboard users */
+  .skip-link {
+    position: absolute;
+    top: -40px;
+    left: 6px;
+    background: var(--highlight-color);
+    color: var(--primary-color);
+    padding: 8px;
+    text-decoration: none;
+    border-radius: 4px;
+    z-index: 10000;
+    font-weight: bold;
+  }
+
+  .skip-link:focus {
+    top: 6px;
+  }
+
+  /* Enhanced keyboard navigation for game board */
+  #board-container:focus {
+    outline: 3px solid var(--highlight-color);
+    outline-offset: 3px;
+  }
+
+  /* Better contrast for high-contrast mode users */
+  @media (prefers-contrast: high) {
+    button {
+      border: 2px solid currentColor;
+    }
+    
+    .tile {
+      border: 2px solid rgba(255, 255, 255, 0.8);
+    }
+  }
+}
+
+/* Desktop print styles */
+@media print {
+  * {
+    background: white !important;
+    color: black !important;
+    box-shadow: none !important;
+  }
+  
+  header, footer {
+    display: none;
+  }
+  
+  main {
+    flex-direction: column;
+  }
+  
+  #board-container {
+    border: 2px solid black;
   }
 }
 
