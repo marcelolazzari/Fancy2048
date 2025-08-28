@@ -15,7 +15,7 @@ class Game {
 
     // Visual settings
     this.isLightMode = localStorage.getItem('isLightMode') === 'true';
-    this.hueValue = 0; // Always start with hue 0
+    this.hueValue = 60; // Always start with hue 0
 
     // Game history and stats
     this.gameStateStack = [];
