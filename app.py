@@ -1,20 +1,74 @@
-from flask import Flask, render_template, send_from_directory, jsonify, request
+from flask import Flask, render_template, send_from_directory, jsonify, request, session
 from flask_cors import CORS
 import random
 import uuid
 import time
 import json
 import os
+import hashlib
 
 
 app = Flask(__name__, template_folder='pages')
 CORS(app)
+app.secret_key = 'fancy2048-secret-key-change-in-production'  # Change this in production
 
-# In-memory game storage
-games = {}
+# In-memory storage for users, games, and statistics
+users = {}  # username -> user_data
+games = {}  # session_id -> game_instance
+user_stats = {}  # username -> [list of game stats]
+user_leaderboards = {}  # username -> [list of best scores]
+
+class User:
+    def __init__(self, username, password=None):
+        self.username = username
+        self.password_hash = self._hash_password(password) if password else None
+        self.created_at = time.time()
+        self.last_active = time.time()
+        self.total_games = 0
+        self.best_score = 0
+        self.best_tile = 0
+        self.preferences = {
+            'theme': 'dark',
+            'hue_value': 60,
+            'default_grid_size': 4
+        }
+    
+    def _hash_password(self, password):
+        """Hash password for basic security"""
+        if password:
+            return hashlib.sha256(password.encode()).hexdigest()
+        return None
+    
+    def check_password(self, password):
+        """Check if provided password matches stored hash"""
+        if not self.password_hash:
+            return True  # No password set (guest mode)
+        return self._hash_password(password) == self.password_hash
+    
+    def update_activity(self):
+        """Update last active timestamp"""
+        self.last_active = time.time()
+    
+    def update_stats(self, score, tile, games_played=1):
+        """Update user's overall statistics"""
+        self.total_games += games_played
+        self.best_score = max(self.best_score, score)
+        self.best_tile = max(self.best_tile, tile)
+    
+    def to_dict(self):
+        """Convert user to dictionary for JSON serialization"""
+        return {
+            'username': self.username,
+            'created_at': self.created_at,
+            'last_active': self.last_active,
+            'total_games': self.total_games,
+            'best_score': self.best_score,
+            'best_tile': self.best_tile,
+            'preferences': self.preferences
+        }
 
 class Game:
-    def __init__(self, size=4):
+    def __init__(self, size=4, username=None):
         # Core game properties
         self.size = size
         self.board = [[0 for _ in range(size)] for _ in range(size)]
@@ -22,6 +76,7 @@ class Game:
         self.best_score = 0
         self.moves = 0
         self.state = 'playing'  # playing, won, over
+        self.username = username  # Associate game with user
 
         # Game history and stats
         self.previous_boards = []  # For undo functionality
@@ -347,6 +402,124 @@ def index():
 def leaderboard():
     return render_template('leaderboard.html', title='Leaderboard')
 
+# User management API endpoints
+@app.route('/api/create_user', methods=['POST'])
+def create_user():
+    """Create a new user account"""
+    data = request.json or {}
+    username = data.get('username', '').strip()
+    password = data.get('password', '').strip()
+    
+    if not username:
+        return jsonify({'success': False, 'error': 'Username is required'}), 400
+    
+    if len(username) < 3:
+        return jsonify({'success': False, 'error': 'Username must be at least 3 characters long'}), 400
+    
+    if len(username) > 20:
+        return jsonify({'success': False, 'error': 'Username must be no more than 20 characters long'}), 400
+    
+    if username in users:
+        return jsonify({'success': False, 'error': 'Username already exists'}), 400
+    
+    # Create new user
+    user = User(username, password if password else None)
+    users[username] = user
+    user_stats[username] = []
+    user_leaderboards[username] = []
+    
+    # Set session
+    session['username'] = username
+    
+    return jsonify({
+        'success': True, 
+        'message': 'User created successfully',
+        'user': user.to_dict()
+    })
+
+@app.route('/api/login', methods=['POST'])
+def login():
+    """Login user"""
+    data = request.json or {}
+    username = data.get('username', '').strip()
+    password = data.get('password', '').strip()
+    
+    if not username:
+        return jsonify({'success': False, 'error': 'Username is required'}), 400
+    
+    if username not in users:
+        return jsonify({'success': False, 'error': 'User not found'}), 404
+    
+    user = users[username]
+    if not user.check_password(password):
+        return jsonify({'success': False, 'error': 'Invalid password'}), 401
+    
+    # Update activity and set session
+    user.update_activity()
+    session['username'] = username
+    
+    return jsonify({
+        'success': True,
+        'message': 'Login successful',
+        'user': user.to_dict()
+    })
+
+@app.route('/api/logout', methods=['POST'])
+def logout():
+    """Logout user"""
+    if 'username' in session:
+        session.pop('username')
+    return jsonify({'success': True, 'message': 'Logged out successfully'})
+
+@app.route('/api/current_user', methods=['GET'])
+def current_user():
+    """Get current user information"""
+    username = session.get('username')
+    if not username or username not in users:
+        return jsonify({'user': None})
+    
+    user = users[username]
+    user.update_activity()
+    return jsonify({'user': user.to_dict()})
+
+@app.route('/api/users', methods=['GET'])
+def get_users():
+    """Get list of all users (for admin purposes or user selection)"""
+    user_list = []
+    for username, user in users.items():
+        user_list.append({
+            'username': user.username,
+            'total_games': user.total_games,
+            'best_score': user.best_score,
+            'best_tile': user.best_tile,
+            'last_active': user.last_active
+        })
+    
+    # Sort by best score descending
+    user_list.sort(key=lambda x: x['best_score'], reverse=True)
+    
+    return jsonify({'users': user_list})
+
+@app.route('/api/guest_login', methods=['POST'])
+def guest_login():
+    """Create a temporary guest user"""
+    guest_id = f"guest_{uuid.uuid4().hex[:8]}"
+    
+    # Create guest user
+    user = User(guest_id)
+    users[guest_id] = user
+    user_stats[guest_id] = []
+    user_leaderboards[guest_id] = []
+    
+    # Set session
+    session['username'] = guest_id
+    
+    return jsonify({
+        'success': True,
+        'message': 'Guest session created',
+        'user': user.to_dict()
+    })
+
 # Game API endpoints
 @app.route('/api/new_game', methods=['POST'])
 def new_game():
@@ -354,16 +527,26 @@ def new_game():
     data = request.json or {}
     size = data.get('size', 4)
     
+    # Get current user
+    username = session.get('username')
+    if not username:
+        return jsonify({'error': 'User not logged in'}), 401
+    
     # Create a unique game ID
     game_id = str(uuid.uuid4())
     
-    # Create a new game
-    games[game_id] = Game(size)
+    # Create a new game associated with the user
+    games[game_id] = Game(size, username)
+    
+    # Update user activity
+    if username in users:
+        users[username].update_activity()
     
     # Return the game ID and initial state
     return jsonify({
         'gameId': game_id,
-        'gameState': games[game_id].get_state()
+        'gameState': games[game_id].get_state(),
+        'username': username
     })
 
 @app.route('/api/move', methods=['POST'])
@@ -498,122 +681,164 @@ def change_hue():
 # Stats and leaderboard endpoints
 @app.route('/api/save_stats', methods=['POST'])
 def save_game_stats():
-    """Save game statistics"""
+    """Save game statistics for current user"""
     data = request.json or {}
     game_id = data.get('gameId')
+    
+    # Get current user
+    username = session.get('username')
+    if not username:
+        return jsonify({'error': 'User not logged in'}), 401
     
     if not game_id or game_id not in games:
         return jsonify({'error': 'Invalid request'}), 400
     
     game = games[game_id]
+    
+    # Verify game belongs to current user
+    if game.username != username:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
     stats_data = game.get_stats_data()
     
-    # Read existing stats from localStorage equivalent
-    try:
-        with open('game_stats.json', 'r') as f:
-            stats = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        stats = []
+    # Initialize user stats if not exists
+    if username not in user_stats:
+        user_stats[username] = []
     
-    # Add new stats
-    stats.append(stats_data)
+    # Add stats to user's data
+    user_stats[username].append(stats_data)
     
-    # Save stats back
-    with open('game_stats.json', 'w') as f:
-        json.dump(stats, f)
+    # Update user's overall statistics
+    if username in users:
+        max_tile = max([max(row) for row in game.board])
+        users[username].update_stats(game.score, max_tile)
     
-    return jsonify({
-        'success': True
-    })
+    return jsonify({'success': True, 'stats': stats_data})
 
 @app.route('/api/get_stats', methods=['GET'])
 def get_game_stats():
-    """Get all game statistics"""
-    try:
-        with open('game_stats.json', 'r') as f:
-            stats = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        stats = []
+    """Get game statistics for current user"""
+    username = session.get('username')
+    if not username:
+        return jsonify({'error': 'User not logged in'}), 401
+    
+    # Return user-specific stats
+    stats = user_stats.get(username, [])
     
     return jsonify({
-        'stats': stats
+        'stats': stats,
+        'username': username
     })
 
 @app.route('/api/reset_stats', methods=['POST'])
 def reset_game_stats():
-    """Reset all game statistics"""
-    if os.path.exists('game_stats.json'):
-        os.remove('game_stats.json')
+    """Reset game statistics for current user"""
+    username = session.get('username')
+    if not username:
+        return jsonify({'error': 'User not logged in'}), 401
+    
+    # Clear user's stats
+    user_stats[username] = []
+    
+    # Reset user's overall statistics
+    if username in users:
+        users[username].total_games = 0
+        users[username].best_score = 0
+        users[username].best_tile = 0
     
     return jsonify({
-        'success': True
+        'success': True,
+        'message': f'Statistics reset for user {username}'
     })
 
 @app.route('/api/save_leaderboard', methods=['POST'])
 def save_to_leaderboard():
-    """Save a score to the leaderboard"""
+    """Save a score to the user's leaderboard"""
     data = request.json or {}
-    player_name = data.get('name', 'Player')
     game_id = data.get('gameId')
+    
+    # Get current user
+    username = session.get('username')
+    if not username:
+        return jsonify({'error': 'User not logged in'}), 401
     
     if not game_id or game_id not in games:
         return jsonify({'error': 'Invalid request'}), 400
     
     game = games[game_id]
+    
+    # Verify game belongs to current user
+    if game.username != username:
+        return jsonify({'error': 'Unauthorized'}), 403
+    
     leaderboard_entry = {
-        'name': player_name,
+        'username': username,
         'score': game.score,
         'bestTile': max([max(row) for row in game.board]) if any(any(cell != 0 for cell in row) for row in game.board) else 0,
         'date': time.strftime('%Y-%m-%dT%H:%M:%S.000Z'),
-        'moves': game.moves
+        'moves': game.moves,
+        'gridSize': game.size
     }
     
-    # Read existing leaderboard
-    try:
-        with open('leaderboard.json', 'r') as f:
-            leaderboard = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        leaderboard = []
+    # Initialize user leaderboard if not exists
+    if username not in user_leaderboards:
+        user_leaderboards[username] = []
     
-    # Add new entry
-    leaderboard.append(leaderboard_entry)
+    # Add entry to user's leaderboard
+    user_leaderboards[username].append(leaderboard_entry)
     
-    # Sort by score (highest first)
-    leaderboard.sort(key=lambda x: x['score'], reverse=True)
-    
-    # Limit to top 10
-    leaderboard = leaderboard[:10]
-    
-    # Save leaderboard back
-    with open('leaderboard.json', 'w') as f:
-        json.dump(leaderboard, f)
+    # Sort by score (highest first) and keep top 20 entries per user
+    user_leaderboards[username].sort(key=lambda x: x['score'], reverse=True)
+    user_leaderboards[username] = user_leaderboards[username][:20]
     
     return jsonify({
         'success': True,
-        'leaderboard': leaderboard
+        'leaderboard_entry': leaderboard_entry
     })
 
 @app.route('/api/get_leaderboard', methods=['GET'])
 def get_leaderboard():
-    """Get the leaderboard"""
-    try:
-        with open('leaderboard.json', 'r') as f:
-            leaderboard = json.load(f)
-    except (FileNotFoundError, json.JSONDecodeError):
-        leaderboard = []
+    """Get leaderboard for current user or global leaderboard"""
+    username = session.get('username')
+    user_only = request.args.get('user_only', 'false').lower() == 'true'
     
-    return jsonify({
-        'leaderboard': leaderboard
-    })
+    if user_only:
+        if not username:
+            return jsonify({'error': 'User not logged in'}), 401
+        
+        # Return user-specific leaderboard
+        leaderboard = user_leaderboards.get(username, [])
+        return jsonify({
+            'leaderboard': leaderboard,
+            'username': username
+        })
+    else:
+        # Return global leaderboard (all users combined)
+        global_leaderboard = []
+        for user, entries in user_leaderboards.items():
+            global_leaderboard.extend(entries)
+        
+        # Sort by score (highest first) and limit to top 50
+        global_leaderboard.sort(key=lambda x: x['score'], reverse=True)
+        global_leaderboard = global_leaderboard[:50]
+        
+        return jsonify({
+            'leaderboard': global_leaderboard
+        })
 
 @app.route('/api/reset_leaderboard', methods=['POST'])
 def reset_leaderboard():
-    """Reset the leaderboard"""
-    if os.path.exists('leaderboard.json'):
-        os.remove('leaderboard.json')
+    """Reset leaderboard for current user"""
+    username = session.get('username')
+    if not username:
+        return jsonify({'error': 'User not logged in'}), 401
+    
+    # Clear user's leaderboard
+    user_leaderboards[username] = []
     
     return jsonify({
-        'success': True
+        'success': True,
+        'message': f'Leaderboard reset for user {username}'
     })
 
 # Cleanup dead games periodically (not implemented in this simple version)

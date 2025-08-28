@@ -11,10 +11,68 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   </head>
   <body>
+    <!-- User Login Modal -->
+    <div id="user-login-modal" class="modal hidden" role="dialog" aria-labelledby="login-title" aria-hidden="true">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h2 id="login-title">Welcome to Fancy 2048</h2>
+          <button type="button" class="modal-close" aria-label="Close login modal">&times;</button>
+        </div>
+        <div class="modal-body">
+          <div id="login-form">
+            <h3>Login</h3>
+            <form id="login-user-form">
+              <div class="form-group">
+                <label for="login-username">Username:</label>
+                <input type="text" id="login-username" name="username" required minlength="3" maxlength="20" />
+              </div>
+              <div class="form-group">
+                <label for="login-password">Password (optional):</label>
+                <input type="password" id="login-password" name="password" />
+              </div>
+              <div class="form-buttons">
+                <button type="submit" class="primary-btn">Login</button>
+                <button type="button" id="show-register" class="secondary-btn">Create Account</button>
+                <button type="button" id="guest-login" class="tertiary-btn">Play as Guest</button>
+              </div>
+            </form>
+          </div>
+          
+          <div id="register-form" class="hidden">
+            <h3>Create Account</h3>
+            <form id="create-user-form">
+              <div class="form-group">
+                <label for="register-username">Username:</label>
+                <input type="text" id="register-username" name="username" required minlength="3" maxlength="20" />
+              </div>
+              <div class="form-group">
+                <label for="register-password">Password (optional):</label>
+                <input type="password" id="register-password" name="password" />
+              </div>
+              <div class="form-buttons">
+                <button type="submit" class="primary-btn">Create Account</button>
+                <button type="button" id="show-login" class="secondary-btn">Back to Login</button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Header section -->
     <header>
       <div class="container">
         <h1 class="game-title" tabindex="0">Fancy 2048</h1>
+        <div id="user-info" class="user-info hidden">
+          <span id="current-user">Guest</span>
+          <button type="button" id="user-menu-button" aria-label="User Menu" tabindex="0">
+            <i class="fas fa-user" aria-hidden="true"></i>
+          </button>
+          <div id="user-menu" class="user-menu hidden">
+            <button type="button" id="switch-user" aria-label="Switch User">Switch User</button>
+            <button type="button" id="logout-user" aria-label="Logout">Logout</button>
+          </div>
+        </div>
         <nav aria-label="Game controls">
           <ul id="controls-container" class="controls" role="menubar">
             <li role="none">
@@ -79,6 +137,7 @@
     </footer>
 
     <!-- JavaScript file -->
+  <script src="../scripts/user-manager.js"></script>
   <script src="../scripts/game.js"></script>
   <script src="../scripts/test-links.js"></script>
   </body>

@@ -12,6 +12,9 @@ class Game {
     this.gameState = 'ready'; // ready, playing, paused, over, won
     this.hasSavedStats = false;
     this.isPaused = false;
+    this.wasPausedByUser = false; // Track if pause was initiated by user
+    this.pausedTime = 0; // Track total paused time
+    this.pauseStartTime = null; // When current pause started
 
     // Visual settings
     this.isLightMode = localStorage.getItem('isLightMode') === 'true';
@@ -84,14 +87,102 @@ class Game {
       this.adjustViewportForMobile();
     }
 
-    // Handle visibility changes to pause/resume timer
+    // Handle visibility changes to pause/resume timer and game
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
-        if (!this.isPaused && this.gameState === 'playing') {
-          this.togglePause();
-        }
+        // Page is now hidden (tab switched, minimized, etc.)
+        this.handlePageHidden();
+      } else {
+        // Page is now visible again
+        this.handlePageVisible();
       }
     });
+
+    // Handle beforeunload to pause game when user is about to leave
+    window.addEventListener('beforeunload', () => {
+      if (!this.isPaused && this.gameState === 'playing') {
+        this.pauseGame(false); // Auto-pause without user flag
+      }
+    });
+
+    // Handle focus/blur events for additional pause control
+    window.addEventListener('blur', () => {
+      if (!this.isPaused && this.gameState === 'playing') {
+        this.pauseGame(false); // Auto-pause
+      }
+    });
+
+    window.addEventListener('focus', () => {
+      // Only resume if it was auto-paused (not paused by user)
+      if (this.isPaused && !this.wasPausedByUser && this.gameState === 'playing') {
+        this.resumeGame();
+      }
+    });
+  }
+
+  // Enhanced page visibility handlers
+  handlePageHidden() {
+    if (!this.isPaused && this.gameState === 'playing') {
+      this.pauseGame(false); // Auto-pause (not user-initiated)
+      this.showPageHiddenMessage();
+    }
+  }
+
+  handlePageVisible() {
+    // Only resume if it was auto-paused (not paused by user)
+    if (this.isPaused && !this.wasPausedByUser && this.gameState === 'playing') {
+      this.resumeGame();
+      this.hidePageHiddenMessage();
+    } else if (this.isPaused && this.wasPausedByUser) {
+      // Show message that game is still paused by user
+      this.showUserPausedMessage();
+    }
+  }
+
+  showPageHiddenMessage() {
+    const message = document.createElement('div');
+    message.id = 'page-hidden-message';
+    message.className = 'pause-message';
+    message.innerHTML = `
+      <div class="pause-content">
+        <i class="fas fa-eye-slash"></i>
+        <h3>Game Auto-Paused</h3>
+        <p>The game was paused because you switched tabs or minimized the window.</p>
+        <p>It will resume automatically when you return.</p>
+      </div>
+    `;
+    document.body.appendChild(message);
+  }
+
+  hidePageHiddenMessage() {
+    const message = document.getElementById('page-hidden-message');
+    if (message) {
+      message.remove();
+    }
+  }
+
+  showUserPausedMessage() {
+    // Show a brief message that the game is still paused by user choice
+    const existingMessage = document.getElementById('user-paused-reminder');
+    if (existingMessage) return;
+
+    const message = document.createElement('div');
+    message.id = 'user-paused-reminder';
+    message.className = 'pause-reminder';
+    message.innerHTML = `
+      <div class="reminder-content">
+        <i class="fas fa-pause"></i>
+        <span>Game is paused - Click the pause button to resume</span>
+      </div>
+    `;
+    document.body.appendChild(message);
+
+    // Auto-remove after 3 seconds
+    setTimeout(() => {
+      if (message.parentNode) {
+        message.remove();
+      }
+    }, 3000);
   }
 
   adjustViewportForMobile() {
@@ -335,9 +426,19 @@ class Game {
   saveStats() {
     if (this.score > 0) {
       const endTime = new Date();
-      const timeDiff = Math.floor((endTime - this.startTime) / 1000);
-      const minutes = Math.floor(timeDiff / 60).toString().padStart(2, '0');
-      const seconds = (timeDiff % 60).toString().padStart(2, '0');
+      let totalElapsed = Math.floor((endTime - this.startTime) / 1000);
+      
+      // Add current pause time if game is currently paused
+      let currentPausedTime = this.pausedTime;
+      if (this.isPaused && this.pauseStartTime) {
+        const currentPauseDuration = Math.floor((endTime - this.pauseStartTime) / 1000);
+        currentPausedTime += currentPauseDuration;
+      }
+      
+      // Calculate actual game time (excluding paused time)
+      const actualGameTime = Math.max(0, totalElapsed - currentPausedTime);
+      const minutes = Math.floor(actualGameTime / 60).toString().padStart(2, '0');
+      const seconds = (actualGameTime % 60).toString().padStart(2, '0');
       const time = `${minutes}:${seconds}`;
 
       const stat = {
@@ -362,14 +463,16 @@ class Game {
     }
     
     this.startTime = new Date();
+    this.pausedTime = 0; // Reset paused time
     const timeElement = document.getElementById('time');
     
     this.timerInterval = setInterval(() => {
-      if (!this.isPaused && timeElement) {
+      if (!this.isPaused && timeElement && this.gameState === 'playing') {
         const currentTime = new Date();
-        const timeDiff = Math.floor((currentTime - this.startTime) / 1000);
-        const minutes = Math.floor(timeDiff / 60).toString().padStart(2, '0');
-        const seconds = (timeDiff % 60).toString().padStart(2, '0');
+        const totalElapsed = Math.floor((currentTime - this.startTime) / 1000);
+        const actualGameTime = totalElapsed - this.pausedTime; // Subtract paused time
+        const minutes = Math.floor(actualGameTime / 60).toString().padStart(2, '0');
+        const seconds = (actualGameTime % 60).toString().padStart(2, '0');
         timeElement.textContent = `${minutes}:${seconds}`;
       }
     }, 1000);
@@ -393,6 +496,10 @@ class Game {
       clearInterval(this.timerInterval);
     }
     
+    // Clean up pause overlays and messages
+    this.hidePauseOverlay();
+    this.hidePageHiddenMessage();
+    
     // Reset game state
     this.board = this.createEmptyBoard();
     this.score = 0;
@@ -400,6 +507,9 @@ class Game {
     this.gameState = 'playing';
     this.hasSavedStats = false;
     this.isPaused = false;
+    this.wasPausedByUser = false;
+    this.pausedTime = 0;
+    this.pauseStartTime = null;
     this.gameStateStack = [];
     this.lastMerged = [];
     
@@ -411,9 +521,20 @@ class Game {
     const boardContainer = document.getElementById('board-container');
     if (boardContainer) {
       boardContainer.innerHTML = '';
+      boardContainer.style.pointerEvents = '';
+      boardContainer.style.opacity = '';
+      boardContainer.removeAttribute('aria-disabled');
       
       // Create the grid cells first for proper layout
       this.createGridCells();
+    }
+    
+    // Reset pause button UI
+    const pauseButton = document.getElementById('pause-button');
+    if (pauseButton) {
+      pauseButton.innerHTML = '<i class="fas fa-pause" aria-hidden="true"></i>';
+      pauseButton.setAttribute('aria-label', 'Pause Game');
+      pauseButton.title = 'Pause Game (Space)';
     }
     
     // Add initial tiles
@@ -1259,6 +1380,16 @@ class Game {
 
   // Event handlers
   handleKeyPress(event) {
+    // Handle pause/resume with space key regardless of game state
+    if (event.key === ' ' || event.code === 'Space') {
+      event.preventDefault();
+      if (this.gameState === 'playing' || this.gameState === 'paused') {
+        this.togglePause();
+      }
+      return;
+    }
+
+    // Handle other keys only when not paused and game is playing
     if (this.isPaused || this.gameState !== 'playing') return;
     
     switch (event.key) {
@@ -1859,19 +1990,120 @@ class Game {
   }
 
   togglePause() {
-    this.isPaused = !this.isPaused;
+    if (this.isPaused) {
+      this.resumeGame();
+    } else {
+      this.pauseGame(true); // User-initiated pause
+    }
+  }
+
+  pauseGame(isUserInitiated = true) {
+    if (this.isPaused) return; // Already paused
+
+    this.isPaused = true;
+    this.wasPausedByUser = isUserInitiated;
+    this.pauseStartTime = new Date();
+    this.gameState = 'paused';
     
     const boardContainer = document.getElementById('board-container');
     const pauseButton = document.getElementById('pause-button');
     
-    if (this.isPaused) {
+    if (boardContainer) {
       boardContainer.style.pointerEvents = 'none';
       boardContainer.style.opacity = '0.5';
-      pauseButton.innerHTML = '<i class="fas fa-play"></i>';
-    } else {
+      boardContainer.setAttribute('aria-disabled', 'true');
+    }
+    
+    if (pauseButton) {
+      pauseButton.innerHTML = '<i class="fas fa-play" aria-hidden="true"></i>';
+      pauseButton.setAttribute('aria-label', 'Resume Game');
+      pauseButton.title = 'Resume Game (Space)';
+    }
+
+    // Show pause overlay
+    this.showPauseOverlay(isUserInitiated);
+
+    // Dispatch pause event
+    document.dispatchEvent(new CustomEvent('gamePaused', {
+      detail: { userInitiated: isUserInitiated }
+    }));
+  }
+
+  resumeGame() {
+    if (!this.isPaused) return; // Not paused
+
+    // Calculate and add paused time
+    if (this.pauseStartTime) {
+      const pauseDuration = Math.floor((new Date() - this.pauseStartTime) / 1000);
+      this.pausedTime += pauseDuration;
+      this.pauseStartTime = null;
+    }
+
+    this.isPaused = false;
+    this.wasPausedByUser = false;
+    this.gameState = 'playing';
+    
+    const boardContainer = document.getElementById('board-container');
+    const pauseButton = document.getElementById('pause-button');
+    
+    if (boardContainer) {
       boardContainer.style.pointerEvents = '';
       boardContainer.style.opacity = '';
-      pauseButton.innerHTML = '<i class="fas fa-pause"></i>';
+      boardContainer.removeAttribute('aria-disabled');
+    }
+    
+    if (pauseButton) {
+      pauseButton.innerHTML = '<i class="fas fa-pause" aria-hidden="true"></i>';
+      pauseButton.setAttribute('aria-label', 'Pause Game');
+      pauseButton.title = 'Pause Game (Space)';
+    }
+
+    // Hide pause overlay and messages
+    this.hidePauseOverlay();
+    this.hidePageHiddenMessage();
+
+    // Dispatch resume event
+    document.dispatchEvent(new CustomEvent('gameResumed'));
+  }
+
+  showPauseOverlay(isUserInitiated) {
+    // Remove existing overlay
+    this.hidePauseOverlay();
+
+    const overlay = document.createElement('div');
+    overlay.id = 'pause-overlay';
+    overlay.className = 'pause-overlay';
+    overlay.innerHTML = `
+      <div class="pause-content">
+        <div class="pause-icon">
+          <i class="fas fa-${isUserInitiated ? 'pause' : 'eye-slash'}"></i>
+        </div>
+        <h2>${isUserInitiated ? 'Game Paused' : 'Game Auto-Paused'}</h2>
+        <p>${isUserInitiated 
+          ? 'Click the pause button or press Space to resume'
+          : 'Game paused due to tab switch. Return to resume automatically.'
+        }</p>
+        ${isUserInitiated ? '<button id="resume-from-overlay" class="resume-btn">Resume Game</button>' : ''}
+      </div>
+    `;
+
+    document.body.appendChild(overlay);
+
+    // Add click handler for resume button
+    const resumeBtn = document.getElementById('resume-from-overlay');
+    if (resumeBtn) {
+      resumeBtn.addEventListener('click', () => this.resumeGame());
+    }
+
+    // Focus management
+    overlay.setAttribute('tabindex', '-1');
+    overlay.focus();
+  }
+
+  hidePauseOverlay() {
+    const overlay = document.getElementById('pause-overlay');
+    if (overlay) {
+      overlay.remove();
     }
   }
 
@@ -1926,8 +2158,30 @@ class Game {
 
 // Initialize the game when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-  // Add a small delay to ensure all elements are ready
-  setTimeout(() => {
-    window.game = new Game(4);
-  }, 100);
+  // Wait for user login before initializing the game
+  let gameInitialized = false;
+  
+  function initializeGame() {
+    if (!gameInitialized && window.userManager && window.userManager.isLoggedIn()) {
+      gameInitialized = true;
+      setTimeout(() => {
+        window.game = new Game(4);
+      }, 100);
+    }
+  }
+  
+  // Listen for user login event
+  document.addEventListener('userLoggedIn', initializeGame);
+  
+  // Check if user is already logged in
+  setTimeout(initializeGame, 200);
+});
+
+// Listen for user logout to clean up game state
+document.addEventListener('userLoggedOut', () => {
+  if (window.game) {
+    // Clean up game state
+    window.game.stopResizeObserver();
+    window.game = null;
+  }
 });
