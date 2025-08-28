@@ -11,9 +11,12 @@ class Game {
     this.startTime = null;
 
     // Game states
-    this.gameState = 'ready';
+    this.gameState = 'playing';
     this.hasSavedStats = false;
     this.isPaused = false;
+    this.wasPausedByUser = false;
+    this.pausedTime = 0;
+    this.pauseStartTime = null;
     
     // Animation and UI state
     this.animationInProgress = false;
@@ -21,8 +24,8 @@ class Game {
     this.lastMerged = [];
     
     // Game history for undo
-    this.gameHistory = [];
-    this.maxHistory = 10;
+    this.gameStateStack = [];
+    this.maxUndoSteps = 10;
     
     // Visual settings
     this.isLightMode = localStorage.getItem('isLightMode') === 'true';
@@ -32,36 +35,73 @@ class Game {
     this.touchStartX = null;
     this.touchStartY = null;
     this.touchMoved = false;
+    this.touchStartTime = null;
     
     // Timer
     this.timerInterval = null;
     
+    // Stats
+    this.stats = JSON.parse(localStorage.getItem('gameStats')) || [];
+    
+    // Performance optimization
+    this.debounceTimeout = null;
+
     // Initialize the game
     this.initializeUI();
-    this.setupEventListeners();
+    this.addEventListeners();
+    this.applyTheme();
+    this.updateHue();
+    
+    // Enhanced responsive handling
+    this.setupResponsiveHandlers();
+    
+    // Initialize resize observer for better font scaling
+    this.initializeResizeObserver();
+    
+    // Start the game
     this.addRandomTile();
     this.addRandomTile();
     this.updateUI();
     this.startTimer();
     
     console.log('✅ Game initialized successfully');
+  }
 
-    // Performance optimization
-    this.debounceTimeout = null;
-
-    // Initialize the game
-    this.addEventListeners();
-    this.applyTheme();
-    this.updateHue(); // This will call updateTileColors()
-    this.reset(); // Reset after theme and colors are set
+  initializeUI() {
+    console.log('Setting up UI...');
     
-    // Enhanced responsive handling
-    this.setupResponsiveHandlers();
+    // Set CSS custom property for board size
+    document.documentElement.style.setProperty('--size', this.size);
     
-    this.startTimer();
+    // Clear and setup board container
+    this.setupBoardContainer();
+    
+    // Update score display
+    this.updateScoreDisplay();
+    
+    console.log('✅ UI setup complete');
+  }
 
-    // Initialize resize observer for better font scaling
-    this.initializeResizeObserver();
+  setupBoardContainer() {
+    const boardContainer = document.getElementById('board-container');
+    if (!boardContainer) {
+      console.error('Board container not found!');
+      return;
+    }
+    
+    // Clear existing content
+    boardContainer.innerHTML = '';
+    
+    // Update CSS grid properties
+    boardContainer.style.display = 'grid';
+    boardContainer.style.gridTemplateColumns = `repeat(${this.size}, 1fr)`;
+    boardContainer.style.gridTemplateRows = `repeat(${this.size}, 1fr)`;
+    boardContainer.style.gap = 'var(--gap)';
+    
+    // Create grid cells
+    this.createGridCells();
+    
+    console.log(`✅ Board container setup for ${this.size}x${this.size} grid`);
   }
 
   setupResponsiveHandlers() {
@@ -621,37 +661,100 @@ class Game {
       tile.classList.add('new-tile');
     }
     
+    // Apply glow effect based on value
+    this.applyTileGlow(tile, value);
+    
     return tile;
+  }
+
+  applyTileGlow(tile, value) {
+    // Apply enhanced glow effects based on tile value
+    if (value >= 128) {
+      const glowProperty = value >= 4096 ? '--tile-super-glow' : `--tile-${value}-glow`;
+      const glowValue = getComputedStyle(document.documentElement).getPropertyValue(glowProperty);
+      
+      if (glowValue.trim()) {
+        tile.style.boxShadow = glowValue;
+        
+        // Add pulsing effect for high-value tiles
+        if (value >= 1024) {
+          tile.style.animation = `pulse-glow 2s ease-in-out infinite alternate`;
+        }
+      }
+    }
   }
 
   // New method to adjust font size based on tile value and size
   adjustTileFontSize(tileElement) {
     const value = parseInt(tileElement.getAttribute('data-value'));
     const numDigits = value.toString().length;
-    const tileWidth = tileElement.offsetWidth;
     
-    // Calculate appropriate font size based on number of digits
-    // Start with larger size for single digits and decrease more gradually for larger numbers
-    let fontSizePercent;
-    if (numDigits === 1) {
-      fontSizePercent = 0.6; // 60% of tile width for single digits (2, 4, 8)
-    } else if (numDigits === 2) {
-      fontSizePercent = 0.4; // 40% for double digits (16, 32, 64)
-    } else if (numDigits === 3) {
-      fontSizePercent = 0.3; // 30% for triple digits (128, 256, 512)
-    } else if (numDigits === 4) {
-      fontSizePercent = 0.25; // 25% for 4 digits (1024, 2048, 4096)
+    // Get actual tile dimensions for more accurate scaling
+    const rect = tileElement.getBoundingClientRect();
+    const tileSize = Math.min(rect.width, rect.height);
+    
+    if (tileSize === 0) {
+      // Fallback to CSS-calculated size if element not yet rendered
+      const computedSize = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--tile-size'));
+      const actualTileSize = computedSize || Math.min(window.innerWidth, window.innerHeight) / (this.size + 1);
+      this.setFontSizeForTile(tileElement, actualTileSize, numDigits, value);
     } else {
-      fontSizePercent = 0.2; // 20% for 5+ digits (16384, etc.)
+      this.setFontSizeForTile(tileElement, tileSize, numDigits, value);
+    }
+  }
+
+  setFontSizeForTile(tileElement, tileSize, numDigits, value) {
+    // Enhanced font size calculation with better progression
+    let fontSizePercent;
+    
+    if (numDigits === 1) {
+      fontSizePercent = 0.65; // Larger for single digits
+    } else if (numDigits === 2) {
+      fontSizePercent = 0.5;  // Good size for double digits
+    } else if (numDigits === 3) {
+      fontSizePercent = 0.38; // Smaller for triple digits
+    } else if (numDigits === 4) {
+      fontSizePercent = 0.32; // Even smaller for 4 digits
+    } else {
+      fontSizePercent = 0.28; // Minimum for 5+ digits
     }
     
-    // Calculate and apply font size
-    const fontSize = Math.max(tileWidth * fontSizePercent, 12); // Minimum 12px
+    // Apply responsive scaling based on device type
+    const scaleFactor = this.isMobileDevice() ? 0.9 : 1.0;
+    fontSizePercent *= scaleFactor;
+    
+    // Calculate final font size with constraints
+    const baseFontSize = tileSize * fontSizePercent;
+    const minFontSize = this.isMobileDevice() ? 10 : 12;
+    const maxFontSize = tileSize * 0.7;
+    
+    const fontSize = Math.max(minFontSize, Math.min(baseFontSize, maxFontSize));
     tileElement.style.fontSize = `${fontSize}px`;
     
-    // Adjust padding for better visual centering
-    const paddingPercent = Math.min(5 + numDigits, 15);
+    // Adjust line height for better centering
+    tileElement.style.lineHeight = '1';
+    
+    // Dynamic padding based on font size
+    const paddingPercent = Math.max(5, Math.min(15, 10 + numDigits));
     tileElement.style.padding = `${paddingPercent}%`;
+    
+    // Add font weight adjustment for better readability
+    if (numDigits >= 4) {
+      tileElement.style.fontWeight = '700';
+    } else {
+      tileElement.style.fontWeight = '600';
+    }
+    
+    // Add text shadow for better contrast on light backgrounds
+    if (value >= 8) {
+      tileElement.style.textShadow = '0 1px 3px rgba(0,0,0,0.3)';
+    }
+  }
+
+  isMobileDevice() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+           ('ontouchstart' in window) ||
+           (navigator.maxTouchPoints > 0);
   }
 
   // Add method to update all tiles' font sizes
@@ -765,155 +868,6 @@ class Game {
     });
     
     return movePromise;
-  }
-
-  // Enhanced tile creation with better animations
-  createTileElement(row, col, value, isNew = false) {
-    const boardContainer = document.getElementById('board-container');
-    const tile = document.createElement('div');
-    tile.className = 'tile';
-    tile.setAttribute('data-value', value);
-    tile.dataset.row = row;
-    tile.dataset.col = col;
-    tile.textContent = value;
-    
-    // Add accessibility attributes
-    tile.setAttribute('role', 'gridcell');
-    tile.setAttribute('aria-label', `Tile with value ${value}`);
-    
-    // Position the tile in the grid
-    const gridPosition = row * this.size + col;
-    const gridCell = boardContainer.children[gridPosition];
-    
-    if (gridCell) {
-      gridCell.appendChild(tile);
-      
-      // Apply dynamic font sizing
-      this.adjustTileFontSize(tile);
-      
-      // Apply glow effect based on value
-      this.applyTileGlow(tile, value);
-      
-      // Add entrance animation for new tiles
-      if (isNew) {
-        tile.classList.add('new-tile');
-        tile.style.transform = 'scale(0)';
-        tile.style.opacity = '0';
-        
-        // Animate entrance
-        requestAnimationFrame(() => {
-          tile.style.transform = 'scale(1.1)';
-          tile.style.opacity = '1';
-          tile.style.transition = 'transform 0.2s ease, opacity 0.2s ease';
-          
-          setTimeout(() => {
-            tile.style.transform = 'scale(1)';
-          }, 100);
-        });
-      }
-      
-      // Add merge animation for merged tiles
-      if (this.lastMerged.some(pos => pos.row === row && pos.col === col)) {
-        tile.classList.add('merged');
-        setTimeout(() => {
-          tile.style.transform = 'scale(1.15)';
-          tile.style.transition = 'transform 0.15s ease';
-          
-          setTimeout(() => {
-            tile.style.transform = 'scale(1)';
-          }, 150);
-        }, 50);
-      }
-    } else {
-      console.error(`No grid cell found at position ${row}, ${col}`);
-      boardContainer.appendChild(tile);
-    }
-    
-    return tile;
-  }
-
-  applyTileGlow(tile, value) {
-    // Apply enhanced glow effects based on tile value
-    if (value >= 128) {
-      const glowProperty = value >= 4096 ? '--tile-super-glow' : `--tile-${value}-glow`;
-      const glowValue = getComputedStyle(document.documentElement).getPropertyValue(glowProperty);
-      
-      if (glowValue.trim()) {
-        tile.style.boxShadow = glowValue;
-        
-        // Add pulsing effect for high-value tiles
-        if (value >= 1024) {
-          tile.style.animation = `pulse-glow 2s ease-in-out infinite alternate`;
-        }
-      }
-    }
-  }
-
-  // Enhanced font sizing with better scaling
-  adjustTileFontSize(tileElement) {
-    const value = parseInt(tileElement.getAttribute('data-value'));
-    const numDigits = value.toString().length;
-    
-    // Get actual tile dimensions for more accurate scaling
-    const rect = tileElement.getBoundingClientRect();
-    const tileSize = Math.min(rect.width, rect.height);
-    
-    if (tileSize === 0) {
-      // Fallback to CSS-calculated size if element not yet rendered
-      const computedSize = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--tile-size'));
-      const actualTileSize = computedSize || Math.min(window.innerWidth, window.innerHeight) / (this.size + 1);
-      this.setFontSizeForTile(tileElement, actualTileSize, numDigits, value);
-    } else {
-      this.setFontSizeForTile(tileElement, tileSize, numDigits, value);
-    }
-  }
-
-  setFontSizeForTile(tileElement, tileSize, numDigits, value) {
-    // Enhanced font size calculation with better progression
-    let fontSizePercent;
-    
-    if (numDigits === 1) {
-      fontSizePercent = 0.65; // Larger for single digits
-    } else if (numDigits === 2) {
-      fontSizePercent = 0.5;  // Good size for double digits
-    } else if (numDigits === 3) {
-      fontSizePercent = 0.38; // Smaller for triple digits
-    } else if (numDigits === 4) {
-      fontSizePercent = 0.32; // Even smaller for 4 digits
-    } else {
-      fontSizePercent = 0.28; // Minimum for 5+ digits
-    }
-    
-    // Apply responsive scaling based on device type
-    const scaleFactor = this.isMobileDevice() ? 0.9 : 1.0;
-    fontSizePercent *= scaleFactor;
-    
-    // Calculate final font size with constraints
-    const baseFontSize = tileSize * fontSizePercent;
-    const minFontSize = this.isMobileDevice() ? 10 : 12;
-    const maxFontSize = tileSize * 0.7;
-    
-    const fontSize = Math.max(minFontSize, Math.min(baseFontSize, maxFontSize));
-    tileElement.style.fontSize = `${fontSize}px`;
-    
-    // Adjust line height for better centering
-    tileElement.style.lineHeight = '1';
-    
-    // Dynamic padding based on font size
-    const paddingPercent = Math.max(5, Math.min(15, 10 + numDigits));
-    tileElement.style.padding = `${paddingPercent}%`;
-    
-    // Add font weight adjustment for better readability
-    if (numDigits >= 4) {
-      tileElement.style.fontWeight = '700';
-    } else {
-      tileElement.style.fontWeight = '600';
-    }
-    
-    // Add text shadow for better contrast on light backgrounds
-    if (value >= 8) {
-      tileElement.style.textShadow = '0 1px 3px rgba(0,0,0,0.3)';
-    }
   }
 
   // Enhanced UI update with smoother animations
@@ -1923,6 +1877,9 @@ class Game {
     const oldHue = this.hueValue;
     this.hueValue = (this.hueValue + 30) % 360;
     
+    // Save to localStorage
+    localStorage.setItem('hueValue', this.hueValue);
+    
     // Animate the hue transition
     this.animateHueTransition(oldHue, this.hueValue);
     
@@ -2155,18 +2112,47 @@ class Game {
 
 // Initialize the game when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-  // Wait for user login before initializing the game
+  console.log('🚀 DOM loaded, initializing Fancy2048...');
+  
   let gameInitialized = false;
   
   function initializeGame() {
     if (!gameInitialized) {
       gameInitialized = true;
-      setTimeout(() => {
+      try {
+        // Ensure all required elements exist
+        const requiredElements = ['board-container', 'score', 'best-score', 'moves', 'time'];
+        const missingElements = requiredElements.filter(id => !document.getElementById(id));
+        
+        if (missingElements.length > 0) {
+          console.error('Missing required elements:', missingElements);
+          return;
+        }
+        
+        // Initialize the game
         window.game = new Game(4);
-      }, 100);
+        console.log('✅ Fancy2048 initialized successfully!');
+        
+      } catch (error) {
+        console.error('❌ Failed to initialize Fancy2048:', error);
+        
+        // Show user-friendly error message
+        const boardContainer = document.getElementById('board-container');
+        if (boardContainer) {
+          boardContainer.innerHTML = `
+            <div style="text-align: center; padding: 2rem; color: #ff6b6b;">
+              <h3>❌ Game Initialization Failed</h3>
+              <p>Please refresh the page to try again.</p>
+              <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #ff6b6b; color: white; border: none; border-radius: 5px; cursor: pointer;">
+                Refresh Page
+              </button>
+            </div>
+          `;
+        }
+      }
     }
   }
   
-  // Initialize the game immediately
-  setTimeout(initializeGame, 200);
+  // Initialize the game with a slight delay to ensure DOM is fully loaded
+  setTimeout(initializeGame, 100);
 });
