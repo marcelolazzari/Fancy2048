@@ -1,5 +1,7 @@
 class Game {
-  constructor(size) {
+  constructor(size = 4) {
+    console.log(`Initializing game with size: ${size}x${size}`);
+    
     // Core game properties
     this.size = size;
     this.board = this.createEmptyBoard();
@@ -9,45 +11,40 @@ class Game {
     this.startTime = null;
 
     // Game states
-    this.gameState = 'ready'; // ready, playing, paused, over, won
+    this.gameState = 'ready';
     this.hasSavedStats = false;
     this.isPaused = false;
-    this.wasPausedByUser = false; // Track if pause was initiated by user
-    this.pausedTime = 0; // Track total paused time
-    this.pauseStartTime = null; // When current pause started
-
+    
+    // Animation and UI state
+    this.animationInProgress = false;
+    this.lastMoveDirection = null;
+    this.lastMerged = [];
+    
+    // Game history for undo
+    this.gameHistory = [];
+    this.maxHistory = 10;
+    
     // Visual settings
     this.isLightMode = localStorage.getItem('isLightMode') === 'true';
-    this.hueValue = 60; // Always start with hue 0
-
-    // Game history and stats
-    this.gameStateStack = [];
-    this.maxUndoSteps = 20; // Allow multiple undos up to a limit
-    this.lastMoveScore = 0;
-    this.scoreDelta = 0;
-    this.lastMerged = []; // Track merged positions for animations
-    this.stats = JSON.parse(localStorage.getItem('gameStats')) || [];
-    this.timerInterval = null;
-
-    // Animation properties
-    this.animationInProgress = false;
-    this.animationFrameId = null;
-    this.lastMoveDirection = null;
-
-    // Touch handling properties
+    this.hueValue = parseInt(localStorage.getItem('hueValue')) || 0;
+    
+    // Touch handling
     this.touchStartX = null;
     this.touchStartY = null;
-    this.touchStartTime = null;
     this.touchMoved = false;
-
-    // Mouse handling properties (for desktop drag support)
-    this.mouseStartX = null;
-    this.mouseStartY = null;
-    this.mouseStartTime = null;
-    this.isDragging = false;
-
-    // Resize observer for responsive design
-    this.resizeObserver = null;
+    
+    // Timer
+    this.timerInterval = null;
+    
+    // Initialize the game
+    this.initializeUI();
+    this.setupEventListeners();
+    this.addRandomTile();
+    this.addRandomTile();
+    this.updateUI();
+    this.startTimer();
+    
+    console.log('✅ Game initialized successfully');
 
     // Performance optimization
     this.debounceTimeout = null;
