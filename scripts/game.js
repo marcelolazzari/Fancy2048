@@ -15,7 +15,7 @@ class Game {
 
     // Visual settings
     this.isLightMode = localStorage.getItem('isLightMode') === 'true';
-    this.hueValue = parseInt(localStorage.getItem('hueValue')) || 0;
+    this.hueValue = 0; // Always start with hue 0
 
     // Game history and stats
     this.gameStateStack = [];
@@ -174,6 +174,10 @@ class Game {
     this.isPaused = false;
     this.gameStateStack = [];
     this.lastMerged = [];
+    
+    // Reset hue to 0
+    this.hueValue = 0;
+    this.updateHue();
     
     // Clear any existing tiles
     const boardContainer = document.getElementById('board-container');
@@ -834,15 +838,14 @@ class Game {
   }
 
   updateHue() {
-    // Store the hue value in localStorage for persistence
-    localStorage.setItem('hueValue', this.hueValue);
-    
     // Update the CSS custom property
     document.documentElement.style.setProperty('--hue-value', this.hueValue);
     
     // Update color button color to reflect current hue
     const colorButton = document.getElementById('changeColor-button');
-    colorButton.style.color = `hsl(${this.hueValue}, 70%, 50%)`;
+    if (colorButton) {
+      colorButton.style.color = `hsl(${this.hueValue}, 70%, 50%)`;
+    }
     
     // Update all tile colors dynamically based on hue
     this.updateTileColors();
@@ -867,10 +870,19 @@ class Game {
 
     // Apply light mode adjustments if needed
     if (this.isLightMode) {
-      tileColorConfig[2] = { baseHue: 180, saturation: 30, lightness: 95, textColor: 'hsl(30, 30%, 20%)' };
-      tileColorConfig[4] = { baseHue: 180, saturation: 35, lightness: 85, textColor: 'hsl(30, 35%, 15%)' };
-      tileColorConfig[8] = { baseHue: 35, saturation: 85, lightness: 60, textColor: 'hsl(0, 0%, 100%)' };
-      tileColorConfig[16] = { baseHue: 25, saturation: 85, lightness: 55, textColor: 'hsl(0, 0%, 100%)' };
+      // In light mode, adjust saturation and lightness for better contrast
+      tileColorConfig[2] = { baseHue: 180, saturation: 40, lightness: 90, textColor: 'hsl(0, 0%, 20%)' };
+      tileColorConfig[4] = { baseHue: 180, saturation: 50, lightness: 80, textColor: 'hsl(0, 0%, 15%)' };
+      tileColorConfig[8] = { baseHue: 35, saturation: 80, lightness: 65, textColor: 'hsl(0, 0%, 100%)' };
+      tileColorConfig[16] = { baseHue: 25, saturation: 80, lightness: 60, textColor: 'hsl(0, 0%, 100%)' };
+      tileColorConfig[32] = { baseHue: 15, saturation: 85, lightness: 60, textColor: 'hsl(0, 0%, 100%)' };
+      tileColorConfig[64] = { baseHue: 5, saturation: 85, lightness: 60, textColor: 'hsl(0, 0%, 100%)' };
+      tileColorConfig[128] = { baseHue: 50, saturation: 65, lightness: 70, textColor: 'hsl(0, 0%, 100%)' };
+      tileColorConfig[256] = { baseHue: 50, saturation: 70, lightness: 65, textColor: 'hsl(0, 0%, 100%)' };
+      tileColorConfig[512] = { baseHue: 50, saturation: 75, lightness: 60, textColor: 'hsl(0, 0%, 100%)' };
+      tileColorConfig[1024] = { baseHue: 50, saturation: 80, lightness: 55, textColor: 'hsl(0, 0%, 100%)' };
+      tileColorConfig[2048] = { baseHue: 50, saturation: 85, lightness: 50, textColor: 'hsl(0, 0%, 100%)' };
+      tileColorConfig.super = { baseHue: 285, saturation: 65, lightness: 45, textColor: 'hsl(0, 0%, 100%)' };
     }
 
     // Update CSS custom properties for each tile value
