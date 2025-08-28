@@ -131,8 +131,29 @@ header h1 {
   }
 }
 
+@keyframes slideInUp {
+  from {
+    opacity: 0;
+    transform: translateY(10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
 .animate-in {
   animation: fadeInUp 0.5s ease forwards;
+}
+
+/* Table row animations */
+#statsTable tr {
+  animation: slideInUp 0.3s ease forwards;
+}
+
+#statsTable tr:hover {
+  background-color: rgba(60, 60, 60, 0.7);
+  transition: background-color 0.2s ease;
 }
 
 /* Button styling */
@@ -194,7 +215,7 @@ button:active {
 #statsTable {
   width: 100%;
   border-collapse: collapse;
-  min-width: 600px;
+  min-width: 700px; /* Increased to accommodate grid size column */
 }
 
 #statsTable th,
@@ -228,6 +249,32 @@ button:active {
 .highlight-row {
   background-color: rgba(255, 204, 0, 0.2) !important;
   font-weight: bold;
+}
+
+/* Grid size badge styling */
+.grid-badge {
+  display: inline-block;
+  background: linear-gradient(45deg, #4CAF50, #45a049);
+  color: white;
+  padding: 4px 8px;
+  border-radius: 12px;
+  font-size: 0.85em;
+  font-weight: bold;
+  text-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  min-width: 35px;
+}
+
+/* Different colors for different grid sizes */
+.grid-3 .grid-badge {
+  background: linear-gradient(45deg, #FF9800, #F57C00);
+}
+
+.grid-4 .grid-badge {
+  background: linear-gradient(45deg, #4CAF50, #45a049);
+}
+
+.grid-5 .grid-badge {
+  background: linear-gradient(45deg, #9C27B0, #7B1FA2);
 }
 
 /* Message when no stats are available */

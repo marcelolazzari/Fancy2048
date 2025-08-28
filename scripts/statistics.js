@@ -39,14 +39,31 @@ document.addEventListener('DOMContentLoaded', () => {
       // Show table and populate with stats
       statsTable.style.display = 'table';
       noStatsMessage.style.display = 'none';
-      // Sort stats by date, newest first
-      uniqueStats.sort((a, b) => new Date(b.date) - new Date(a.date));
+      // Sort stats by grid size first, then by date (newest first)
+      uniqueStats.sort((a, b) => {
+        // First sort by grid size (larger grids first)
+        const gridA = a.gridSize || 4; // Default to 4 for older entries
+        const gridB = b.gridSize || 4;
+        if (gridA !== gridB) {
+          return gridB - gridA;
+        }
+        // Then sort by date within same grid size
+        return new Date(b.date) - new Date(a.date);
+      });
+      
       uniqueStats.forEach((stat) => {
         const row = document.createElement('tr');
         const date = new Date(stat.date);
         const formattedDate = formatDate(date);
+        const gridType = stat.gridType || `${stat.gridSize || 4}x${stat.gridSize || 4}`;
+        const gridSize = stat.gridSize || 4;
+        
+        // Add grid-specific class for styling
+        row.classList.add(`grid-${gridSize}`);
+        
         row.innerHTML = `
           <td>${formattedDate}</td>
+          <td><span class="grid-badge">${gridType}</span></td>
           <td>${stat.bestTile}</td>
           <td>${stat.score}</td>
           <td>${stat.bestScore}</td>
@@ -57,6 +74,8 @@ document.addEventListener('DOMContentLoaded', () => {
         if (stat.score === findMaxScore(uniqueStats)) {
           row.classList.add('highlight-row');
         }
+        // Add grid size class for styling
+        row.classList.add(`grid-${stat.gridSize || 4}`);
         statsTableBody.appendChild(row);
       });
     }
@@ -76,9 +95,26 @@ document.addEventListener('DOMContentLoaded', () => {
     }
     const topScore = findMaxScore(stats);
     const bestTile = Math.max(...stats.map(stat => parseInt(stat.bestTile) || 0));
+    const totalGames = stats.length;
+    
+    // Group games by grid size for additional insight
+    const gamesByGrid = stats.reduce((acc, stat) => {
+      const gridSize = stat.gridSize || 4;
+      acc[gridSize] = (acc[gridSize] || 0) + 1;
+      return acc;
+    }, {});
+    
+    const gridBreakdown = Object.entries(gamesByGrid)
+      .map(([size, count]) => `${size}x${size}: ${count}`)
+      .join(', ');
+    
     topScoreElement.textContent = topScore;
     bestTileElement.textContent = bestTile;
-    gamesPlayedElement.textContent = stats.length;
+    gamesPlayedElement.textContent = totalGames;
+    
+    // Add grid breakdown as a tooltip or additional info
+    gamesPlayedElement.setAttribute('title', `Games by grid size: ${gridBreakdown}`);
+    
     // Add animation to the stats cards
     document.querySelectorAll('.stats-card').forEach(card => {
       card.classList.add('animate-in');
@@ -111,11 +147,12 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     const csvContent = "data:text/csv;charset=utf-8," +
-      "Date,Best Tile,Score,Best Score,Time,Moves\n" +
+      "Date,Grid Size,Best Tile,Score,Best Score,Time,Moves\n" +
       uniqueStats.map(stat => {
         const date = new Date(stat.date);
         const formattedDate = formatDate(date);
-        return `"${formattedDate}",${stat.bestTile},${stat.score},${stat.bestScore},"${stat.time}",${stat.moves}`;
+        const gridType = stat.gridType || `${stat.gridSize || 4}x${stat.gridSize || 4}`;
+        return `"${formattedDate}","${gridType}",${stat.bestTile},${stat.score},${stat.bestScore},"${stat.time}",${stat.moves}`;
       }).join("\n");
     downloadCSV(csvContent, "fancy2048_statistics.csv");
   }

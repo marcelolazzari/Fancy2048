@@ -346,7 +346,9 @@ class Game {
         bestScore: this.bestScore,
         date: new Date().toISOString(),
         time: time,
-        moves: this.moves
+        moves: this.moves,
+        gridSize: this.size, // Add grid size to stats
+        gridType: `${this.size}x${this.size}` // Add formatted grid type
       };
       
       this.stats.push(stat);
@@ -1043,15 +1045,23 @@ class Game {
   }
 
   checkGameState() {
-    // Check if 2048 tile exists (win condition)
+    // Check if 2048 tile exists (win condition) - but only show once
+    let has2048 = false;
     for (let i = 0; i < this.size; i++) {
       for (let j = 0; j < this.size; j++) {
-        if (this.board[i][j] === 2048 && this.gameState !== 'won') {
-          this.gameState = 'won';
-          this.showWinMessage();
-          return;
+        if (this.board[i][j] === 2048) {
+          has2048 = true;
+          break;
         }
       }
+      if (has2048) break;
+    }
+    
+    // Show win message only once when first reaching 2048
+    if (has2048 && this.gameState !== 'won' && this.gameState !== 'won-continue') {
+      this.gameState = 'won';
+      this.showWinMessage();
+      return;
     }
     
     // Check if board is full
@@ -1095,19 +1105,62 @@ class Game {
 
   showWinMessage() {
     const gameOverElement = document.getElementById('game-over');
-    gameOverElement.textContent = 'You Win! Continue playing?';
-    gameOverElement.classList.remove('hidden');
-    gameOverElement.classList.add('win-state');
+    gameOverElement.innerHTML = ''; // Clear any existing content
+    
+    const messageDiv = document.createElement('div');
+    messageDiv.style.marginBottom = '15px';
+    messageDiv.innerHTML = `
+      <h3 style="margin: 0 0 10px 0; color: #ffcc00;">🎉 Congratulations!</h3>
+      <p style="margin: 0;">You reached 2048! Keep playing to reach even higher tiles!</p>
+    `;
     
     // Add a continue button
     const continueButton = document.createElement('button');
-    continueButton.textContent = 'Continue';
+    continueButton.textContent = 'Keep Playing';
+    continueButton.style.cssText = `
+      background: linear-gradient(45deg, #4CAF50, #45a049);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 0 5px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: bold;
+    `;
     continueButton.addEventListener('click', () => {
       gameOverElement.classList.add('hidden');
-      this.gameState = 'playing';
+      this.gameState = 'won-continue'; // Mark as won but continuing
     });
     
-    gameOverElement.appendChild(continueButton);
+    // Add a new game button
+    const newGameButton = document.createElement('button');
+    newGameButton.textContent = 'New Game';
+    newGameButton.style.cssText = `
+      background: linear-gradient(45deg, #2196F3, #1976D2);
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      margin: 0 5px;
+      border-radius: 5px;
+      cursor: pointer;
+      font-size: 1rem;
+      font-weight: bold;
+    `;
+    newGameButton.addEventListener('click', () => {
+      gameOverElement.classList.add('hidden');
+      this.reset();
+    });
+    
+    const buttonContainer = document.createElement('div');
+    buttonContainer.style.textAlign = 'center';
+    buttonContainer.appendChild(continueButton);
+    buttonContainer.appendChild(newGameButton);
+    
+    gameOverElement.appendChild(messageDiv);
+    gameOverElement.appendChild(buttonContainer);
+    gameOverElement.classList.remove('hidden');
+    gameOverElement.classList.add('win-state');
     
     if (!this.hasSavedStats) {
       this.saveStats();
