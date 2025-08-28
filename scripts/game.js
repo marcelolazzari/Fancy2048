@@ -2170,18 +2170,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
   
-  // Listen for user login event
-  document.addEventListener('userLoggedIn', initializeGame);
-  
-  // Check if user is already logged in
+  // Initialize the game immediately
   setTimeout(initializeGame, 200);
-});
-
-// Listen for user logout to clean up game state
-document.addEventListener('userLoggedOut', () => {
-  if (window.game) {
-    // Clean up game state
-    window.game.stopResizeObserver();
-    window.game = null;
-  }
 });
