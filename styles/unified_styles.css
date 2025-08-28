@@ -4,7 +4,6 @@ button:focus, .controls button:focus {
   outline-offset: 2px;
   background-color: var(--button-hover-background);
   color: #222;
-}
  
 /* Improve color contrast for visually hidden and highlight classes */
 .visually-hidden:focus {
@@ -3042,3 +3041,4 @@ form button[type="submit"]:hover {
     transform: translateY(0);
   }
 }
+}}/* ==================== */
