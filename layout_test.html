@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fancy2048 - Layout Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #1a1a1a;
+            color: #f2f2f2;
+            line-height: 1.6;
+        }
+        .test-section {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .test-section h2 {
+            color: #ffcc00;
+            margin-top: 0;
+        }
+        .grid-demo {
+            display: grid;
+            gap: 10px;
+            margin: 15px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+        .grid-3x3 {
+            grid-template-columns: repeat(3, 1fr);
+            max-width: 300px;
+        }
+        .grid-4x4 {
+            grid-template-columns: repeat(4, 1fr);
+            max-width: 400px;
+        }
+        .grid-5x5 {
+            grid-template-columns: repeat(5, 1fr);
+            max-width: 500px;
+        }
+        .demo-cell {
+            aspect-ratio: 1;
+            background: #ffcc00;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #1a1a1a;
+            border-radius: 4px;
+        }
+        iframe {
+            width: 100%;
+            height: 700px;
+            border: 2px solid #ffcc00;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .features-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .feature-card {
+            background: rgba(255, 204, 0, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #ffcc00;
+        }
+        .feature-card h4 {
+            margin-top: 0;
+            color: #ffcc00;
+        }
+        @media (max-width: 768px) {
+            .grid-demo {
+                max-width: 90vw;
+            }
+            iframe {
+                height: 600px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>🎮 Fancy2048 - Layout & Responsiveness Test</h1>
+    
+    <div class="test-section">
+        <h2>✅ Fixed Layout Issues</h2>
+        <div class="features-list">
+            <div class="feature-card">
+                <h4>🎯 Proper Grid Proportions</h4>
+                <p>Fixed CSS variables to use responsive sizing instead of fixed pixels for all board sizes (3x3, 4x4, 5x5).</p>
+            </div>
+            <div class="feature-card">
+                <h4>📱 Mobile Responsive Design</h4>
+                <p>Updated media queries with proper viewport sizing using vw/vh units and clamp() functions.</p>
+            </div>
+            <div class="feature-card">
+                <h4>🖥️ Desktop Optimization</h4>
+                <p>Added support for ultra-wide screens and high DPI displays with proper scaling.</p>
+            </div>
+            <div class="feature-card">
+                <h4>🔄 Board Size Classes</h4>
+                <p>Added CSS classes for different board sizes to enable size-specific styling.</p>
+            </div>
+            <div class="feature-card">
+                <h4>📐 Aspect Ratio Consistency</h4>
+                <p>Ensured all tiles and grid cells maintain perfect square proportions across all devices.</p>
+            </div>
+            <div class="feature-card">
+                <h4>💡 Smart Font Scaling</h4>
+                <p>Implemented clamp() functions for responsive font sizing based on tile size.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎲 Grid Size Demonstrations</h2>
+        
+        <h3>3x3 Grid Layout</h3>
+        <div class="grid-demo grid-3x3">
+            <div class="demo-cell">2</div>
+            <div class="demo-cell">4</div>
+            <div class="demo-cell">8</div>
+            <div class="demo-cell">16</div>
+            <div class="demo-cell">32</div>
+            <div class="demo-cell">64</div>
+            <div class="demo-cell">128</div>
+            <div class="demo-cell">256</div>
+            <div class="demo-cell">512</div>
+        </div>
+        
+        <h3>4x4 Grid Layout (Default)</h3>
+        <div class="grid-demo grid-4x4">
+            <div class="demo-cell">2</div>
+            <div class="demo-cell">4</div>
+            <div class="demo-cell">8</div>
+            <div class="demo-cell">16</div>
+            <div class="demo-cell">32</div>
+            <div class="demo-cell">64</div>
+            <div class="demo-cell">128</div>
+            <div class="demo-cell">256</div>
+            <div class="demo-cell">512</div>
+            <div class="demo-cell">1024</div>
+            <div class="demo-cell">2048</div>
+            <div class="demo-cell">4096</div>
+            <div class="demo-cell">8192</div>
+            <div class="demo-cell"></div>
+            <div class="demo-cell"></div>
+            <div class="demo-cell"></div>
+        </div>
+        
+        <h3>5x5 Grid Layout</h3>
+        <div class="grid-demo grid-5x5">
+            <div class="demo-cell">2</div>
+            <div class="demo-cell">4</div>
+            <div class="demo-cell">8</div>
+            <div class="demo-cell">16</div>
+            <div class="demo-cell">32</div>
+            <div class="demo-cell">64</div>
+            <div class="demo-cell">128</div>
+            <div class="demo-cell">256</div>
+            <div class="demo-cell">512</div>
+            <div class="demo-cell">1024</div>
+            <div class="demo-cell">2048</div>
+            <div class="demo-cell">4096</div>
+            <div class="demo-cell">8192</div>
+            <div class="demo-cell">16384</div>
+            <div class="demo-cell">32768</div>
+            <div class="demo-cell"></div>
+            <div class="demo-cell"></div>
+            <div class="demo-cell"></div>
+            <div class="demo-cell"></div>
+            <div class="demo-cell"></div>
+            <div class="demo-cell"></div>
+            <div class="demo-cell"></div>
+            <div class="demo-cell"></div>
+            <div class="demo-cell"></div>
+            <div class="demo-cell"></div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔧 Key Improvements Made</h2>
+        <ul>
+            <li><strong>Responsive CSS Variables:</strong> Replaced fixed pixel values with responsive calculations using <code>clamp()</code>, <code>vw</code>, <code>vh</code>, and <code>vmin</code></li>
+            <li><strong>Board Container:</strong> Fixed grid layout to use <code>1fr</code> instead of fixed tile sizes for proper responsiveness</li>
+            <li><strong>Tile Sizing:</strong> Updated tiles to use <code>100%</code> width/height with <code>aspect-ratio: 1/1</code> for perfect squares</li>
+            <li><strong>Font Scaling:</strong> Implemented size-specific font scaling for different grid sizes and tile values</li>
+            <li><strong>Media Queries:</strong> Added comprehensive responsive breakpoints for mobile, tablet, and desktop</li>
+            <li><strong>Board Size Classes:</strong> Added CSS classes (.board-size-3, .board-size-4, .board-size-5) for size-specific styling</li>
+            <li><strong>Gap Management:</strong> Different gap sizes for different grid sizes to maintain proper proportions</li>
+            <li><strong>Mobile Optimization:</strong> Specific adjustments for small screens and landscape orientation</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🎮 Live Game Test</h2>
+        <p>Test the improved layout with the actual game below. Try changing board sizes and resizing your browser window to see the responsive behavior.</p>
+        <iframe src="pages/index.html" title="Fancy2048 Game with Fixed Layout"></iframe>
+    </div>
+
+    <div class="test-section">
+        <h2>📋 Testing Instructions</h2>
+        <ol>
+            <li><strong>Board Size Testing:</strong> Click the grid button (⊞) to cycle through 3x3, 4x4, and 5x5 grid sizes</li>
+            <li><strong>Mobile Testing:</strong> Open the game on a mobile device or use browser dev tools to simulate mobile</li>
+            <li><strong>Responsive Testing:</strong> Resize your browser window to see how the layout adapts</li>
+            <li><strong>Orientation Testing:</strong> On mobile, rotate between portrait and landscape modes</li>
+            <li><strong>High Value Testing:</strong> Play until you get high-value tiles (1024, 2048, 4096+) to test font scaling</li>
+            <li><strong>Performance Testing:</strong> Check that animations and transitions work smoothly across all sizes</li>
+        </ol>
+    </div>
+
+    <div class="test-section">
+        <h2>🔍 Debug Console</h2>
+        <p>Open browser developer tools and check the console for layout debug information. The game logs grid setup details and responsive calculations.</p>
+        <p>You can also use <code>window.debugGame.checkLayout()</code> in the console to inspect the current board layout properties.</p>
+    </div>
+</body>
+</html>

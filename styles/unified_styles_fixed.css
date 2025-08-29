@@ -3,9 +3,17 @@
 /* Root CSS Variables */
 :root {
   --size: 4;
-  --gap: 10px;
-  --tile-size: 100px;
-  --game-size: min(90vw, 90vh, 500px);
+  
+  /* Responsive Gap and Size Variables */
+  --gap: clamp(4px, 2vmin, 12px);
+  --board-max-size: min(85vw, 85vh, 500px);
+  --tile-size: calc((var(--board-max-size) - var(--gap) * (var(--size) + 1)) / var(--size));
+  --game-size: var(--board-max-size);
+  
+  /* Grid-specific adjustments */
+  --grid-3-gap: clamp(6px, 2.5vmin, 15px);
+  --grid-4-gap: clamp(4px, 2vmin, 12px);
+  --grid-5-gap: clamp(3px, 1.5vmin, 10px);
   
   /* Color Variables */
   --primary-color: #1a1a1a;
@@ -315,11 +323,14 @@ main {
 /* Board Container - Main Game Area */
 #board-container {
   display: grid;
-  grid-template-columns: repeat(var(--size), var(--tile-size));
-  grid-template-rows: repeat(var(--size), var(--tile-size));
+  grid-template-columns: repeat(var(--size), 1fr);
+  grid-template-rows: repeat(var(--size), 1fr);
   gap: var(--gap);
   width: var(--game-size);
   height: var(--game-size);
+  max-width: var(--board-max-size);
+  max-height: var(--board-max-size);
+  aspect-ratio: 1 / 1;
   background: rgba(50, 50, 50, 0.4);
   backdrop-filter: blur(10px);
   border-radius: var(--tile-border-radius);
@@ -330,6 +341,7 @@ main {
   touch-action: none;
   border: 1px solid rgba(255, 255, 255, 0.1);
   margin: 0 auto;
+  overflow: hidden;
 }
 
 #board-container:focus {
@@ -341,13 +353,15 @@ main {
 .grid-cell {
   background: rgba(238, 228, 218, 0.2);
   border-radius: calc(var(--tile-border-radius) - 2px);
-  width: var(--tile-size);
-  height: var(--tile-size);
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1 / 1;
   position: relative;
   border: 1px solid rgba(255, 255, 255, 0.05);
   display: flex;
   align-items: center;
   justify-content: center;
+  box-sizing: border-box;
 }
 
 /* Tile Styles */
@@ -355,12 +369,13 @@ main {
   position: absolute;
   top: 0;
   left: 0;
-  width: var(--tile-size);
-  height: var(--tile-size);
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 1 / 1;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: calc(var(--tile-size) * 0.35);
+  font-size: clamp(0.8rem, calc(var(--tile-size) * 0.35), 2.5rem);
   font-weight: bold;
   color: #776e65;
   background: #eee4da;
@@ -371,6 +386,7 @@ main {
   text-align: center;
   line-height: 1;
   box-sizing: border-box;
+  overflow: hidden;
 }
 
 /* Individual Tile Colors */
@@ -422,13 +438,13 @@ main {
 .tile[data-value="1024"] {
   background: var(--tile-1024-bg);
   color: var(--tile-1024-text);
-  font-size: clamp(0.8rem, 3.5vw, 1.6rem);
+  font-size: clamp(0.6rem, calc(var(--tile-size) * 0.25), 1.8rem);
 }
 
 .tile[data-value="2048"] {
   background: var(--tile-2048-bg);
   color: var(--tile-2048-text);
-  font-size: clamp(0.8rem, 3.5vw, 1.6rem);
+  font-size: clamp(0.6rem, calc(var(--tile-size) * 0.25), 1.8rem);
   box-shadow: 0 0 20px rgba(255, 204, 0, 0.5);
 }
 
@@ -439,7 +455,7 @@ main {
 .tile[data-value="65536"] {
   background: linear-gradient(135deg, #ff6b6b 0%, #4ecdc4 100%);
   color: white;
-  font-size: clamp(0.7rem, 3vw, 1.4rem);
+  font-size: clamp(0.5rem, calc(var(--tile-size) * 0.2), 1.5rem);
   box-shadow: 0 0 25px rgba(255, 107, 107, 0.4);
 }
 
@@ -543,8 +559,7 @@ footer .container {
 /* Responsive Design */
 @media (max-width: 768px) {
   :root {
-    --gap: 8px;
-    --game-size: min(95vw, 95vh, 400px);
+    --board-max-size: min(95vw, 95vh, 400px);
   }
   
   header {
@@ -585,14 +600,13 @@ footer .container {
   }
   
   .tile {
-    font-size: calc(var(--tile-size) * 0.3);
+    font-size: clamp(0.6rem, calc(var(--tile-size) * 0.3), 2rem);
   }
 }
 
 @media (max-width: 480px) {
   :root {
-    --gap: 6px;
-    --game-size: min(98vw, 98vh, 300px);
+    --board-max-size: min(98vw, 98vh, 320px);
   }
   
   header {
@@ -612,7 +626,20 @@ footer .container {
   }
   
   .tile {
-    font-size: calc(var(--tile-size) * 0.25);
+    font-size: clamp(0.5rem, calc(var(--tile-size) * 0.25), 1.6rem);
+  }
+  
+  .tile[data-value="1024"],
+  .tile[data-value="2048"] {
+    font-size: clamp(0.4rem, calc(var(--tile-size) * 0.2), 1.2rem);
+  }
+  
+  .tile[data-value="4096"],
+  .tile[data-value="8192"],
+  .tile[data-value="16384"],
+  .tile[data-value="32768"],
+  .tile[data-value="65536"] {
+    font-size: clamp(0.3rem, calc(var(--tile-size) * 0.15), 1rem);
   }
   
   button {
@@ -622,8 +649,86 @@ footer .container {
   }
 }
 
+/* Grid size specific optimizations */
+:root[style*="--size: 3"] {
+  --gap: var(--grid-3-gap);
+}
+
+:root[style*="--size: 4"] {
+  --gap: var(--grid-4-gap);
+}
+
+:root[style*="--size: 5"] {
+  --gap: var(--grid-5-gap);
+}
+
+/* 3x3 Grid Optimizations */
+.board-size-3 {
+  --gap: var(--grid-3-gap);
+}
+
+.board-size-3 .tile {
+  font-size: clamp(0.8rem, calc(var(--tile-size) * 0.4), 3rem);
+}
+
+.board-size-3 .tile[data-value="1024"],
+.board-size-3 .tile[data-value="2048"] {
+  font-size: clamp(0.7rem, calc(var(--tile-size) * 0.3), 2.5rem);
+}
+
+/* 4x4 Grid Optimizations (default) */
+.board-size-4 {
+  --gap: var(--grid-4-gap);
+}
+
+/* 5x5 Grid Optimizations */
+.board-size-5 {
+  --gap: var(--grid-5-gap);
+}
+
+.board-size-5 .tile {
+  font-size: clamp(0.6rem, calc(var(--tile-size) * 0.3), 2rem);
+}
+
+.board-size-5 .tile[data-value="1024"],
+.board-size-5 .tile[data-value="2048"] {
+  font-size: clamp(0.5rem, calc(var(--tile-size) * 0.2), 1.5rem);
+}
+
+.board-size-5 .tile[data-value="4096"],
+.board-size-5 .tile[data-value="8192"],
+.board-size-5 .tile[data-value="16384"],
+.board-size-5 .tile[data-value="32768"],
+.board-size-5 .tile[data-value="65536"] {
+  font-size: clamp(0.4rem, calc(var(--tile-size) * 0.15), 1.2rem);
+}
+
+/* Special handling for very small screens with 5x5 */
+@media (max-width: 480px) {
+  .board-size-5 .tile {
+    font-size: clamp(0.4rem, calc(var(--tile-size) * 0.25), 1.4rem);
+  }
+  
+  .board-size-5 .tile[data-value="1024"],
+  .board-size-5 .tile[data-value="2048"] {
+    font-size: clamp(0.35rem, calc(var(--tile-size) * 0.18), 1rem);
+  }
+  
+  .board-size-5 .tile[data-value="4096"],
+  .board-size-5 .tile[data-value="8192"],
+  .board-size-5 .tile[data-value="16384"],
+  .board-size-5 .tile[data-value="32768"],
+  .board-size-5 .tile[data-value="65536"] {
+    font-size: clamp(0.3rem, calc(var(--tile-size) * 0.12), 0.8rem);
+  }
+}
+
 /* Landscape orientation adjustments for mobile */
 @media (max-height: 600px) and (orientation: landscape) {
+  :root {
+    --board-max-size: min(70vh, 70vw, 350px);
+  }
+  
   header {
     padding: 10px;
   }
@@ -639,6 +744,13 @@ footer .container {
   
   #score-container {
     margin-bottom: 10px;
+  }
+}
+
+/* Ultra-wide screens */
+@media (min-width: 1200px) {
+  :root {
+    --board-max-size: min(60vw, 60vh, 600px);
   }
 }
 

@@ -107,29 +107,9 @@ class Game {
     // Update CSS custom properties for the current grid size
     document.documentElement.style.setProperty('--size', this.size);
     
-    // Calculate responsive dimensions
-    const maxSize = Math.min(window.innerWidth * 0.9, window.innerHeight * 0.9, 500);
-    const gap = this.size === 3 ? 12 : this.size === 4 ? 10 : 8;
-    
-    // Calculate tile size accounting for padding and gaps
-    // Total padding = gap * 2 (top/bottom or left/right padding)
-    // Internal gaps = gap * (size - 1) (gaps between tiles)
-    const availableSpace = maxSize - (gap * 2);
-    const tileSize = (availableSpace - gap * (this.size - 1)) / this.size;
-    const gameSize = maxSize;
-    
-    // Set CSS custom properties
-    document.documentElement.style.setProperty('--gap', `${gap}px`);
-    document.documentElement.style.setProperty('--tile-size', `${tileSize}px`);
-    document.documentElement.style.setProperty('--game-size', `${gameSize}px`);
-    
-    // Remove any inline styles to let CSS handle it
-    boardContainer.style.display = '';
-    boardContainer.style.gridTemplateColumns = '';
-    boardContainer.style.gridTemplateRows = '';
-    boardContainer.style.gap = '';
-    boardContainer.style.width = '';
-    boardContainer.style.height = '';
+    // Add board size class to body for CSS targeting
+    document.body.className = document.body.className.replace(/board-size-\d+/g, '');
+    document.body.classList.add(`board-size-${this.size}`);
     
     // Create grid cells
     for (let i = 0; i < this.size; i++) {
@@ -142,10 +122,7 @@ class Game {
       }
     }
     
-    // Create grid cells
-    this.createGridCells();
-    
-    console.log(`✅ Board container setup for ${this.size}x${this.size} grid - Tile size: ${tileSize}px, Gap: ${gap}px`);
+    console.log(`✅ Board container setup for ${this.size}x${this.size} grid`);
   }
 
   setupResponsiveHandlers() {
@@ -1405,6 +1382,10 @@ class Game {
   refreshLayout() {
     // Update CSS variable for responsive layout
     document.documentElement.style.setProperty('--size', this.size);
+    
+    // Add board size class to body for CSS targeting
+    document.body.className = document.body.className.replace(/board-size-\d+/g, '');
+    document.body.classList.add(`board-size-${this.size}`);
     
     // Recalculate board container dimensions
     this.setupBoardContainer();
