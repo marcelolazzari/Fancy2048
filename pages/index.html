@@ -9,6 +9,51 @@
   <meta name="description" content="Play Fancy 2048, a modern twist on the classic puzzle game. Track your stats and compete on the leaderboard!" />
   <link rel="stylesheet" href="../styles/unified_styles_fixed.css" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
+  <!-- Fallback styles to ensure basic layout if CSS fails to load -->
+  <style>
+    :root {
+      --size: 4;
+      --tile-size: 1fr;
+      --gap: 10px;
+      --board-bg: #333;
+      --tile-bg: #666;
+    }
+    body {
+      font-family: Arial, sans-serif;
+      background: #1a1a1a;
+      color: #f2f2f2;
+      margin: 0;
+      padding: 20px;
+    }
+    #board-container {
+      display: grid !important;
+      grid-gap: 10px !important;
+      margin: 20px auto !important;
+      background: #333 !important;
+      padding: 20px !important;
+      border-radius: 10px !important;
+      aspect-ratio: 1 !important;
+      max-width: min(90vw, 90vh, 500px) !important;
+      grid-template-columns: repeat(4, 1fr) !important;
+      grid-template-rows: repeat(4, 1fr) !important;
+    }
+    .tile {
+      background: #666 !important;
+      color: white !important;
+      display: flex !important;
+      align-items: center !important;
+      justify-content: center !important;
+      font-weight: bold !important;
+      border-radius: 5px !important;
+      font-size: 1.5rem !important;
+      min-height: 60px !important;
+    }
+    button { background: #ffcc00; color: #000; border: none; padding: 10px 15px; margin: 5px; border-radius: 5px; cursor: pointer; }
+    #score-container { text-align: center; margin: 20px; }
+    #score-container ul { list-style: none; padding: 0; display: flex; justify-content: center; gap: 20px; }
+    header { text-align: center; padding: 20px; }
+    header h1 { color: #ffcc00; margin: 0; }
+  </style>
   </head>
   <body>
     <!-- Skip to main content for accessibility -->
@@ -113,10 +158,21 @@
         score: !!document.getElementById('score'),
         bestScore: !!document.getElementById('best-score')
       });
+      
+      // Global error handler
+      window.addEventListener('error', (event) => {
+        console.error('🚨 Global error:', event.error);
+        console.error('File:', event.filename, 'Line:', event.lineno, 'Column:', event.colno);
+      });
+      
+      // Unhandled promise rejection handler
+      window.addEventListener('unhandledrejection', (event) => {
+        console.error('🚨 Unhandled promise rejection:', event.reason);
+      });
     </script>
-    <script src="../scripts/advanced_ai_solver.js"></script>
-    <script src="../scripts/enhanced_ai.js"></script>
-    <script src="../scripts/game.js"></script>
+    <script src="../scripts/advanced_ai_solver.js" onerror="console.error('❌ Failed to load advanced_ai_solver.js')"></script>
+    <script src="../scripts/enhanced_ai.js" onerror="console.error('❌ Failed to load enhanced_ai.js')"></script>
+    <script src="../scripts/game.js" onerror="console.error('❌ Failed to load game.js')"></script>
     <script>
       // Post-loading verification
       console.log('🔍 Script loading verification:', {
@@ -124,6 +180,46 @@
         EnhancedAI: typeof Enhanced2048AI !== 'undefined', 
         Game: typeof Game !== 'undefined'
       });
+      
+      // Additional initialization check
+      if (typeof Game === 'undefined') {
+        console.error('❌ Game class not loaded!');
+        document.body.innerHTML += `
+          <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); color: #ff6b6b; display: flex; align-items: center; justify-content: center; z-index: 10000; text-align: center; font-family: Arial;">
+            <div>
+              <h2>🚨 Game Loading Error</h2>
+              <p>Failed to load game scripts. Please refresh the page.</p>
+              <button onclick="location.reload()" style="padding: 10px 20px; background: #ff6b6b; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px;">Refresh Page</button>
+            </div>
+          </div>
+        `;
+      }
+      
+      // Final backup initialization - will run after 3 seconds if game not initialized
+      setTimeout(() => {
+        if (!window.game && typeof Game !== 'undefined') {
+          console.warn('🆘 Running backup initialization...');
+          try {
+            window.game = new Game(4);
+            console.log('✅ Backup initialization successful!');
+          } catch (backupError) {
+            console.error('❌ Backup initialization also failed:', backupError);
+            
+            // Ultra-minimal fallback
+            document.getElementById('board-container').innerHTML = `
+              <div style="grid-column: 1/-1; grid-row: 1/-1; display: flex; align-items: center; justify-content: center; text-align: center; color: #ffcc00;">
+                <div>
+                  <h3>🎮 Game Initialization Issue</h3>
+                  <p>Please refresh the page to try again.</p>
+                  <button onclick="location.reload()" style="padding: 10px 20px; background: #ffcc00; color: #000; border: none; border-radius: 5px; cursor: pointer;">Refresh</button>
+                </div>
+              </div>
+            `;
+          }
+        } else if (window.game) {
+          console.log('✅ Game already initialized successfully');
+        }
+      }, 3000);
     </script>
   </body>
 </html>

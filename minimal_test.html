@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fancy2048 - Minimal Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #f2f2f2;
+            margin: 0;
+            padding: 20px;
+            text-align: center;
+        }
+        #board-container {
+            display: grid !important;
+            grid-template-columns: repeat(4, 1fr) !important;
+            grid-template-rows: repeat(4, 1fr) !important;
+            gap: 10px !important;
+            margin: 20px auto !important;
+            background: #333 !important;
+            padding: 20px !important;
+            border-radius: 10px !important;
+            width: 400px !important;
+            height: 400px !important;
+        }
+        .tile {
+            background: #666 !important;
+            color: white !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            font-weight: bold !important;
+            border-radius: 5px !important;
+            font-size: 1.8rem !important;
+        }
+        .tile[data-value="2"] { background: #eee4da; color: #776e65; }
+        .tile[data-value="4"] { background: #ede0c8; color: #776e65; }
+        .tile[data-value="8"] { background: #f2b179; color: #f9f6f2; }
+        .tile[data-value="16"] { background: #f59563; color: #f9f6f2; }
+        .tile[data-value="32"] { background: #f67c5f; color: #f9f6f2; }
+        .tile[data-value="64"] { background: #f65e3b; color: #f9f6f2; }
+        .tile[data-value="128"] { background: #edcf72; color: #f9f6f2; font-size: 1.4rem; }
+        .tile[data-value="256"] { background: #edcc61; color: #f9f6f2; font-size: 1.4rem; }
+        .tile[data-value="512"] { background: #edc850; color: #f9f6f2; font-size: 1.4rem; }
+        .tile[data-value="1024"] { background: #edc53f; color: #f9f6f2; font-size: 1.2rem; }
+        .tile[data-value="2048"] { background: #edc22e; color: #f9f6f2; font-size: 1.2rem; }
+        button {
+            background: #ffcc00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover { background: #e6b800; }
+        #score-container {
+            margin: 20px;
+            font-size: 18px;
+        }
+        h1 { color: #ffcc00; }
+    </style>
+</head>
+<body>
+    <h1>🎮 Fancy2048 - Minimal Test Version</h1>
+    
+    <div id="score-container">
+        <p>Score: <span id="score">0</span> | Best: <span id="best-score">0</span> | Moves: <span id="moves">0</span></p>
+    </div>
+    
+    <div id="board-container" tabindex="0"></div>
+    
+    <div>
+        <button onclick="testGame.reset()">Reset Game</button>
+        <button onclick="showDebugInfo()">Debug Info</button>
+        <button onclick="testMove()">Test Move</button>
+    </div>
+    
+    <div id="debug-info" style="margin-top: 20px; font-family: monospace; font-size: 14px;"></div>
+    
+    <script>
+        // Minimal 2048 game implementation for testing
+        class MinimalGame {
+            constructor() {
+                this.size = 4;
+                this.score = 0;
+                this.bestScore = localStorage.getItem('bestScore') || 0;
+                this.moves = 0;
+                this.board = this.createEmptyBoard();
+                this.init();
+            }
+            
+            createEmptyBoard() {
+                return Array(this.size).fill().map(() => Array(this.size).fill(0));
+            }
+            
+            init() {
+                this.setupBoardContainer();
+                this.addRandomTile();
+                this.addRandomTile();
+                this.updateUI();
+                this.setupEventListeners();
+                console.log('✅ Minimal game initialized');
+            }
+            
+            setupBoardContainer() {
+                const container = document.getElementById('board-container');
+                container.innerHTML = '';
+                
+                // Create grid cells
+                for (let i = 0; i < this.size * this.size; i++) {
+                    const cell = document.createElement('div');
+                    cell.style.background = 'rgba(238, 228, 218, 0.35)';
+                    cell.style.borderRadius = '5px';
+                    container.appendChild(cell);
+                }
+            }
+            
+            setupEventListeners() {
+                document.addEventListener('keydown', (e) => {
+                    const keyMap = {
+                        'ArrowUp': 'up',
+                        'ArrowDown': 'down', 
+                        'ArrowLeft': 'left',
+                        'ArrowRight': 'right'
+                    };
+                    
+                    if (keyMap[e.key]) {
+                        e.preventDefault();
+                        this.move(keyMap[e.key]);
+                    }
+                });
+            }
+            
+            addRandomTile() {
+                const emptyCells = [];
+                for (let r = 0; r < this.size; r++) {
+                    for (let c = 0; c < this.size; c++) {
+                        if (this.board[r][c] === 0) {
+                            emptyCells.push({row: r, col: c});
+                        }
+                    }
+                }
+                
+                if (emptyCells.length > 0) {
+                    const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                    this.board[randomCell.row][randomCell.col] = Math.random() < 0.9 ? 2 : 4;
+                    return true;
+                }
+                return false;
+            }
+            
+            move(direction) {
+                console.log(`Moving ${direction}`);
+                let moved = false;
+                
+                switch (direction) {
+                    case 'left':
+                        moved = this.moveLeft();
+                        break;
+                    case 'right':
+                        moved = this.moveRight();
+                        break;
+                    case 'up':
+                        moved = this.moveUp();
+                        break;
+                    case 'down':
+                        moved = this.moveDown();
+                        break;
+                }
+                
+                if (moved) {
+                    this.moves++;
+                    this.addRandomTile();
+                    this.updateUI();
+                    this.updateScore();
+                }
+                
+                return moved;
+            }
+            
+            moveLeft() {
+                let moved = false;
+                for (let r = 0; r < this.size; r++) {
+                    const row = this.board[r].filter(val => val !== 0);
+                    
+                    // Merge
+                    for (let c = 0; c < row.length - 1; c++) {
+                        if (row[c] === row[c + 1]) {
+                            row[c] *= 2;
+                            this.score += row[c];
+                            row.splice(c + 1, 1);
+                        }
+                    }
+                    
+                    // Pad with zeros
+                    while (row.length < this.size) {
+                        row.push(0);
+                    }
+                    
+                    // Check if row changed
+                    for (let c = 0; c < this.size; c++) {
+                        if (this.board[r][c] !== row[c]) {
+                            moved = true;
+                        }
+                        this.board[r][c] = row[c];
+                    }
+                }
+                return moved;
+            }
+            
+            moveRight() {
+                let moved = false;
+                for (let r = 0; r < this.size; r++) {
+                    const row = this.board[r].filter(val => val !== 0).reverse();
+                    
+                    // Merge
+                    for (let c = 0; c < row.length - 1; c++) {
+                        if (row[c] === row[c + 1]) {
+                            row[c] *= 2;
+                            this.score += row[c];
+                            row.splice(c + 1, 1);
+                        }
+                    }
+                    
+                    // Pad with zeros and reverse back
+                    while (row.length < this.size) {
+                        row.push(0);
+                    }
+                    const newRow = row.reverse();
+                    
+                    // Check if row changed
+                    for (let c = 0; c < this.size; c++) {
+                        if (this.board[r][c] !== newRow[c]) {
+                            moved = true;
+                        }
+                        this.board[r][c] = newRow[c];
+                    }
+                }
+                return moved;
+            }
+            
+            moveUp() {
+                let moved = false;
+                for (let c = 0; c < this.size; c++) {
+                    const col = [];
+                    for (let r = 0; r < this.size; r++) {
+                        if (this.board[r][c] !== 0) {
+                            col.push(this.board[r][c]);
+                        }
+                    }
+                    
+                    // Merge
+                    for (let r = 0; r < col.length - 1; r++) {
+                        if (col[r] === col[r + 1]) {
+                            col[r] *= 2;
+                            this.score += col[r];
+                            col.splice(r + 1, 1);
+                        }
+                    }
+                    
+                    // Pad with zeros
+                    while (col.length < this.size) {
+                        col.push(0);
+                    }
+                    
+                    // Check if column changed
+                    for (let r = 0; r < this.size; r++) {
+                        if (this.board[r][c] !== col[r]) {
+                            moved = true;
+                        }
+                        this.board[r][c] = col[r];
+                    }
+                }
+                return moved;
+            }
+            
+            moveDown() {
+                let moved = false;
+                for (let c = 0; c < this.size; c++) {
+                    const col = [];
+                    for (let r = this.size - 1; r >= 0; r--) {
+                        if (this.board[r][c] !== 0) {
+                            col.push(this.board[r][c]);
+                        }
+                    }
+                    
+                    // Merge
+                    for (let r = 0; r < col.length - 1; r++) {
+                        if (col[r] === col[r + 1]) {
+                            col[r] *= 2;
+                            this.score += col[r];
+                            col.splice(r + 1, 1);
+                        }
+                    }
+                    
+                    // Pad with zeros and reverse
+                    while (col.length < this.size) {
+                        col.push(0);
+                    }
+                    
+                    // Check if column changed and set values
+                    for (let r = 0; r < this.size; r++) {
+                        const newVal = col[this.size - 1 - r] || 0;
+                        if (this.board[r][c] !== newVal) {
+                            moved = true;
+                        }
+                        this.board[r][c] = newVal;
+                    }
+                }
+                return moved;
+            }
+            
+            updateUI() {
+                const container = document.getElementById('board-container');
+                const cells = container.children;
+                
+                for (let r = 0; r < this.size; r++) {
+                    for (let c = 0; c < this.size; c++) {
+                        const index = r * this.size + c;
+                        const cell = cells[index];
+                        const value = this.board[r][c];
+                        
+                        if (value > 0) {
+                            cell.textContent = value;
+                            cell.className = 'tile';
+                            cell.setAttribute('data-value', value);
+                        } else {
+                            cell.textContent = '';
+                            cell.className = '';
+                            cell.removeAttribute('data-value');
+                            cell.style.background = 'rgba(238, 228, 218, 0.35)';
+                        }
+                    }
+                }
+            }
+            
+            updateScore() {
+                document.getElementById('score').textContent = this.score;
+                if (this.score > this.bestScore) {
+                    this.bestScore = this.score;
+                    localStorage.setItem('bestScore', this.bestScore);
+                }
+                document.getElementById('best-score').textContent = this.bestScore;
+                document.getElementById('moves').textContent = this.moves;
+            }
+            
+            reset() {
+                this.board = this.createEmptyBoard();
+                this.score = 0;
+                this.moves = 0;
+                this.addRandomTile();
+                this.addRandomTile();
+                this.updateUI();
+                this.updateScore();
+                console.log('🔄 Game reset');
+            }
+        }
+        
+        // Initialize minimal test game
+        let testGame;
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Starting minimal test game...');
+            try {
+                testGame = new MinimalGame();
+                console.log('✅ Test game loaded successfully');
+            } catch (error) {
+                console.error('❌ Test game failed to load:', error);
+                document.getElementById('debug-info').innerHTML = `
+                    <div style="color: #ff6b6b;">
+                        <strong>❌ Test Game Failed</strong><br>
+                        Error: ${error.message}<br>
+                        <button onclick="location.reload()">Reload Page</button>
+                    </div>
+                `;
+            }
+        });
+        
+        function showDebugInfo() {
+            if (!testGame) return;
+            
+            const info = `
+                <strong>🔍 Debug Information:</strong><br>
+                Board: ${JSON.stringify(testGame.board)}<br>
+                Score: ${testGame.score}<br>
+                Moves: ${testGame.moves}<br>
+                Board Size: ${testGame.size}x${testGame.size}<br>
+                Empty Cells: ${testGame.board.flat().filter(x => x === 0).length}<br>
+                Max Tile: ${Math.max(...testGame.board.flat())}<br>
+                Document Ready: ${document.readyState}<br>
+                Timestamp: ${new Date().toLocaleTimeString()}
+            `;
+            document.getElementById('debug-info').innerHTML = info;
+        }
+        
+        function testMove() {
+            if (testGame) {
+                const directions = ['up', 'down', 'left', 'right'];
+                const randomDirection = directions[Math.floor(Math.random() * directions.length)];
+                testGame.move(randomDirection);
+                console.log(`🎲 Random move: ${randomDirection}`);
+            }
+        }
+    </script>
+</body>
+</html>
