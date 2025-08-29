@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fancy2048 - Grid Layout & Speed Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #1a1a1a;
+            color: #f2f2f2;
+            line-height: 1.6;
+        }
+        .test-section {
+            background-color: #333;
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 30px;
+        }
+        .test-section h2 {
+            color: #ffcc00;
+            margin-top: 0;
+        }
+        .grid-demo {
+            display: grid;
+            gap: 8px;
+            margin: 15px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            aspect-ratio: 1 / 1;
+        }
+        .grid-3x3 {
+            grid-template-columns: repeat(3, 1fr);
+            max-width: 300px;
+            gap: 10px;
+        }
+        .grid-4x4 {
+            grid-template-columns: repeat(4, 1fr);
+            max-width: 350px;
+            gap: 8px;
+        }
+        .grid-5x5 {
+            grid-template-columns: repeat(5, 1fr);
+            max-width: 400px;
+            gap: 6px;
+        }
+        .demo-cell {
+            aspect-ratio: 1;
+            background: linear-gradient(135deg, #ffcc00 0%, #ff8800 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #1a1a1a;
+            border-radius: 4px;
+            font-size: clamp(0.6rem, 2vw, 1.2rem);
+        }
+        .grid-3x3 .demo-cell {
+            font-size: clamp(0.8rem, 2.5vw, 1.8rem);
+        }
+        .grid-5x5 .demo-cell {
+            font-size: clamp(0.5rem, 1.5vw, 1rem);
+        }
+        iframe {
+            width: 100%;
+            height: 700px;
+            border: 2px solid #ffcc00;
+            border-radius: 8px;
+            margin-top: 20px;
+        }
+        .features-list {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .feature-card {
+            background: rgba(255, 204, 0, 0.1);
+            padding: 15px;
+            border-radius: 8px;
+            border-left: 4px solid #ffcc00;
+        }
+        .feature-card h4 {
+            margin-top: 0;
+            color: #ffcc00;
+        }
+        .speed-demo {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 15px 0;
+        }
+        .speed-badge {
+            background: #ffcc00;
+            color: #1a1a1a;
+            padding: 8px 16px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+        .comparison-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        .size-comparison {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+        }
+        .size-comparison h4 {
+            color: #ffcc00;
+            margin-top: 0;
+        }
+        @media (max-width: 768px) {
+            .grid-demo {
+                max-width: 90vw;
+            }
+            iframe {
+                height: 600px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <h1>🎮 Fancy2048 - Improved Grid Layout & AI Speed Test</h1>
+    
+    <div class="test-section">
+        <h2>✅ Latest Improvements</h2>
+        <div class="features-list">
+            <div class="feature-card">
+                <h4>🎯 Perfect Grid Fitting</h4>
+                <p>All grid layouts (3x3, 4x4, 5x5) now fit proportionally within the board container with optimized tile sizing.</p>
+            </div>
+            <div class="feature-card">
+                <h4>🚀 x8 AI Speed Added</h4>
+                <p>New ultra-fast AI speed option: 1x → 1.5x → 2x → 4x → 8x → back to 1x</p>
+            </div>
+            <div class="feature-card">
+                <h4>📱 Dynamic Mobile Sizing</h4>
+                <p>Smart viewport-based sizing that adapts each grid size for optimal mobile experience.</p>
+            </div>
+            <div class="feature-card">
+                <h4>🔧 Proportional Tile Scaling</h4>
+                <p>Tiles resize proportionally based on grid size with optimized font scaling for readability.</p>
+            </div>
+            <div class="feature-card">
+                <h4>📐 Consistent Spacing</h4>
+                <p>Grid-specific gap sizing: 3x3 (larger gaps), 4x4 (balanced), 5x5 (compact).</p>
+            </div>
+            <div class="feature-card">
+                <h4>🎮 Better UX</h4>
+                <p>Minimum board size constraints prevent layouts from becoming too small on any device.</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🚀 AI Speed Options</h2>
+        <p>The AI autoplay now includes five speed levels for different gameplay experiences:</p>
+        <div class="speed-demo">
+            <div class="speed-badge">1x - Normal</div>
+            <div class="speed-badge">1.5x - Fast</div>
+            <div class="speed-badge">2x - Faster</div>
+            <div class="speed-badge">4x - Very Fast</div>
+            <div class="speed-badge">8x - Ultra Fast</div>
+        </div>
+        <p>Click the speed button (🏃) in the game to cycle through these options. The x8 speed is perfect for quickly watching AI strategies or testing different approaches.</p>
+    </div>
+
+    <div class="test-section">
+        <h2>📏 Grid Size Comparisons</h2>
+        
+        <div class="comparison-grid">
+            <div class="size-comparison">
+                <h4>3x3 Grid</h4>
+                <div class="grid-demo grid-3x3">
+                    <div class="demo-cell">2</div>
+                    <div class="demo-cell">4</div>
+                    <div class="demo-cell">8</div>
+                    <div class="demo-cell">16</div>
+                    <div class="demo-cell">32</div>
+                    <div class="demo-cell">64</div>
+                    <div class="demo-cell">128</div>
+                    <div class="demo-cell">256</div>
+                    <div class="demo-cell">512</div>
+                </div>
+                <p><strong>Best for:</strong> Quick games, mobile play<br>
+                <strong>Features:</strong> Larger tiles, better spacing<br>
+                <strong>Max Size:</strong> ~450px</p>
+            </div>
+            
+            <div class="size-comparison">
+                <h4>4x4 Grid (Default)</h4>
+                <div class="grid-demo grid-4x4">
+                    <div class="demo-cell">2</div>
+                    <div class="demo-cell">4</div>
+                    <div class="demo-cell">8</div>
+                    <div class="demo-cell">16</div>
+                    <div class="demo-cell">32</div>
+                    <div class="demo-cell">64</div>
+                    <div class="demo-cell">128</div>
+                    <div class="demo-cell">256</div>
+                    <div class="demo-cell">512</div>
+                    <div class="demo-cell">1024</div>
+                    <div class="demo-cell">2048</div>
+                    <div class="demo-cell">4096</div>
+                    <div class="demo-cell"></div>
+                    <div class="demo-cell"></div>
+                    <div class="demo-cell"></div>
+                    <div class="demo-cell"></div>
+                </div>
+                <p><strong>Best for:</strong> Classic 2048 experience<br>
+                <strong>Features:</strong> Balanced sizing, standard play<br>
+                <strong>Max Size:</strong> ~500px</p>
+            </div>
+            
+            <div class="size-comparison">
+                <h4>5x5 Grid</h4>
+                <div class="grid-demo grid-5x5">
+                    <div class="demo-cell">2</div>
+                    <div class="demo-cell">4</div>
+                    <div class="demo-cell">8</div>
+                    <div class="demo-cell">16</div>
+                    <div class="demo-cell">32</div>
+                    <div class="demo-cell">64</div>
+                    <div class="demo-cell">128</div>
+                    <div class="demo-cell">256</div>
+                    <div class="demo-cell">512</div>
+                    <div class="demo-cell">1024</div>
+                    <div class="demo-cell">2048</div>
+                    <div class="demo-cell">4096</div>
+                    <div class="demo-cell">8192</div>
+                    <div class="demo-cell">16K</div>
+                    <div class="demo-cell">32K</div>
+                    <div class="demo-cell"></div>
+                    <div class="demo-cell"></div>
+                    <div class="demo-cell"></div>
+                    <div class="demo-cell"></div>
+                    <div class="demo-cell"></div>
+                    <div class="demo-cell"></div>
+                    <div class="demo-cell"></div>
+                    <div class="demo-cell"></div>
+                    <div class="demo-cell"></div>
+                    <div class="demo-cell"></div>
+                </div>
+                <p><strong>Best for:</strong> Advanced players, high scores<br>
+                <strong>Features:</strong> Compact tiles, more space<br>
+                <strong>Max Size:</strong> ~520px</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔧 Technical Improvements</h2>
+        <ul>
+            <li><strong>Dynamic Board Sizing:</strong> Board size adapts based on grid type and viewport</li>
+            <li><strong>Proportional Tile Scaling:</strong> Font sizes scale based on tile size and grid density</li>
+            <li><strong>Optimized Gaps:</strong> Different gap sizes for each grid type maintain visual balance</li>
+            <li><strong>Mobile Optimization:</strong> Special handling for small screens with ultra-compact 5x5 styling</li>
+            <li><strong>Viewport Awareness:</strong> Board size calculations consider both width and height</li>
+            <li><strong>Minimum Size Constraints:</strong> Prevents boards from becoming too small to use</li>
+            <li><strong>CSS Custom Properties:</strong> Dynamic --board-max-size updates for each grid type</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🎮 Live Game Test</h2>
+        <p>Test all the improvements below:</p>
+        <ul>
+            <li><strong>Grid Size Testing:</strong> Click ⊞ button to cycle through 4x4 → 3x3 → 5x5</li>
+            <li><strong>AI Speed Testing:</strong> Click 🏃 button to test all speeds including new x8 option</li>
+            <li><strong>Responsive Testing:</strong> Resize window to see proportional scaling</li>
+            <li><strong>Mobile Testing:</strong> Use browser dev tools mobile view</li>
+        </ul>
+        <iframe src="pages/index.html" title="Fancy2048 Game with Improved Grid Layout"></iframe>
+    </div>
+
+    <div class="test-section">
+        <h2>📋 Testing Checklist</h2>
+        <h3>Grid Layout Tests:</h3>
+        <ul>
+            <li>✅ <strong>3x3 Grid:</strong> Larger tiles, proper spacing, readable fonts</li>
+            <li>✅ <strong>4x4 Grid:</strong> Balanced default layout, optimal proportions</li>
+            <li>✅ <strong>5x5 Grid:</strong> Compact tiles, fits within container, readable text</li>
+            <li>✅ <strong>Transitions:</strong> Smooth size changes when switching grids</li>
+        </ul>
+        
+        <h3>AI Speed Tests:</h3>
+        <ul>
+            <li>✅ <strong>1x Speed:</strong> Normal human-readable pace</li>
+            <li>✅ <strong>1.5x Speed:</strong> Slightly accelerated</li>
+            <li>✅ <strong>2x Speed:</strong> Double speed</li>
+            <li>✅ <strong>4x Speed:</strong> Very fast gameplay</li>
+            <li>✅ <strong>8x Speed:</strong> Ultra-fast AI demonstration</li>
+        </ul>
+
+        <h3>Responsive Tests:</h3>
+        <ul>
+            <li>✅ <strong>Desktop:</strong> All grids fit properly on large screens</li>
+            <li>✅ <strong>Tablet:</strong> Proportional scaling on medium screens</li>
+            <li>✅ <strong>Mobile:</strong> Optimal sizing for small screens</li>
+            <li>✅ <strong>Portrait/Landscape:</strong> Proper orientation handling</li>
+        </ul>
+    </div>
+
+    <div class="test-section">
+        <h2>🔍 Debug Information</h2>
+        <p>Open browser developer tools to see detailed layout information:</p>
+        <ul>
+            <li><code>window.debugGame.checkLayout()</code> - Inspect current board layout</li>
+            <li><code>window.debugGame.checkTiles()</code> - View tile positions and sizes</li>
+            <li>Console shows board setup details with calculated dimensions</li>
+        </ul>
+    </div>
+</body>
+</html>

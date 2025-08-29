@@ -5,15 +5,15 @@
   --size: 4;
   
   /* Responsive Gap and Size Variables */
-  --gap: clamp(4px, 2vmin, 12px);
+  --gap: clamp(2px, 1.5vmin, 8px);
   --board-max-size: min(85vw, 85vh, 500px);
   --tile-size: calc((var(--board-max-size) - var(--gap) * (var(--size) + 1)) / var(--size));
   --game-size: var(--board-max-size);
   
-  /* Grid-specific adjustments */
-  --grid-3-gap: clamp(6px, 2.5vmin, 15px);
-  --grid-4-gap: clamp(4px, 2vmin, 12px);
-  --grid-5-gap: clamp(3px, 1.5vmin, 10px);
+  /* Grid-specific adjustments for optimal fitting */
+  --grid-3-gap: clamp(3px, 2vmin, 10px);
+  --grid-4-gap: clamp(2px, 1.5vmin, 8px);
+  --grid-5-gap: clamp(1px, 1vmin, 6px);
   
   /* Color Variables */
   --primary-color: #1a1a1a;
@@ -342,6 +342,9 @@ main {
   border: 1px solid rgba(255, 255, 255, 0.1);
   margin: 0 auto;
   overflow: hidden;
+  /* Ensure consistent sizing across all grid types */
+  min-width: 280px;
+  min-height: 280px;
 }
 
 #board-container:focus {
@@ -609,6 +612,24 @@ footer .container {
     --board-max-size: min(98vw, 98vh, 320px);
   }
   
+  /* Grid-specific mobile adjustments */
+  .board-size-3 #board-container {
+    max-width: min(95vw, 95vh, 350px);
+    max-height: min(95vw, 95vh, 350px);
+  }
+  
+  .board-size-4 #board-container {
+    max-width: min(98vw, 98vh, 320px);
+    max-height: min(98vw, 98vh, 320px);
+  }
+  
+  .board-size-5 #board-container {
+    max-width: min(100vw - 20px, 100vh - 20px, 300px);
+    max-height: min(100vw - 20px, 100vh - 20px, 300px);
+    min-width: 260px;
+    min-height: 260px;
+  }
+  
   header {
     padding: 10px;
   }
@@ -642,6 +663,24 @@ footer .container {
     font-size: clamp(0.3rem, calc(var(--tile-size) * 0.15), 1rem);
   }
   
+  /* 5x5 specific ultra-compact mobile styling */
+  .board-size-5 .tile {
+    font-size: clamp(0.4rem, calc(var(--tile-size) * 0.22), 1.2rem);
+  }
+  
+  .board-size-5 .tile[data-value="1024"],
+  .board-size-5 .tile[data-value="2048"] {
+    font-size: clamp(0.35rem, calc(var(--tile-size) * 0.16), 0.9rem);
+  }
+  
+  .board-size-5 .tile[data-value="4096"],
+  .board-size-5 .tile[data-value="8192"],
+  .board-size-5 .tile[data-value="16384"],
+  .board-size-5 .tile[data-value="32768"],
+  .board-size-5 .tile[data-value="65536"] {
+    font-size: clamp(0.3rem, calc(var(--tile-size) * 0.12), 0.7rem);
+  }
+  
   button {
     padding: 8px 10px;
     min-width: 40px;
@@ -662,37 +701,60 @@ footer .container {
   --gap: var(--grid-5-gap);
 }
 
-/* 3x3 Grid Optimizations */
+/* 3x3 Grid Optimizations - Larger tiles, better spacing */
 .board-size-3 {
   --gap: var(--grid-3-gap);
 }
 
+.board-size-3 #board-container {
+  max-width: min(80vw, 80vh, 450px);
+  max-height: min(80vw, 80vh, 450px);
+}
+
 .board-size-3 .tile {
-  font-size: clamp(0.8rem, calc(var(--tile-size) * 0.4), 3rem);
+  font-size: clamp(1rem, calc(var(--tile-size) * 0.45), 3.5rem);
 }
 
 .board-size-3 .tile[data-value="1024"],
 .board-size-3 .tile[data-value="2048"] {
-  font-size: clamp(0.7rem, calc(var(--tile-size) * 0.3), 2.5rem);
+  font-size: clamp(0.8rem, calc(var(--tile-size) * 0.35), 2.8rem);
 }
 
-/* 4x4 Grid Optimizations (default) */
+.board-size-3 .tile[data-value="4096"],
+.board-size-3 .tile[data-value="8192"],
+.board-size-3 .tile[data-value="16384"],
+.board-size-3 .tile[data-value="32768"],
+.board-size-3 .tile[data-value="65536"] {
+  font-size: clamp(0.7rem, calc(var(--tile-size) * 0.28), 2.2rem);
+}
+
+/* 4x4 Grid Optimizations (default) - Balanced sizing */
 .board-size-4 {
   --gap: var(--grid-4-gap);
 }
 
-/* 5x5 Grid Optimizations */
+.board-size-4 #board-container {
+  max-width: min(85vw, 85vh, 500px);
+  max-height: min(85vw, 85vh, 500px);
+}
+
+/* 5x5 Grid Optimizations - Compact tiles, tighter spacing */
 .board-size-5 {
   --gap: var(--grid-5-gap);
 }
 
+.board-size-5 #board-container {
+  max-width: min(90vw, 90vh, 520px);
+  max-height: min(90vw, 90vh, 520px);
+}
+
 .board-size-5 .tile {
-  font-size: clamp(0.6rem, calc(var(--tile-size) * 0.3), 2rem);
+  font-size: clamp(0.7rem, calc(var(--tile-size) * 0.32), 2.2rem);
 }
 
 .board-size-5 .tile[data-value="1024"],
 .board-size-5 .tile[data-value="2048"] {
-  font-size: clamp(0.5rem, calc(var(--tile-size) * 0.2), 1.5rem);
+  font-size: clamp(0.6rem, calc(var(--tile-size) * 0.25), 1.8rem);
 }
 
 .board-size-5 .tile[data-value="4096"],
@@ -700,27 +762,12 @@ footer .container {
 .board-size-5 .tile[data-value="16384"],
 .board-size-5 .tile[data-value="32768"],
 .board-size-5 .tile[data-value="65536"] {
-  font-size: clamp(0.4rem, calc(var(--tile-size) * 0.15), 1.2rem);
+  font-size: clamp(0.5rem, calc(var(--tile-size) * 0.18), 1.4rem);
 }
 
 /* Special handling for very small screens with 5x5 */
 @media (max-width: 480px) {
-  .board-size-5 .tile {
-    font-size: clamp(0.4rem, calc(var(--tile-size) * 0.25), 1.4rem);
-  }
-  
-  .board-size-5 .tile[data-value="1024"],
-  .board-size-5 .tile[data-value="2048"] {
-    font-size: clamp(0.35rem, calc(var(--tile-size) * 0.18), 1rem);
-  }
-  
-  .board-size-5 .tile[data-value="4096"],
-  .board-size-5 .tile[data-value="8192"],
-  .board-size-5 .tile[data-value="16384"],
-  .board-size-5 .tile[data-value="32768"],
-  .board-size-5 .tile[data-value="65536"] {
-    font-size: clamp(0.3rem, calc(var(--tile-size) * 0.12), 0.8rem);
-  }
+  /* Mobile styling handled in the main @media (max-width: 480px) section above */
 }
 
 /* Landscape orientation adjustments for mobile */

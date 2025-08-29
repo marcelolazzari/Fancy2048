@@ -50,7 +50,7 @@ class Game {
     this.isAutoPlaying = false;
     this.autoPlayInterval = null;
     this.autoPlaySpeed = 800; // milliseconds between moves
-    this.speedMultipliers = [1, 1.5, 2, 4]; // Speed options
+    this.speedMultipliers = [1, 1.5, 2, 4, 8]; // Speed options including x8
     this.currentSpeedIndex = 0; // Current speed index
     this.isAutoPlayedGame = false; // Track if current game used autoplay
 
@@ -111,6 +111,22 @@ class Game {
     document.body.className = document.body.className.replace(/board-size-\d+/g, '');
     document.body.classList.add(`board-size-${this.size}`);
     
+    // Calculate optimal board dimensions for proper fitting
+    const viewport = Math.min(window.innerWidth, window.innerHeight);
+    let maxBoardSize;
+    
+    // Dynamic sizing based on grid size and viewport
+    if (this.size === 3) {
+      maxBoardSize = Math.min(viewport * 0.8, 450);
+    } else if (this.size === 4) {
+      maxBoardSize = Math.min(viewport * 0.85, 500);
+    } else if (this.size === 5) {
+      maxBoardSize = Math.min(viewport * 0.9, 520);
+    }
+    
+    // Apply dynamic sizing
+    document.documentElement.style.setProperty('--board-max-size', `${maxBoardSize}px`);
+    
     // Create grid cells
     for (let i = 0; i < this.size; i++) {
       for (let j = 0; j < this.size; j++) {
@@ -122,7 +138,7 @@ class Game {
       }
     }
     
-    console.log(`✅ Board container setup for ${this.size}x${this.size} grid`);
+    console.log(`✅ Board container setup for ${this.size}x${this.size} grid - Max size: ${maxBoardSize}px`);
   }
 
   setupResponsiveHandlers() {
