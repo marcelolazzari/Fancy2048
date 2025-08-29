@@ -81,7 +81,7 @@ class Game {
     this.initializeEnhancedAI();
     
     // AI performance settings
-    this.aiDifficulty = 'normal'; // 'easy', 'normal', 'hard', 'expert'
+    this.aiDifficulty = localStorage.getItem('aiDifficulty') || 'normal';
     this.adaptiveDepth = true;
     
     console.log('✅ Game initialized successfully');
@@ -417,16 +417,28 @@ class Game {
     // Add focus management for accessibility
     this.setupFocusManagement();
 
-    // Add AI difficulty change listener
-    document.getElementById('ai-difficulty-button')?.addEventListener('click', () => {
-      this.changeAIDifficulty();
-      // Update button text
-      const button = document.getElementById('ai-difficulty-button');
-      const span = button.querySelector('.button-text');
-      if (span) {
-        span.textContent = this.aiDifficulty.charAt(0).toUpperCase() + this.aiDifficulty.slice(1);
+    // AI Difficulty button - Enhanced integration
+    const aiDifficultyButton = document.getElementById('ai-difficulty-button');
+    if (aiDifficultyButton) {
+      aiDifficultyButton.addEventListener('click', () => {
+        this.changeAIDifficulty();
+        // Update button text immediately
+        const buttonText = aiDifficultyButton.querySelector('.button-text');
+        if (buttonText) {
+          const capitalizedDifficulty = this.aiDifficulty.charAt(0).toUpperCase() + this.aiDifficulty.slice(1);
+          buttonText.textContent = capitalizedDifficulty;
+        }
+      });
+
+      // Initialize button text on startup
+      const buttonText = aiDifficultyButton.querySelector('.button-text');
+      if (buttonText) {
+        const savedDifficulty = localStorage.getItem('aiDifficulty') || 'normal';
+        this.aiDifficulty = savedDifficulty;
+        const capitalizedDifficulty = this.aiDifficulty.charAt(0).toUpperCase() + this.aiDifficulty.slice(1);
+        buttonText.textContent = capitalizedDifficulty;
       }
-    });
+    }
   }
 
   setupFocusManagement() {
@@ -1975,6 +1987,7 @@ class Game {
     });
   }
 
+  // Enhanced hue change with smooth animation
   changeHue() {
     // Enhanced hue change with smooth animation
     const oldHue = this.hueValue;
@@ -2043,7 +2056,7 @@ class Game {
       if (ripple.parentNode) {
         ripple.parentNode.removeChild(ripple);
       }
-       }, 600);
+    }, 600);
   }
 
   togglePause() {
@@ -2305,26 +2318,68 @@ class Game {
     const nextIndex = (currentIndex + 1) % difficulties.length;
     this.aiDifficulty = difficulties[nextIndex];
     
-    // Save preference
+    // Save preference to localStorage
     localStorage.setItem('aiDifficulty', this.aiDifficulty);
     
-    // Update AI settings
+    // Update AI settings immediately if AI is available
     this.adjustAIDifficulty();
     
-    // Show notification
-    this.showNotification(`AI Difficulty: ${this.aiDifficulty.toUpperCase()}`);
+    // Update button appearance
+    const aiDifficultyButton = document.getElementById('ai-difficulty-button');
+    if (aiDifficultyButton) {
+      const buttonText = aiDifficultyButton.querySelector('.button-text');
+      if (buttonText) {
+        const capitalizedDifficulty = this.aiDifficulty.charAt(0).toUpperCase() + this.aiDifficulty.slice(1);
+        buttonText.textContent = capitalizedDifficulty;
+      }
+      
+      // Add visual feedback
+      aiDifficultyButton.style.transform = 'scale(1.1)';
+      setTimeout(() => {
+        aiDifficultyButton.style.transform = '';
+      }, 150);
+    }
     
-    console.log(`AI difficulty changed to: ${this.aiDifficulty}`);
+    // Show notification with detailed info
+    const difficultyInfo = this.getDifficultyInfo(this.aiDifficulty);
+    this.showNotification(`AI Difficulty: ${this.aiDifficulty.toUpperCase()}\n${difficultyInfo}`, 3000);
+    
+    console.log(`🧠 AI difficulty changed to: ${this.aiDifficulty}`);
+  }
+
+  // Helper method to get difficulty information
+  getDifficultyInfo(difficulty) {
+    const info = {
+      easy: 'Fast moves, 2-depth search',
+      normal: 'Balanced performance, 3-depth search', 
+      hard: 'Strong play, 4-depth search',
+      expert: 'Maximum strength, 5-6 depth search'
+    };
+    return info[difficulty] || '';
   }
 
   initializeEnhancedAI() {
     if (window.Enhanced2048AI) {
       this.enhancedAI = new Enhanced2048AI(this);
       
+      // Load saved difficulty preference
+      const savedDifficulty = localStorage.getItem('aiDifficulty') || 'normal';
+      this.aiDifficulty = savedDifficulty;
+      
       // Adjust AI difficulty based on board size and performance
       this.adjustAIDifficulty();
       
-      console.log('✅ Enhanced AI initialized with Minimax algorithm');
+      // Update button text to match loaded difficulty
+      const aiDifficultyButton = document.getElementById('ai-difficulty-button');
+      if (aiDifficultyButton) {
+        const buttonText = aiDifficultyButton.querySelector('.button-text');
+        if (buttonText) {
+          const capitalizedDifficulty = this.aiDifficulty.charAt(0).toUpperCase() + this.aiDifficulty.slice(1);
+          buttonText.textContent = capitalizedDifficulty;
+        }
+      }
+      
+      console.log(`✅ Enhanced AI initialized with ${this.aiDifficulty} difficulty`);
     } else {
       console.warn('⚠️ Enhanced AI not loaded, falling back to basic AI');
     }
@@ -2339,34 +2394,83 @@ class Game {
     switch (this.aiDifficulty) {
       case 'easy':
         depth = 2;
-        weights = { emptyCells: 200, smoothness: 50, monotonicity: 500 };
+        weights = { 
+          emptyCells: 200, 
+          smoothness: 50, 
+          monotonicity: 500,
+          maxTileCorner: 100,
+          merging: 300,
+          positionScores: 100
+        };
         break;
       case 'normal':
         depth = 3;
-        weights = { emptyCells: 270, smoothness: 100, monotonicity: 1000 };
+        weights = { 
+          emptyCells: 270, 
+          smoothness: 100, 
+          monotonicity: 1000,
+          maxTileCorner: 200,
+          merging: 500,
+          positionScores: 150
+        };
         break;
       case 'hard':
         depth = 4;
-        weights = { emptyCells: 300, smoothness: 150, monotonicity: 1200 };
+        weights = { 
+          emptyCells: 300, 
+          smoothness: 150, 
+          monotonicity: 1200,
+          maxTileCorner: 250,
+          merging: 600,
+          positionScores: 200
+        };
         break;
       case 'expert':
         depth = this.size <= 4 ? 5 : 4; // Adjust for larger boards
-        weights = { emptyCells: 350, smoothness: 200, monotonicity: 1500 };
+        weights = { 
+          emptyCells: 350, 
+          smoothness: 200, 
+          monotonicity: 1500,
+          maxTileCorner: 300,
+          merging: 700,
+          positionScores: 250
+        };
         break;
     }
 
-    // Adaptive depth based on game progress
+    // Adaptive depth based on game progress and performance
     if (this.adaptiveDepth) {
       const maxTile = this.getMaxTile();
-      if (maxTile >= 1024) {
-        depth = Math.min(depth + 1, 6); // Deeper search for late game
-      } else if (maxTile <= 64) {
+      const emptyCount = this.countEmptyCells();
+      
+      // Increase depth for late game (fewer empty cells, higher tiles)
+      if (maxTile >= 1024 && emptyCount <= 6) {
+        depth = Math.min(depth + 1, 6);
+      } else if (maxTile <= 64 && emptyCount >= 12) {
         depth = Math.max(depth - 1, 2); // Faster for early game
+      }
+      
+      // Performance-based adjustment
+      if (this.size === 5) {
+        depth = Math.max(depth - 1, 2); // Reduce depth for 5x5 boards
       }
     }
 
     this.enhancedAI.setDepth(depth);
     this.enhancedAI.adjustWeights(weights);
+    
+    console.log(`🔧 AI adjusted: ${this.aiDifficulty} difficulty, depth: ${depth}`);
+  }
+
+  // Helper method to count empty cells
+  countEmptyCells() {
+    let count = 0;
+    for (let i = 0; i < this.size; i++) {
+      for (let j = 0; j < this.size; j++) {
+        if (this.board[i][j] === 0) count++;
+      }
+    }
+    return count;
   }
 
   // Enhanced autoplay with better performance monitoring
@@ -2432,20 +2536,39 @@ class Game {
 
   // Add notification system for AI feedback
   showNotification(message, duration = 2000) {
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.ai-notification');
+    existingNotifications.forEach(n => n.remove());
+
     const notification = document.createElement('div');
     notification.className = 'ai-notification';
-    notification.textContent = message;
+    
+    // Handle multi-line messages
+    const lines = message.split('\n');
+    if (lines.length > 1) {
+      notification.innerHTML = lines.map(line => 
+        line.includes(':') ? `<div><strong>${line}</strong></div>` : `<div>${line}</div>`
+      ).join('');
+    } else {
+      notification.textContent = message;
+    }
+    
     notification.style.cssText = `
       position: fixed;
       top: 20px;
       right: 20px;
-      background: rgba(255, 204, 0, 0.9);
+      background: linear-gradient(135deg, rgba(255, 204, 0, 0.95) 0%, rgba(255, 153, 0, 0.95) 100%);
       color: #000;
-      padding: 10px 15px;
-      border-radius: 5px;
+      padding: 12px 18px;
+      border-radius: 8px;
       font-weight: bold;
+      font-size: 14px;
+      line-height: 1.3;
       z-index: 1000;
       animation: slideIn 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      border: 1px solid rgba(255, 204, 0, 0.3);
+      max-width: 300px;
     `;
     
     document.body.appendChild(notification);
