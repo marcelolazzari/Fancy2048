@@ -277,6 +277,36 @@ button:active {
   background: linear-gradient(45deg, #9C27B0, #7B1FA2);
 }
 
+/* Mode badge styling */
+.mode-badge {
+  display: inline-block;
+  padding: 4px 8px;
+  border-radius: 8px;
+  font-size: 0.85rem;
+  font-weight: 600;
+  text-align: center;
+  min-width: 60px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  transition: all 0.3s ease;
+}
+
+.human-mode {
+  background: linear-gradient(45deg, #4CAF50, #45a049);
+  color: white;
+  border: 1px solid #45a049;
+}
+
+.ai-mode {
+  background: linear-gradient(45deg, #2196F3, #1976D2);
+  color: white;
+  border: 1px solid #1976D2;
+}
+
+.mode-badge:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
 /* Message when no stats are available */
 .message-container {
   display: flex;

@@ -61,6 +61,10 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add grid-specific class for styling
         row.classList.add(`grid-${gridSize}`);
         
+        // Determine play mode
+        const playMode = stat.isAutoPlayed ? 'AI' : 'Human';
+        const modeIcon = stat.isAutoPlayed ? '🤖' : '👤';
+        
         row.innerHTML = `
           <td>${formattedDate}</td>
           <td><span class="grid-badge">${gridType}</span></td>
@@ -69,6 +73,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <td>${stat.bestScore}</td>
           <td>${stat.time}</td>
           <td>${stat.moves}</td>
+          <td><span class="mode-badge ${stat.isAutoPlayed ? 'ai-mode' : 'human-mode'}" title="${playMode} player">${modeIcon} ${playMode}</span></td>
         `;
         // Highlight rows with high scores
         if (stat.score === findMaxScore(uniqueStats)) {
@@ -147,12 +152,13 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
     const csvContent = "data:text/csv;charset=utf-8," +
-      "Date,Grid Size,Best Tile,Score,Best Score,Time,Moves\n" +
+      "Date,Grid Size,Best Tile,Score,Best Score,Time,Moves,Mode\n" +
       uniqueStats.map(stat => {
         const date = new Date(stat.date);
         const formattedDate = formatDate(date);
         const gridType = stat.gridType || `${stat.gridSize || 4}x${stat.gridSize || 4}`;
-        return `"${formattedDate}","${gridType}",${stat.bestTile},${stat.score},${stat.bestScore},"${stat.time}",${stat.moves}`;
+        const playMode = stat.isAutoPlayed ? 'AI' : 'Human';
+        return `"${formattedDate}","${gridType}",${stat.bestTile},${stat.score},${stat.bestScore},"${stat.time}",${stat.moves},"${playMode}"`;
       }).join("\n");
     downloadCSV(csvContent, "fancy2048_statistics.csv");
   }

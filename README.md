@@ -8,15 +8,16 @@ Fancy2048 is a modded version of the classic 2048 game with enhanced features an
 
 - **Multiple Board Sizes**: Play on 3x3, 4x4, or 5x5 grids
 - **Continue After 2048**: Keep playing after reaching 2048 to achieve higher tiles like 4096, 8192, and beyond!
-- **Auto Play**: Watch the AI solve the game automatically using advanced algorithms
+- **Auto Play with Speed Control**: Watch the AI solve the game automatically with adjustable speeds (1x, 1.5x, 2x, 4x)
+- **Human vs AI Statistics**: Track and compare your performance against AI gameplay
 - **Theme Switching**: Toggle between light and dark themes
 - **Color Customization**: Adjust the hue of game elements with color cycling
 - **Responsive Design**: Optimized for mobile devices and different screen sizes
 - **Undo Functionality**: Undo your last move to correct mistakes (up to 20 moves)
 - **Smooth Animations**: Enjoy smooth transitions and tile animations
 - **Local Storage**: Your best score and theme preferences are saved locally
-- **Game Statistics**: View detailed statistics of your game sessions
-- **CSV Export**: Export your game statistics to CSV format
+- **Game Statistics**: View detailed statistics of your game sessions with Human vs AI differentiation
+- **CSV Export**: Export your game statistics to CSV format with play mode tracking
 - **Pause/Resume**: Pause the game and resume when ready
 - **Touch & Keyboard Controls**: Full support for both input methods
 - **Accessibility**: ARIA labels, keyboard navigation, and screen reader support
@@ -42,10 +43,11 @@ Fancy2048 is a modded version of the classic 2048 game with enhanced features an
 
 ### Button Controls
 - **🎨 Color Button**: Change the hue/color scheme of the game
-- **📊 Statistics Button**: View game statistics and leaderboard
+- **📊 Statistics Button**: View game statistics and leaderboard with Human vs AI tracking
 - **↶ Undo Button**: Undo the last move (disabled when no moves to undo)
 - **⏸️ Pause Button**: Pause/resume the game
 - **▶️ Auto Play Button**: Start/stop AI automatic gameplay
+- **🏃 Speed Button**: Cycle through autoplay speeds (1x → 1.5x → 2x → 4x → 1x)
 - **⊞ Size Button**: Change board size (3x3 ↔ 4x4 ↔ 5x5)
 - **🌓 Theme Button**: Toggle between light and dark themes
 - **Reset Button**: Start a new game

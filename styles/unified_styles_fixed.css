@@ -234,6 +234,23 @@ button:focus {
   background: linear-gradient(45deg, #667eea, #764ba2);
 }
 
+/* Speed button specific styles */
+#speed-button {
+  background: linear-gradient(45deg, #ffa726, #fb8c00);
+  min-width: 48px;
+}
+
+#speed-button .speed-text {
+  font-size: 0.9rem;
+  font-weight: bold;
+  color: white;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+#speed-button:hover {
+  background: linear-gradient(45deg, #ffb74d, #ff9800);
+}
+
 /* Main Content Area */
 main {
   display: flex;

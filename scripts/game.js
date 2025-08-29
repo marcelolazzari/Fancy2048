@@ -50,6 +50,9 @@ class Game {
     this.isAutoPlaying = false;
     this.autoPlayInterval = null;
     this.autoPlaySpeed = 800; // milliseconds between moves
+    this.speedMultipliers = [1, 1.5, 2, 4]; // Speed options
+    this.currentSpeedIndex = 0; // Current speed index
+    this.isAutoPlayedGame = false; // Track if current game used autoplay
 
     // Initialize the game
     this.initializeUI();
@@ -65,6 +68,7 @@ class Game {
     
     // Initialize autoplay button
     this.updateAutoPlayButton();
+    this.updateSpeedButton();
     
     // Start the game
     this.addRandomTile();
@@ -342,6 +346,17 @@ class Game {
       });
     }
     
+    const speedButton = document.getElementById('speed-button');
+    if (speedButton) {
+      speedButton.addEventListener('click', this.changeSpeed.bind(this));
+      speedButton.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          this.changeSpeed();
+        }
+      });
+    }
+    
     // Add advanced keyboard shortcuts
     document.addEventListener('keydown', (e) => {
       if (e.ctrlKey || e.metaKey) {
@@ -509,7 +524,8 @@ class Game {
         time: time,
         moves: this.moves,
         gridSize: this.size, // Add grid size to stats
-        gridType: `${this.size}x${this.size}` // Add formatted grid type
+        gridType: `${this.size}x${this.size}`, // Add formatted grid type
+        isAutoPlayed: this.isAutoPlayedGame // Track if AI was used
       };
       
       this.stats.push(stat);
@@ -577,6 +593,7 @@ class Game {
     this.pauseStartTime = null;
     this.gameStateStack = [];
     this.lastMerged = [];
+    this.isAutoPlayedGame = false; // Reset autoplay flag
     
     // Reset hue to 0
     this.hueValue = 0;
@@ -604,6 +621,7 @@ class Game {
     
     // Reset autoplay button UI
     this.updateAutoPlayButton();
+    this.updateSpeedButton();
     
     // Add initial tiles
     this.addRandomTile();
@@ -2122,7 +2140,11 @@ class Game {
     }
 
     this.isAutoPlaying = true;
+    this.isAutoPlayedGame = true; // Mark this game as having used autoplay
     this.updateAutoPlayButton();
+    
+    // Calculate actual speed based on multiplier
+    const actualSpeed = this.autoPlaySpeed / this.speedMultipliers[this.currentSpeedIndex];
     
     // Start the autoplay interval
     this.autoPlayInterval = setInterval(() => {
@@ -2135,7 +2157,7 @@ class Game {
           this.stopAutoPlay();
         }
       }
-    }, this.autoPlaySpeed);
+    }, actualSpeed);
   }
 
   stopAutoPlay() {
@@ -2160,6 +2182,28 @@ class Game {
         autoplayButton.setAttribute('aria-label', 'Start Auto Play');
         autoplayButton.setAttribute('data-tooltip', 'Start auto play');
       }
+    }
+  }
+
+  // Speed control functionality
+  changeSpeed() {
+    this.currentSpeedIndex = (this.currentSpeedIndex + 1) % this.speedMultipliers.length;
+    this.updateSpeedButton();
+    
+    // If autoplay is running, restart with new speed
+    if (this.isAutoPlaying) {
+      this.stopAutoPlay();
+      this.startAutoPlay();
+    }
+  }
+
+  updateSpeedButton() {
+    const speedButton = document.getElementById('speed-button');
+    if (speedButton) {
+      const speedText = speedButton.querySelector('.speed-text');
+      const currentMultiplier = this.speedMultipliers[this.currentSpeedIndex];
+      speedText.textContent = `${currentMultiplier}x`;
+      speedButton.setAttribute('data-tooltip', `Autoplay speed: ${currentMultiplier}x`);
     }
   }
 
