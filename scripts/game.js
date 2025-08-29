@@ -76,6 +76,14 @@ class Game {
     this.updateUI();
     this.startTimer();
     
+    // Initialize enhanced AI
+    this.enhancedAI = null;
+    this.initializeEnhancedAI();
+    
+    // AI performance settings
+    this.aiDifficulty = 'normal'; // 'easy', 'normal', 'hard', 'expert'
+    this.adaptiveDepth = true;
+    
     console.log('✅ Game initialized successfully');
   }
 
@@ -408,6 +416,17 @@ class Game {
     
     // Add focus management for accessibility
     this.setupFocusManagement();
+
+    // Add AI difficulty change listener
+    document.getElementById('ai-difficulty-button')?.addEventListener('click', () => {
+      this.changeAIDifficulty();
+      // Update button text
+      const button = document.getElementById('ai-difficulty-button');
+      const span = button.querySelector('.button-text');
+      if (span) {
+        span.textContent = this.aiDifficulty.charAt(0).toUpperCase() + this.aiDifficulty.slice(1);
+      }
+    });
   }
 
   setupFocusManagement() {
@@ -2024,7 +2043,7 @@ class Game {
       if (ripple.parentNode) {
         ripple.parentNode.removeChild(ripple);
       }
-    }, 600);
+       }, 600);
   }
 
   togglePause() {
@@ -2167,80 +2186,90 @@ class Game {
   }
 
   startAutoPlay() {
-    if (this.gameState !== 'playing' || this.isPaused) {
-      return;
-    }
+    if (this.autoPlayInterval) return;
 
     this.isAutoPlaying = true;
-    this.isAutoPlayedGame = true; // Mark this game as having used autoplay
+    this.autoPlayMoves = 0;
+    this.autoPlayStartTime = Date.now();
+    
+    // Mark this as AI gameplay for stats
+    this.playMode = 'AI';
+    
+    const makeMove = () => {
+      if (!this.isAutoPlaying || this.gameState === 'over' || this.isPaused) {
+        this.stopAutoPlay();
+        return;
+      }
+
+      const move = this.getBestMove();
+      if (move && this.canMove(move)) {
+        this.move(move);
+        this.autoPlayMoves++;
+        
+        // Update UI
+        this.updateAutoPlayButton();
+      } else {
+        // No valid moves, stop autoplay
+        this.stopAutoPlay();
+      }
+    };
+
+    // Start the autoplay loop
+    this.autoPlayInterval = setInterval(makeMove, this.getAutoPlayDelay());
     this.updateAutoPlayButton();
     
-    // Calculate actual speed based on multiplier
-    const actualSpeed = this.autoPlaySpeed / this.speedMultipliers[this.currentSpeedIndex];
-    
-    // Start the autoplay interval
-    this.autoPlayInterval = setInterval(() => {
-      if (this.gameState === 'playing' && !this.isPaused && !this.animationInProgress) {
-        const bestMove = this.getBestMove();
-        if (bestMove) {
-          this.move(bestMove);
-        } else {
-          // No valid moves available, stop autoplay
-          this.stopAutoPlay();
-        }
-      }
-    }, actualSpeed);
+    console.log(`🤖 Enhanced AI autoplay started (difficulty: ${this.aiDifficulty})`);
   }
 
   stopAutoPlay() {
-    this.isAutoPlaying = false;
     if (this.autoPlayInterval) {
       clearInterval(this.autoPlayInterval);
       this.autoPlayInterval = null;
     }
-    this.updateAutoPlayButton();
-  }
-
-  updateAutoPlayButton() {
-    const autoplayButton = document.getElementById('autoplay-button');
-    if (autoplayButton) {
-      const icon = autoplayButton.querySelector('i');
-      if (this.isAutoPlaying) {
-        icon.className = 'fas fa-stop';
-        autoplayButton.setAttribute('aria-label', 'Stop Auto Play');
-        autoplayButton.setAttribute('data-tooltip', 'Stop auto play');
-      } else {
-        icon.className = 'fas fa-play';
-        autoplayButton.setAttribute('aria-label', 'Start Auto Play');
-        autoplayButton.setAttribute('data-tooltip', 'Start auto play');
+    
+    if (this.isAutoPlaying) {
+      const duration = (Date.now() - this.autoPlayStartTime) / 1000;
+      const movesPerSecond = (this.autoPlayMoves / duration).toFixed(2);
+      
+      console.log(`🏁 AI autoplay stopped: ${this.autoPlayMoves} moves in ${duration.toFixed(1)}s (${movesPerSecond} moves/sec)`);
+      
+      // Show AI performance stats
+      if (this.enhancedAI && window.debugAI) {
+        const stats = this.enhancedAI.getStats();
+        console.log('AI Performance Stats:', stats);
       }
     }
-  }
-
-  // Speed control functionality
-  changeSpeed() {
-    this.currentSpeedIndex = (this.currentSpeedIndex + 1) % this.speedMultipliers.length;
-    this.updateSpeedButton();
     
-    // If autoplay is running, restart with new speed
-    if (this.isAutoPlaying) {
-      this.stopAutoPlay();
-      this.startAutoPlay();
-    }
-  }
-
-  updateSpeedButton() {
-    const speedButton = document.getElementById('speed-button');
-    if (speedButton) {
-      const speedText = speedButton.querySelector('.speed-text');
-      const currentMultiplier = this.speedMultipliers[this.currentSpeedIndex];
-      speedText.textContent = `${currentMultiplier}x`;
-      speedButton.setAttribute('data-tooltip', `Autoplay speed: ${currentMultiplier}x`);
-    }
+    this.isAutoPlaying = false;
+    this.playMode = 'Human';
+    this.updateAutoPlayButton();
   }
 
   // AI Algorithm for 2048 - Uses a simple heuristic approach
   getBestMove() {
+    // Use enhanced AI if available, otherwise fall back to basic AI
+    if (this.enhancedAI) {
+      // Adjust AI difficulty dynamically
+      this.adjustAIDifficulty();
+      
+      const startTime = performance.now();
+      const move = this.enhancedAI.getBestMove();
+      const endTime = performance.now();
+      
+      // Log performance for debugging
+      if (window.debugAI) {
+        console.log(`Enhanced AI move: ${move} (${(endTime - startTime).toFixed(2)}ms)`);
+      }
+      
+      return move;
+    } else {
+      // Fallback to your existing basic AI
+      return this.getBasicAIMove();
+    }
+  }
+
+  // Keep your existing AI as fallback
+  getBasicAIMove() {
     const directions = ['up', 'down', 'left', 'right'];
     let bestMove = null;
     let bestScore = -Infinity;
@@ -2255,265 +2284,197 @@ class Game {
       }
     }
 
-    return bestMove;
+    return bestMove || directions[0];
   }
 
-  // Evaluate a move using multiple heuristics
-  evaluateMove(direction) {
-    // Create a copy of the current board to simulate the move
-    const boardCopy = this.board.map(row => [...row]);
-    const scoreCopy = this.score;
-    
-    // Simulate the move
-    const moveResult = this.simulateMove(direction, boardCopy);
-    if (!moveResult.moved) {
-      return -Infinity; // Invalid move
-    }
-
-    const newBoard = moveResult.board;
-    const scoreGain = moveResult.score - scoreCopy;
-    
-    // Calculate various heuristics
-    const emptyCells = this.countEmptyCells(newBoard);
-    const monotonicity = this.calculateMonotonicity(newBoard);
-    const smoothness = this.calculateSmoothness(newBoard);
-    const maxTile = this.getMaxTile(newBoard);
-    const cornerBonus = this.getCornerBonus(newBoard);
-    
-    // Weighted combination of heuristics
-    const score = 
-      scoreGain * 1.0 +           // Immediate score gain
-      emptyCells * 2.7 +          // Prefer moves that keep more cells empty
-      monotonicity * 1.0 +        // Prefer monotonic arrangements
-      smoothness * 0.1 +          // Prefer smooth transitions
-      cornerBonus * 1.2;          // Prefer keeping max tile in corner
-    
-    return score;
-  }
-
-  // Simulate a move without affecting the actual game state
-  simulateMove(direction, board) {
-    const size = board.length;
-    let moved = false;
-    let score = 0;
-    const newBoard = board.map(row => [...row]);
-
-    switch (direction) {
-      case 'left':
-        for (let row = 0; row < size; row++) {
-          const { newRow, rowMoved, rowScore } = this.simulateRowMove(newBoard[row]);
-          if (rowMoved) moved = true;
-          score += rowScore;
-          newBoard[row] = newRow;
-        }
-        break;
-      case 'right':
-        for (let row = 0; row < size; row++) {
-          const reversed = [...newBoard[row]].reverse();
-          const { newRow, rowMoved, rowScore } = this.simulateRowMove(reversed);
-          if (rowMoved) moved = true;
-          score += rowScore;
-          newBoard[row] = newRow.reverse();
-        }
-        break;
-      case 'up':
-        for (let col = 0; col < size; col++) {
-          const column = newBoard.map(row => row[col]);
-          const { newRow, rowMoved, rowScore } = this.simulateRowMove(column);
-          if (rowMoved) moved = true;
-          score += rowScore;
-          for (let row = 0; row < size; row++) {
-            newBoard[row][col] = newRow[row];
-          }
-        }
-        break;
-      case 'down':
-        for (let col = 0; col < size; col++) {
-          const column = newBoard.map(row => row[col]).reverse();
-          const { newRow, rowMoved, rowScore } = this.simulateRowMove(column);
-          if (rowMoved) moved = true;
-          score += rowScore;
-          const reversedNewRow = newRow.reverse();
-          for (let row = 0; row < size; row++) {
-            newBoard[row][col] = reversedNewRow[row];
-          }
-        }
-        break;
-    }
-
-    return { board: newBoard, moved, score: this.score + score };
-  }
-
-  // Simulate moving a single row/column
-  simulateRowMove(row) {
-    const newRow = [...row];
-    let moved = false;
-    let score = 0;
-
-    // Move all tiles to the left (removing zeros)
-    const nonZeros = newRow.filter(val => val !== 0);
-    
-    // Merge adjacent equal tiles
-    const merged = [];
-    let i = 0;
-    while (i < nonZeros.length) {
-      if (i < nonZeros.length - 1 && nonZeros[i] === nonZeros[i + 1]) {
-        // Merge tiles
-        merged.push(nonZeros[i] * 2);
-        score += nonZeros[i] * 2;
-        i += 2;
-        moved = true;
-      } else {
-        merged.push(nonZeros[i]);
-        i++;
+  // Add helper method to get max tile
+  getMaxTile() {
+    let maxTile = 0;
+    for (let row = 0; row < this.size; row++) {
+      for (let col = 0; col < this.size; col++) {
+        maxTile = Math.max(maxTile, this.board[row][col]);
       }
     }
-
-    // Pad with zeros
-    while (merged.length < row.length) {
-      merged.push(0);
-    }
-
-    // Check if the row changed
-    if (!moved) {
-      moved = !row.every((val, index) => val === merged[index]);
-    }
-
-    return { newRow: merged, rowMoved: moved, rowScore: score };
+    return maxTile;
   }
 
-  // Heuristic functions
-  countEmptyCells(board) {
-    let count = 0;
-    for (let row = 0; row < board.length; row++) {
-      for (let col = 0; col < board[row].length; col++) {
-        if (board[row][col] === 0) count++;
-      }
-    }
-    return count;
-  }
-
-  calculateMonotonicity(board) {
-    const size = board.length;
-    let monotonicity = 0;
-
-    // Check rows
-    for (let row = 0; row < size; row++) {
-      let increasing = 0;
-      let decreasing = 0;
-      for (let col = 1; col < size; col++) {
-        if (board[row][col] > board[row][col - 1]) {
-          increasing += board[row][col] - board[row][col - 1];
-        } else if (board[row][col] < board[row][col - 1]) {
-          decreasing += board[row][col - 1] - board[row][col];
-        }
-      }
-      monotonicity += Math.max(increasing, decreasing);
-    }
-
-    // Check columns
-    for (let col = 0; col < size; col++) {
-      let increasing = 0;
-      let decreasing = 0;
-      for (let row = 1; row < size; row++) {
-        if (board[row][col] > board[row - 1][col]) {
-          increasing += board[row][col] - board[row - 1][col];
-        } else if (board[row][col] < board[row - 1][col]) {
-          decreasing += board[row - 1][col] - board[row][col];
-        }
-      }
-      monotonicity += Math.max(increasing, decreasing);
-    }
-
-    return monotonicity;
-  }
-
-  calculateSmoothness(board) {
-    const size = board.length;
-    let smoothness = 0;
-
-    for (let row = 0; row < size; row++) {
-      for (let col = 0; col < size; col++) {
-        if (board[row][col] !== 0) {
-          const value = Math.log2(board[row][col]);
-          // Check right neighbor
-          if (col < size - 1 && board[row][col + 1] !== 0) {
-            const neighbor = Math.log2(board[row][col + 1]);
-            smoothness -= Math.abs(value - neighbor);
-          }
-          // Check bottom neighbor
-          if (row < size - 1 && board[row + 1][col] !== 0) {
-            const neighbor = Math.log2(board[row + 1][col]);
-            smoothness -= Math.abs(value - neighbor);
-          }
-        }
-      }
-    }
-
-    return smoothness;
-  }
-
-  getMaxTile(board) {
-    let max = 0;
-    for (let row = 0; row < board.length; row++) {
-      for (let col = 0; col < board[row].length; col++) {
-        max = Math.max(max, board[row][col]);
-      }
-    }
-    return max;
-  }
-
-  getCornerBonus(board) {
-    const size = board.length;
-    const maxTile = this.getMaxTile(board);
+  // Add method to change AI difficulty
+  changeAIDifficulty() {
+    const difficulties = ['easy', 'normal', 'hard', 'expert'];
+    const currentIndex = difficulties.indexOf(this.aiDifficulty);
+    const nextIndex = (currentIndex + 1) % difficulties.length;
+    this.aiDifficulty = difficulties[nextIndex];
     
-    // Give bonus if max tile is in a corner
-    const corners = [
-      board[0][0],
-      board[0][size - 1],
-      board[size - 1][0],
-      board[size - 1][size - 1]
-    ];
+    // Save preference
+    localStorage.setItem('aiDifficulty', this.aiDifficulty);
     
-    return corners.includes(maxTile) ? maxTile : 0;
+    // Update AI settings
+    this.adjustAIDifficulty();
+    
+    // Show notification
+    this.showNotification(`AI Difficulty: ${this.aiDifficulty.toUpperCase()}`);
+    
+    console.log(`AI difficulty changed to: ${this.aiDifficulty}`);
   }
 
-  // Utility function for throttling events
-  debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-      const later = () => {
-        timeout = null;
-        func(...args);
-      };
-      clearTimeout(timeout);
-      timeout = setTimeout(later, wait);
-    };
-  }
-
-  // New method to set up the resize observer
-  initializeResizeObserver() {
-    if (window.ResizeObserver) {
-      this.resizeObserver = new ResizeObserver(entries => {
-        // Only update if we're not in the middle of an animation
-        if (!this.animationInProgress) {
-          this.updateTileFontSizes();
-        }
-      });
+  initializeEnhancedAI() {
+    if (window.Enhanced2048AI) {
+      this.enhancedAI = new Enhanced2048AI(this);
       
-      // Observe the board container to detect size changes
-      const boardContainer = document.getElementById('board-container');
-      this.resizeObserver.observe(boardContainer);
+      // Adjust AI difficulty based on board size and performance
+      this.adjustAIDifficulty();
+      
+      console.log('✅ Enhanced AI initialized with Minimax algorithm');
+    } else {
+      console.warn('⚠️ Enhanced AI not loaded, falling back to basic AI');
     }
   }
 
-  // Add cleanup for the observer
-  stopResizeObserver() {
-    if (this.resizeObserver) {
-      this.resizeObserver.disconnect();
+  adjustAIDifficulty() {
+    if (!this.enhancedAI) return;
+
+    let depth;
+    let weights;
+
+    switch (this.aiDifficulty) {
+      case 'easy':
+        depth = 2;
+        weights = { emptyCells: 200, smoothness: 50, monotonicity: 500 };
+        break;
+      case 'normal':
+        depth = 3;
+        weights = { emptyCells: 270, smoothness: 100, monotonicity: 1000 };
+        break;
+      case 'hard':
+        depth = 4;
+        weights = { emptyCells: 300, smoothness: 150, monotonicity: 1200 };
+        break;
+      case 'expert':
+        depth = this.size <= 4 ? 5 : 4; // Adjust for larger boards
+        weights = { emptyCells: 350, smoothness: 200, monotonicity: 1500 };
+        break;
     }
+
+    // Adaptive depth based on game progress
+    if (this.adaptiveDepth) {
+      const maxTile = this.getMaxTile();
+      if (maxTile >= 1024) {
+        depth = Math.min(depth + 1, 6); // Deeper search for late game
+      } else if (maxTile <= 64) {
+        depth = Math.max(depth - 1, 2); // Faster for early game
+      }
+    }
+
+    this.enhancedAI.setDepth(depth);
+    this.enhancedAI.adjustWeights(weights);
+  }
+
+  // Enhanced autoplay with better performance monitoring
+  startAutoPlay() {
+    if (this.autoPlayInterval) return;
+
+    this.isAutoPlaying = true;
+    this.autoPlayMoves = 0;
+    this.autoPlayStartTime = Date.now();
+    
+    // Mark this as AI gameplay for stats
+    this.playMode = 'AI';
+    
+    const makeMove = () => {
+      if (!this.isAutoPlaying || this.gameState === 'over' || this.isPaused) {
+        this.stopAutoPlay();
+        return;
+      }
+
+      const move = this.getBestMove();
+      if (move && this.canMove(move)) {
+        this.move(move);
+        this.autoPlayMoves++;
+        
+        // Update UI
+        this.updateAutoPlayButton();
+      } else {
+        // No valid moves, stop autoplay
+        this.stopAutoPlay();
+      }
+    };
+
+    // Start the autoplay loop
+    this.autoPlayInterval = setInterval(makeMove, this.getAutoPlayDelay());
+    this.updateAutoPlayButton();
+    
+    console.log(`🤖 Enhanced AI autoplay started (difficulty: ${this.aiDifficulty})`);
+  }
+
+  stopAutoPlay() {
+    if (this.autoPlayInterval) {
+      clearInterval(this.autoPlayInterval);
+      this.autoPlayInterval = null;
+    }
+    
+    if (this.isAutoPlaying) {
+      const duration = (Date.now() - this.autoPlayStartTime) / 1000;
+      const movesPerSecond = (this.autoPlayMoves / duration).toFixed(2);
+      
+      console.log(`🏁 AI autoplay stopped: ${this.autoPlayMoves} moves in ${duration.toFixed(1)}s (${movesPerSecond} moves/sec)`);
+      
+      // Show AI performance stats
+      if (this.enhancedAI && window.debugAI) {
+        const stats = this.enhancedAI.getStats();
+        console.log('AI Performance Stats:', stats);
+      }
+    }
+    
+    this.isAutoPlaying = false;
+    this.playMode = 'Human';
+    this.updateAutoPlayButton();
+  }
+
+  // Add notification system for AI feedback
+  showNotification(message, duration = 2000) {
+    const notification = document.createElement('div');
+    notification.className = 'ai-notification';
+    notification.textContent = message;
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(255, 204, 0, 0.9);
+      color: #000;
+      padding: 10px 15px;
+      border-radius: 5px;
+      font-weight: bold;
+      z-index: 1000;
+      animation: slideIn 0.3s ease;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.style.animation = 'slideOut 0.3s ease';
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 300);
+    }, duration);
   }
 }
+
+// Add CSS animations for notifications
+const style = document.createElement('style');
+style.textContent = `
+  @keyframes slideIn {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  
+  @keyframes slideOut {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+  }
+`;
+document.head.appendChild(style);
 
 // Initialize the game when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
@@ -2583,6 +2544,49 @@ window.debugGame = {
       console.log('🧪 Set game state to "won-continue". You can now move tiles after winning.');
     } else {
       console.log('❌ Game not initialized yet');
+    }
+  }
+};
+
+// Add to your game.js or create a separate debug file
+window.debugAI = true; // Set to false to disable AI debugging
+
+window.aiDebugTools = {
+  testAI: (moves = 10) => {
+    console.log(`Testing AI for ${moves} moves...`);
+    const startTime = performance.now();
+    
+    for (let i = 0; i < moves; i++) {
+      const move = game.getBestMove();
+      console.log(`Move ${i + 1}: ${move}`);
+    }
+    
+    const endTime = performance.now();
+    console.log(`AI test completed in ${(endTime - startTime).toFixed(2)}ms`);
+    console.log(`Average time per move: ${((endTime - startTime) / moves).toFixed(2)}ms`);
+  },
+  
+  compareAI: () => {
+    console.log('Comparing AI performance...');
+    const enhanced = game.enhancedAI?.getBestMove();
+    const basic = game.getBasicAIMove();
+    console.log(`Enhanced AI suggests: ${enhanced}`);
+    console.log(`Basic AI suggests: ${basic}`);
+  },
+  
+  benchmarkAI: (depth = 4) => {
+    if (game.enhancedAI) {
+      const originalDepth = game.enhancedAI.maxDepth;
+      game.enhancedAI.setDepth(depth);
+      
+      const startTime = performance.now();
+      const move = game.enhancedAI.getBestMove();
+      const endTime = performance.now();
+      
+      console.log(`Depth ${depth}: ${move} (${(endTime - startTime).toFixed(2)}ms)`);
+      
+      game.enhancedAI.setDepth(originalDepth);
+      return endTime - startTime;
     }
   }
 };
