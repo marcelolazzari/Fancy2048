@@ -3,9 +3,9 @@
 /* Root CSS Variables */
 :root {
   --size: 4;
-  --gap: 12px;
-  --tile-size: calc((min(90vw, 90vh, 500px) - var(--gap) * (var(--size) + 1)) / var(--size));
-  --game-size: calc(var(--tile-size) * var(--size) + var(--gap) * (var(--size) + 1));
+  --gap: 10px;
+  --tile-size: 100px;
+  --game-size: min(90vw, 90vh, 500px);
   
   /* Color Variables */
   --primary-color: #1a1a1a;
@@ -320,8 +320,6 @@ main {
   gap: var(--gap);
   width: var(--game-size);
   height: var(--game-size);
-  max-width: min(90vw, 90vh, 500px);
-  max-height: min(90vw, 90vh, 500px);
   background: rgba(50, 50, 50, 0.4);
   backdrop-filter: blur(10px);
   border-radius: var(--tile-border-radius);
@@ -357,8 +355,8 @@ main {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: var(--tile-size);
+  height: var(--tile-size);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -546,11 +544,7 @@ footer .container {
 @media (max-width: 768px) {
   :root {
     --gap: 8px;
-  }
-  
-  #board-container {
-    max-width: min(95vw, 95vh, 400px);
-    max-height: min(95vw, 95vh, 400px);
+    --game-size: min(95vw, 95vh, 400px);
   }
   
   header {
@@ -598,11 +592,7 @@ footer .container {
 @media (max-width: 480px) {
   :root {
     --gap: 6px;
-  }
-  
-  #board-container {
-    max-width: min(98vw, 98vh, 350px);
-    max-height: min(98vw, 98vh, 350px);
+    --game-size: min(98vw, 98vh, 300px);
   }
   
   header {

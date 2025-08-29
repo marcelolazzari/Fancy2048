@@ -109,22 +109,38 @@ class Game {
     
     // Calculate responsive dimensions
     const maxSize = Math.min(window.innerWidth * 0.9, window.innerHeight * 0.9, 500);
-    const gap = this.size === 3 ? 10 : this.size === 4 ? 8 : 6;
-    const tileSize = (maxSize - gap * (this.size + 1)) / this.size;
-    const gameSize = tileSize * this.size + gap * (this.size + 1);
+    const gap = this.size === 3 ? 12 : this.size === 4 ? 10 : 8;
+    
+    // Calculate tile size accounting for padding and gaps
+    // Total padding = gap * 2 (top/bottom or left/right padding)
+    // Internal gaps = gap * (size - 1) (gaps between tiles)
+    const availableSpace = maxSize - (gap * 2);
+    const tileSize = (availableSpace - gap * (this.size - 1)) / this.size;
+    const gameSize = maxSize;
     
     // Set CSS custom properties
     document.documentElement.style.setProperty('--gap', `${gap}px`);
     document.documentElement.style.setProperty('--tile-size', `${tileSize}px`);
     document.documentElement.style.setProperty('--game-size', `${gameSize}px`);
     
-    // Update CSS grid properties
-    boardContainer.style.display = 'grid';
-    boardContainer.style.gridTemplateColumns = `repeat(${this.size}, ${tileSize}px)`;
-    boardContainer.style.gridTemplateRows = `repeat(${this.size}, ${tileSize}px)`;
-    boardContainer.style.gap = `${gap}px`;
-    boardContainer.style.width = `${gameSize}px`;
-    boardContainer.style.height = `${gameSize}px`;
+    // Remove any inline styles to let CSS handle it
+    boardContainer.style.display = '';
+    boardContainer.style.gridTemplateColumns = '';
+    boardContainer.style.gridTemplateRows = '';
+    boardContainer.style.gap = '';
+    boardContainer.style.width = '';
+    boardContainer.style.height = '';
+    
+    // Create grid cells
+    for (let i = 0; i < this.size; i++) {
+      for (let j = 0; j < this.size; j++) {
+        const cell = document.createElement('div');
+        cell.className = 'grid-cell';
+        cell.dataset.row = i;
+        cell.dataset.col = j;
+        boardContainer.appendChild(cell);
+      }
+    }
     
     // Create grid cells
     this.createGridCells();
