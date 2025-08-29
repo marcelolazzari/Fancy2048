@@ -37,18 +37,6 @@ class Game:
         # Add initial two tiles
         self.add_random_tile()
         self.add_random_tile()
-        # Core game properties
-        self.size = size
-        self.board = [[0 for _ in range(size)] for _ in range(size)]
-        self.score = 0
-        self.best_score = 0
-        self.moves = 0
-        self.state = 'playing'  # playing, won, over
-
-        # Game history and stats
-        self.previous_boards = []  # For undo functionality
-        self.previous_scores = []
-        self.previous_moves = []
         self.start_time = time.time()
         self.has_saved_stats = False  # Track if stats have been saved
 

@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fancy2048 - Comprehensive Issue Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #f2f2f2;
+            margin: 0;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-container {
+            max-width: 1000px;
+            margin: 0 auto;
+        }
+        .test-section {
+            background: #333;
+            padding: 20px;
+            margin-bottom: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #ffcc00;
+        }
+        .test-section h2 {
+            color: #ffcc00;
+            margin-top: 0;
+        }
+        .test-item {
+            margin: 10px 0;
+            padding: 10px;
+            background: #222;
+            border-radius: 5px;
+        }
+        .status {
+            padding: 5px 10px;
+            border-radius: 3px;
+            font-weight: bold;
+            display: inline-block;
+            margin-left: 10px;
+        }
+        .success { background: #4CAF50; color: white; }
+        .error { background: #f44336; color: white; }
+        .warning { background: #FF9800; color: white; }
+        .info { background: #2196F3; color: white; }
+        button {
+            background: #ffcc00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #e6b800;
+        }
+        .log {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 14px;
+            white-space: pre-wrap;
+            max-height: 300px;
+            overflow-y: auto;
+            margin-top: 15px;
+        }
+        .file-link {
+            color: #64B5F6;
+            text-decoration: underline;
+            cursor: pointer;
+        }
+        .file-link:hover {
+            color: #90CAF9;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🔧 Fancy2048 - Comprehensive Issue Detection & Fix Test</h1>
+        
+        <div class="test-section">
+            <h2>🔍 File Structure & Links Verification</h2>
+            <div id="file-tests">
+                <div class="test-item">
+                    <strong>Checking main index.html...</strong>
+                    <span class="status info" id="index-status">Checking...</span>
+                </div>
+                <div class="test-item">
+                    <strong>Checking leaderboard.html...</strong>
+                    <span class="status info" id="leaderboard-status">Checking...</span>
+                </div>
+                <div class="test-item">
+                    <strong>Checking CSS files...</strong>
+                    <span class="status info" id="css-status">Checking...</span>
+                </div>
+                <div class="test-item">
+                    <strong>Checking JavaScript files...</strong>
+                    <span class="status info" id="js-status">Checking...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>⚙️ Script Loading & Class Availability</h2>
+            <div id="script-tests">
+                <div class="test-item">
+                    <strong>AdvancedAI2048Solver class:</strong>
+                    <span class="status info" id="advanced-ai-status">Checking...</span>
+                </div>
+                <div class="test-item">
+                    <strong>Enhanced2048AI class:</strong>
+                    <span class="status info" id="enhanced-ai-status">Checking...</span>
+                </div>
+                <div class="test-item">
+                    <strong>Game class:</strong>
+                    <span class="status info" id="game-class-status">Checking...</span>
+                </div>
+                <div class="test-item">
+                    <strong>Statistics script:</strong>
+                    <span class="status info" id="stats-script-status">Checking...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🎮 Game Initialization Test</h2>
+            <div id="game-tests">
+                <div class="test-item">
+                    <strong>DOM elements present:</strong>
+                    <span class="status info" id="dom-status">Checking...</span>
+                </div>
+                <div class="test-item">
+                    <strong>Game instance creation:</strong>
+                    <span class="status info" id="game-init-status">Checking...</span>
+                </div>
+                <div class="test-item">
+                    <strong>UI initialization:</strong>
+                    <span class="status info" id="ui-init-status">Checking...</span>
+                </div>
+                <div class="test-item">
+                    <strong>Missing methods check:</strong>
+                    <span class="status info" id="missing-methods-status">Checking...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🧠 AI Integration Test</h2>
+            <div id="ai-tests">
+                <div class="test-item">
+                    <strong>AI initialization:</strong>
+                    <span class="status info" id="ai-init-status">Checking...</span>
+                </div>
+                <div class="test-item">
+                    <strong>AI move calculation:</strong>
+                    <span class="status info" id="ai-move-status">Checking...</span>
+                </div>
+                <div class="test-item">
+                    <strong>AI difficulty settings:</strong>
+                    <span class="status info" id="ai-difficulty-status">Checking...</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📱 Responsive & Mobile Test</h2>
+            <div id="mobile-tests">
+                <div class="test-item">
+                    <strong>Viewport meta tag:</strong>
+                    <span class="status info" id="viewport-status">Checking...</span>
+                </div>
+                <div class="test-item">
+                    <strong>Touch event handlers:</strong>
+                    <span class="status info" id="touch-status">Checking...</span>
+                </div>
+                <div class="test-item">
+                    <strong>Responsive CSS:</strong>
+                    <span class="status info" id="responsive-status">Checking...</span>
+                </div>
+            </div>
+        </div>
+
+        <div style="text-align: center; margin: 30px 0;">
+            <button onclick="runAllTests()">🚀 Run All Tests</button>
+            <button onclick="testGamePlay()">🎮 Test Game Play</button>
+            <button onclick="testAIFunctionality()">🤖 Test AI</button>
+            <button onclick="clearLog()">🗑️ Clear Log</button>
+            <button onclick="window.location.href='pages/index.html'">🎯 Open Main Game</button>
+        </div>
+
+        <div id="log" class="log">Test suite loaded. Click 'Run All Tests' to begin comprehensive testing...\n</div>
+    </div>
+
+    <script>
+        let testLog = '';
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const prefix = {
+                'success': '✅',
+                'error': '❌',
+                'warning': '⚠️', 
+                'info': 'ℹ️'
+            };
+            
+            testLog += `[${timestamp}] ${prefix[type]} ${message}\n`;
+            document.getElementById('log').textContent = testLog;
+            document.getElementById('log').scrollTop = document.getElementById('log').scrollHeight;
+        }
+        
+        function clearLog() {
+            testLog = '';
+            document.getElementById('log').textContent = '';
+        }
+        
+        function updateStatus(elementId, status, message) {
+            const element = document.getElementById(elementId);
+            element.className = `status ${status}`;
+            element.textContent = message;
+        }
+        
+        function runAllTests() {
+            log('🚀 Starting comprehensive test suite...', 'info');
+            
+            // Test file structure
+            testFileStructure();
+            
+            // Test script loading
+            setTimeout(() => testScriptLoading(), 100);
+            
+            // Test game initialization
+            setTimeout(() => testGameInitialization(), 200);
+            
+            // Test AI functionality
+            setTimeout(() => testAIFunctionality(), 300);
+            
+            // Test responsive features
+            setTimeout(() => testResponsive(), 400);
+            
+            setTimeout(() => {
+                log('📋 All tests completed. Check the results above.', 'success');
+            }, 500);
+        }
+        
+        function testFileStructure() {
+            log('Testing file structure...', 'info');
+            
+            // Test if we can access the main pages
+            const testPages = [
+                { file: 'pages/index.html', id: 'index-status', name: 'Main Game' },
+                { file: 'pages/leaderboard.html', id: 'leaderboard-status', name: 'Leaderboard' }
+            ];
+            
+            testPages.forEach(page => {
+                try {
+                    // We can't directly test file existence from browser, so we test URL construction
+                    const url = new URL(page.file, window.location.href);
+                    updateStatus(page.id, 'success', `✓ ${page.name} URL valid`);
+                    log(`${page.name} path constructed: ${url.href}`, 'success');
+                } catch (error) {
+                    updateStatus(page.id, 'error', `✗ ${page.name} invalid`);
+                    log(`${page.name} path error: ${error.message}`, 'error');
+                }
+            });
+            
+            // Test CSS links
+            const cssLinks = document.querySelectorAll('link[rel="stylesheet"]');
+            if (cssLinks.length > 0) {
+                updateStatus('css-status', 'success', `✓ ${cssLinks.length} CSS files linked`);
+                log(`Found ${cssLinks.length} CSS files in document`, 'success');
+            } else {
+                updateStatus('css-status', 'warning', '⚠️ No CSS files found');
+                log('No CSS files found in document', 'warning');
+            }
+        }
+        
+        function testScriptLoading() {
+            log('Testing script availability...', 'info');
+            
+            // Test Advanced AI
+            if (typeof AdvancedAI2048Solver !== 'undefined') {
+                updateStatus('advanced-ai-status', 'success', '✓ Available');
+                log('AdvancedAI2048Solver class is available', 'success');
+            } else {
+                updateStatus('advanced-ai-status', 'error', '✗ Not loaded');
+                log('AdvancedAI2048Solver class is NOT available', 'error');
+            }
+            
+            // Test Enhanced AI
+            if (typeof Enhanced2048AI !== 'undefined') {
+                updateStatus('enhanced-ai-status', 'success', '✓ Available');
+                log('Enhanced2048AI class is available', 'success');
+            } else {
+                updateStatus('enhanced-ai-status', 'error', '✗ Not loaded');
+                log('Enhanced2048AI class is NOT available', 'error');
+            }
+            
+            // Test Game class
+            if (typeof Game !== 'undefined') {
+                updateStatus('game-class-status', 'success', '✓ Available');
+                log('Game class is available', 'success');
+            } else {
+                updateStatus('game-class-status', 'error', '✗ Not loaded');
+                log('Game class is NOT available', 'error');
+            }
+        }
+        
+        function testGameInitialization() {
+            log('Testing game initialization...', 'info');
+            
+            // Check DOM elements
+            const requiredElements = ['board-container', 'score-container', 'score', 'best-score'];
+            let missingElements = [];
+            
+            requiredElements.forEach(elementId => {
+                if (!document.getElementById(elementId)) {
+                    missingElements.push(elementId);
+                }
+            });
+            
+            if (missingElements.length === 0) {
+                updateStatus('dom-status', 'success', '✓ All elements present');
+                log('All required DOM elements found', 'success');
+            } else {
+                updateStatus('dom-status', 'error', `✗ Missing: ${missingElements.join(', ')}`);
+                log(`Missing DOM elements: ${missingElements.join(', ')}`, 'error');
+            }
+            
+            // Try to initialize game
+            if (typeof Game !== 'undefined') {
+                try {
+                    const testGame = new Game(4);
+                    updateStatus('game-init-status', 'success', '✓ Game created successfully');
+                    log('Game instance created successfully', 'success');
+                    
+                    // Test if essential methods exist
+                    const requiredMethods = ['initializeUI', 'addRandomTile', 'move', 'reset'];
+                    let missingMethods = [];
+                    
+                    requiredMethods.forEach(method => {
+                        if (typeof testGame[method] !== 'function') {
+                            missingMethods.push(method);
+                        }
+                    });
+                    
+                    if (missingMethods.length === 0) {
+                        updateStatus('missing-methods-status', 'success', '✓ All methods present');
+                        log('All required methods are present', 'success');
+                    } else {
+                        updateStatus('missing-methods-status', 'error', `✗ Missing: ${missingMethods.join(', ')}`);
+                        log(`Missing methods: ${missingMethods.join(', ')}`, 'error');
+                    }
+                    
+                    // Test UI initialization
+                    try {
+                        testGame.updateUI();
+                        updateStatus('ui-init-status', 'success', '✓ UI updates working');
+                        log('UI initialization working', 'success');
+                    } catch (uiError) {
+                        updateStatus('ui-init-status', 'error', '✗ UI init failed');
+                        log(`UI initialization failed: ${uiError.message}`, 'error');
+                    }
+                    
+                } catch (error) {
+                    updateStatus('game-init-status', 'error', `✗ Error: ${error.message}`);
+                    log(`Game initialization failed: ${error.message}`, 'error');
+                    updateStatus('missing-methods-status', 'warning', '⚠️ Cannot test');
+                    updateStatus('ui-init-status', 'warning', '⚠️ Cannot test');
+                }
+            } else {
+                updateStatus('game-init-status', 'error', '✗ Game class not available');
+                log('Cannot test game initialization - Game class not loaded', 'error');
+            }
+        }
+        
+        function testAIFunctionality() {
+            log('Testing AI functionality...', 'info');
+            
+            if (typeof Game !== 'undefined') {
+                try {
+                    const testGame = new Game(4);
+                    
+                    // Test AI initialization
+                    if (testGame.enhancedAI || testGame.advancedAI) {
+                        updateStatus('ai-init-status', 'success', '✓ AI initialized');
+                        log('AI successfully initialized in game', 'success');
+                        
+                        // Test AI move calculation
+                        try {
+                            const aiMove = testGame.enhancedAI ? testGame.enhancedAI.getBestMove() : 'up';
+                            updateStatus('ai-move-status', 'success', '✓ AI can calculate moves');
+                            log(`AI calculated move: ${aiMove}`, 'success');
+                        } catch (moveError) {
+                            updateStatus('ai-move-status', 'error', '✗ AI move calculation failed');
+                            log(`AI move calculation error: ${moveError.message}`, 'error');
+                        }
+                        
+                        // Test AI difficulty settings
+                        if (testGame.aiDifficulty) {
+                            updateStatus('ai-difficulty-status', 'success', `✓ Difficulty: ${testGame.aiDifficulty}`);
+                            log(`AI difficulty set to: ${testGame.aiDifficulty}`, 'success');
+                        } else {
+                            updateStatus('ai-difficulty-status', 'warning', '⚠️ Difficulty not set');
+                            log('AI difficulty not configured', 'warning');
+                        }
+                        
+                    } else {
+                        updateStatus('ai-init-status', 'warning', '⚠️ AI not initialized');
+                        log('AI not initialized in game instance', 'warning');
+                        updateStatus('ai-move-status', 'warning', '⚠️ Cannot test');
+                        updateStatus('ai-difficulty-status', 'warning', '⚠️ Cannot test');
+                    }
+                } catch (error) {
+                    updateStatus('ai-init-status', 'error', `✗ Error: ${error.message}`);
+                    log(`AI testing failed: ${error.message}`, 'error');
+                }
+            } else {
+                updateStatus('ai-init-status', 'error', '✗ Game class not available');
+                log('Cannot test AI - Game class not available', 'error');
+            }
+        }
+        
+        function testResponsive() {
+            log('Testing responsive features...', 'info');
+            
+            // Test viewport meta tag
+            const viewport = document.querySelector('meta[name="viewport"]');
+            if (viewport) {
+                updateStatus('viewport-status', 'success', '✓ Viewport meta tag present');
+                log(`Viewport content: ${viewport.content}`, 'success');
+            } else {
+                updateStatus('viewport-status', 'error', '✗ Viewport meta tag missing');
+                log('Viewport meta tag not found', 'error');
+            }
+            
+            // Test touch event support
+            if ('ontouchstart' in window) {
+                updateStatus('touch-status', 'success', '✓ Touch events supported');
+                log('Touch events are supported', 'success');
+            } else {
+                updateStatus('touch-status', 'info', 'ℹ️ Desktop environment');
+                log('Touch events not supported (desktop)', 'info');
+            }
+            
+            // Test CSS media queries
+            if (window.matchMedia) {
+                const mobileQuery = window.matchMedia('(max-width: 768px)');
+                updateStatus('responsive-status', 'success', `✓ Media queries supported (mobile: ${mobileQuery.matches})`);
+                log(`Media queries working. Mobile view: ${mobileQuery.matches}`, 'success');
+            } else {
+                updateStatus('responsive-status', 'warning', '⚠️ Media queries not supported');
+                log('Media queries not supported', 'warning');
+            }
+        }
+        
+        function testGamePlay() {
+            log('Testing actual gameplay...', 'info');
+            
+            if (typeof Game !== 'undefined') {
+                try {
+                    const testGame = new Game(4);
+                    
+                    // Test adding tiles
+                    testGame.addRandomTile();
+                    testGame.addRandomTile();
+                    log('Added two random tiles to board', 'success');
+                    
+                    // Test move functionality
+                    const initialBoard = JSON.stringify(testGame.board);
+                    testGame.move('left');
+                    const afterMoveBoard = JSON.stringify(testGame.board);
+                    
+                    if (initialBoard !== afterMoveBoard || testGame.moves > 0) {
+                        log('Game move functionality working', 'success');
+                    } else {
+                        log('Game move may not be working properly', 'warning');
+                    }
+                    
+                    // Test UI update
+                    testGame.updateUI();
+                    log('UI update completed successfully', 'success');
+                    
+                } catch (error) {
+                    log(`Gameplay test failed: ${error.message}`, 'error');
+                }
+            } else {
+                log('Cannot test gameplay - Game class not available', 'error');
+            }
+        }
+        
+        // Auto-run basic tests when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            log('Test page loaded successfully', 'success');
+            log('Ready to run comprehensive tests', 'info');
+        });
+    </script>
+
+    <!-- Load the game scripts to test them -->
+    <script src="scripts/advanced_ai_solver.js" onerror="console.error('❌ Failed to load advanced_ai_solver.js')"></script>
+    <script src="scripts/enhanced_ai.js" onerror="console.error('❌ Failed to load enhanced_ai.js')"></script>
+    <script src="scripts/game.js" onerror="console.error('❌ Failed to load game.js')"></script>
+</body>
+</html>

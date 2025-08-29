@@ -202,6 +202,29 @@ class Game {
     });
   }
 
+  initializeResizeObserver() {
+    // Initialize ResizeObserver for better responsive handling
+    if (typeof ResizeObserver !== 'undefined') {
+      this.resizeObserver = new ResizeObserver(this.debounce((entries) => {
+        for (const entry of entries) {
+          if (entry.target.id === 'board-container') {
+            this.updateTileFontSizes();
+            this.refreshLayout();
+          }
+        }
+      }, 100));
+
+      // Observe the board container
+      const boardContainer = document.getElementById('board-container');
+      if (boardContainer) {
+        this.resizeObserver.observe(boardContainer);
+        console.log('✅ ResizeObserver initialized for board container');
+      }
+    } else {
+      console.warn('⚠️ ResizeObserver not supported, using fallback resize handling');
+    }
+  }
+
   // Enhanced page visibility handlers
   handlePageHidden() {
     if (!this.isPaused && this.gameState === 'playing') {
@@ -860,6 +883,14 @@ class Game {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
            ('ontouchstart' in window) ||
            (navigator.maxTouchPoints > 0);
+  }
+
+  // Utility method for debouncing function calls
+  debounce(func, wait) {
+    return (...args) => {
+      clearTimeout(this.debounceTimeout);
+      this.debounceTimeout = setTimeout(() => func.apply(this, args), wait);
+    };
   }
 
   // Add method to update all tiles' font sizes
@@ -2256,6 +2287,76 @@ class Game {
     this.isAutoPlaying = false;
     this.playMode = 'Human';
     this.updateAutoPlayButton();
+  }
+
+  updateAutoPlayButton() {
+    const autoplayButton = document.getElementById('autoplay-button');
+    if (!autoplayButton) return;
+
+    const icon = autoplayButton.querySelector('i');
+    if (!icon) return;
+
+    if (this.isAutoPlaying) {
+      icon.className = 'fas fa-pause';
+      autoplayButton.setAttribute('data-tooltip', 'Stop auto play');
+      autoplayButton.classList.add('active');
+    } else {
+      icon.className = 'fas fa-play';
+      autoplayButton.setAttribute('data-tooltip', 'Start auto play');
+      autoplayButton.classList.remove('active');
+    }
+  }
+
+  updateSpeedButton() {
+    const speedButton = document.getElementById('speed-button');
+    if (!speedButton) return;
+
+    const speedText = speedButton.querySelector('.speed-text');
+    if (!speedText) return;
+
+    const multiplier = this.speedMultipliers[this.currentSpeedIndex];
+    speedText.textContent = `${multiplier}x`;
+    
+    const tooltipText = multiplier === 1 ? 
+      'Normal speed' : 
+      `${multiplier}x speed (${(this.autoPlaySpeed / multiplier)}ms between moves)`;
+    speedButton.setAttribute('data-tooltip', tooltipText);
+  }
+
+  getAutoPlayDelay() {
+    const multiplier = this.speedMultipliers[this.currentSpeedIndex];
+    return Math.max(50, this.autoPlaySpeed / multiplier); // Minimum 50ms delay
+  }
+
+  changeSpeed() {
+    // Cycle through speed options
+    this.currentSpeedIndex = (this.currentSpeedIndex + 1) % this.speedMultipliers.length;
+    this.updateSpeedButton();
+    
+    // If autoplay is running, restart it with new speed
+    if (this.isAutoPlaying) {
+      clearInterval(this.autoPlayInterval);
+      const makeMove = () => {
+        if (!this.isAutoPlaying || this.gameState === 'over' || this.isPaused) {
+          this.stopAutoPlay();
+          return;
+        }
+
+        const move = this.getBestMove();
+        if (move && this.canMove(move)) {
+          this.move(move);
+          this.autoPlayMoves++;
+          this.updateAutoPlayButton();
+        } else {
+          this.stopAutoPlay();
+        }
+      };
+
+      this.autoPlayInterval = setInterval(makeMove, this.getAutoPlayDelay());
+    }
+    
+    const multiplier = this.speedMultipliers[this.currentSpeedIndex];
+    console.log(`Speed changed to ${multiplier}x`);
   }
 
   // AI Algorithm for 2048 - Uses a simple heuristic approach
