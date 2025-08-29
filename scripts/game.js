@@ -46,6 +46,11 @@ class Game {
     // Performance optimization
     this.debounceTimeout = null;
 
+    // Autoplay properties
+    this.isAutoPlaying = false;
+    this.autoPlayInterval = null;
+    this.autoPlaySpeed = 800; // milliseconds between moves
+
     // Initialize the game
     this.initializeUI();
     this.addEventListeners();
@@ -57,6 +62,9 @@ class Game {
     
     // Initialize resize observer for better font scaling
     this.initializeResizeObserver();
+    
+    // Initialize autoplay button
+    this.updateAutoPlayButton();
     
     // Start the game
     this.addRandomTile();
@@ -323,6 +331,17 @@ class Game {
       });
     }
     
+    const autoplayButton = document.getElementById('autoplay-button');
+    if (autoplayButton) {
+      autoplayButton.addEventListener('click', this.toggleAutoPlay.bind(this));
+      autoplayButton.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          this.toggleAutoPlay();
+        }
+      });
+    }
+    
     // Add advanced keyboard shortcuts
     document.addEventListener('keydown', (e) => {
       if (e.ctrlKey || e.metaKey) {
@@ -338,6 +357,10 @@ class Game {
           case 'p':
             e.preventDefault();
             this.togglePause();
+            break;
+          case 'a':
+            e.preventDefault();
+            this.toggleAutoPlay();
             break;
         }
       }
@@ -533,6 +556,11 @@ class Game {
       clearInterval(this.timerInterval);
     }
     
+    // Stop autoplay if running
+    if (this.isAutoPlaying) {
+      this.stopAutoPlay();
+    }
+    
     // Clean up pause overlays and messages
     this.hidePauseOverlay();
     this.hidePageHiddenMessage();
@@ -573,6 +601,9 @@ class Game {
       pauseButton.setAttribute('aria-label', 'Pause Game');
       pauseButton.title = 'Pause Game (Space)';
     }
+    
+    // Reset autoplay button UI
+    this.updateAutoPlayButton();
     
     // Add initial tiles
     this.addRandomTile();
@@ -1158,6 +1189,9 @@ class Game {
       
       if (!canMoveAny) {
         this.gameState = 'over';
+        if (this.isAutoPlaying) {
+          this.stopAutoPlay();
+        }
         this.showGameOver();
       }
     }
@@ -2071,6 +2105,301 @@ class Game {
     // Reset the game with the new board size
     this.reset();
     this.refreshLayout();
+  }
+
+  // Autoplay functionality
+  toggleAutoPlay() {
+    if (this.isAutoPlaying) {
+      this.stopAutoPlay();
+    } else {
+      this.startAutoPlay();
+    }
+  }
+
+  startAutoPlay() {
+    if (this.gameState !== 'playing' || this.isPaused) {
+      return;
+    }
+
+    this.isAutoPlaying = true;
+    this.updateAutoPlayButton();
+    
+    // Start the autoplay interval
+    this.autoPlayInterval = setInterval(() => {
+      if (this.gameState === 'playing' && !this.isPaused && !this.animationInProgress) {
+        const bestMove = this.getBestMove();
+        if (bestMove) {
+          this.move(bestMove);
+        } else {
+          // No valid moves available, stop autoplay
+          this.stopAutoPlay();
+        }
+      }
+    }, this.autoPlaySpeed);
+  }
+
+  stopAutoPlay() {
+    this.isAutoPlaying = false;
+    if (this.autoPlayInterval) {
+      clearInterval(this.autoPlayInterval);
+      this.autoPlayInterval = null;
+    }
+    this.updateAutoPlayButton();
+  }
+
+  updateAutoPlayButton() {
+    const autoplayButton = document.getElementById('autoplay-button');
+    if (autoplayButton) {
+      const icon = autoplayButton.querySelector('i');
+      if (this.isAutoPlaying) {
+        icon.className = 'fas fa-stop';
+        autoplayButton.setAttribute('aria-label', 'Stop Auto Play');
+        autoplayButton.setAttribute('data-tooltip', 'Stop auto play');
+      } else {
+        icon.className = 'fas fa-play';
+        autoplayButton.setAttribute('aria-label', 'Start Auto Play');
+        autoplayButton.setAttribute('data-tooltip', 'Start auto play');
+      }
+    }
+  }
+
+  // AI Algorithm for 2048 - Uses a simple heuristic approach
+  getBestMove() {
+    const directions = ['up', 'down', 'left', 'right'];
+    let bestMove = null;
+    let bestScore = -Infinity;
+
+    for (const direction of directions) {
+      if (this.canMove(direction)) {
+        const score = this.evaluateMove(direction);
+        if (score > bestScore) {
+          bestScore = score;
+          bestMove = direction;
+        }
+      }
+    }
+
+    return bestMove;
+  }
+
+  // Evaluate a move using multiple heuristics
+  evaluateMove(direction) {
+    // Create a copy of the current board to simulate the move
+    const boardCopy = this.board.map(row => [...row]);
+    const scoreCopy = this.score;
+    
+    // Simulate the move
+    const moveResult = this.simulateMove(direction, boardCopy);
+    if (!moveResult.moved) {
+      return -Infinity; // Invalid move
+    }
+
+    const newBoard = moveResult.board;
+    const scoreGain = moveResult.score - scoreCopy;
+    
+    // Calculate various heuristics
+    const emptyCells = this.countEmptyCells(newBoard);
+    const monotonicity = this.calculateMonotonicity(newBoard);
+    const smoothness = this.calculateSmoothness(newBoard);
+    const maxTile = this.getMaxTile(newBoard);
+    const cornerBonus = this.getCornerBonus(newBoard);
+    
+    // Weighted combination of heuristics
+    const score = 
+      scoreGain * 1.0 +           // Immediate score gain
+      emptyCells * 2.7 +          // Prefer moves that keep more cells empty
+      monotonicity * 1.0 +        // Prefer monotonic arrangements
+      smoothness * 0.1 +          // Prefer smooth transitions
+      cornerBonus * 1.2;          // Prefer keeping max tile in corner
+    
+    return score;
+  }
+
+  // Simulate a move without affecting the actual game state
+  simulateMove(direction, board) {
+    const size = board.length;
+    let moved = false;
+    let score = 0;
+    const newBoard = board.map(row => [...row]);
+
+    switch (direction) {
+      case 'left':
+        for (let row = 0; row < size; row++) {
+          const { newRow, rowMoved, rowScore } = this.simulateRowMove(newBoard[row]);
+          if (rowMoved) moved = true;
+          score += rowScore;
+          newBoard[row] = newRow;
+        }
+        break;
+      case 'right':
+        for (let row = 0; row < size; row++) {
+          const reversed = [...newBoard[row]].reverse();
+          const { newRow, rowMoved, rowScore } = this.simulateRowMove(reversed);
+          if (rowMoved) moved = true;
+          score += rowScore;
+          newBoard[row] = newRow.reverse();
+        }
+        break;
+      case 'up':
+        for (let col = 0; col < size; col++) {
+          const column = newBoard.map(row => row[col]);
+          const { newRow, rowMoved, rowScore } = this.simulateRowMove(column);
+          if (rowMoved) moved = true;
+          score += rowScore;
+          for (let row = 0; row < size; row++) {
+            newBoard[row][col] = newRow[row];
+          }
+        }
+        break;
+      case 'down':
+        for (let col = 0; col < size; col++) {
+          const column = newBoard.map(row => row[col]).reverse();
+          const { newRow, rowMoved, rowScore } = this.simulateRowMove(column);
+          if (rowMoved) moved = true;
+          score += rowScore;
+          const reversedNewRow = newRow.reverse();
+          for (let row = 0; row < size; row++) {
+            newBoard[row][col] = reversedNewRow[row];
+          }
+        }
+        break;
+    }
+
+    return { board: newBoard, moved, score: this.score + score };
+  }
+
+  // Simulate moving a single row/column
+  simulateRowMove(row) {
+    const newRow = [...row];
+    let moved = false;
+    let score = 0;
+
+    // Move all tiles to the left (removing zeros)
+    const nonZeros = newRow.filter(val => val !== 0);
+    
+    // Merge adjacent equal tiles
+    const merged = [];
+    let i = 0;
+    while (i < nonZeros.length) {
+      if (i < nonZeros.length - 1 && nonZeros[i] === nonZeros[i + 1]) {
+        // Merge tiles
+        merged.push(nonZeros[i] * 2);
+        score += nonZeros[i] * 2;
+        i += 2;
+        moved = true;
+      } else {
+        merged.push(nonZeros[i]);
+        i++;
+      }
+    }
+
+    // Pad with zeros
+    while (merged.length < row.length) {
+      merged.push(0);
+    }
+
+    // Check if the row changed
+    if (!moved) {
+      moved = !row.every((val, index) => val === merged[index]);
+    }
+
+    return { newRow: merged, rowMoved: moved, rowScore: score };
+  }
+
+  // Heuristic functions
+  countEmptyCells(board) {
+    let count = 0;
+    for (let row = 0; row < board.length; row++) {
+      for (let col = 0; col < board[row].length; col++) {
+        if (board[row][col] === 0) count++;
+      }
+    }
+    return count;
+  }
+
+  calculateMonotonicity(board) {
+    const size = board.length;
+    let monotonicity = 0;
+
+    // Check rows
+    for (let row = 0; row < size; row++) {
+      let increasing = 0;
+      let decreasing = 0;
+      for (let col = 1; col < size; col++) {
+        if (board[row][col] > board[row][col - 1]) {
+          increasing += board[row][col] - board[row][col - 1];
+        } else if (board[row][col] < board[row][col - 1]) {
+          decreasing += board[row][col - 1] - board[row][col];
+        }
+      }
+      monotonicity += Math.max(increasing, decreasing);
+    }
+
+    // Check columns
+    for (let col = 0; col < size; col++) {
+      let increasing = 0;
+      let decreasing = 0;
+      for (let row = 1; row < size; row++) {
+        if (board[row][col] > board[row - 1][col]) {
+          increasing += board[row][col] - board[row - 1][col];
+        } else if (board[row][col] < board[row - 1][col]) {
+          decreasing += board[row - 1][col] - board[row][col];
+        }
+      }
+      monotonicity += Math.max(increasing, decreasing);
+    }
+
+    return monotonicity;
+  }
+
+  calculateSmoothness(board) {
+    const size = board.length;
+    let smoothness = 0;
+
+    for (let row = 0; row < size; row++) {
+      for (let col = 0; col < size; col++) {
+        if (board[row][col] !== 0) {
+          const value = Math.log2(board[row][col]);
+          // Check right neighbor
+          if (col < size - 1 && board[row][col + 1] !== 0) {
+            const neighbor = Math.log2(board[row][col + 1]);
+            smoothness -= Math.abs(value - neighbor);
+          }
+          // Check bottom neighbor
+          if (row < size - 1 && board[row + 1][col] !== 0) {
+            const neighbor = Math.log2(board[row + 1][col]);
+            smoothness -= Math.abs(value - neighbor);
+          }
+        }
+      }
+    }
+
+    return smoothness;
+  }
+
+  getMaxTile(board) {
+    let max = 0;
+    for (let row = 0; row < board.length; row++) {
+      for (let col = 0; col < board[row].length; col++) {
+        max = Math.max(max, board[row][col]);
+      }
+    }
+    return max;
+  }
+
+  getCornerBonus(board) {
+    const size = board.length;
+    const maxTile = this.getMaxTile(board);
+    
+    // Give bonus if max tile is in a corner
+    const corners = [
+      board[0][0],
+      board[0][size - 1],
+      board[size - 1][0],
+      board[size - 1][size - 1]
+    ];
+    
+    return corners.includes(maxTile) ? maxTile : 0;
   }
 
   // Utility function for throttling events
