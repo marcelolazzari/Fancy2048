@@ -7,6 +7,7 @@ Fancy2048 is a modded version of the classic 2048 game with enhanced features an
 ## 🚀 Features
 
 - **Multiple Board Sizes**: Play on 3x3, 4x4, or 5x5 grids
+- **Continue After 2048**: Keep playing after reaching 2048 to achieve higher tiles like 4096, 8192, and beyond!
 - **Theme Switching**: Toggle between light and dark themes
 - **Color Customization**: Adjust the hue of game elements with color cycling
 - **Responsive Design**: Optimized for mobile devices and different screen sizes
@@ -25,8 +26,9 @@ Fancy2048 is a modded version of the classic 2048 game with enhanced features an
 1. Use arrow keys (↑↓←→) or WASD keys to move the tiles
 2. On mobile, swipe in the direction you want to move
 3. When two tiles with the same number touch, they merge into one
-4. Try to reach the 2048 tile to win!
-5. Use the undo button (↶) to revert your last move if needed
+4. Try to reach the 2048 tile to win - but you can keep playing to reach even higher tiles!
+5. When you reach 2048, choose "Keep Playing" to continue or "New Game" to start fresh
+6. Use the undo button (↶) to revert your last move if needed
 
 ## 🎯 Controls
 

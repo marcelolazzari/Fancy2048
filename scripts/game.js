@@ -379,7 +379,7 @@ class Game {
 
   // Mouse event handlers for desktop drag support (optional enhancement)
   handleMouseStart(event) {
-    if (this.isPaused || this.gameState !== 'playing') return;
+    if (this.isPaused || (this.gameState !== 'playing' && this.gameState !== 'won-continue')) return;
     
     this.mouseStartX = event.clientX;
     this.mouseStartY = event.clientY;
@@ -403,7 +403,7 @@ class Game {
   }
 
   handleMouseEnd(event) {
-    if (!this.mouseStartX || !this.mouseStartY || this.isPaused || this.gameState !== 'playing') return;
+    if (!this.mouseStartX || !this.mouseStartY || this.isPaused || (this.gameState !== 'playing' && this.gameState !== 'won-continue')) return;
     
     const deltaX = event.clientX - this.mouseStartX;
     const deltaY = event.clientY - this.mouseStartY;
@@ -807,7 +807,7 @@ class Game {
   }
 
   move(direction) {
-    if (this.animationInProgress || this.gameState !== 'playing') return false;
+    if (this.animationInProgress || (this.gameState !== 'playing' && this.gameState !== 'won-continue')) return false;
     
     // Start animation lock
     this.animationInProgress = true;
@@ -1341,7 +1341,7 @@ class Game {
     }
 
     // Handle other keys only when not paused and game is playing
-    if (this.isPaused || this.gameState !== 'playing') return;
+    if (this.isPaused || (this.gameState !== 'playing' && this.gameState !== 'won-continue')) return;
     
     switch (event.key) {
       case 'ArrowUp':
@@ -1365,7 +1365,7 @@ class Game {
 
   // Enhanced touch handling for mobile with better gesture recognition
   handleTouchStart(event) {
-    if (this.isPaused || this.gameState !== 'playing') return;
+    if (this.isPaused || (this.gameState !== 'playing' && this.gameState !== 'won-continue')) return;
     
     // Support multi-touch by using first touch only
     const touch = event.touches[0];
@@ -1396,7 +1396,7 @@ class Game {
   }
 
   handleTouchEnd(event) {
-    if (!this.touchStartX || !this.touchStartY || this.isPaused || this.gameState !== 'playing') return;
+    if (!this.touchStartX || !this.touchStartY || this.isPaused || (this.gameState !== 'playing' && this.gameState !== 'won-continue')) return;
     
     const boardContainer = document.getElementById('board-container');
     if (boardContainer) {
@@ -2156,3 +2156,28 @@ document.addEventListener('DOMContentLoaded', () => {
   // Initialize the game with a slight delay to ensure DOM is fully loaded
   setTimeout(initializeGame, 100);
 });
+
+// Additional debugging helpers
+window.debugGame = {
+  // Helper function to test win condition (for development/testing only)
+  testWinCondition: () => {
+    if (window.game) {
+      // Add a 2048 tile to test the win message
+      window.game.board[0][0] = 2048;
+      window.game.updateUI();
+      console.log('🧪 Added 2048 tile for testing. Next move will trigger win message.');
+    } else {
+      console.log('❌ Game not initialized yet');
+    }
+  },
+
+  // Helper to test continue after win
+  testContinueAfterWin: () => {
+    if (window.game) {
+      window.game.gameState = 'won-continue';
+      console.log('🧪 Set game state to "won-continue". You can now move tiles after winning.');
+    } else {
+      console.log('❌ Game not initialized yet');
+    }
+  }
+};
