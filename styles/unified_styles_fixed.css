@@ -3,9 +3,9 @@
 /* Root CSS Variables */
 :root {
   --size: 4;
-  --gap: 15px;
-  --tile-size: calc((100vmin - var(--gap) * (var(--size) + 1)) / var(--size));
-  --game-size: calc(var(--tile-size) * var(--size) + var(--gap) * (var(--size) + 2));
+  --gap: 12px;
+  --tile-size: calc((min(90vw, 90vh, 500px) - var(--gap) * (var(--size) + 1)) / var(--size));
+  --game-size: calc(var(--tile-size) * var(--size) + var(--gap) * (var(--size) + 1));
   
   /* Color Variables */
   --primary-color: #1a1a1a;
@@ -315,12 +315,13 @@ main {
 /* Board Container - Main Game Area */
 #board-container {
   display: grid;
-  grid-template-columns: repeat(var(--size), 1fr);
-  grid-template-rows: repeat(var(--size), 1fr);
+  grid-template-columns: repeat(var(--size), var(--tile-size));
+  grid-template-rows: repeat(var(--size), var(--tile-size));
   gap: var(--gap);
-  width: 100%;
-  max-width: min(500px, 90vw);
-  aspect-ratio: 1;
+  width: var(--game-size);
+  height: var(--game-size);
+  max-width: min(90vw, 90vh, 500px);
+  max-height: min(90vw, 90vh, 500px);
   background: rgba(50, 50, 50, 0.4);
   backdrop-filter: blur(10px);
   border-radius: var(--tile-border-radius);
@@ -330,6 +331,7 @@ main {
   box-sizing: border-box;
   touch-action: none;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  margin: 0 auto;
 }
 
 #board-container:focus {
@@ -341,10 +343,13 @@ main {
 .grid-cell {
   background: rgba(238, 228, 218, 0.2);
   border-radius: calc(var(--tile-border-radius) - 2px);
-  width: 100%;
-  height: 100%;
+  width: var(--tile-size);
+  height: var(--tile-size);
   position: relative;
   border: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Tile Styles */
@@ -357,16 +362,17 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: calc(var(--tile-border-radius) - 2px);
+  font-size: calc(var(--tile-size) * 0.35);
   font-weight: bold;
-  box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
-  transition: all var(--transition-duration);
-  z-index: 2;
-  overflow: hidden;
+  color: #776e65;
+  background: #eee4da;
+  border-radius: calc(var(--tile-border-radius) - 2px);
+  transition: all 0.15s ease-in-out;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  z-index: 10;
   text-align: center;
   line-height: 1;
   box-sizing: border-box;
-  font-size: clamp(1rem, 4vw, 2rem);
 }
 
 /* Individual Tile Colors */
@@ -539,7 +545,12 @@ footer .container {
 /* Responsive Design */
 @media (max-width: 768px) {
   :root {
-    --gap: var(--mobile-gap);
+    --gap: 8px;
+  }
+  
+  #board-container {
+    max-width: min(95vw, 95vh, 400px);
+    max-height: min(95vw, 95vh, 400px);
   }
   
   header {
@@ -580,26 +591,18 @@ footer .container {
   }
   
   .tile {
-    font-size: clamp(0.9rem, 5vw, 1.8rem);
-  }
-  
-  .tile[data-value="1024"],
-  .tile[data-value="2048"] {
-    font-size: clamp(0.7rem, 4vw, 1.4rem);
-  }
-  
-  .tile[data-value="4096"],
-  .tile[data-value="8192"],
-  .tile[data-value="16384"],
-  .tile[data-value="32768"],
-  .tile[data-value="65536"] {
-    font-size: clamp(0.6rem, 3.5vw, 1.2rem);
+    font-size: calc(var(--tile-size) * 0.3);
   }
 }
 
 @media (max-width: 480px) {
   :root {
     --gap: 6px;
+  }
+  
+  #board-container {
+    max-width: min(98vw, 98vh, 350px);
+    max-height: min(98vw, 98vh, 350px);
   }
   
   header {
@@ -616,6 +619,10 @@ footer .container {
   
   .controls {
     gap: 6px;
+  }
+  
+  .tile {
+    font-size: calc(var(--tile-size) * 0.25);
   }
   
   button {

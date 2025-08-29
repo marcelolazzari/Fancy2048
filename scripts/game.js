@@ -104,16 +104,32 @@ class Game {
     // Clear existing content
     boardContainer.innerHTML = '';
     
+    // Update CSS custom properties for the current grid size
+    document.documentElement.style.setProperty('--size', this.size);
+    
+    // Calculate responsive dimensions
+    const maxSize = Math.min(window.innerWidth * 0.9, window.innerHeight * 0.9, 500);
+    const gap = this.size === 3 ? 10 : this.size === 4 ? 8 : 6;
+    const tileSize = (maxSize - gap * (this.size + 1)) / this.size;
+    const gameSize = tileSize * this.size + gap * (this.size + 1);
+    
+    // Set CSS custom properties
+    document.documentElement.style.setProperty('--gap', `${gap}px`);
+    document.documentElement.style.setProperty('--tile-size', `${tileSize}px`);
+    document.documentElement.style.setProperty('--game-size', `${gameSize}px`);
+    
     // Update CSS grid properties
     boardContainer.style.display = 'grid';
-    boardContainer.style.gridTemplateColumns = `repeat(${this.size}, 1fr)`;
-    boardContainer.style.gridTemplateRows = `repeat(${this.size}, 1fr)`;
-    boardContainer.style.gap = 'var(--gap)';
+    boardContainer.style.gridTemplateColumns = `repeat(${this.size}, ${tileSize}px)`;
+    boardContainer.style.gridTemplateRows = `repeat(${this.size}, ${tileSize}px)`;
+    boardContainer.style.gap = `${gap}px`;
+    boardContainer.style.width = `${gameSize}px`;
+    boardContainer.style.height = `${gameSize}px`;
     
     // Create grid cells
     this.createGridCells();
     
-    console.log(`✅ Board container setup for ${this.size}x${this.size} grid`);
+    console.log(`✅ Board container setup for ${this.size}x${this.size} grid - Tile size: ${tileSize}px, Gap: ${gap}px`);
   }
 
   setupResponsiveHandlers() {
@@ -1373,6 +1389,9 @@ class Game {
   refreshLayout() {
     // Update CSS variable for responsive layout
     document.documentElement.style.setProperty('--size', this.size);
+    
+    // Recalculate board container dimensions
+    this.setupBoardContainer();
     
     // Clear and redraw the board
     this.updateUI();
