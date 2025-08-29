@@ -50,9 +50,9 @@ class Game {
       // Autoplay properties
       this.isAutoPlaying = false;
       this.autoPlayInterval = null;
-      this.autoPlaySpeed = 800; // milliseconds between moves
       this.speedMultipliers = [1, 1.5, 2, 4, 8]; // Speed options including x8
-      this.currentSpeedIndex = 0; // Current speed index
+      this.currentSpeedIndex = parseInt(localStorage.getItem('autoPlaySpeedIndex')) || 0;
+      this.autoPlaySpeed = 800 / this.speedMultipliers[this.currentSpeedIndex]; // milliseconds between moves
       this.isAutoPlayedGame = false; // Track if current game used autoplay
 
       // AI performance settings
@@ -2427,6 +2427,69 @@ class Game {
     return info[difficulty] || '';
   }
 
+  // Speed control methods for autoplay
+  changeSpeed() {
+    this.currentSpeedIndex = (this.currentSpeedIndex + 1) % this.speedMultipliers.length;
+    this.autoPlaySpeed = 800 / this.speedMultipliers[this.currentSpeedIndex];
+    
+    // Save speed preference
+    localStorage.setItem('autoPlaySpeedIndex', this.currentSpeedIndex);
+    
+    // Update button display
+    this.updateSpeedButton();
+    
+    // Show notification
+    const currentSpeed = this.speedMultipliers[this.currentSpeedIndex];
+    this.showNotification(`Autoplay Speed: ${currentSpeed}x`, 2000);
+    
+    console.log(`⚡ Autoplay speed changed to ${currentSpeed}x (${this.autoPlaySpeed}ms delay)`);
+  }
+
+  updateSpeedButton() {
+    const speedButton = document.getElementById('speed-button');
+    if (speedButton) {
+      const speedText = speedButton.querySelector('.speed-text');
+      if (speedText) {
+        const currentSpeed = this.speedMultipliers[this.currentSpeedIndex];
+        speedText.textContent = `${currentSpeed}x`;
+      }
+      
+      // Visual feedback
+      if (this.isAutoPlaying) {
+        speedButton.style.opacity = '1';
+        speedButton.style.pointerEvents = 'auto';
+      } else {
+        speedButton.style.opacity = '0.6';
+        speedButton.style.pointerEvents = 'none';
+      }
+    }
+  }
+
+  updateAutoPlayButton() {
+    const autoplayButton = document.getElementById('autoplay-button');
+    if (autoplayButton) {
+      const icon = autoplayButton.querySelector('i');
+      if (icon) {
+        if (this.isAutoPlaying) {
+          icon.className = 'fas fa-pause';
+          autoplayButton.setAttribute('aria-label', 'Stop Auto Play');
+          autoplayButton.setAttribute('data-tooltip', 'Stop auto play');
+        } else {
+          icon.className = 'fas fa-play';
+          autoplayButton.setAttribute('aria-label', 'Start Auto Play');
+          autoplayButton.setAttribute('data-tooltip', 'Start auto play');
+        }
+      }
+    }
+    
+    // Update speed button availability
+    this.updateSpeedButton();
+  }
+
+  getAutoPlayDelay() {
+    return this.autoPlaySpeed;
+  }
+
   initializeEnhancedAI() {
     try {
       console.log('🤖 Initializing AI system...');
@@ -2677,6 +2740,14 @@ class Game {
     this.isAutoPlaying = false;
     this.playMode = 'Human';
     this.updateAutoPlayButton();
+  }
+
+  // Utility method for debouncing function calls
+  debounce(func, wait) {
+    return (...args) => {
+      clearTimeout(this.debounceTimeout);
+      this.debounceTimeout = setTimeout(() => func.apply(this, args), wait);
+    };
   }
 
   // Add notification system for AI feedback
