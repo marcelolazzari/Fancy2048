@@ -1,152 +1,221 @@
 class Game {
   constructor(size = 4) {
-    console.log(`Initializing game with size: ${size}x${size}`);
+    console.log(`🎮 Initializing game with size: ${size}x${size}`);
     
-    // Core game properties
-    this.size = size;
-    this.board = this.createEmptyBoard();
-    this.score = 0;
-    this.bestScore = +localStorage.getItem('bestScore') || 0;
-    this.moves = 0;
-    this.startTime = null;
+    try {
+      // Core game properties
+      this.size = size;
+      this.board = this.createEmptyBoard();
+      this.score = 0;
+      this.bestScore = +localStorage.getItem('bestScore') || 0;
+      this.moves = 0;
+      this.startTime = null;
 
-    // Game states
-    this.gameState = 'playing';
-    this.hasSavedStats = false;
-    this.isPaused = false;
-    this.wasPausedByUser = false;
-    this.pausedTime = 0;
-    this.pauseStartTime = null;
-    
-    // Animation and UI state
-    this.animationInProgress = false;
-    this.lastMoveDirection = null;
-    this.lastMerged = [];
-    
-    // Game history for undo
-    this.gameStateStack = [];
-    this.maxUndoSteps = 10;
-    
-    // Visual settings
-    this.isLightMode = localStorage.getItem('isLightMode') === 'true';
-    this.hueValue = parseInt(localStorage.getItem('hueValue')) || 0;
-    
-    // Touch handling
-    this.touchStartX = null;
-    this.touchStartY = null;
-    this.touchMoved = false;
-    this.touchStartTime = null;
-    
-    // Timer
-    this.timerInterval = null;
-    
-    // Stats
-    this.stats = JSON.parse(localStorage.getItem('gameStats')) || [];
-    
-    // Performance optimization
-    this.debounceTimeout = null;
+      // Game states
+      this.gameState = 'playing';
+      this.hasSavedStats = false;
+      this.isPaused = false;
+      this.wasPausedByUser = false;
+      this.pausedTime = 0;
+      this.pauseStartTime = null;
+      
+      // Animation and UI state
+      this.animationInProgress = false;
+      this.lastMoveDirection = null;
+      this.lastMerged = [];
+      
+      // Game history for undo
+      this.gameStateStack = [];
+      this.maxUndoSteps = 10;
+      
+      // Visual settings
+      this.isLightMode = localStorage.getItem('isLightMode') === 'true';
+      this.hueValue = parseInt(localStorage.getItem('hueValue')) || 0;
+      
+      // Touch handling
+      this.touchStartX = null;
+      this.touchStartY = null;
+      this.touchMoved = false;
+      this.touchStartTime = null;
+      
+      // Timer
+      this.timerInterval = null;
+      
+      // Stats
+      this.stats = JSON.parse(localStorage.getItem('gameStats')) || [];
+      
+      // Performance optimization
+      this.debounceTimeout = null;
 
-    // Autoplay properties
-    this.isAutoPlaying = false;
-    this.autoPlayInterval = null;
-    this.autoPlaySpeed = 800; // milliseconds between moves
-    this.speedMultipliers = [1, 1.5, 2, 4, 8]; // Speed options including x8
-    this.currentSpeedIndex = 0; // Current speed index
-    this.isAutoPlayedGame = false; // Track if current game used autoplay
+      // Autoplay properties
+      this.isAutoPlaying = false;
+      this.autoPlayInterval = null;
+      this.autoPlaySpeed = 800; // milliseconds between moves
+      this.speedMultipliers = [1, 1.5, 2, 4, 8]; // Speed options including x8
+      this.currentSpeedIndex = 0; // Current speed index
+      this.isAutoPlayedGame = false; // Track if current game used autoplay
 
-    // Initialize the game
-    this.initializeUI();
-    this.addEventListeners();
-    this.applyTheme();
-    this.updateHue();
-    
-    // Enhanced responsive handling
-    this.setupResponsiveHandlers();
-    
-    // Initialize resize observer for better font scaling
-    this.initializeResizeObserver();
-    
-    // Initialize autoplay button
-    this.updateAutoPlayButton();
-    this.updateSpeedButton();
-    
-    // Start the game
-    this.addRandomTile();
-    this.addRandomTile();
-    this.updateUI();
-    this.startTimer();
-    
-    // Initialize enhanced AI
-    this.enhancedAI = null;
-    this.initializeEnhancedAI();
-    
-    // AI performance settings
-    this.aiDifficulty = localStorage.getItem('aiDifficulty') || 'normal';
-    this.adaptiveDepth = true;
-    
-    console.log('✅ Game initialized successfully');
+      // AI performance settings
+      this.aiDifficulty = localStorage.getItem('aiDifficulty') || 'normal';
+      this.adaptiveDepth = true;
+      
+      // Initialize the game UI and functionality
+      console.log('🔧 Setting up game components...');
+      
+      // Initialize the game
+      this.initializeUI();
+      this.addEventListeners();
+      this.applyTheme();
+      this.updateHue();
+      
+      // Enhanced responsive handling
+      this.setupResponsiveHandlers();
+      
+      // Initialize resize observer for better font scaling
+      this.initializeResizeObserver();
+      
+      // Initialize autoplay button
+      this.updateAutoPlayButton();
+      this.updateSpeedButton();
+      
+      // Start the game
+      this.addRandomTile();
+      this.addRandomTile();
+      this.updateUI();
+      this.startTimer();
+      
+      // Initialize enhanced AI (with error handling)
+      this.enhancedAI = null;
+      this.advancedAI = null;
+      this.initializeEnhancedAI();
+      
+      console.log('✅ Game initialized successfully');
+      
+    } catch (error) {
+      console.error('💥 Critical error during game initialization:', error);
+      
+      // Try to show error to user
+      this.showInitializationError(error);
+      
+      // Re-throw the error so the calling code knows initialization failed
+      throw error;
+    }
+  }
+  
+  showInitializationError(error) {
+    try {
+      const boardContainer = document.getElementById('board-container') || 
+                            document.querySelector('.board-container') ||
+                            document.createElement('div');
+      
+      boardContainer.innerHTML = `
+        <div style="
+          text-align: center; 
+          padding: 2rem; 
+          color: #ff6b6b;
+          background: rgba(255, 107, 107, 0.1);
+          border: 2px solid #ff6b6b;
+          border-radius: 10px;
+          margin: 20px;
+          font-family: Arial, sans-serif;
+        ">
+          <h3 style="margin-top: 0;">🚨 Game Constructor Error</h3>
+          <p>Failed to initialize game components.</p>
+          <p style="font-size: 0.9em; color: #999;">Error: ${error.message}</p>
+          <button onclick="location.reload()" style="
+            padding: 0.75rem 1.5rem; 
+            background: #ff6b6b; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer;
+            margin-top: 1rem;
+          ">
+            Refresh Page
+          </button>
+        </div>
+      `;
+      
+      if (!boardContainer.parentNode) {
+        document.body.appendChild(boardContainer);
+      }
+    } catch (displayError) {
+      console.error('Could not display initialization error:', displayError);
+      alert(`Game initialization failed: ${error.message}. Please refresh the page.`);
+    }
   }
 
   initializeUI() {
-    console.log('Setting up UI...');
+    console.log('🎨 Setting up UI...');
     
-    // Set CSS custom property for board size
-    document.documentElement.style.setProperty('--size', this.size);
-    
-    // Clear and setup board container
-    this.setupBoardContainer();
-    
-    // Update score display
-    this.updateScoreDisplay();
-    
-    console.log('✅ UI setup complete');
+    try {
+      // Set CSS custom property for board size
+      document.documentElement.style.setProperty('--size', this.size);
+      
+      // Clear and setup board container
+      this.setupBoardContainer();
+      
+      // Update score display
+      this.updateScoreDisplay();
+      
+      console.log('✅ UI setup complete');
+    } catch (error) {
+      console.error('❌ Error setting up UI:', error);
+      throw new Error(`UI initialization failed: ${error.message}`);
+    }
   }
 
   setupBoardContainer() {
+    console.log(`🎲 Setting up ${this.size}x${this.size} board container...`);
+    
     const boardContainer = document.getElementById('board-container');
     if (!boardContainer) {
-      console.error('Board container not found!');
-      return;
+      console.error('❌ Board container not found!');
+      throw new Error('Board container element is missing from the DOM');
     }
     
-    // Clear existing content
-    boardContainer.innerHTML = '';
-    
-    // Update CSS custom properties for the current grid size
-    document.documentElement.style.setProperty('--size', this.size);
-    
-    // Add board size class to body for CSS targeting
-    document.body.className = document.body.className.replace(/board-size-\d+/g, '');
-    document.body.classList.add(`board-size-${this.size}`);
-    
-    // Calculate optimal board dimensions for proper fitting
-    const viewport = Math.min(window.innerWidth, window.innerHeight);
-    let maxBoardSize;
-    
-    // Dynamic sizing based on grid size and viewport
-    if (this.size === 3) {
-      maxBoardSize = Math.min(viewport * 0.8, 450);
-    } else if (this.size === 4) {
-      maxBoardSize = Math.min(viewport * 0.85, 500);
-    } else if (this.size === 5) {
-      maxBoardSize = Math.min(viewport * 0.9, 520);
-    }
-    
-    // Apply dynamic sizing
-    document.documentElement.style.setProperty('--board-max-size', `${maxBoardSize}px`);
-    
-    // Create grid cells
-    for (let i = 0; i < this.size; i++) {
-      for (let j = 0; j < this.size; j++) {
-        const cell = document.createElement('div');
-        cell.className = 'grid-cell';
-        cell.dataset.row = i;
-        cell.dataset.col = j;
-        boardContainer.appendChild(cell);
+    try {
+      // Clear existing content
+      boardContainer.innerHTML = '';
+      
+      // Update CSS custom properties for the current grid size
+      document.documentElement.style.setProperty('--size', this.size);
+      
+      // Add board size class to body for CSS targeting
+      document.body.className = document.body.className.replace(/board-size-\d+/g, '');
+      document.body.classList.add(`board-size-${this.size}`);
+      
+      // Calculate optimal board dimensions for proper fitting
+      const viewport = Math.min(window.innerWidth, window.innerHeight);
+      let maxBoardSize;
+      
+      // Dynamic sizing based on grid size and viewport
+      if (this.size === 3) {
+        maxBoardSize = Math.min(viewport * 0.8, 450);
+      } else if (this.size === 4) {
+        maxBoardSize = Math.min(viewport * 0.85, 500);
+      } else if (this.size === 5) {
+        maxBoardSize = Math.min(viewport * 0.9, 520);
+      } else {
+        // Default sizing for other grid sizes
+        maxBoardSize = Math.min(viewport * 0.85, 500);
       }
+      
+      // Set board container styles
+      boardContainer.style.width = `${maxBoardSize}px`;
+      boardContainer.style.height = `${maxBoardSize}px`;
+      boardContainer.style.display = 'grid';
+      boardContainer.style.gridTemplateColumns = `repeat(${this.size}, 1fr)`;
+      boardContainer.style.gridTemplateRows = `repeat(${this.size}, 1fr)`;
+      
+      // Create grid cells for visual structure
+      this.createGridCells();
+      
+      console.log(`✅ Board container setup complete for ${this.size}x${this.size} grid`);
+    } catch (error) {
+      console.error('❌ Error setting up board container:', error);
+      throw new Error(`Board container setup failed: ${error.message}`);
     }
-    
-    console.log(`✅ Board container setup for ${this.size}x${this.size} grid - Max size: ${maxBoardSize}px`);
   }
 
   setupResponsiveHandlers() {
@@ -2359,9 +2428,34 @@ class Game {
   }
 
   initializeEnhancedAI() {
-    if (window.Enhanced2048AI) {
-      this.enhancedAI = new Enhanced2048AI(this);
+    try {
+      console.log('🤖 Initializing AI system...');
       
+      // Try to initialize the advanced AI first, fallback to enhanced AI
+      if (typeof AdvancedAI2048Solver !== 'undefined' && window.AdvancedAI2048Solver) {
+        console.log('🚀 Found Advanced AI Solver, initializing...');
+        this.advancedAI = new AdvancedAI2048Solver(this);
+        this.enhancedAI = this.advancedAI; // Keep compatibility
+        console.log('✅ Advanced AI Solver initialized with Expectimax algorithm');
+      } else if (typeof Enhanced2048AI !== 'undefined' && window.Enhanced2048AI) {
+        console.log('🧠 Found Enhanced AI, initializing...');
+        this.enhancedAI = new Enhanced2048AI(this);
+        console.log('✅ Enhanced AI initialized with Minimax algorithm');
+      } else {
+        console.warn('⚠️ No AI solvers loaded, will use basic AI only');
+        this.enhancedAI = null;
+        this.advancedAI = null;
+        
+        // Update AI button to reflect that no advanced AI is available
+        const aiDifficultyButton = document.getElementById('ai-difficulty-button');
+        if (aiDifficultyButton) {
+          aiDifficultyButton.style.opacity = '0.5';
+          aiDifficultyButton.setAttribute('disabled', 'true');
+          aiDifficultyButton.setAttribute('title', 'Advanced AI not loaded');
+        }
+        return;
+      }
+        
       // Load saved difficulty preference
       const savedDifficulty = localStorage.getItem('aiDifficulty') || 'normal';
       this.aiDifficulty = savedDifficulty;
@@ -2377,89 +2471,140 @@ class Game {
           const capitalizedDifficulty = this.aiDifficulty.charAt(0).toUpperCase() + this.aiDifficulty.slice(1);
           buttonText.textContent = capitalizedDifficulty;
         }
+        
+        // Ensure button is enabled
+        aiDifficultyButton.removeAttribute('disabled');
+        aiDifficultyButton.style.opacity = '1';
       }
       
-      console.log(`✅ Enhanced AI initialized with ${this.aiDifficulty} difficulty`);
-    } else {
-      console.warn('⚠️ Enhanced AI not loaded, falling back to basic AI');
+      console.log(`✅ AI difficulty set to: ${this.aiDifficulty}`);
+      
+    } catch (error) {
+      console.error('❌ Error initializing AI system:', error);
+      this.enhancedAI = null;
+      this.advancedAI = null;
+      
+      // Show notification to user
+      if (typeof this.showNotification === 'function') {
+        this.showNotification('AI system failed to initialize. Basic gameplay only.', 3000);
+      }
+      
+      // Disable AI buttons
+      const autoplayButton = document.getElementById('autoplay-button');
+      const aiDifficultyButton = document.getElementById('ai-difficulty-button');
+      
+      if (autoplayButton) {
+        autoplayButton.style.opacity = '0.5';
+        autoplayButton.setAttribute('disabled', 'true');
+        autoplayButton.setAttribute('title', 'AI system not available');
+      }
+      
+      if (aiDifficultyButton) {
+        aiDifficultyButton.style.opacity = '0.5';
+        aiDifficultyButton.setAttribute('disabled', 'true');
+        aiDifficultyButton.setAttribute('title', 'AI system not available');
+      }
     }
   }
 
   adjustAIDifficulty() {
     if (!this.enhancedAI) return;
 
-    let depth;
     let weights;
+    
+    // Check if we're using the Advanced AI or Enhanced AI
+    const isAdvancedAI = this.advancedAI instanceof AdvancedAI2048Solver;
 
     switch (this.aiDifficulty) {
       case 'easy':
-        depth = 2;
-        weights = { 
-          emptyCells: 200, 
-          smoothness: 50, 
-          monotonicity: 500,
-          maxTileCorner: 100,
-          merging: 300,
-          positionScores: 100
-        };
+        if (isAdvancedAI) {
+          weights = { 
+            openness: 0.8,      // Lower priority on empty cells
+            smoothness: 3.0,    // Reduced smoothness focus
+            monotonicity: 3.0,  // Reduced monotonicity
+            maxTileCorner: 0.05 // Lower corner bonus
+          };
+        } else {
+          // Legacy Enhanced AI weights
+          weights = { 
+            emptyCells: 200, 
+            smoothness: 50, 
+            monotonicity: 500,
+            maxTileCorner: 100,
+            merging: 300,
+            positionScores: 100
+          };
+        }
         break;
+        
       case 'normal':
-        depth = 3;
-        weights = { 
-          emptyCells: 270, 
-          smoothness: 100, 
-          monotonicity: 1000,
-          maxTileCorner: 200,
-          merging: 500,
-          positionScores: 150
-        };
+        if (isAdvancedAI) {
+          weights = { 
+            openness: 1.0,      // Balanced empty cells priority
+            smoothness: 5.0,    // Standard smoothness
+            monotonicity: 5.0,  // Standard monotonicity
+            maxTileCorner: 0.1  // Standard corner bonus
+          };
+        } else {
+          weights = { 
+            emptyCells: 270, 
+            smoothness: 100, 
+            monotonicity: 1000,
+            maxTileCorner: 200,
+            merging: 500,
+            positionScores: 150
+          };
+        }
         break;
+        
       case 'hard':
-        depth = 4;
-        weights = { 
-          emptyCells: 300, 
-          smoothness: 150, 
-          monotonicity: 1200,
-          maxTileCorner: 250,
-          merging: 600,
-          positionScores: 200
-        };
+        if (isAdvancedAI) {
+          weights = { 
+            openness: 1.2,      // Higher priority on empty cells
+            smoothness: 6.0,    // Increased smoothness focus
+            monotonicity: 6.0,  // Increased monotonicity
+            maxTileCorner: 0.15 // Higher corner bonus
+          };
+        } else {
+          weights = { 
+            emptyCells: 300, 
+            smoothness: 150, 
+            monotonicity: 1200,
+            maxTileCorner: 250,
+            merging: 600,
+            positionScores: 200
+          };
+        }
         break;
+        
       case 'expert':
-        depth = this.size <= 4 ? 5 : 4; // Adjust for larger boards
-        weights = { 
-          emptyCells: 350, 
-          smoothness: 200, 
-          monotonicity: 1500,
-          maxTileCorner: 300,
-          merging: 700,
-          positionScores: 250
-        };
+        if (isAdvancedAI) {
+          weights = { 
+            openness: 1.5,      // Maximum priority on empty cells
+            smoothness: 8.0,    // Maximum smoothness focus
+            monotonicity: 8.0,  // Maximum monotonicity
+            maxTileCorner: 0.2  // Maximum corner bonus
+          };
+        } else {
+          weights = { 
+            emptyCells: 350, 
+            smoothness: 200, 
+            monotonicity: 1500,
+            maxTileCorner: 300,
+            merging: 700,
+            positionScores: 250
+          };
+        }
         break;
     }
 
-    // Adaptive depth based on game progress and performance
-    if (this.adaptiveDepth) {
-      const maxTile = this.getMaxTile();
-      const emptyCount = this.countEmptyCells();
-      
-      // Increase depth for late game (fewer empty cells, higher tiles)
-      if (maxTile >= 1024 && emptyCount <= 6) {
-        depth = Math.min(depth + 1, 6);
-      } else if (maxTile <= 64 && emptyCount >= 12) {
-        depth = Math.max(depth - 1, 2); // Faster for early game
-      }
-      
-      // Performance-based adjustment
-      if (this.size === 5) {
-        depth = Math.max(depth - 1, 2); // Reduce depth for 5x5 boards
-      }
-    }
-
-    this.enhancedAI.setDepth(depth);
+    // Apply the weights
     this.enhancedAI.adjustWeights(weights);
     
-    console.log(`🔧 AI adjusted: ${this.aiDifficulty} difficulty, depth: ${depth}`);
+    console.log(`🔧 AI adjusted: ${this.aiDifficulty} difficulty with ${isAdvancedAI ? 'Advanced' : 'Enhanced'} AI`);
+    if (window.debugAI) {
+      console.log('Applied weights:', weights);
+    }
   }
 
   // Helper method to count empty cells
@@ -2599,52 +2744,178 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
+// Enhanced game initialization with better error handling and debugging
+let gameInitializationAttempts = 0;
+const MAX_INIT_ATTEMPTS = 3;
+
+function attemptGameInitialization() {
+  console.log(`🚀 Attempting to initialize Fancy2048... (Attempt ${gameInitializationAttempts + 1}/${MAX_INIT_ATTEMPTS})`);
+  
+  try {
+    // Check if game is already initialized
+    if (window.game && window.game instanceof Game) {
+      console.log('✅ Game already initialized, skipping...');
+      return true;
+    }
+    
+    // Ensure all required elements exist
+    const requiredElements = ['board-container', 'score', 'best-score', 'moves', 'time'];
+    const missingElements = requiredElements.filter(id => !document.getElementById(id));
+    
+    if (missingElements.length > 0) {
+      console.warn('⚠️ Missing required elements:', missingElements);
+      
+      // Try to create missing elements if possible
+      missingElements.forEach(id => {
+        const element = document.createElement(id === 'board-container' ? 'div' : 'span');
+        element.id = id;
+        if (id === 'board-container') {
+          element.className = 'board-container';
+          element.setAttribute('role', 'grid');
+          element.setAttribute('aria-label', 'Game Board');
+          element.setAttribute('tabindex', '0');
+          
+          const main = document.querySelector('main');
+          if (main) {
+            const gameSection = main.querySelector('.game-section') || main;
+            gameSection.appendChild(element);
+          } else {
+            document.body.appendChild(element);
+          }
+        } else {
+          // For score elements, try to find their containers
+          const scoreContainer = document.getElementById('score-container') || 
+                               document.querySelector('#score-container, aside');
+          if (scoreContainer) {
+            const listItem = document.createElement('li');
+            listItem.innerHTML = `${id.replace('-', ' ').replace(/\b\w/g, l => l.toUpperCase())}: <span id="${id}">0</span>`;
+            const list = scoreContainer.querySelector('ul') || scoreContainer;
+            list.appendChild(listItem);
+          }
+        }
+        console.log(`Created missing element: ${id}`);
+      });
+    }
+    
+    // Double-check that board container exists
+    const boardContainer = document.getElementById('board-container');
+    if (!boardContainer) {
+      throw new Error('Board container could not be created or found');
+    }
+    
+    // Initialize the game
+    console.log('🎮 Creating new game instance...');
+    window.game = new Game(4);
+    
+    // Verify game was created successfully
+    if (!window.game) {
+      throw new Error('Game instance was not created');
+    }
+    
+    console.log('✅ Fancy2048 initialized successfully!');
+    
+    // Add global error handler for the game
+    window.addEventListener('error', (event) => {
+      console.error('🚨 Game runtime error:', event.error);
+      if (window.game && typeof window.game.showNotification === 'function') {
+        window.game.showNotification('An error occurred. Please refresh the page.', 5000);
+      }
+    });
+    
+    return true;
+    
+  } catch (error) {
+    gameInitializationAttempts++;
+    console.error(`❌ Failed to initialize Fancy2048 (Attempt ${gameInitializationAttempts}):`, error);
+    
+    if (gameInitializationAttempts < MAX_INIT_ATTEMPTS) {
+      console.log(`⏳ Retrying initialization in 500ms...`);
+      setTimeout(attemptGameInitialization, 500);
+      return false;
+    }
+    
+    // Show user-friendly error message after all attempts failed
+    console.error('💥 All initialization attempts failed');
+    showInitializationError(error);
+    return false;
+  }
+}
+
+function showInitializationError(error) {
+  const boardContainer = document.getElementById('board-container') || 
+                        document.querySelector('.board-container') ||
+                        document.querySelector('main') ||
+                        document.body;
+  
+  if (boardContainer) {
+    boardContainer.innerHTML = `
+      <div style="
+        text-align: center; 
+        padding: 2rem; 
+        color: #ff6b6b;
+        background: rgba(255, 107, 107, 0.1);
+        border: 2px solid #ff6b6b;
+        border-radius: 10px;
+        margin: 20px;
+        font-family: Arial, sans-serif;
+      ">
+        <h3 style="margin-top: 0; font-size: 1.5rem;">❌ Game Initialization Failed</h3>
+        <p style="margin: 1rem 0; font-size: 1rem;">
+          The game could not be initialized properly.<br>
+          Error: ${error.message || 'Unknown error'}
+        </p>
+        <div style="margin-top: 1.5rem;">
+          <button onclick="location.reload()" style="
+            padding: 0.75rem 1.5rem; 
+            background: #ff6b6b; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer;
+            font-size: 1rem;
+            margin-right: 10px;
+          ">
+            Refresh Page
+          </button>
+          <button onclick="console.log('Game state:', window.game); console.log('DOM elements:', {boardContainer: document.getElementById('board-container'), score: document.getElementById('score'), bestScore: document.getElementById('best-score')})" style="
+            padding: 0.75rem 1.5rem; 
+            background: #666; 
+            color: white; 
+            border: none; 
+            border-radius: 5px; 
+            cursor: pointer;
+            font-size: 1rem;
+          ">
+            Debug Info
+          </button>
+        </div>
+      </div>
+    `;
+  } else {
+    // Fallback: show alert if no container found
+    alert(`Game initialization failed: ${error.message}. Please refresh the page.`);
+  }
+}
+
 // Initialize the game when the DOM is loaded
 document.addEventListener('DOMContentLoaded', () => {
-  console.log('🚀 DOM loaded, initializing Fancy2048...');
+  console.log('📄 DOM Content Loaded');
   
-  let gameInitialized = false;
-  
-  function initializeGame() {
-    if (!gameInitialized) {
-      gameInitialized = true;
-      try {
-        // Ensure all required elements exist
-        const requiredElements = ['board-container', 'score', 'best-score', 'moves', 'time'];
-        const missingElements = requiredElements.filter(id => !document.getElementById(id));
-        
-        if (missingElements.length > 0) {
-          console.error('Missing required elements:', missingElements);
-          return;
-        }
-        
-        // Initialize the game
-        window.game = new Game(4);
-        console.log('✅ Fancy2048 initialized successfully!');
-        
-      } catch (error) {
-        console.error('❌ Failed to initialize Fancy2048:', error);
-        
-        // Show user-friendly error message
-        const boardContainer = document.getElementById('board-container');
-        if (boardContainer) {
-          boardContainer.innerHTML = `
-            <div style="text-align: center; padding: 2rem; color: #ff6b6b;">
-              <h3>❌ Game Initialization Failed</h3>
-              <p>Please refresh the page to try again.</p>
-              <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #ff6b6b; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                Refresh Page
-              </button>
-            </div>
-          `;
-        }
-      }
-    }
-  }
-  
-  // Initialize the game with a slight delay to ensure DOM is fully loaded
-  setTimeout(initializeGame, 100);
+  // Give a small delay to ensure all scripts are loaded
+  setTimeout(() => {
+    attemptGameInitialization();
+  }, 100);
 });
+
+// Fallback initialization if DOMContentLoaded already fired
+if (document.readyState === 'loading') {
+  console.log('📋 Document still loading, waiting for DOMContentLoaded...');
+} else {
+  console.log('📄 Document already loaded, initializing immediately...');
+  setTimeout(() => {
+    attemptGameInitialization();
+  }, 50);
+}
 
 // Additional debugging helpers
 window.debugGame = {

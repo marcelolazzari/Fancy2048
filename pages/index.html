@@ -102,8 +102,28 @@
       </div>
     </footer>
 
-    <!-- JavaScript files -->
-  <script src="../scripts/enhanced_ai.js"></script>
-  <script src="../scripts/game.js"></script>
+    <!-- JavaScript files - loaded in specific order for proper initialization -->
+    <script>
+      // Pre-initialization debugging
+      console.log('🚀 Starting Fancy2048 script loading...');
+      console.log('Document ready state:', document.readyState);
+      console.log('DOM elements check:', {
+        boardContainer: !!document.getElementById('board-container'),
+        scoreContainer: !!document.getElementById('score-container'),
+        score: !!document.getElementById('score'),
+        bestScore: !!document.getElementById('best-score')
+      });
+    </script>
+    <script src="../scripts/advanced_ai_solver.js"></script>
+    <script src="../scripts/enhanced_ai.js"></script>
+    <script src="../scripts/game.js"></script>
+    <script>
+      // Post-loading verification
+      console.log('🔍 Script loading verification:', {
+        AdvancedAI: typeof AdvancedAI2048Solver !== 'undefined',
+        EnhancedAI: typeof Enhanced2048AI !== 'undefined', 
+        Game: typeof Game !== 'undefined'
+      });
+    </script>
   </body>
 </html>

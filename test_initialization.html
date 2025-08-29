@@ -1,0 +1,250 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fancy2048 - Initialization Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #1a1a1a;
+            color: #f2f2f2;
+        }
+        .test-section {
+            background-color: #333;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+        }
+        .test-section h2 {
+            color: #ffcc00;
+            margin-top: 0;
+        }
+        .log {
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            height: 200px;
+            overflow-y: auto;
+            border: 1px solid #333;
+        }
+        button {
+            background: #ffcc00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin: 5px;
+        }
+        button:hover {
+            background: #ffd700;
+        }
+        .status {
+            padding: 10px;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        .status.success {
+            background: #4CAF50;
+            color: white;
+        }
+        .status.error {
+            background: #f44336;
+            color: white;
+        }
+        .status.warning {
+            background: #FF9800;
+            color: white;
+        }
+        .status.info {
+            background: #2196F3;
+            color: white;
+        }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #ffcc00;
+            border-radius: 8px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-section">
+        <h2>🔍 Game Initialization Test Suite</h2>
+        <p>This page tests the game initialization process and provides debugging information.</p>
+        
+        <div class="button-group">
+            <button onclick="runInitTests()">Run Initialization Tests</button>
+            <button onclick="checkDOMElements()">Check DOM Elements</button>
+            <button onclick="testScriptLoading()">Test Script Loading</button>
+            <button onclick="clearLog()">Clear Log</button>
+        </div>
+        
+        <div id="status-container"></div>
+        <div id="log" class="log">Initialization test ready...\n</div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎮 Live Game Test</h2>
+        <p>The game should load below. Check the console log above for any initialization issues.</p>
+        <iframe src="pages/index.html" title="Fancy2048 Game"></iframe>
+    </div>
+
+    <script>
+        let logElement;
+
+        function log(message, type = 'info') {
+            if (!logElement) {
+                logElement = document.getElementById('log');
+            }
+            
+            const timestamp = new Date().toLocaleTimeString();
+            const logMessage = `[${timestamp}] ${message}\n`;
+            logElement.textContent += logMessage;
+            logElement.scrollTop = logElement.scrollHeight;
+            
+            // Also log to console
+            console.log(message);
+        }
+
+        function clearLog() {
+            const logElement = document.getElementById('log');
+            logElement.textContent = 'Log cleared...\n';
+        }
+
+        function showStatus(message, type) {
+            const container = document.getElementById('status-container');
+            const statusDiv = document.createElement('div');
+            statusDiv.className = `status ${type}`;
+            statusDiv.textContent = message;
+            container.appendChild(statusDiv);
+            
+            // Remove after 5 seconds
+            setTimeout(() => {
+                if (statusDiv.parentNode) {
+                    statusDiv.parentNode.removeChild(statusDiv);
+                }
+            }, 5000);
+        }
+
+        function checkDOMElements() {
+            log('🔍 Checking required DOM elements...');
+            
+            const requiredElements = [
+                'board-container',
+                'score', 
+                'best-score', 
+                'moves', 
+                'time',
+                'controls-container',
+                'reset-button',
+                'autoplay-button'
+            ];
+            
+            let allFound = true;
+            const iframe = document.querySelector('iframe');
+            const iframeDoc = iframe ? iframe.contentDocument || iframe.contentWindow.document : null;
+            
+            if (!iframeDoc) {
+                log('❌ Cannot access iframe content', 'error');
+                showStatus('Cannot access iframe content', 'error');
+                return;
+            }
+            
+            requiredElements.forEach(id => {
+                const element = iframeDoc.getElementById(id);
+                if (element) {
+                    log(`✅ Found element: ${id}`);
+                } else {
+                    log(`❌ Missing element: ${id}`, 'error');
+                    allFound = false;
+                }
+            });
+            
+            if (allFound) {
+                log('✅ All required DOM elements found');
+                showStatus('All DOM elements present', 'success');
+            } else {
+                log('❌ Some required DOM elements are missing');
+                showStatus('Missing DOM elements', 'error');
+            }
+        }
+
+        function testScriptLoading() {
+            log('🔍 Testing script loading...');
+            
+            const iframe = document.querySelector('iframe');
+            const iframeWindow = iframe ? iframe.contentWindow : null;
+            
+            if (!iframeWindow) {
+                log('❌ Cannot access iframe window', 'error');
+                showStatus('Cannot access iframe window', 'error');
+                return;
+            }
+            
+            const scripts = [
+                'AdvancedAI2048Solver',
+                'Enhanced2048AI', 
+                'Game'
+            ];
+            
+            let allLoaded = true;
+            scripts.forEach(scriptName => {
+                if (typeof iframeWindow[scriptName] !== 'undefined') {
+                    log(`✅ Script loaded: ${scriptName}`);
+                } else {
+                    log(`❌ Script not loaded: ${scriptName}`, 'error');
+                    allLoaded = false;
+                }
+            });
+            
+            if (allLoaded) {
+                log('✅ All scripts loaded successfully');
+                showStatus('All scripts loaded', 'success');
+            } else {
+                log('❌ Some scripts failed to load');
+                showStatus('Script loading issues', 'error');
+            }
+            
+            // Check if game instance exists
+            if (iframeWindow.game) {
+                log('✅ Game instance exists');
+                log(`Game size: ${iframeWindow.game.size}x${iframeWindow.game.size}`);
+                log(`Game state: ${iframeWindow.game.gameState}`);
+                showStatus('Game instance found', 'success');
+            } else {
+                log('❌ Game instance not found', 'error');
+                showStatus('Game not initialized', 'error');
+            }
+        }
+
+        function runInitTests() {
+            log('🚀 Starting initialization tests...');
+            clearLog();
+            
+            setTimeout(() => {
+                checkDOMElements();
+                setTimeout(() => {
+                    testScriptLoading();
+                    log('✅ Initialization tests completed');
+                }, 1000);
+            }, 2000); // Give iframe time to load
+        }
+
+        // Auto-run tests when page loads
+        window.addEventListener('load', () => {
+            log('📄 Page loaded, waiting for iframe...');
+            setTimeout(() => {
+                runInitTests();
+            }, 3000);
+        });
+    </script>
+</body>
+</html>
