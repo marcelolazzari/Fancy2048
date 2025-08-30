@@ -1355,3 +1355,190 @@ footer button:hover {
     border: 0.5px solid rgba(255, 255, 255, 0.1);
   }
 }
+
+/* Mobile Toast Messages */
+.mobile-pause-toast,
+.pause-reminder-toast,
+.restoration-toast {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+  font-weight: 500;
+  letter-spacing: 0.3px;
+  user-select: none;
+  pointer-events: auto;
+  cursor: pointer;
+}
+
+.mobile-pause-toast:active,
+.pause-reminder-toast:active {
+  transform: translateX(-50%) scale(0.95) !important;
+}
+
+.toast-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.toast-content i {
+  flex-shrink: 0;
+  opacity: 0.9;
+}
+
+/* Mobile Game Over/Win Messages */
+.mobile-game-over,
+.mobile-win-message {
+  background: rgba(0, 0, 0, 0.95);
+  border-radius: 20px;
+  padding: 30px 25px;
+  text-align: center;
+  max-width: 300px;
+  width: 90%;
+  backdrop-filter: blur(15px);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.mobile-game-over .game-over-icon,
+.mobile-win-message .win-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+  display: block;
+}
+
+.mobile-game-over h3,
+.mobile-win-message h3 {
+  color: var(--highlight-color);
+  margin: 0 0 10px 0;
+  font-size: 1.5rem;
+  font-weight: 600;
+}
+
+.mobile-game-over p,
+.mobile-win-message p {
+  color: rgba(255, 255, 255, 0.8);
+  margin: 0 0 20px 0;
+  font-size: 0.95rem;
+}
+
+.final-stats {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 20px;
+  padding: 15px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+}
+
+.final-stats .stat {
+  font-size: 0.9rem;
+  color: rgba(255, 255, 255, 0.9);
+}
+
+.button-row,
+.win-buttons {
+  display: flex;
+  gap: 10px;
+  justify-content: center;
+}
+
+.compact-btn {
+  padding: 12px 18px;
+  border: none;
+  border-radius: 12px;
+  font-size: 0.9rem;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  transition: all 0.2s ease;
+}
+
+.compact-btn.primary {
+  background: linear-gradient(45deg, var(--highlight-color), #e6b800);
+  color: var(--primary-color);
+}
+
+.compact-btn.secondary {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+}
+
+.compact-btn:active {
+  transform: scale(0.95);
+}
+
+/* Toast Animations */
+@keyframes slideInTop {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+}
+
+@keyframes slideOutTop {
+  from {
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+  }
+  to {
+    opacity: 0;
+    transform: translateX(-50%) translateY(-20px);
+  }
+}
+
+@keyframes pulseIn {
+  from {
+    opacity: 0;
+    transform: translateX(-50%) scale(0.8);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(-50%) scale(1);
+  }
+}
+
+@keyframes fadeOut {
+  from {
+    opacity: 1;
+  }
+  to {
+    opacity: 0;
+  }
+}
+
+/* Mobile-specific responsive adjustments */
+@media (max-width: 480px) {
+  .mobile-game-over,
+  .mobile-win-message {
+    padding: 25px 20px;
+    max-width: 280px;
+  }
+  
+  .compact-btn {
+    padding: 10px 14px;
+    font-size: 0.85rem;
+  }
+  
+  .mobile-pause-toast,
+  .pause-reminder-toast,
+  .restoration-toast {
+    font-size: 13px;
+    padding: 10px 16px;
+  }
+}
+
+/* Ensure toasts work well in landscape mobile */
+@media (max-height: 500px) and (orientation: landscape) {
+  .mobile-pause-toast {
+    top: 10px;
+  }
+  
+  .pause-reminder-toast {
+    bottom: 60px;
+  }
+}

@@ -1,0 +1,198 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+  
+  <!-- Enhanced PWA mobile support -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Fancy2048">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#1a1a1a">
+  
+  <title>Fancy2048 - Mobile Resume & Toast Test</title>
+  <link rel="stylesheet" href="styles/unified_styles_fixed.css">
+  
+  <style>
+    .test-info {
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 20px;
+      margin: 20px;
+      border-radius: 12px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    
+    .test-info h2 {
+      color: #ffcc00;
+      margin: 0 0 15px 0;
+      font-size: 1.2rem;
+    }
+    
+    .test-info ul {
+      margin: 10px 0;
+      padding-left: 20px;
+    }
+    
+    .test-info li {
+      margin: 8px 0;
+    }
+    
+    .test-button {
+      background: linear-gradient(45deg, #4CAF50, #45a049);
+      color: white;
+      border: none;
+      padding: 12px 20px;
+      margin: 5px;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 14px;
+      font-weight: 600;
+    }
+    
+    .test-button:active {
+      transform: scale(0.95);
+    }
+    
+    .warning {
+      background: linear-gradient(45deg, #FF9800, #F57C00);
+    }
+    
+    iframe {
+      width: 100%;
+      height: 70vh;
+      border: none;
+      border-radius: 12px;
+      margin-top: 10px;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-info">
+    <h2>📱 Mobile Resume & Toast Message Test</h2>
+    <p>This test demonstrates the enhanced mobile experience for Fancy2048:</p>
+    
+    <h3>🔄 New Mobile Features:</h3>
+    <ul>
+      <li><strong>Auto-save every 30 seconds</strong> - Game state is preserved automatically</li>
+      <li><strong>Smart resume</strong> - Game restores when returning to the page</li>
+      <li><strong>Compact toast messages</strong> - Small, non-intrusive notifications</li>
+      <li><strong>Better page visibility handling</strong> - Smoother pause/resume cycle</li>
+      <li><strong>Mobile-optimized game over/win screens</strong> - Smaller, finger-friendly</li>
+    </ul>
+    
+    <h3>🧪 Test Instructions:</h3>
+    <ul>
+      <li>Start playing the game below</li>
+      <li>Switch to another app or tab - you should see a small toast message</li>
+      <li>Return to the game - it should resume automatically</li>
+      <li>Try pausing manually - notice the smaller message style</li>
+      <li>Refresh the page - the game should restore your progress (if recent)</li>
+    </ul>
+    
+    <div style="text-align: center; margin: 15px 0;">
+      <button class="test-button" onclick="testMobileMessage()">Test Mobile Toast</button>
+      <button class="test-button" onclick="testRestorationMessage()">Test Restoration</button>
+      <button class="test-button warning" onclick="clearSavedState()">Clear Saved State</button>
+    </div>
+  </div>
+
+  <iframe src="pages/index.html" title="Fancy2048 Game with Mobile Enhancements"></iframe>
+
+  <script>
+    function testMobileMessage() {
+      // Create a test mobile message
+      const message = document.createElement('div');
+      message.id = 'test-mobile-message';
+      message.className = 'mobile-pause-toast';
+      message.innerHTML = `
+        <div class="toast-content">
+          <i class="fas fa-pause-circle"></i>
+          <span>Test mobile toast - tap to dismiss</span>
+        </div>
+      `;
+      
+      message.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10000;
+        background: rgba(0, 0, 0, 0.85);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 25px;
+        font-size: 14px;
+        backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.2);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        animation: slideInTop 0.3s ease-out;
+        cursor: pointer;
+      `;
+      
+      document.body.appendChild(message);
+      
+      // Dismiss on tap
+      message.addEventListener('click', () => {
+        message.style.animation = 'slideOutTop 0.3s ease-in forwards';
+        setTimeout(() => message.remove(), 300);
+      });
+      
+      // Auto-dismiss after 3 seconds
+      setTimeout(() => {
+        if (message.parentNode) {
+          message.style.animation = 'slideOutTop 0.3s ease-in forwards';
+          setTimeout(() => message.remove(), 300);
+        }
+      }, 3000);
+    }
+    
+    function testRestorationMessage() {
+      const message = document.createElement('div');
+      message.className = 'restoration-toast';
+      message.innerHTML = `
+        <div class="toast-content">
+          <i class="fas fa-history"></i>
+          <span>Game restored (test)</span>
+        </div>
+      `;
+      
+      message.style.cssText = `
+        position: fixed;
+        top: 80px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10000;
+        background: rgba(76, 175, 80, 0.9);
+        color: white;
+        padding: 8px 16px;
+        border-radius: 20px;
+        font-size: 13px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        animation: slideInTop 0.3s ease-out;
+      `;
+      
+      document.body.appendChild(message);
+      
+      setTimeout(() => {
+        message.style.animation = 'slideOutTop 0.3s ease-in forwards';
+        setTimeout(() => message.remove(), 300);
+      }, 2000);
+    }
+    
+    function clearSavedState() {
+      localStorage.removeItem('currentGameState');
+      alert('Saved game state cleared!');
+    }
+    
+    // Log mobile detection
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    console.log('📱 Mobile device detected:', isMobile);
+    console.log('📊 Screen size:', window.innerWidth + 'x' + window.innerHeight);
+    console.log('🔍 User Agent:', navigator.userAgent.substring(0, 100) + '...');
+  </script>
+</body>
+</html>

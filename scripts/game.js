@@ -45,6 +45,12 @@ class Game {
     
     // Performance optimization
     this.debounceTimeout = null;
+    
+    // Mobile state management
+    this.lastSavedState = null;
+    this.autoSaveInterval = null;
+    this.isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    this.pageVisibilityTimeout = null;
 
     // Autoplay properties
     this.isAutoPlaying = false;
@@ -83,6 +89,10 @@ class Game {
     // AI performance settings
     this.aiDifficulty = localStorage.getItem('aiDifficulty') || 'normal';
     this.adaptiveDepth = true;
+    
+    // Auto-save for mobile devices
+    this.startAutoSave();
+    this.restoreGameStateIfNeeded();
     
     console.log('✅ Game initialized successfully');
   }
@@ -172,7 +182,7 @@ class Game {
     // Handle visibility changes to pause/resume timer and game
     document.addEventListener('visibilitychange', () => {
       if (document.hidden) {
-        // Page is now hidden (tab switched, minimized, etc.)
+        // Page is now hidden (tab switched, minimized, app backgrounded)
         this.handlePageHidden();
       } else {
         // Page is now visible again
@@ -180,26 +190,55 @@ class Game {
       }
     });
 
-    // Handle beforeunload to pause game when user is about to leave
+    // Handle beforeunload to save game state when user is about to leave
     window.addEventListener('beforeunload', () => {
+      this.saveCurrentGameState();
+      this.stopAutoSave(); // Stop auto-save interval
       if (!this.isPaused && this.gameState === 'playing') {
         this.pauseGame(false); // Auto-pause without user flag
       }
     });
 
-    // Handle focus/blur events for additional pause control
-    window.addEventListener('blur', () => {
-      if (!this.isPaused && this.gameState === 'playing') {
-        this.pauseGame(false); // Auto-pause
-      }
-    });
+    // Mobile-specific events for better lifecycle management
+    if (this.isMobileDevice) {
+      window.addEventListener('pagehide', () => {
+        this.saveCurrentGameState();
+        this.handlePageHidden();
+      });
+      
+      window.addEventListener('pageshow', (event) => {
+        if (event.persisted) {
+          // Page was restored from cache
+          this.handlePageVisible();
+        }
+      });
+      
+      // Handle app focus events with debouncing to avoid rapid state changes
+      let focusTimeout;
+      window.addEventListener('focus', () => {
+        clearTimeout(focusTimeout);
+        focusTimeout = setTimeout(() => this.handlePageVisible(), 100);
+      });
+      
+      window.addEventListener('blur', () => {
+        clearTimeout(focusTimeout);
+        this.handlePageHidden();
+      });
+    } else {
+      // Desktop focus/blur handling
+      window.addEventListener('blur', () => {
+        if (!this.isPaused && this.gameState === 'playing') {
+          this.pauseGame(false); // Auto-pause
+        }
+      });
 
-    window.addEventListener('focus', () => {
-      // Only resume if it was auto-paused (not paused by user)
-      if (this.isPaused && !this.wasPausedByUser && this.gameState === 'playing') {
-        this.resumeGame();
-      }
-    });
+      window.addEventListener('focus', () => {
+        // Only resume if it was auto-paused (not paused by user)
+        if (this.isPaused && !this.wasPausedByUser && this.gameState === 'playing') {
+          this.resumeGame();
+        }
+      });
+    }
   }
 
   initializeResizeObserver() {
@@ -227,24 +266,55 @@ class Game {
 
   // Enhanced page visibility handlers
   handlePageHidden() {
+    // Save current game state before potentially losing focus
+    this.saveCurrentGameState();
+    
     if (!this.isPaused && this.gameState === 'playing') {
       this.pauseGame(false); // Auto-pause (not user-initiated)
-      this.showPageHiddenMessage();
+      
+      // Show smaller, less intrusive message for mobile
+      if (this.isMobileDevice) {
+        this.showMobileHiddenMessage();
+      } else {
+        this.showPageHiddenMessage();
+      }
+    }
+    
+    // Clear any timeout for automatic resume
+    if (this.pageVisibilityTimeout) {
+      clearTimeout(this.pageVisibilityTimeout);
+      this.pageVisibilityTimeout = null;
     }
   }
 
   handlePageVisible() {
-    // Only resume if it was auto-paused (not paused by user)
-    if (this.isPaused && !this.wasPausedByUser && this.gameState === 'playing') {
-      this.resumeGame();
-      this.hidePageHiddenMessage();
-    } else if (this.isPaused && this.wasPausedByUser) {
-      // Show message that game is still paused by user
-      this.showUserPausedMessage();
+    // Add a small delay to avoid rapid state changes on mobile
+    if (this.pageVisibilityTimeout) {
+      clearTimeout(this.pageVisibilityTimeout);
     }
+    
+    this.pageVisibilityTimeout = setTimeout(() => {
+      // Only resume if it was auto-paused (not paused by user)
+      if (this.isPaused && !this.wasPausedByUser && this.gameState === 'playing') {
+        this.resumeGame();
+        this.hidePageHiddenMessage();
+        this.hideMobileHiddenMessage();
+      } else if (this.isPaused && this.wasPausedByUser) {
+        // Show brief message that game is still paused by user
+        this.showUserPausedMessage();
+      }
+      
+      // Restore game state if needed (for mobile app switching)
+      if (this.isMobileDevice && this.gameState === 'playing') {
+        this.restoreGameStateIfNeeded();
+      }
+    }, this.isMobileDevice ? 200 : 50); // Longer delay for mobile
   }
 
   showPageHiddenMessage() {
+    // Remove existing message first
+    this.hidePageHiddenMessage();
+    
     const message = document.createElement('div');
     message.id = 'page-hidden-message';
     message.className = 'pause-message';
@@ -259,10 +329,62 @@ class Game {
     document.body.appendChild(message);
   }
 
+  showMobileHiddenMessage() {
+    // Remove existing message first
+    this.hideMobileHiddenMessage();
+    
+    const message = document.createElement('div');
+    message.id = 'mobile-hidden-message';
+    message.className = 'mobile-pause-toast';
+    message.innerHTML = `
+      <div class="toast-content">
+        <i class="fas fa-pause-circle"></i>
+        <span>Game paused - tap to resume when ready</span>
+      </div>
+    `;
+    
+    // Position at top of screen for mobile
+    message.style.cssText = `
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10000;
+      background: rgba(0, 0, 0, 0.85);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 25px;
+      font-size: 14px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+      animation: slideInTop 0.3s ease-out;
+    `;
+    
+    document.body.appendChild(message);
+    
+    // Auto-hide after 3 seconds
+    setTimeout(() => {
+      this.hideMobileHiddenMessage();
+    }, 3000);
+  }
+
   hidePageHiddenMessage() {
     const message = document.getElementById('page-hidden-message');
     if (message) {
       message.remove();
+    }
+  }
+
+  hideMobileHiddenMessage() {
+    const message = document.getElementById('mobile-hidden-message');
+    if (message) {
+      message.style.animation = 'slideOutTop 0.3s ease-in forwards';
+      setTimeout(() => {
+        if (message.parentNode) {
+          message.remove();
+        }
+      }, 300);
     }
   }
 
@@ -273,21 +395,53 @@ class Game {
 
     const message = document.createElement('div');
     message.id = 'user-paused-reminder';
-    message.className = 'pause-reminder';
-    message.innerHTML = `
-      <div class="reminder-content">
-        <i class="fas fa-pause"></i>
-        <span>Game is paused - Click the pause button to resume</span>
-      </div>
-    `;
+    message.className = 'pause-reminder-toast';
+    
+    if (this.isMobileDevice) {
+      message.innerHTML = `
+        <div class="toast-content">
+          <i class="fas fa-pause"></i>
+          <span>Still paused - tap pause button to resume</span>
+        </div>
+      `;
+      message.style.cssText = `
+        position: fixed;
+        bottom: 100px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 10000;
+        background: rgba(255, 153, 0, 0.9);
+        color: white;
+        padding: 12px 20px;
+        border-radius: 25px;
+        font-size: 14px;
+        backdrop-filter: blur(10px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        animation: pulseIn 0.3s ease-out;
+      `;
+    } else {
+      message.innerHTML = `
+        <div class="reminder-content">
+          <i class="fas fa-pause"></i>
+          <span>Game is paused - Click the pause button to resume</span>
+        </div>
+      `;
+      message.className = 'pause-reminder';
+    }
+    
     document.body.appendChild(message);
 
-    // Auto-remove after 3 seconds
+    // Auto-remove after 2.5 seconds (shorter for mobile)
     setTimeout(() => {
       if (message.parentNode) {
-        message.remove();
+        if (this.isMobileDevice) {
+          message.style.animation = 'fadeOut 0.3s ease-in forwards';
+          setTimeout(() => message.remove(), 300);
+        } else {
+          message.remove();
+        }
       }
-    }, 3000);
+    }, this.isMobileDevice ? 2500 : 3000);
   }
 
   adjustViewportForMobile() {
@@ -659,6 +813,10 @@ class Game {
     // Clean up pause overlays and messages
     this.hidePauseOverlay();
     this.hidePageHiddenMessage();
+    this.hideMobileHiddenMessage();
+    
+    // Clear saved mobile state
+    localStorage.removeItem('currentGameState');
     
     // Reset game state
     this.board = this.createEmptyBoard();
@@ -1304,9 +1462,30 @@ class Game {
 
   showGameOver() {
     const gameOverElement = document.getElementById('game-over');
-    gameOverElement.textContent = 'Game Over!';
-    gameOverElement.classList.remove('hidden'); // Make sure we're removing the hidden class
-    gameOverElement.classList.remove('win-state'); // Remove win state if present
+    
+    if (this.isMobileDevice) {
+      // Smaller, mobile-friendly game over message
+      gameOverElement.innerHTML = `
+        <div class="mobile-game-over">
+          <div class="game-over-icon">💀</div>
+          <h3>Game Over!</h3>
+          <div class="final-stats">
+            <div class="stat">Score: ${this.score.toLocaleString()}</div>
+            <div class="stat">Moves: ${this.moves}</div>
+          </div>
+          <div class="button-row">
+            <button class="compact-btn primary" onclick="game.reset(); game.updateUI();">
+              <i class="fas fa-redo"></i> New Game
+            </button>
+          </div>
+        </div>
+      `;
+    } else {
+      gameOverElement.textContent = 'Game Over!';
+    }
+    
+    gameOverElement.classList.remove('hidden');
+    gameOverElement.classList.remove('win-state');
     
     if (!this.hasSavedStats) {
       this.saveStats();
@@ -1318,64 +1497,201 @@ class Game {
     const gameOverElement = document.getElementById('game-over');
     gameOverElement.innerHTML = ''; // Clear any existing content
     
-    const messageDiv = document.createElement('div');
-    messageDiv.style.marginBottom = '15px';
-    messageDiv.innerHTML = `
-      <h3 style="margin: 0 0 10px 0; color: #ffcc00;">🎉 Congratulations!</h3>
-      <p style="margin: 0;">You reached 2048! Keep playing to reach even higher tiles!</p>
-    `;
+    if (this.isMobileDevice) {
+      // Compact mobile win message
+      const winDiv = document.createElement('div');
+      winDiv.className = 'mobile-win-message';
+      winDiv.innerHTML = `
+        <div class="win-icon">🎉</div>
+        <h3>You Won!</h3>
+        <p>You reached 2048!</p>
+        <div class="win-buttons">
+          <button class="compact-btn primary" onclick="document.getElementById('game-over').classList.add('hidden'); game.gameState = 'won-continue';">
+            <i class="fas fa-play"></i> Keep Playing
+          </button>
+          <button class="compact-btn secondary" onclick="game.reset(); game.updateUI();">
+            <i class="fas fa-redo"></i> New Game
+          </button>
+        </div>
+      `;
+      gameOverElement.appendChild(winDiv);
+    } else {
+      // Desktop version (keep existing)
+      const messageDiv = document.createElement('div');
+      messageDiv.style.marginBottom = '15px';
+      messageDiv.innerHTML = `
+        <h3 style="margin: 0 0 10px 0; color: #ffcc00;">🎉 Congratulations!</h3>
+        <p style="margin: 0;">You reached 2048! Keep playing to reach even higher tiles!</p>
+      `;
+      
+      // Add a continue button
+      const continueButton = document.createElement('button');
+      continueButton.textContent = 'Keep Playing';
+      continueButton.style.cssText = `
+        background: linear-gradient(45deg, #4CAF50, #45a049);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        margin: 0 5px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: bold;
+      `;
+      continueButton.addEventListener('click', () => {
+        gameOverElement.classList.add('hidden');
+        this.gameState = 'won-continue'; // Mark as won but continuing
+      });
+      
+      // Add a new game button
+      const newGameButton = document.createElement('button');
+      newGameButton.textContent = 'New Game';
+      newGameButton.style.cssText = `
+        background: linear-gradient(45deg, #2196F3, #1976D2);
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        margin: 0 5px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 1rem;
+        font-weight: bold;
+      `;
+      newGameButton.addEventListener('click', () => {
+        this.reset();
+        this.updateUI();
+      });
+      
+      gameOverElement.appendChild(messageDiv);
+      gameOverElement.appendChild(continueButton);
+      gameOverElement.appendChild(newGameButton);
+    }
     
-    // Add a continue button
-    const continueButton = document.createElement('button');
-    continueButton.textContent = 'Keep Playing';
-    continueButton.style.cssText = `
-      background: linear-gradient(45deg, #4CAF50, #45a049);
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      margin: 0 5px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 1rem;
-      font-weight: bold;
-    `;
-    continueButton.addEventListener('click', () => {
-      gameOverElement.classList.add('hidden');
-      this.gameState = 'won-continue'; // Mark as won but continuing
-    });
-    
-    // Add a new game button
-    const newGameButton = document.createElement('button');
-    newGameButton.textContent = 'New Game';
-    newGameButton.style.cssText = `
-      background: linear-gradient(45deg, #2196F3, #1976D2);
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      margin: 0 5px;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 1rem;
-      font-weight: bold;
-    `;
-    newGameButton.addEventListener('click', () => {
-      gameOverElement.classList.add('hidden');
-      this.reset();
-    });
-    
-    const buttonContainer = document.createElement('div');
-    buttonContainer.style.textAlign = 'center';
-    buttonContainer.appendChild(continueButton);
-    buttonContainer.appendChild(newGameButton);
-    
-    gameOverElement.appendChild(messageDiv);
-    gameOverElement.appendChild(buttonContainer);
     gameOverElement.classList.remove('hidden');
     gameOverElement.classList.add('win-state');
     
     if (!this.hasSavedStats) {
       this.saveStats();
       this.hasSavedStats = true;
+    }
+  }
+
+  // Mobile state management methods
+  saveCurrentGameState() {
+    if (this.gameState === 'playing' || this.gameState === 'won-continue') {
+      const gameState = {
+        board: JSON.parse(JSON.stringify(this.board)),
+        score: this.score,
+        bestScore: this.bestScore,
+        moves: this.moves,
+        gameState: this.gameState,
+        startTime: this.startTime,
+        pausedTime: this.pausedTime,
+        isAutoPlayedGame: this.isAutoPlayedGame,
+        hueValue: this.hueValue,
+        isLightMode: this.isLightMode,
+        size: this.size,
+        timestamp: Date.now()
+      };
+      
+      try {
+        localStorage.setItem('currentGameState', JSON.stringify(gameState));
+        console.log('📱 Game state saved for mobile resume');
+      } catch (e) {
+        console.warn('Failed to save game state:', e);
+      }
+    }
+  }
+
+  restoreGameStateIfNeeded() {
+    try {
+      const savedState = localStorage.getItem('currentGameState');
+      if (savedState) {
+        const gameState = JSON.parse(savedState);
+        
+        // Only restore if the saved state is recent (within 24 hours)
+        const timeDiff = Date.now() - gameState.timestamp;
+        if (timeDiff < 24 * 60 * 60 * 1000) { // 24 hours in milliseconds
+          
+          // Only restore if current game is fresh (no moves made)
+          if (this.moves === 0 && this.score === 0) {
+            this.board = gameState.board;
+            this.score = gameState.score;
+            this.moves = gameState.moves;
+            this.gameState = gameState.gameState;
+            this.startTime = gameState.startTime;
+            this.pausedTime = gameState.pausedTime || 0;
+            this.isAutoPlayedGame = gameState.isAutoPlayedGame || false;
+            
+            // Restore visual settings if they match current settings
+            if (gameState.size === this.size) {
+              this.updateUI();
+              console.log('📱 Game state restored successfully');
+              
+              // Show brief message about restoration
+              this.showRestorationMessage();
+            }
+          }
+        }
+        
+        // Clear old saved state
+        localStorage.removeItem('currentGameState');
+      }
+    } catch (e) {
+      console.warn('Failed to restore game state:', e);
+      localStorage.removeItem('currentGameState');
+    }
+  }
+
+  showRestorationMessage() {
+    const message = document.createElement('div');
+    message.className = 'restoration-toast';
+    message.innerHTML = `
+      <div class="toast-content">
+        <i class="fas fa-history"></i>
+        <span>Game restored</span>
+      </div>
+    `;
+    
+    message.style.cssText = `
+      position: fixed;
+      top: 80px;
+      left: 50%;
+      transform: translateX(-50%);
+      z-index: 10000;
+      background: rgba(76, 175, 80, 0.9);
+      color: white;
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 13px;
+      backdrop-filter: blur(10px);
+      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+      animation: slideInTop 0.3s ease-out;
+    `;
+    
+    document.body.appendChild(message);
+    
+    setTimeout(() => {
+      message.style.animation = 'slideOutTop 0.3s ease-in forwards';
+      setTimeout(() => message.remove(), 300);
+    }, 2000);
+  }
+
+  startAutoSave() {
+    if (this.isMobileDevice) {
+      // Auto-save every 30 seconds for mobile devices
+      this.autoSaveInterval = setInterval(() => {
+        if (this.gameState === 'playing') {
+          this.saveCurrentGameState();
+        }
+      }, 30000); // 30 seconds
+    }
+  }
+
+  stopAutoSave() {
+    if (this.autoSaveInterval) {
+      clearInterval(this.autoSaveInterval);
+      this.autoSaveInterval = null;
     }
   }
 
@@ -2162,6 +2478,7 @@ class Game {
     // Hide pause overlay and messages
     this.hidePauseOverlay();
     this.hidePageHiddenMessage();
+    this.hideMobileHiddenMessage();
 
     // Dispatch resume event
     document.dispatchEvent(new CustomEvent('gameResumed'));
