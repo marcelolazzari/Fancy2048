@@ -215,7 +215,7 @@ class Game {
     });
 
     // Viewport meta tag adjustment for mobile
-    if (this.isMobileDevice()) {
+    if (this.isMobileDevice) {
       this.adjustViewportForMobile();
     }
 
@@ -1063,12 +1063,12 @@ class Game {
     }
     
     // Apply responsive scaling based on device type
-    const scaleFactor = this.isMobileDevice() ? 0.9 : 1.0;
+    const scaleFactor = this.isMobileDevice ? 0.9 : 1.0;
     fontSizePercent *= scaleFactor;
     
     // Calculate final font size with constraints
     const baseFontSize = tileSize * fontSizePercent;
-    const minFontSize = this.isMobileDevice() ? 10 : 12;
+    const minFontSize = this.isMobileDevice ? 10 : 12;
     const maxFontSize = tileSize * 0.7;
     
     const fontSize = Math.max(minFontSize, Math.min(baseFontSize, maxFontSize));
@@ -2076,7 +2076,7 @@ class Game {
     document.documentElement.style.setProperty('--tile-border-radius', `${borderRadius}px`);
     
     // Update mobile-specific measurements
-    if (this.isMobileDevice()) {
+    if (this.isMobileDevice) {
       this.applyMobileOptimizations();
     } else {
       this.applyDesktopOptimizations();
