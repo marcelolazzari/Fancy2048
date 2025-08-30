@@ -3004,52 +3004,219 @@ style.textContent = `
 `;
 document.head.appendChild(style);
 
-// Initialize the game when the DOM is loaded
-document.addEventListener('DOMContentLoaded', () => {
-  console.log('🚀 DOM loaded, initializing Fancy2048...');
+// Enhanced initialization system with comprehensive error handling
+function initializeFancy2048() {
+  console.log('🚀 Starting Fancy2048 initialization...');
   
   let gameInitialized = false;
+  let initAttempts = 0;
+  const maxInitAttempts = 3;
   
-  function initializeGame() {
-    if (!gameInitialized) {
-      gameInitialized = true;
-      try {
-        // Ensure all required elements exist
-        const requiredElements = ['board-container', 'score', 'best-score', 'moves', 'time'];
-        const missingElements = requiredElements.filter(id => !document.getElementById(id));
+  function attemptInitialization() {
+    if (gameInitialized) return;
+    
+    initAttempts++;
+    console.log(`🎮 Initialization attempt ${initAttempts}/${maxInitAttempts}`);
+    
+    try {
+      // Comprehensive DOM readiness check
+      if (document.readyState === 'loading') {
+        console.log('⏳ DOM still loading, waiting...');
+        setTimeout(attemptInitialization, 200);
+        return;
+      }
+      
+      // Ensure all required elements exist
+      const requiredElements = ['board-container', 'score', 'best-score', 'moves', 'time'];
+      const missingElements = requiredElements.filter(id => {
+        const element = document.getElementById(id);
+        if (!element) {
+          console.warn(`❌ Missing element: ${id}`);
+          return true;
+        }
+        return false;
+      });
+      
+      if (missingElements.length > 0) {
+        console.error('❌ Missing required elements:', missingElements);
         
-        if (missingElements.length > 0) {
-          console.error('Missing required elements:', missingElements);
+        if (initAttempts < maxInitAttempts) {
+          console.log('🔄 Retrying initialization in 500ms...');
+          setTimeout(attemptInitialization, 500);
           return;
+        } else {
+          throw new Error(`Missing DOM elements after ${maxInitAttempts} attempts: ${missingElements.join(', ')}`);
         }
-        
-        // Initialize the game
-        window.game = new Game(4);
-        console.log('✅ Fancy2048 initialized successfully!');
-        
-      } catch (error) {
-        console.error('❌ Failed to initialize Fancy2048:', error);
-        
-        // Show user-friendly error message
-        const boardContainer = document.getElementById('board-container');
-        if (boardContainer) {
-          boardContainer.innerHTML = `
-            <div style="text-align: center; padding: 2rem; color: #ff6b6b;">
-              <h3>❌ Game Initialization Failed</h3>
-              <p>Please refresh the page to try again.</p>
-              <button onclick="location.reload()" style="margin-top: 1rem; padding: 0.5rem 1rem; background: #ff6b6b; color: white; border: none; border-radius: 5px; cursor: pointer;">
-                Refresh Page
-              </button>
-            </div>
-          `;
+      }
+      
+      // Verify Game class is available
+      if (typeof Game === 'undefined') {
+        console.error('❌ Game class not found');
+        if (initAttempts < maxInitAttempts) {
+          console.log('🔄 Waiting for Game class to load...');
+          setTimeout(attemptInitialization, 500);
+          return;
+        } else {
+          throw new Error('Game class not loaded after maximum attempts');
         }
+      }
+      
+      console.log('✅ All prerequisites met, creating game instance...');
+      
+      // Initialize the game
+      window.game = new Game(4);
+      gameInitialized = true;
+      
+      console.log('🎉 Fancy2048 initialized successfully!');
+      
+      // Dispatch initialization complete event
+      document.dispatchEvent(new CustomEvent('gameInitialized', {
+        detail: { game: window.game, attempts: initAttempts }
+      }));
+      
+      // Optional: Remove any loading indicators
+      const loadingIndicators = document.querySelectorAll('.loading-indicator, .init-status');
+      loadingIndicators.forEach(indicator => {
+        indicator.style.opacity = '0';
+        setTimeout(() => indicator.remove(), 500);
+      });
+      
+    } catch (error) {
+      console.error(`❌ Initialization attempt ${initAttempts} failed:`, error);
+      
+      if (initAttempts < maxInitAttempts) {
+        console.log(`🔄 Retrying in 1 second... (${maxInitAttempts - initAttempts} attempts remaining)`);
+        setTimeout(attemptInitialization, 1000);
+      } else {
+        console.error('❌ All initialization attempts failed');
+        showInitializationError(error, initAttempts);
       }
     }
   }
   
-  // Initialize the game with a slight delay to ensure DOM is fully loaded
-  setTimeout(initializeGame, 100);
+  function showInitializationError(error, attempts) {
+    const boardContainer = document.getElementById('board-container');
+    if (boardContainer) {
+      boardContainer.innerHTML = `
+        <div style="
+          text-align: center; 
+          padding: 2rem; 
+          color: #ff6b6b;
+          background: rgba(244, 67, 54, 0.1);
+          border: 1px solid #ff6b6b;
+          border-radius: 10px;
+          margin: 20px;
+        ">
+          <h3 style="margin-top: 0; color: #ff6b6b;">
+            <i class="fas fa-exclamation-triangle"></i>
+            Game Initialization Failed
+          </h3>
+          <p style="margin: 15px 0;">
+            The game could not be initialized after ${attempts} attempts.
+          </p>
+          <details style="margin: 15px 0; text-align: left;">
+            <summary style="cursor: pointer; color: #ffcc00;">Technical Details</summary>
+            <pre style="
+              margin: 10px 0; 
+              padding: 10px; 
+              background: rgba(0,0,0,0.3); 
+              border-radius: 5px; 
+              font-size: 12px;
+              overflow-x: auto;
+              color: #f2f2f2;
+            ">${error.message}
+Stack: ${error.stack || 'Not available'}</pre>
+          </details>
+          <div style="margin-top: 20px;">
+            <button onclick="location.reload()" style="
+              margin: 5px; 
+              padding: 10px 15px; 
+              background: #ff6b6b; 
+              color: white; 
+              border: none; 
+              border-radius: 5px; 
+              cursor: pointer;
+              font-weight: bold;
+            ">
+              <i class="fas fa-redo"></i> Refresh Page
+            </button>
+            <button onclick="window.location.href = window.location.href.replace('index.html', 'index_fixed.html')" style="
+              margin: 5px; 
+              padding: 10px 15px; 
+              background: #4CAF50; 
+              color: white; 
+              border: none; 
+              border-radius: 5px; 
+              cursor: pointer;
+              font-weight: bold;
+            ">
+              <i class="fas fa-tools"></i> Try Fixed Version
+            </button>
+          </div>
+        </div>
+      `;
+    }
+    
+    // Also show a toast notification
+    const toast = document.createElement('div');
+    toast.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: rgba(244, 67, 54, 0.9);
+      color: white;
+      padding: 15px 20px;
+      border-radius: 8px;
+      font-weight: bold;
+      z-index: 10000;
+      box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    `;
+    toast.innerHTML = `
+      <div style="display: flex; align-items: center; gap: 10px;">
+        <i class="fas fa-exclamation-circle"></i>
+        <span>Initialization Failed</span>
+      </div>
+    `;
+    document.body.appendChild(toast);
+    
+    setTimeout(() => {
+      toast.style.opacity = '0';
+      setTimeout(() => toast.remove(), 300);
+    }, 5000);
+  }
+  
+  // Start initialization
+  attemptInitialization();
+}
+
+// Multiple initialization triggers to ensure the game starts
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeFancy2048);
+} else {
+  // DOM already loaded
+  setTimeout(initializeFancy2048, 50);
+}
+
+// Additional safety initialization after window load
+window.addEventListener('load', () => {
+  if (!window.game) {
+    console.log('🚨 Game not initialized after window load, attempting emergency initialization...');
+    setTimeout(initializeFancy2048, 100);
+  }
 });
+
+// Fallback initialization for edge cases
+setTimeout(() => {
+  if (!window.game && typeof Game !== 'undefined') {
+    console.log('🆘 Running final fallback initialization...');
+    try {
+      window.game = new Game(4);
+      console.log('✅ Fallback initialization successful');
+    } catch (error) {
+      console.error('❌ Even fallback initialization failed:', error);
+    }
+  }
+}, 2000);
 
 // Additional debugging helpers
 window.debugGame = {
