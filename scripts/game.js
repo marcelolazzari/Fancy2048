@@ -49,7 +49,6 @@ class Game {
     // Mobile state management
     this.lastSavedState = null;
     this.autoSaveInterval = null;
-    this.isMobileDevice = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
     this.pageVisibilityTimeout = null;
 
     // Autoplay properties
@@ -215,7 +214,7 @@ class Game {
     });
 
     // Viewport meta tag adjustment for mobile
-    if (this.isMobileDevice) {
+    if (this.isMobileDevice()) {
       this.adjustViewportForMobile();
     }
 
@@ -240,7 +239,7 @@ class Game {
     });
 
     // Mobile-specific events for better lifecycle management
-    if (this.isMobileDevice) {
+    if (this.isMobileDevice()) {
       window.addEventListener('pagehide', () => {
         this.saveCurrentGameState();
         this.handlePageHidden();
@@ -313,7 +312,7 @@ class Game {
       this.pauseGame(false); // Auto-pause (not user-initiated)
       
       // Show smaller, less intrusive message for mobile
-      if (this.isMobileDevice) {
+      if (this.isMobileDevice()) {
         this.showMobileHiddenMessage();
       } else {
         this.showPageHiddenMessage();
@@ -345,10 +344,10 @@ class Game {
       }
       
       // Restore game state if needed (for mobile app switching)
-      if (this.isMobileDevice && this.gameState === 'playing') {
+      if (this.isMobileDevice() && this.gameState === 'playing') {
         this.restoreGameStateIfNeeded();
       }
-    }, this.isMobileDevice ? 200 : 50); // Longer delay for mobile
+    }, this.isMobileDevice() ? 200 : 50); // Longer delay for mobile
   }
 
   showPageHiddenMessage() {
@@ -437,7 +436,7 @@ class Game {
     message.id = 'user-paused-reminder';
     message.className = 'pause-reminder-toast';
     
-    if (this.isMobileDevice) {
+    if (this.isMobileDevice()) {
       message.innerHTML = `
         <div class="toast-content">
           <i class="fas fa-pause"></i>
@@ -474,14 +473,14 @@ class Game {
     // Auto-remove after 2.5 seconds (shorter for mobile)
     setTimeout(() => {
       if (message.parentNode) {
-        if (this.isMobileDevice) {
+        if (this.isMobileDevice()) {
           message.style.animation = 'fadeOut 0.3s ease-in forwards';
           setTimeout(() => message.remove(), 300);
         } else {
           message.remove();
         }
       }
-    }, this.isMobileDevice ? 2500 : 3000);
+    }, this.isMobileDevice() ? 2500 : 3000);
   }
 
   adjustViewportForMobile() {
@@ -1063,12 +1062,12 @@ class Game {
     }
     
     // Apply responsive scaling based on device type
-    const scaleFactor = this.isMobileDevice ? 0.9 : 1.0;
+    const scaleFactor = this.isMobileDevice() ? 0.9 : 1.0;
     fontSizePercent *= scaleFactor;
     
     // Calculate final font size with constraints
     const baseFontSize = tileSize * fontSizePercent;
-    const minFontSize = this.isMobileDevice ? 10 : 12;
+    const minFontSize = this.isMobileDevice() ? 10 : 12;
     const maxFontSize = tileSize * 0.7;
     
     const fontSize = Math.max(minFontSize, Math.min(baseFontSize, maxFontSize));
@@ -1520,7 +1519,7 @@ class Game {
   showGameOver() {
     const gameOverElement = document.getElementById('game-over');
     
-    if (this.isMobileDevice) {
+    if (this.isMobileDevice()) {
       // Smaller, mobile-friendly game over message
       gameOverElement.innerHTML = `
         <div class="mobile-game-over">
@@ -1554,7 +1553,7 @@ class Game {
     const gameOverElement = document.getElementById('game-over');
     gameOverElement.innerHTML = ''; // Clear any existing content
     
-    if (this.isMobileDevice) {
+    if (this.isMobileDevice()) {
       // Compact mobile win message
       const winDiv = document.createElement('div');
       winDiv.className = 'mobile-win-message';
@@ -1737,7 +1736,7 @@ class Game {
   }
 
   startAutoSave() {
-    if (this.isMobileDevice) {
+    if (this.isMobileDevice()) {
       // Auto-save every 30 seconds for mobile devices
       this.autoSaveInterval = setInterval(() => {
         if (this.gameState === 'playing') {
@@ -2076,7 +2075,7 @@ class Game {
     document.documentElement.style.setProperty('--tile-border-radius', `${borderRadius}px`);
     
     // Update mobile-specific measurements
-    if (this.isMobileDevice) {
+    if (this.isMobileDevice()) {
       this.applyMobileOptimizations();
     } else {
       this.applyDesktopOptimizations();
@@ -2087,12 +2086,6 @@ class Game {
     
     // Ensure proper font sizing after layout change
     setTimeout(() => this.updateTileFontSizes(), 100);
-  }
-
-  isMobileDevice() {
-    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
-           ('ontouchstart' in window) ||
-           (navigator.maxTouchPoints > 0);
   }
 
   applyMobileOptimizations() {
@@ -2830,6 +2823,60 @@ class Game {
     this.showNotification(`AI Difficulty: ${this.aiDifficulty.toUpperCase()}\n${difficultyInfo}`, 3000);
     
     console.log(`🧠 AI difficulty changed to: ${this.aiDifficulty}`);
+  }
+
+  // Show notification/toast message
+  showNotification(message, duration = 2000) {
+    // Remove any existing notification
+    const existingNotification = document.getElementById('game-notification');
+    if (existingNotification) {
+      existingNotification.remove();
+    }
+
+    // Create notification element
+    const notification = document.createElement('div');
+    notification.id = 'game-notification';
+    notification.className = 'notification-toast';
+    
+    // Handle multiline messages
+    const lines = message.split('\n');
+    const content = lines.map(line => `<div>${line}</div>`).join('');
+    notification.innerHTML = content;
+    
+    // Style the notification
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      background: rgba(0, 0, 0, 0.85);
+      color: white;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 10000;
+      text-align: center;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+      animation: slideInDown 0.3s ease-out;
+    `;
+    
+    // Add to document
+    document.body.appendChild(notification);
+    
+    // Auto-remove after duration
+    setTimeout(() => {
+      if (notification && notification.parentNode) {
+        notification.style.animation = 'slideOutUp 0.3s ease-in forwards';
+        setTimeout(() => {
+          if (notification.parentNode) {
+            notification.remove();
+          }
+        }, 300);
+      }
+    }, duration);
   }
 
   // Helper method to get difficulty information

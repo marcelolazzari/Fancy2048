@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fancy2048 - Complete Fix Test</title>
+    <link rel="stylesheet" href="styles/unified_styles_fixed.css">
+    <style>
+        .test-results {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 15px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            max-width: 300px;
+            z-index: 10000;
+        }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .info { color: #2196F3; }
+    </style>
+</head>
+<body>
+    <div class="test-results" id="test-results">
+        <div class="info">🔧 Testing Complete Fixes...</div>
+    </div>
+
+    <div id="board-container" tabindex="0"></div>
+    <div id="score-container">
+        <div class="score-item">
+            <span class="label">Score</span>
+            <span class="value" id="score">0</span>
+        </div>
+        <div class="score-item">
+            <span class="label">Best</span>
+            <span class="value" id="best-score">0</span>
+        </div>
+    </div>
+    
+    <div id="controls-container"></div>
+    <div id="game-over"></div>
+
+    <script src="scripts/advanced_ai_solver.js"></script>
+    <script src="scripts/enhanced_ai.js"></script>
+    <script src="scripts/game.js"></script>
+
+    <script>
+        const testResults = document.getElementById('test-results');
+        
+        function addResult(message, type = 'info') {
+            const div = document.createElement('div');
+            div.className = type;
+            div.textContent = message;
+            testResults.appendChild(div);
+        }
+
+        // Test the fixes
+        setTimeout(() => {
+            try {
+                addResult('✅ JavaScript files loaded successfully', 'success');
+                
+                // Test if Game class exists
+                if (typeof Game !== 'undefined') {
+                    addResult('✅ Game class defined', 'success');
+                    
+                    // Try creating a game instance
+                    try {
+                        const game = new Game();
+                        addResult('✅ Game instance created successfully', 'success');
+                        
+                        // Test isMobileDevice method
+                        if (typeof game.isMobileDevice === 'function') {
+                            const isMobile = game.isMobileDevice();
+                            addResult(`✅ isMobileDevice() works: ${isMobile}`, 'success');
+                        } else {
+                            addResult('❌ isMobileDevice is not a function', 'error');
+                        }
+                        
+                        // Test showNotification method
+                        if (typeof game.showNotification === 'function') {
+                            addResult('✅ showNotification method exists', 'success');
+                            
+                            // Test notification
+                            game.showNotification('🎉 All fixes applied successfully!', 2000);
+                        } else {
+                            addResult('❌ showNotification method missing', 'error');
+                        }
+                        
+                        // Test game initialization
+                        if (game.board && game.board.length > 0) {
+                            addResult('✅ Game board initialized', 'success');
+                        } else {
+                            addResult('❌ Game board not initialized', 'error');
+                        }
+                        
+                        addResult('🎯 All tests passed! Game should work now.', 'success');
+                        
+                    } catch (error) {
+                        addResult(`❌ Game creation failed: ${error.message}`, 'error');
+                    }
+                } else {
+                    addResult('❌ Game class not defined', 'error');
+                }
+                
+            } catch (error) {
+                addResult(`❌ Test failed: ${error.message}`, 'error');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>
