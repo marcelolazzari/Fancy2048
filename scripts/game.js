@@ -1883,23 +1883,7 @@ class Game {
     }, 1000);
   }
 
-  refreshLayout() {
-    // Update CSS variable for responsive layout
-    document.documentElement.style.setProperty('--size', this.size);
-    
-    // Add board size class to body for CSS targeting
-    document.body.className = document.body.className.replace(/board-size-\d+/g, '');
-    document.body.classList.add(`board-size-${this.size}`);
-    
-    // Recalculate board container dimensions
-    this.setupBoardContainer();
-    
-    // Clear and redraw the board
-    this.updateUI();
-    
-    // Make sure all tiles have proper font sizing
-    this.updateTileFontSizes();
-  }
+
 
   // Event handlers
   handleKeyPress(event) {
@@ -2137,6 +2121,9 @@ class Game {
     } else {
       this.applyDesktopOptimizations();
     }
+    
+    // Recalculate board container dimensions
+    this.setupBoardContainer();
     
     // Clear and redraw the board
     this.updateUI();
