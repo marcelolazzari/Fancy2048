@@ -10,7 +10,10 @@
   <meta name="apple-mobile-web-app-title" content="Fancy2048" />
   <title>Fancy 2048</title>
   <meta name="description" content="Play Fancy 2048, a modern twist on the classic puzzle game. Track your stats and compete on the leaderboard!" />
+  <!-- Primary CSS -->
   <link rel="stylesheet" href="../styles/unified_styles_fixed.css" />
+  <!-- Fallback CSS for GitHub Pages -->
+  <link rel="stylesheet" href="/Fancy2048/styles/unified_styles_fixed.css" onerror="this.onerror=null;this.href='styles/unified_styles_fixed.css';" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" />
   <!-- Fallback styles to ensure basic layout if CSS fails to load -->
   <style>
@@ -155,6 +158,8 @@
       // Pre-initialization debugging
       console.log('🚀 Starting Fancy2048 script loading...');
       console.log('Document ready state:', document.readyState);
+      console.log('Current URL:', window.location.href);
+      console.log('Base URL:', window.location.origin);
       console.log('DOM elements check:', {
         boardContainer: !!document.getElementById('board-container'),
         scoreContainer: !!document.getElementById('score-container'),
@@ -172,57 +177,63 @@
       window.addEventListener('unhandledrejection', (event) => {
         console.error('🚨 Unhandled promise rejection:', event.reason);
       });
-    </script>
-    <script src="../scripts/advanced_ai_solver.js" onerror="console.error('❌ Failed to load advanced_ai_solver.js')"></script>
-    <script src="../scripts/enhanced_ai.js" onerror="console.error('❌ Failed to load enhanced_ai.js')"></script>
-    <script src="../scripts/game.js" onerror="console.error('❌ Failed to load game.js')"></script>
-    <script>
-      // Post-loading verification
-      console.log('🔍 Script loading verification:', {
-        AdvancedAI: typeof AdvancedAI2048Solver !== 'undefined',
-        EnhancedAI: typeof Enhanced2048AI !== 'undefined', 
-        Game: typeof Game !== 'undefined'
-      });
       
-      // Additional initialization check
-      if (typeof Game === 'undefined') {
-        console.error('❌ Game class not loaded!');
-        document.body.innerHTML += `
-          <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); color: #ff6b6b; display: flex; align-items: center; justify-content: center; z-index: 10000; text-align: center; font-family: Arial;">
-            <div>
-              <h2>🚨 Game Loading Error</h2>
-              <p>Failed to load game scripts. Please refresh the page.</p>
-              <button onclick="location.reload()" style="padding: 10px 20px; background: #ff6b6b; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px;">Refresh Page</button>
-            </div>
-          </div>
-        `;
+      // Function to load script with fallback paths
+      function loadScript(primarySrc, fallbackSrc, name) {
+        return new Promise((resolve, reject) => {
+          const script = document.createElement('script');
+          script.src = primarySrc;
+          script.onerror = () => {
+            console.warn(`⚠️ Failed to load ${name} from ${primarySrc}, trying fallback...`);
+            if (fallbackSrc) {
+              const fallbackScript = document.createElement('script');
+              fallbackScript.src = fallbackSrc;
+              fallbackScript.onload = () => {
+                console.log(`✅ Loaded ${name} from fallback: ${fallbackSrc}`);
+                resolve();
+              };
+              fallbackScript.onerror = () => {
+                console.error(`❌ Failed to load ${name} from both paths`);
+                reject(new Error(`Failed to load ${name}`));
+              };
+              document.head.appendChild(fallbackScript);
+            } else {
+              console.error(`❌ Failed to load ${name}`);
+              reject(new Error(`Failed to load ${name}`));
+            }
+          };
+          script.onload = () => {
+            console.log(`✅ Loaded ${name} from: ${primarySrc}`);
+            resolve();
+          };
+          document.head.appendChild(script);
+        });
       }
       
-      // Final backup initialization - will run after 3 seconds if game not initialized
-      setTimeout(() => {
-        if (!window.game && typeof Game !== 'undefined') {
-          console.warn('🆘 Running backup initialization...');
-          try {
-            window.game = new Game(4);
-            console.log('✅ Backup initialization successful!');
-          } catch (backupError) {
-            console.error('❌ Backup initialization also failed:', backupError);
-            
-            // Ultra-minimal fallback
-            document.getElementById('board-container').innerHTML = `
-              <div style="grid-column: 1/-1; grid-row: 1/-1; display: flex; align-items: center; justify-content: center; text-align: center; color: #ffcc00;">
-                <div>
-                  <h3>🎮 Game Initialization Issue</h3>
-                  <p>Please refresh the page to try again.</p>
-                  <button onclick="location.reload()" style="padding: 10px 20px; background: #ffcc00; color: #000; border: none; border-radius: 5px; cursor: pointer;">Refresh</button>
-                </div>
+      // Load scripts sequentially with fallback support
+      async function loadAllScripts() {
+        try {
+          await loadScript('../scripts/advanced_ai_solver.js', '/Fancy2048/scripts/advanced_ai_solver.js', 'advanced_ai_solver.js');
+          await loadScript('../scripts/enhanced_ai.js', '/Fancy2048/scripts/enhanced_ai.js', 'enhanced_ai.js');
+          await loadScript('../scripts/game.js', '/Fancy2048/scripts/game.js', 'game.js');
+          console.log('✅ All scripts loaded successfully');
+        } catch (error) {
+          console.error('❌ Script loading failed:', error);
+          // Show user-friendly error
+          document.body.innerHTML += `
+            <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); color: #ff6b6b; display: flex; align-items: center; justify-content: center; z-index: 10000; text-align: center; font-family: Arial;">
+              <div>
+                <h2>🚨 Game Loading Error</h2>
+                <p>Failed to load game scripts. Please refresh the page.</p>
+                <button onclick="location.reload()" style="padding: 10px 20px; background: #ff6b6b; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px;">Refresh Page</button>
               </div>
-            `;
-          }
-        } else if (window.game) {
-          console.log('✅ Game already initialized successfully');
+            </div>
+          `;
         }
-      }, 3000);
+      }
+      
+      // Start loading scripts
+      loadAllScripts();
     </script>
   </body>
 </html>

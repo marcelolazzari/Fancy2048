@@ -3285,3 +3285,11 @@ window.aiDebugTools = {
     }
   }
 };
+
+// Initialize the game when DOM is ready
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', initializeFancy2048);
+} else {
+  // DOM is already loaded
+  initializeFancy2048();
+}
