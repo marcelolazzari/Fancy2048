@@ -61,9 +61,33 @@ document.addEventListener('DOMContentLoaded', () => {
         // Add grid-specific class for styling
         row.classList.add(`grid-${gridSize}`);
         
-        // Determine play mode
-        const playMode = stat.isAutoPlayed ? 'AI' : 'Human';
-        const modeIcon = stat.isAutoPlayed ? '🤖' : '👤';
+        // Determine play mode - use new playMode field if available, fallback to old logic
+        let playMode, modeIcon;
+        if (stat.playMode) {
+          // New comprehensive play mode
+          playMode = stat.playMode;
+          if (playMode === 'AI + Human') {
+            modeIcon = '🤖👤';
+          } else if (playMode === 'AI') {
+            modeIcon = '🤖';
+          } else {
+            modeIcon = '👤';
+          }
+        } else {
+          // Fallback to old logic for backwards compatibility
+          playMode = stat.isAutoPlayed ? 'AI' : 'Human';
+          modeIcon = stat.isAutoPlayed ? '🤖' : '👤';
+        }
+        
+        // Determine CSS class for mode badge
+        let modeClass;
+        if (playMode === 'AI + Human') {
+          modeClass = 'mixed-mode';
+        } else if (playMode === 'AI') {
+          modeClass = 'ai-mode';
+        } else {
+          modeClass = 'human-mode';
+        }
         
         row.innerHTML = `
           <td>${formattedDate}</td>
@@ -73,7 +97,7 @@ document.addEventListener('DOMContentLoaded', () => {
           <td>${stat.bestScore}</td>
           <td>${stat.time}</td>
           <td>${stat.moves}</td>
-          <td><span class="mode-badge ${stat.isAutoPlayed ? 'ai-mode' : 'human-mode'}" title="${playMode} player">${modeIcon} ${playMode}</span></td>
+          <td><span class="mode-badge ${modeClass}" title="${playMode} player">${modeIcon} ${playMode}</span></td>
         `;
         // Highlight rows with high scores
         if (stat.score === findMaxScore(uniqueStats)) {
@@ -157,7 +181,8 @@ document.addEventListener('DOMContentLoaded', () => {
         const date = new Date(stat.date);
         const formattedDate = formatDate(date);
         const gridType = stat.gridType || `${stat.gridSize || 4}x${stat.gridSize || 4}`;
-        const playMode = stat.isAutoPlayed ? 'AI' : 'Human';
+        // Use new playMode field if available, fallback to old logic
+        const playMode = stat.playMode || (stat.isAutoPlayed ? 'AI' : 'Human');
         return `"${formattedDate}","${gridType}",${stat.bestTile},${stat.score},${stat.bestScore},"${stat.time}",${stat.moves},"${playMode}"`;
       }).join("\n");
     downloadCSV(csvContent, "fancy2048_statistics.csv");

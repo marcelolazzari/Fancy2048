@@ -59,6 +59,7 @@ class Game {
     this.speedMultipliers = [1, 1.5, 2, 4, 8]; // Speed options including x8
     this.currentSpeedIndex = 0; // Current speed index
     this.isAutoPlayedGame = false; // Track if current game used autoplay
+    this.hasHumanMoves = false; // Track if current game has human moves
 
     // Initialize the game
     this.initializeUI();
@@ -797,11 +798,27 @@ class Game {
         moves: this.moves,
         gridSize: this.size, // Add grid size to stats
         gridType: `${this.size}x${this.size}`, // Add formatted grid type
-        isAutoPlayed: this.isAutoPlayedGame // Track if AI was used
+        isAutoPlayed: this.isAutoPlayedGame, // Track if AI was used
+        hasHumanMoves: this.hasHumanMoves, // Track if human moves were made
+        playMode: this.getPlayModeString() // Get comprehensive play mode
       };
       
       this.stats.push(stat);
       localStorage.setItem('gameStats', JSON.stringify(this.stats));
+    }
+  }
+
+  getPlayModeString() {
+    // Determine the play mode based on which inputs were used
+    if (this.isAutoPlayedGame && this.hasHumanMoves) {
+      return 'AI + Human';
+    } else if (this.isAutoPlayedGame) {
+      return 'AI';
+    } else if (this.hasHumanMoves) {
+      return 'Human';
+    } else {
+      // Edge case: no moves made (shouldn't really happen in saved stats)
+      return 'Human';
     }
   }
 
@@ -870,6 +887,7 @@ class Game {
     this.gameStateStack = [];
     this.lastMerged = [];
     this.isAutoPlayedGame = false; // Reset autoplay flag
+    this.hasHumanMoves = false; // Reset human moves flag
     
     // Reset hue to 0
     this.hueValue = 0;
@@ -1627,6 +1645,7 @@ class Game {
         startTime: this.startTime,
         pausedTime: this.pausedTime,
         isAutoPlayedGame: this.isAutoPlayedGame,
+        hasHumanMoves: this.hasHumanMoves,
         hueValue: this.hueValue,
         isLightMode: this.isLightMode,
         size: this.size,
@@ -1661,6 +1680,7 @@ class Game {
             this.startTime = gameState.startTime;
             this.pausedTime = gameState.pausedTime || 0;
             this.isAutoPlayedGame = gameState.isAutoPlayedGame || false;
+            this.hasHumanMoves = gameState.hasHumanMoves || false;
             
             // Restore visual settings if they match current settings
             if (gameState.size === this.size) {
@@ -1847,18 +1867,22 @@ class Game {
     switch (event.key) {
       case 'ArrowUp':
         event.preventDefault();
+        this.hasHumanMoves = true; // Track human move
         this.move('up');
         break;
       case 'ArrowDown':
         event.preventDefault();
+        this.hasHumanMoves = true; // Track human move
         this.move('down');
         break;
       case 'ArrowLeft':
         event.preventDefault();
+        this.hasHumanMoves = true; // Track human move
         this.move('left');
         break;
       case 'ArrowRight':
         event.preventDefault();
+        this.hasHumanMoves = true; // Track human move
         this.move('right');
         break;
     }
@@ -1955,6 +1979,9 @@ class Game {
       if (navigator.vibrate) {
         navigator.vibrate(50);
       }
+      
+      // Track human move for statistics
+      this.hasHumanMoves = true;
       
       // Perform the move with visual feedback
       const moved = this.move(direction);
@@ -2594,6 +2621,7 @@ class Game {
     
     // Mark this as AI gameplay for stats
     this.playMode = 'AI';
+    this.isAutoPlayedGame = true; // Track that AI was used in this game
     
     const makeMove = () => {
       if (!this.isAutoPlaying || this.gameState === 'over' || this.isPaused) {
@@ -2970,6 +2998,7 @@ class Game {
     
     // Mark this as AI gameplay for stats
     this.playMode = 'AI';
+    this.isAutoPlayedGame = true; // Track that AI was used in this game
     
     const makeMove = () => {
       if (!this.isAutoPlaying || this.gameState === 'over' || this.isPaused) {
