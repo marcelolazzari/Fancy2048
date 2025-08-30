@@ -453,8 +453,7 @@ main {
   justify-content: center;
   font-size: clamp(0.8rem, calc(var(--tile-size) * 0.35), 2.5rem);
   font-weight: bold;
-  color: #776e65;
-  background: var(--empty-cell-bg);
+  /* Remove default color and background - let specific tile rules handle this */
   border-radius: calc(var(--tile-border-radius) - 2px);
   transition: all 0.15s ease-in-out, background var(--hue-transition-duration) ease-in-out, border-color var(--hue-transition-duration) ease-in-out;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
@@ -463,77 +462,80 @@ main {
   line-height: 1;
   box-sizing: border-box;
   overflow: hidden;
+  /* Only apply default background to empty tiles (tiles without data-value) */
+  background: transparent;
+  color: #776e65;
 }
 
 /* Individual Tile Colors */
 .tile[data-value="2"] {
-  background: var(--tile-2-bg);
-  color: var(--tile-2-text);
+  background: var(--tile-2-bg, #eee4da) !important;
+  color: var(--tile-2-text, #776e65) !important;
   border: 1px solid rgba(238, 228, 218, 0.8);
 }
 
 .tile[data-value="4"] {
-  background: var(--tile-4-bg);
-  color: var(--tile-4-text);
+  background: var(--tile-4-bg, #ede0c8) !important;
+  color: var(--tile-4-text, #776e65) !important;
   border: 1px solid rgba(237, 224, 200, 0.8);
 }
 
 .tile[data-value="8"] {
-  background: var(--tile-8-bg);
-  color: var(--tile-8-text);
+  background: var(--tile-8-bg, linear-gradient(135deg, #f2b179 0%, #f59563 100%)) !important;
+  color: var(--tile-8-text, #f9f6f2) !important;
   border: 1px solid rgba(242, 177, 121, 0.8);
 }
 
 .tile[data-value="16"] {
-  background: var(--tile-16-bg);
-  color: var(--tile-16-text);
+  background: var(--tile-16-bg, linear-gradient(135deg, #f59563 0%, #f67c5f 100%)) !important;
+  color: var(--tile-16-text, #f9f6f2) !important;
   border: 1px solid rgba(245, 149, 99, 0.8);
 }
 
 .tile[data-value="32"] {
-  background: var(--tile-32-bg);
-  color: var(--tile-32-text);
+  background: var(--tile-32-bg, linear-gradient(135deg, #f67c5f 0%, #f65e3b 100%)) !important;
+  color: var(--tile-32-text, #f9f6f2) !important;
   border: 1px solid rgba(246, 124, 95, 0.8);
 }
 
 .tile[data-value="64"] {
-  background: var(--tile-64-bg);
-  color: var(--tile-64-text);
+  background: var(--tile-64-bg, linear-gradient(135deg, #f65e3b 0%, #ff4500 100%)) !important;
+  color: var(--tile-64-text, #f9f6f2) !important;
   border: 1px solid rgba(246, 94, 59, 0.8);
 }
 
 .tile[data-value="128"] {
-  background: var(--tile-128-bg);
-  color: var(--tile-128-text);
+  background: var(--tile-128-bg, linear-gradient(135deg, #edcf72 0%, #edcc61 100%)) !important;
+  color: var(--tile-128-text, #f9f6f2) !important;
   border: 1px solid rgba(237, 207, 114, 0.8);
   font-weight: bold;
 }
 
 .tile[data-value="256"] {
-  background: var(--tile-256-bg);
-  color: var(--tile-256-text);
+  background: var(--tile-256-bg, linear-gradient(135deg, #edcc61 0%, #edc850 100%)) !important;
+  color: var(--tile-256-text, #f9f6f2) !important;
   border: 1px solid rgba(237, 204, 97, 0.8);
   font-weight: bold;
 }
 
 .tile[data-value="512"] {
-  background: var(--tile-512-bg);
-  color: var(--tile-512-text);
+  background: var(--tile-512-bg, linear-gradient(135deg, #edc850 0%, #edc53f 100%)) !important;
+  color: var(--tile-512-text, #f9f6f2) !important;
   border: 1px solid rgba(237, 200, 80, 0.8);
   font-weight: bold;
 }
 
 .tile[data-value="1024"] {
-  background: var(--tile-1024-bg);
-  color: var(--tile-1024-text);
+  background: var(--tile-1024-bg, linear-gradient(135deg, #edc53f 0%, #edc22e 100%)) !important;
+  color: var(--tile-1024-text, #f9f6f2) !important;
   font-size: clamp(0.6rem, calc(var(--tile-size) * 0.25), 1.8rem);
   border: 1px solid rgba(237, 197, 63, 0.8);
   font-weight: bold;
 }
 
 .tile[data-value="2048"] {
-  background: var(--tile-2048-bg);
-  color: var(--tile-2048-text);
+  background: var(--tile-2048-bg, linear-gradient(135deg, #edc22e 0%, #ffd700 100%)) !important;
+  color: var(--tile-2048-text, #f9f6f2) !important;
   font-size: clamp(0.6rem, calc(var(--tile-size) * 0.25), 1.8rem);
   box-shadow: 0 0 20px rgba(255, 204, 0, 0.5);
   border: 2px solid #ffcc00;
@@ -1066,75 +1068,6 @@ footer .container {
   body.light-mode {
     background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
   }
-}
-
-/* Individual Tile Colors */
-.tile[data-value="2"] {
-  background: var(--tile-2-bg);
-  color: var(--tile-2-text);
-}
-
-.tile[data-value="4"] {
-  background: var(--tile-4-bg);
-  color: var(--tile-4-text);
-}
-
-.tile[data-value="8"] {
-  background: var(--tile-8-bg);
-  color: var(--tile-8-text);
-}
-
-.tile[data-value="16"] {
-  background: var(--tile-16-bg);
-  color: var(--tile-16-text);
-}
-
-.tile[data-value="32"] {
-  background: var(--tile-32-bg);
-  color: var(--tile-32-text);
-}
-
-.tile[data-value="64"] {
-  background: var(--tile-64-bg);
-  color: var(--tile-64-text);
-}
-
-.tile[data-value="128"] {
-  background: var(--tile-128-bg);
-  color: var(--tile-128-text);
-}
-
-.tile[data-value="256"] {
-  background: var(--tile-256-bg);
-  color: var(--tile-256-text);
-}
-
-.tile[data-value="512"] {
-  background: var(--tile-512-bg);
-  color: var(--tile-512-text);
-}
-
-.tile[data-value="1024"] {
-  background: var(--tile-1024-bg);
-  color: var(--tile-1024-text);
-}
-
-.tile[data-value="2048"] {
-  background: var(--tile-2048-bg);
-  color: var(--tile-2048-text);
-  box-shadow: 0 0 30px rgba(255, 204, 0, 0.5);
-}
-
-.tile[data-value="4096"],
-.tile[data-value="8192"],
-.tile[data-value="16384"],
-.tile[data-value="32768"],
-.tile[data-value="65536"] {
-  background: linear-gradient(135deg, 
-    hsl(calc(305 + var(--hue-value)), 100%, 90%) 0%, 
-    hsl(calc(315 + var(--hue-value)), 100%, 85%) 100%);
-  color: #000;
-  box-shadow: 0 0 40px rgba(255, 204, 0, 0.7);
 }
 
 /* Game Over Styles */
