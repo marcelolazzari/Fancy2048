@@ -8,12 +8,13 @@ Fancy2048 is a modded version of the classic 2048 game with enhanced features an
 
 - **Multiple Board Sizes**: Play on 3x3, 4x4, or 5x5 grids
 - **Continue After 2048**: Keep playing after reaching 2048 to achieve higher tiles like 4096, 8192, and beyond!
+- **Enhanced Tile Colors**: Beautiful, dynamic color system with gradient backgrounds and hue customization
 - **Advanced AI Solver**: State-of-the-art AI with Expectimax algorithm, 64-bit board encoding, and optimized heuristics
 - **Auto Play with Speed Control**: Watch the AI solve the game automatically with adjustable speeds (1x, 1.5x, 2x, 4x, 8x)
 - **AI Difficulty Levels**: Choose from Easy, Normal, Hard, or Expert AI difficulties
 - **Human vs AI Statistics**: Track and compare your performance against AI gameplay
-- **Theme Switching**: Toggle between light and dark themes
-- **Color Customization**: Adjust the hue of game elements with color cycling
+- **Theme Switching**: Toggle between light and dark themes with perfect color adaptation
+- **Color Customization**: Dynamic hue adjustment - all tile colors change harmoniously
 - **Responsive Design**: Optimized for mobile devices and different screen sizes
 - **Undo Functionality**: Undo your last move to correct mistakes (up to 20 moves)
 - **Smooth Animations**: Enjoy smooth transitions and tile animations
