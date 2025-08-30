@@ -84,6 +84,34 @@ button:hover {
   text-align: center;
   line-height: 1;
   box-sizing: border-box;
+  /* Base font size scales with actual tile dimensions */
+  font-size: calc(var(--tile-size) * var(--font-scale-base));
+}
+
+/* Dynamic font sizing based on tile values and grid size */
+.tile[data-value="2"],
+.tile[data-value="4"],
+.tile[data-value="8"],
+.tile[data-value="16"],
+.tile[data-value="32"],
+.tile[data-value="64"],
+.tile[data-value="128"],
+.tile[data-value="256"],
+.tile[data-value="512"] {
+  font-size: calc(var(--tile-size) * var(--font-scale-base));
+}
+
+.tile[data-value="1024"],
+.tile[data-value="2048"] {
+  font-size: calc(var(--tile-size) * var(--font-scale-large));
+}
+
+.tile[data-value="4096"],
+.tile[data-value="8192"],
+.tile[data-value="16384"],
+.tile[data-value="32768"],
+.tile[data-value="65536"] {
+  font-size: calc(var(--tile-size) * var(--font-scale-mega));
 }
  
 /* Responsive adjustments for tiles */
@@ -203,7 +231,11 @@ button:focus, .controls button:focus {
 :root {
   --size: 4;
   --gap: 15px; /* Responsive gap, adjusted by JavaScript */
-  --tile-size: calc((100vmin - var(--gap) * (var(--size) + 1)) / var(--size));
+  --board-max-size: min(85vw, 85vh, 500px); /* Grid-specific board sizing */
+  --font-scale-base: 0.35;
+  --font-scale-large: 0.28;
+  --font-scale-mega: 0.22;
+  --tile-size: calc((var(--board-max-size) - var(--gap) * (var(--size) + 1)) / var(--size));
   --game-size: calc(var(--tile-size) * var(--size) + var(--gap) * (var(--size) + 2));
   --primary-color: #1a1a1a;
   --secondary-color: #f2f2f2;

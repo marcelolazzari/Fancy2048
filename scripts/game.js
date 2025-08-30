@@ -2119,10 +2119,38 @@ class Game {
     document.body.className = document.body.className.replace(/board-size-\d+/g, '');
     document.body.classList.add(`board-size-${this.size}`);
     
+    // Set grid-specific board max sizes for proper proportional scaling
+    let boardMaxSize, fontScaleBase, fontScaleLarge, fontScaleMega;
+    if (this.size === 3) {
+      // 3x3 Grid - Larger tiles, more spacing
+      boardMaxSize = 'min(80vw, 80vh, 450px)';
+      fontScaleBase = 0.45;
+      fontScaleLarge = 0.35;
+      fontScaleMega = 0.28;
+    } else if (this.size === 5) {
+      // 5x5 Grid - Compact, efficient
+      boardMaxSize = 'min(90vw, 90vh, 520px)';
+      fontScaleBase = 0.32;
+      fontScaleLarge = 0.25;
+      fontScaleMega = 0.18;
+    } else {
+      // 4x4 Grid - Balanced default
+      boardMaxSize = 'min(85vw, 85vh, 500px)';
+      fontScaleBase = 0.35;
+      fontScaleLarge = 0.28;
+      fontScaleMega = 0.22;
+    }
+    
+    // Apply grid-specific board sizing
+    document.documentElement.style.setProperty('--board-max-size', boardMaxSize);
+    document.documentElement.style.setProperty('--font-scale-base', fontScaleBase);
+    document.documentElement.style.setProperty('--font-scale-large', fontScaleLarge);
+    document.documentElement.style.setProperty('--font-scale-mega', fontScaleMega);
+    
     // Calculate optimal gap based on viewport and grid size
     const vmin = Math.min(window.innerWidth, window.innerHeight);
-    const gapMultiplier = this.size === 3 ? 1.5 : (this.size === 5 ? 0.8 : 1);
-    const baseGap = Math.max(6, Math.min(15, vmin * 0.02));
+    const gapMultiplier = this.size === 3 ? 1.5 : (this.size === 5 ? 0.7 : 1);
+    const baseGap = Math.max(2, Math.min(8, vmin * 0.015));
     const gap = baseGap * gapMultiplier;
     
     document.documentElement.style.setProperty('--gap', `${gap}px`);
