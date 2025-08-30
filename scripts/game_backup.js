@@ -2987,6 +2987,117 @@ class Game {
     }
     return count;
   }
+
+  // Enhanced autoplay with better performance monitoring
+  startAutoPlay() {
+    if (this.autoPlayInterval) return;
+
+    this.isAutoPlaying = true;
+    this.autoPlayMoves = 0;
+    this.autoPlayStartTime = Date.now();
+    
+    // Mark this as AI gameplay for stats
+    this.playMode = 'AI';
+    this.isAutoPlayedGame = true; // Track that AI was used in this game
+    
+    const makeMove = () => {
+      if (!this.isAutoPlaying || this.gameState === 'over' || this.isPaused) {
+        this.stopAutoPlay();
+        return;
+      }
+
+      const move = this.getBestMove();
+      if (move && this.canMove(move)) {
+        this.move(move);
+        this.autoPlayMoves++;
+        
+        // Update UI
+        this.updateAutoPlayButton();
+      } else {
+        // No valid moves, stop autoplay
+        this.stopAutoPlay();
+      }
+    };
+
+    // Start the autoplay loop
+    this.autoPlayInterval = setInterval(makeMove, this.getAutoPlayDelay());
+    this.updateAutoPlayButton();
+    
+    console.log(`🤖 Enhanced AI autoplay started (difficulty: ${this.aiDifficulty})`);
+  }
+
+  stopAutoPlay() {
+    if (this.autoPlayInterval) {
+      clearInterval(this.autoPlayInterval);
+      this.autoPlayInterval = null;
+    }
+    
+    if (this.isAutoPlaying) {
+      const duration = (Date.now() - this.autoPlayStartTime) / 1000;
+      const movesPerSecond = (this.autoPlayMoves / duration).toFixed(2);
+      
+      console.log(`🏁 AI autoplay stopped: ${this.autoPlayMoves} moves in ${duration.toFixed(1)}s (${movesPerSecond} moves/sec)`);
+      
+      // Show AI performance stats
+      if (this.enhancedAI && window.debugAI) {
+        const stats = this.enhancedAI.getStats();
+        console.log('AI Performance Stats:', stats);
+      }
+    }
+    
+    this.isAutoPlaying = false;
+    this.playMode = 'Human';
+    this.updateAutoPlayButton();
+  }
+
+  // Add notification system for AI feedback
+  showNotification(message, duration = 2000) {
+    // Remove existing notifications
+    const existingNotifications = document.querySelectorAll('.ai-notification');
+    existingNotifications.forEach(n => n.remove());
+
+    const notification = document.createElement('div');
+    notification.className = 'ai-notification';
+    
+    // Handle multi-line messages
+    const lines = message.split('\n');
+    if (lines.length > 1) {
+      notification.innerHTML = lines.map(line => 
+        line.includes(':') ? `<div><strong>${line}</strong></div>` : `<div>${line}</div>`
+      ).join('');
+    } else {
+      notification.textContent = message;
+    }
+    
+    notification.style.cssText = `
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: linear-gradient(135deg, rgba(255, 204, 0, 0.95) 0%, rgba(255, 153, 0, 0.95) 100%);
+      color: #000;
+      padding: 12px 18px;
+      border-radius: 8px;
+      font-weight: bold;
+      font-size: 14px;
+      line-height: 1.3;
+      z-index: 1000;
+      animation: slideIn 0.3s ease;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+      border: 1px solid rgba(255, 204, 0, 0.3);
+      max-width: 300px;
+    `;
+    
+    document.body.appendChild(notification);
+    
+    setTimeout(() => {
+      notification.style.animation = 'slideOut 0.3s ease';
+      setTimeout(() => {
+        if (notification.parentNode) {
+          notification.parentNode.removeChild(notification);
+        }
+      }, 300);
+    }, duration);
+  }
 }
 
 // Add CSS animations for notifications
