@@ -37,9 +37,11 @@
   --mobile-gap: 8px;
   --desktop-gap: 15px;
   
-  /* Safe Area Insets */
+  /* Safe Area Insets for notched devices */
   --safe-area-inset-top: env(safe-area-inset-top, 0);
   --safe-area-inset-bottom: env(safe-area-inset-bottom, 0);
+  --safe-area-inset-left: env(safe-area-inset-left, 0);
+  --safe-area-inset-right: env(safe-area-inset-right, 0);
   
   /* Tile Colors with better contrast and visual progression */
   --tile-2-bg: hsl(calc(180 + var(--hue-value)), 50%, 95%);
@@ -69,6 +71,10 @@
   --board-bg: hsl(calc(210 + var(--hue-value)), 25%, 15%);
   --grid-cell-bg: hsl(calc(210 + var(--hue-value)), 20%, 25%);
   --empty-cell-bg: rgba(255, 255, 255, 0.05);
+  
+  /* Mobile touch optimization */
+  --touch-target-size: 44px; /* Minimum recommended touch target */
+  --mobile-spacing: clamp(4px, 1vw, 12px);
 }
 
 /* Light mode variables */
@@ -107,11 +113,14 @@ body {
   margin: 0;
   padding: 0;
   min-height: 100vh;
+  min-height: 100dvh; /* Dynamic viewport height for modern browsers */
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
   overflow-x: hidden;
+  /* Prevent bounce scrolling on iOS */
+  overscroll-behavior: none;
   transition: background var(--transition-duration), color var(--transition-duration);
   box-sizing: border-box;
   touch-action: manipulation;
@@ -119,13 +128,27 @@ body {
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
+  /* Better mobile support */
+  -webkit-touch-callout: none;
+  -webkit-text-size-adjust: none;
+  text-size-adjust: none;
+  /* Improved scrolling behavior */
+  scroll-behavior: smooth;
 }
 
-/* Safe area padding for modern iOS devices */
+/* Safe area padding for modern iOS devices and notched Android devices */
 @supports (padding-top: env(safe-area-inset-top)) {
   body {
-    padding-top: var(--safe-area-inset-top);
-    padding-bottom: var(--safe-area-inset-bottom);
+    padding-top: max(10px, var(--safe-area-inset-top));
+    padding-bottom: max(10px, var(--safe-area-inset-bottom));
+    padding-left: var(--safe-area-inset-left, 0);
+    padding-right: var(--safe-area-inset-right, 0);
+  }
+  
+  /* Ensure controls don't get hidden behind notches */
+  #controls-container {
+    padding-left: max(10px, var(--safe-area-inset-left, 0));
+    padding-right: max(10px, var(--safe-area-inset-right, 0));
   }
 }
 
@@ -417,6 +440,16 @@ main {
   /* Ensure consistent sizing across all grid types */
   min-width: 280px;
   min-height: 280px;
+  /* Mobile touch optimizations */
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
+  -webkit-touch-callout: none;
+  /* Improve scrolling performance */
+  will-change: transform;
+  /* Better touch response */
+  cursor: pointer;
 }
 
 #board-container:focus {
@@ -696,9 +729,22 @@ footer .container {
 }
 
 /* Responsive Design */
+/* Responsive design improvements */
+/* Large tablets and small desktops */
+@media (max-width: 1024px) {
+  :root {
+    --board-max-size: min(85vw, 85vh, 450px);
+  }
+  
+  main {
+    padding: 20px;
+  }
+}
+
+/* Tablets */
 @media (max-width: 768px) {
   :root {
-    --board-max-size: min(95vw, 95vh, 400px);
+    --board-max-size: min(90vw, 90vh, 400px);
   }
   
   header {
@@ -712,6 +758,8 @@ footer .container {
   
   .controls {
     gap: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
   }
   
   button {
@@ -743,43 +791,146 @@ footer .container {
   }
 }
 
-@media (max-width: 480px) {
-  :root {
-    --board-max-size: min(98vw, 98vh, 320px);
+/* ============================================
+   Mobile Touch and Performance Optimizations  
+   ============================================ */
+
+/* Global mobile touch improvements */
+@media (hover: none) and (pointer: coarse) {
+  /* This targets touch devices specifically */
+  * {
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.1);
   }
   
-  /* Grid-specific mobile adjustments */
+  button, .tile, [data-testid] {
+    touch-action: manipulation;
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.2);
+  }
+  
+  /* Improve scrolling on touch devices */
+  body {
+    -webkit-overflow-scrolling: touch;
+    overscroll-behavior: contain;
+  }
+  
+  /* Enhanced game board for touch */
+  #board-container {
+    /* Prevent accidental zoom on double-tap */
+    touch-action: none;
+  }
+}
+
+/* iOS Safari and WebKit specific optimizations */
+@supports (-webkit-touch-callout: none) {
+  /* iOS-specific improvements */
+  body {
+    -webkit-text-size-adjust: 100%;
+    -webkit-font-smoothing: antialiased;
+  }
+  
+  /* Prevent iOS Safari from adding tap highlights to non-interactive elements */
+  .tile, .board-container, .game-board {
+    -webkit-tap-highlight-color: transparent;
+  }
+  
+  /* Better button appearance on iOS */
+  button {
+    -webkit-appearance: none;
+    appearance: none;
+  }
+  
+  /* Improve input handling on iOS */
+  input {
+    -webkit-appearance: none;
+    border-radius: 0;
+  }
+}
+
+/* Mobile phones - Primary responsive breakpoint */
+@media (max-width: 480px) {
+  :root {
+    --board-max-size: min(95vw, 85vh, 340px);
+    --gap: clamp(1px, 0.8vmin, 4px);
+    --mobile-button-size: 42px;
+  }
+  
+  /* Better mobile viewport handling */
+  body {
+    min-height: 100vh;
+    min-height: 100dvh; /* Support for new dynamic viewport units */
+    min-height: 100svh; /* Small viewport height for mobile browsers */
+    /* Prevent horizontal scrolling */
+    overflow-x: hidden;
+    /* Better mobile font rendering */
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+  
+  /* Grid-specific mobile adjustments with better sizing */
   .board-size-3 #board-container {
-    max-width: min(95vw, 95vh, 350px);
-    max-height: min(95vw, 95vh, 350px);
+    max-width: min(92vw, 82vh, 360px);
+    max-height: min(92vw, 82vh, 360px);
   }
   
   .board-size-4 #board-container {
-    max-width: min(98vw, 98vh, 320px);
-    max-height: min(98vw, 98vh, 320px);
+    max-width: min(95vw, 85vh, 340px);
+    max-height: min(95vw, 85vh, 340px);
   }
   
   .board-size-5 #board-container {
-    max-width: min(100vw - 20px, 100vh - 20px, 300px);
-    max-height: min(100vw - 20px, 100vh - 20px, 300px);
-    min-width: 260px;
-    min-height: 260px;
+    max-width: min(98vw, 88vh, 320px);
+    max-height: min(98vw, 88vh, 320px);
+    min-width: 280px;
+    min-height: 280px;
   }
   
   header {
-    padding: 10px;
+    padding: 8px 10px;
   }
   
   header h1 {
-    font-size: 1.8rem;
+    font-size: clamp(1.4rem, 5vw, 1.8rem);
+    margin-bottom: 8px;
   }
   
   main {
-    padding: 10px;
+    padding: 8px;
+    flex: 1;
   }
   
   .controls {
+    gap: 4px;
+    margin-bottom: 8px;
+    flex-wrap: wrap;
+    justify-content: center;
+  }
+  
+  button {
+    padding: 8px 10px;
+    font-size: 13px;
+    min-width: var(--mobile-button-size);
+    min-height: var(--mobile-button-size);
+    /* Enhanced touch feedback */
+    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.2);
+    touch-action: manipulation;
+  }
+  
+  #score-container {
+    margin-bottom: 10px;
+    padding: 8px;
+  }
+  
+  #score-container ul {
     gap: 6px;
+    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+  }
+  
+  #score-container li {
+    font-size: 0.9rem;
+  }
+  
+  #score-container span {
+    font-size: 1.1em;
   }
   
   .tile {
@@ -796,31 +947,52 @@ footer .container {
   .tile[data-value="16384"],
   .tile[data-value="32768"],
   .tile[data-value="65536"] {
-    font-size: clamp(0.3rem, calc(var(--tile-size) * 0.15), 1rem);
+    font-size: clamp(0.35rem, calc(var(--tile-size) * 0.18), 1rem);
+  }
+}
+
+/* Additional ultra-small screen optimizations */
+@media (max-width: 360px) {
+  :root {
+    --board-max-size: min(98vw, 80vh, 300px);
+    --mobile-button-size: 38px;
   }
   
-  /* 5x5 specific ultra-compact mobile styling */
-  .board-size-5 .tile {
-    font-size: clamp(0.4rem, calc(var(--tile-size) * 0.22), 1.2rem);
-  }
-  
-  .board-size-5 .tile[data-value="1024"],
-  .board-size-5 .tile[data-value="2048"] {
-    font-size: clamp(0.35rem, calc(var(--tile-size) * 0.16), 0.9rem);
-  }
-  
-  .board-size-5 .tile[data-value="4096"],
-  .board-size-5 .tile[data-value="8192"],
-  .board-size-5 .tile[data-value="16384"],
-  .board-size-5 .tile[data-value="32768"],
-  .board-size-5 .tile[data-value="65536"] {
-    font-size: clamp(0.3rem, calc(var(--tile-size) * 0.12), 0.7rem);
+  header h1 {
+    font-size: clamp(1.2rem, 4vw, 1.6rem);
   }
   
   button {
-    padding: 8px 10px;
-    min-width: 40px;
-    min-height: 40px;
+    padding: 6px 8px;
+    font-size: 12px;
+  }
+  
+  .tile {
+    font-size: clamp(0.4rem, calc(var(--tile-size) * 0.22), 1.4rem);
+  }
+}
+
+/* Landscape orientation adjustments for mobile */
+@media screen and (orientation: landscape) and (max-height: 500px) {
+  :root {
+    --board-max-size: min(70vh, 70vw, 400px);
+  }
+  
+  body {
+    justify-content: center;
+  }
+  
+  header {
+    padding: 8px 15px;
+  }
+  
+  header h1 {
+    font-size: 1.5rem;
+    margin-bottom: 5px;
+  }
+  
+  main {
+    padding: 8px;
   }
 }
 
@@ -901,10 +1073,7 @@ footer .container {
   font-size: clamp(0.5rem, calc(var(--tile-size) * 0.18), 1.4rem);
 }
 
-/* Special handling for very small screens with 5x5 */
-@media (max-width: 480px) {
-  /* Mobile styling handled in the main @media (max-width: 480px) section above */
-}
+/* Special handling for very small screens - consolidated with main mobile section above */
 
 /* Landscape orientation adjustments for mobile */
 @media (max-height: 600px) and (orientation: landscape) {
