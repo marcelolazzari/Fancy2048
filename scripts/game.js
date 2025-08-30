@@ -50,6 +50,7 @@ class Game {
     this.lastSavedState = null;
     this.autoSaveInterval = null;
     this.pageVisibilityTimeout = null;
+    this.mobileHiddenMessageTimeout = null;
 
     // Autoplay properties
     this.isAutoPlaying = false;
@@ -369,38 +370,67 @@ class Game {
     
     const message = document.createElement('div');
     message.id = 'mobile-hidden-message';
-    message.className = 'mobile-pause-toast';
+    message.className = 'mobile-pause-toast enhanced-resume';
     message.innerHTML = `
-      <div class="toast-content">
-        <i class="fas fa-pause-circle"></i>
-        <span>Game paused - tap to resume when ready</span>
+      <div class="toast-content-enhanced">
+        <div class="toast-icon">
+          <i class="fas fa-pause-circle"></i>
+        </div>
+        <div class="toast-text">
+          <span class="toast-title">Game Auto-Paused</span>
+          <span class="toast-subtitle">Tap resume to continue</span>
+        </div>
+        <button class="mobile-resume-btn" id="mobile-resume-button">
+          <i class="fas fa-play"></i>
+          Resume
+        </button>
       </div>
     `;
     
-    // Position at top of screen for mobile
+    // Enhanced positioning and styling for mobile
     message.style.cssText = `
       position: fixed;
       top: 20px;
       left: 50%;
       transform: translateX(-50%);
       z-index: 10000;
-      background: rgba(0, 0, 0, 0.85);
+      background: rgba(0, 0, 0, 0.9);
       color: white;
-      padding: 12px 20px;
-      border-radius: 25px;
+      padding: 16px 20px;
+      border-radius: 20px;
       font-size: 14px;
-      backdrop-filter: blur(10px);
+      backdrop-filter: blur(15px);
       border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-      animation: slideInTop 0.3s ease-out;
+      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
+      animation: slideInTop 0.4s ease-out;
+      max-width: calc(100vw - 40px);
+      min-width: 280px;
     `;
     
     document.body.appendChild(message);
     
-    // Auto-hide after 3 seconds
-    setTimeout(() => {
+    // Add click handler for resume button
+    const resumeBtn = message.querySelector('#mobile-resume-button');
+    if (resumeBtn) {
+      resumeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.resumeGame();
+        this.hideMobileHiddenMessage();
+      });
+    }
+    
+    // Add tap-to-dismiss for the entire message (but not if clicking the button)
+    message.addEventListener('click', (e) => {
+      if (!e.target.closest('#mobile-resume-button')) {
+        this.resumeGame();
+        this.hideMobileHiddenMessage();
+      }
+    });
+    
+    // Auto-hide after 8 seconds (longer to give user time to interact)
+    this.mobileHiddenMessageTimeout = setTimeout(() => {
       this.hideMobileHiddenMessage();
-    }, 3000);
+    }, 8000);
   }
 
   hidePageHiddenMessage() {
@@ -411,6 +441,12 @@ class Game {
   }
 
   hideMobileHiddenMessage() {
+    // Clear any pending timeout
+    if (this.mobileHiddenMessageTimeout) {
+      clearTimeout(this.mobileHiddenMessageTimeout);
+      this.mobileHiddenMessageTimeout = null;
+    }
+    
     const message = document.getElementById('mobile-hidden-message');
     if (message) {
       message.style.animation = 'slideOutTop 0.3s ease-in forwards';
@@ -429,13 +465,22 @@ class Game {
 
     const message = document.createElement('div');
     message.id = 'user-paused-reminder';
-    message.className = 'pause-reminder-toast';
+    message.className = 'pause-reminder-toast enhanced-user-pause';
     
     if (this.isMobileDevice()) {
       message.innerHTML = `
-        <div class="toast-content">
-          <i class="fas fa-pause"></i>
-          <span>Still paused - tap pause button to resume</span>
+        <div class="toast-content-enhanced">
+          <div class="toast-icon">
+            <i class="fas fa-pause"></i>
+          </div>
+          <div class="toast-text">
+            <span class="toast-title">Game Paused</span>
+            <span class="toast-subtitle">Manually paused by you</span>
+          </div>
+          <button class="mobile-resume-btn" id="user-pause-resume-button">
+            <i class="fas fa-play"></i>
+            Resume
+          </button>
         </div>
       `;
       message.style.cssText = `
@@ -444,14 +489,16 @@ class Game {
         left: 50%;
         transform: translateX(-50%);
         z-index: 10000;
-        background: rgba(255, 153, 0, 0.9);
+        background: rgba(255, 153, 0, 0.92);
         color: white;
-        padding: 12px 20px;
-        border-radius: 25px;
+        padding: 16px 20px;
+        border-radius: 20px;
         font-size: 14px;
-        backdrop-filter: blur(10px);
-        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        backdrop-filter: blur(15px);
+        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
         animation: pulseIn 0.3s ease-out;
+        max-width: calc(100vw - 40px);
+        min-width: 300px;
       `;
     } else {
       message.innerHTML = `
@@ -465,7 +512,17 @@ class Game {
     
     document.body.appendChild(message);
 
-    // Auto-remove after 2.5 seconds (shorter for mobile)
+    // Add click handler for resume button (mobile only)
+    const resumeBtn = message.querySelector('#user-pause-resume-button');
+    if (resumeBtn) {
+      resumeBtn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        this.resumeGame();
+        message.remove();
+      });
+    }
+
+    // Auto-remove after 4 seconds (longer for mobile with button)
     setTimeout(() => {
       if (message.parentNode) {
         if (this.isMobileDevice()) {
@@ -475,7 +532,7 @@ class Game {
           message.remove();
         }
       }
-    }, this.isMobileDevice() ? 2500 : 3000);
+    }, this.isMobileDevice() ? 4000 : 3000);
   }
 
   adjustViewportForMobile() {

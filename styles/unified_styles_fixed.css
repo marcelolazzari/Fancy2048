@@ -1340,6 +1340,101 @@ footer button:hover {
   cursor: pointer;
 }
 
+/* Enhanced Mobile Resume Toast */
+.mobile-pause-toast.enhanced-resume {
+  cursor: default;
+  min-width: 300px;
+  max-width: calc(100vw - 40px);
+}
+
+.toast-content-enhanced {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  justify-content: space-between;
+  width: 100%;
+}
+
+.toast-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+
+.toast-icon i {
+  font-size: 16px;
+  color: #ffa726;
+}
+
+.toast-text {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  gap: 2px;
+}
+
+.toast-title {
+  font-size: 14px;
+  font-weight: 600;
+  color: #ffffff;
+  line-height: 1.2;
+}
+
+.toast-subtitle {
+  font-size: 12px;
+  color: rgba(255, 255, 255, 0.8);
+  line-height: 1.2;
+}
+
+.mobile-resume-btn {
+  background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
+  color: white;
+  border: none;
+  border-radius: 20px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  transition: all 0.2s ease;
+  box-shadow: 0 2px 8px rgba(76, 175, 80, 0.3);
+  flex-shrink: 0;
+  min-width: 70px;
+  justify-content: center;
+}
+
+.mobile-resume-btn:hover {
+  background: linear-gradient(135deg, #45a049 0%, #4CAF50 100%);
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(76, 175, 80, 0.4);
+}
+
+.mobile-resume-btn:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(76, 175, 80, 0.3);
+}
+
+.mobile-resume-btn i {
+  font-size: 12px;
+  margin: 0;
+}
+
+/* Enhanced User Pause Toast */
+.pause-reminder-toast.enhanced-user-pause {
+  cursor: default;
+}
+
+.pause-reminder-toast.enhanced-user-pause .toast-icon i {
+  color: #ff9800;
+}
+
 .mobile-pause-toast:active,
 .pause-reminder-toast:active {
   transform: translateX(-50%) scale(0.95) !important;
