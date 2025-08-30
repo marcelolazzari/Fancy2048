@@ -155,7 +155,7 @@ button:focus, .controls button:focus {
     -webkit-background-clip: text;
     background-clip: text;
     -webkit-text-fill-color: transparent;
-    text-fill-color: transparent;
+    -webkit-text-fill-color: transparent;
   }
 
   .card {
@@ -197,7 +197,9 @@ button:focus, .controls button:focus {
   .icon {
     filter: drop-shadow(0 2px 6px #38f9d7);
   }
-/* End of file - all braces closed correctly */
+}
+
+/* CSS Variables and Root Styles */
 :root {
   --size: 4;
   --gap: 15px; /* Responsive gap, adjusted by JavaScript */
@@ -3041,4 +3043,6 @@ form button[type="submit"]:hover {
     transform: translateY(0);
   }
 }
-}}/* ==================== */
+
+/* Closing brace for media query or unclosed rule */
+}

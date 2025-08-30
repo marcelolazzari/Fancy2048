@@ -64,7 +64,8 @@ body {
   padding: 1.5em;
   margin-bottom: 1.5em;
   transition: box-shadow 0.2s;
-/* End of file - all braces closed correctly */
+}
+
 .card:hover {
   box-shadow: 0 8px 32px rgba(56,249,215,0.12);
 }
@@ -130,6 +131,9 @@ body {
   min-height: 100dvh;
   min-height: calc(100vh - var(--safe-area-inset-top, 0px) - var(--safe-area-inset-bottom, 0px));
 }
+
+body::before {
+  content: '';
   position: fixed;
   top: 0;
   left: 0;
