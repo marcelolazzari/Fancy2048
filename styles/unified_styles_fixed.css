@@ -4,16 +4,22 @@
 :root {
   --size: 4;
   
-  /* Responsive Gap and Size Variables */
-  --gap: clamp(2px, 1.5vmin, 8px);
-  --board-max-size: min(85vw, 85vh, 500px);
+  /* Dynamic Board Sizing - Responsive to grid size */
+  --base-board-size: min(85vw, 85vh, 500px);
+  --board-max-size: var(--base-board-size);
+  
+  /* Grid-specific gap adjustments for optimal fitting */
+  --gap-multiplier: 1;
+  --gap: calc(var(--gap-multiplier) * clamp(2px, 1.5vmin, 8px));
+  
+  /* Calculated tile size based on board and gaps */
   --tile-size: calc((var(--board-max-size) - var(--gap) * (var(--size) + 1)) / var(--size));
   --game-size: var(--board-max-size);
   
-  /* Grid-specific adjustments for optimal fitting */
-  --grid-3-gap: clamp(3px, 2vmin, 10px);
-  --grid-4-gap: clamp(2px, 1.5vmin, 8px);
-  --grid-5-gap: clamp(1px, 1vmin, 6px);
+  /* Font scaling based on actual tile size */
+  --font-scale-base: 0.35;
+  --font-scale-large: 0.28;
+  --font-scale-mega: 0.22;
   
   /* Color Variables */
   --primary-color: #1a1a1a;
@@ -484,7 +490,8 @@ main {
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: clamp(0.8rem, calc(var(--tile-size) * 0.35), 2.5rem);
+  /* Dynamic font sizing based on actual tile size */
+  font-size: calc(var(--tile-size) * var(--font-scale-base));
   font-weight: bold;
   /* Remove default color and background - let specific tile rules handle this */
   border-radius: calc(var(--tile-border-radius) - 2px);
@@ -561,7 +568,7 @@ main {
 .tile[data-value="1024"] {
   background: var(--tile-1024-bg, linear-gradient(135deg, #edc53f 0%, #edc22e 100%)) !important;
   color: var(--tile-1024-text, #f9f6f2) !important;
-  font-size: clamp(0.6rem, calc(var(--tile-size) * 0.25), 1.8rem);
+  font-size: calc(var(--tile-size) * var(--font-scale-large));
   border: 1px solid rgba(237, 197, 63, 0.8);
   font-weight: bold;
 }
@@ -569,7 +576,7 @@ main {
 .tile[data-value="2048"] {
   background: var(--tile-2048-bg, linear-gradient(135deg, #edc22e 0%, #ffd700 100%)) !important;
   color: var(--tile-2048-text, #f9f6f2) !important;
-  font-size: clamp(0.6rem, calc(var(--tile-size) * 0.25), 1.8rem);
+  font-size: calc(var(--tile-size) * var(--font-scale-large));
   box-shadow: 0 0 20px rgba(255, 204, 0, 0.5);
   border: 2px solid #ffcc00;
   font-weight: bold;
@@ -579,7 +586,7 @@ main {
 .tile[data-value="4096"] {
   background: linear-gradient(135deg, #ff6b6b 0%, #ff8e53 100%);
   color: white;
-  font-size: clamp(0.5rem, calc(var(--tile-size) * 0.2), 1.5rem);
+  font-size: calc(var(--tile-size) * var(--font-scale-mega));
   box-shadow: 0 0 25px rgba(255, 107, 107, 0.4);
   border: 2px solid #ff6b6b;
   font-weight: bold;
@@ -588,7 +595,7 @@ main {
 .tile[data-value="8192"] {
   background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
   color: white;
-  font-size: clamp(0.5rem, calc(var(--tile-size) * 0.2), 1.5rem);
+  font-size: calc(var(--tile-size) * var(--font-scale-mega));
   box-shadow: 0 0 25px rgba(78, 205, 196, 0.4);
   border: 2px solid #4ecdc4;
   font-weight: bold;
@@ -597,7 +604,7 @@ main {
 .tile[data-value="16384"] {
   background: linear-gradient(135deg, #9b59b6 0%, #8e44ad 100%);
   color: white;
-  font-size: clamp(0.5rem, calc(var(--tile-size) * 0.2), 1.5rem);
+  font-size: calc(var(--tile-size) * var(--font-scale-mega));
   box-shadow: 0 0 25px rgba(155, 89, 182, 0.4);
   border: 2px solid #9b59b6;
   font-weight: bold;
@@ -606,7 +613,7 @@ main {
 .tile[data-value="32768"] {
   background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
   color: white;
-  font-size: clamp(0.5rem, calc(var(--tile-size) * 0.2), 1.5rem);
+  font-size: calc(var(--tile-size) * var(--font-scale-mega));
   box-shadow: 0 0 25px rgba(243, 156, 18, 0.4);
   border: 2px solid #f39c12;
   font-weight: bold;
@@ -615,7 +622,7 @@ main {
 .tile[data-value="65536"] {
   background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
   color: white;
-  font-size: clamp(0.4rem, calc(var(--tile-size) * 0.18), 1.3rem);
+  font-size: calc(var(--tile-size) * var(--font-scale-mega));
   box-shadow: 0 0 30px rgba(231, 76, 60, 0.5);
   border: 2px solid #e74c3c;
   font-weight: bold;
@@ -625,7 +632,7 @@ main {
 .tile[data-value="131072"] {
   background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%);
   color: #ecf0f1;
-  font-size: clamp(0.4rem, calc(var(--tile-size) * 0.16), 1.2rem);
+  font-size: calc(var(--tile-size) * var(--font-scale-mega));
   box-shadow: 0 0 30px rgba(44, 62, 80, 0.5);
   border: 2px solid #2c3e50;
   font-weight: bold;
@@ -866,24 +873,7 @@ footer .container {
     -moz-osx-font-smoothing: grayscale;
   }
   
-  /* Grid-specific mobile adjustments with better sizing */
-  .board-size-3 #board-container {
-    max-width: min(92vw, 82vh, 360px);
-    max-height: min(92vw, 82vh, 360px);
-  }
-  
-  .board-size-4 #board-container {
-    max-width: min(95vw, 85vh, 340px);
-    max-height: min(95vw, 85vh, 340px);
-  }
-  
-  .board-size-5 #board-container {
-    max-width: min(98vw, 88vh, 320px);
-    max-height: min(98vw, 88vh, 320px);
-    min-width: 280px;
-    min-height: 280px;
-  }
-  
+  /* Mobile responsive adjustments - use dynamic sizing */
   header {
     padding: 8px 10px;
   }
@@ -933,28 +923,12 @@ footer .container {
     font-size: 1.1em;
   }
   
-  .tile {
-    font-size: clamp(0.5rem, calc(var(--tile-size) * 0.25), 1.6rem);
-  }
-  
-  .tile[data-value="1024"],
-  .tile[data-value="2048"] {
-    font-size: clamp(0.4rem, calc(var(--tile-size) * 0.2), 1.2rem);
-  }
-  
-  .tile[data-value="4096"],
-  .tile[data-value="8192"],
-  .tile[data-value="16384"],
-  .tile[data-value="32768"],
-  .tile[data-value="65536"] {
-    font-size: clamp(0.35rem, calc(var(--tile-size) * 0.18), 1rem);
-  }
+  /* Mobile tiles use dynamic font sizing from variables */
 }
 
 /* Additional ultra-small screen optimizations */
 @media (max-width: 360px) {
   :root {
-    --board-max-size: min(98vw, 80vh, 300px);
     --mobile-button-size: 38px;
   }
   
@@ -967,15 +941,38 @@ footer .container {
     font-size: 12px;
   }
   
-  .tile {
-    font-size: clamp(0.4rem, calc(var(--tile-size) * 0.22), 1.4rem);
+  /* Ultra-small screens use slightly smaller scaling */
+  .board-size-3 {
+    --font-scale-base: 0.4;
+    --font-scale-large: 0.32;
+    --font-scale-mega: 0.25;
+  }
+  
+  .board-size-4 {
+    --font-scale-base: 0.3;
+    --font-scale-large: 0.24;
+    --font-scale-mega: 0.2;
+  }
+  
+  .board-size-5 {
+    --font-scale-base: 0.28;
+    --font-scale-large: 0.22;
+    --font-scale-mega: 0.16;
   }
 }
 
 /* Landscape orientation adjustments for mobile */
 @media screen and (orientation: landscape) and (max-height: 500px) {
-  :root {
-    --board-max-size: min(70vh, 70vw, 400px);
+  .board-size-3 {
+    --base-board-size: min(70vh, 70vw, 400px);
+  }
+  
+  .board-size-4 {
+    --base-board-size: min(75vh, 75vw, 420px);
+  }
+  
+  .board-size-5 {
+    --base-board-size: min(80vh, 80vw, 450px);
   }
   
   body {
@@ -1011,66 +1008,29 @@ footer .container {
 
 /* 3x3 Grid Optimizations - Larger tiles, better spacing */
 .board-size-3 {
-  --gap: var(--grid-3-gap);
-}
-
-.board-size-3 #board-container {
-  max-width: min(80vw, 80vh, 450px);
-  max-height: min(80vw, 80vh, 450px);
-}
-
-.board-size-3 .tile {
-  font-size: clamp(1rem, calc(var(--tile-size) * 0.45), 3.5rem);
-}
-
-.board-size-3 .tile[data-value="1024"],
-.board-size-3 .tile[data-value="2048"] {
-  font-size: clamp(0.8rem, calc(var(--tile-size) * 0.35), 2.8rem);
-}
-
-.board-size-3 .tile[data-value="4096"],
-.board-size-3 .tile[data-value="8192"],
-.board-size-3 .tile[data-value="16384"],
-.board-size-3 .tile[data-value="32768"],
-.board-size-3 .tile[data-value="65536"] {
-  font-size: clamp(0.7rem, calc(var(--tile-size) * 0.28), 2.2rem);
+  --gap-multiplier: 1.5;
+  --base-board-size: min(80vw, 80vh, 450px);
+  --font-scale-base: 0.45;
+  --font-scale-large: 0.35;
+  --font-scale-mega: 0.28;
 }
 
 /* 4x4 Grid Optimizations (default) - Balanced sizing */
 .board-size-4 {
-  --gap: var(--grid-4-gap);
-}
-
-.board-size-4 #board-container {
-  max-width: min(85vw, 85vh, 500px);
-  max-height: min(85vw, 85vh, 500px);
+  --gap-multiplier: 1;
+  --base-board-size: min(85vw, 85vh, 500px);
+  --font-scale-base: 0.35;
+  --font-scale-large: 0.28;
+  --font-scale-mega: 0.22;
 }
 
 /* 5x5 Grid Optimizations - Compact tiles, tighter spacing */
 .board-size-5 {
-  --gap: var(--grid-5-gap);
-}
-
-.board-size-5 #board-container {
-  max-width: min(90vw, 90vh, 520px);
-  max-height: min(90vw, 90vh, 520px);
-}
-
-.board-size-5 .tile {
-  font-size: clamp(0.7rem, calc(var(--tile-size) * 0.32), 2.2rem);
-}
-
-.board-size-5 .tile[data-value="1024"],
-.board-size-5 .tile[data-value="2048"] {
-  font-size: clamp(0.6rem, calc(var(--tile-size) * 0.25), 1.8rem);
-}
-
-.board-size-5 .tile[data-value="4096"],
-.board-size-5 .tile[data-value="8192"],
-.board-size-5 .tile[data-value="16384"],
-.board-size-5 .tile[data-value="32768"],
-.board-size-5 .tile[data-value="65536"] {
-  font-size: clamp(0.5rem, calc(var(--tile-size) * 0.18), 1.4rem);
+  --gap-multiplier: 0.7;
+  --base-board-size: min(90vw, 90vh, 520px);
+  --font-scale-base: 0.32;
+  --font-scale-large: 0.25;
+  --font-scale-mega: 0.18;
 }
 
 /* Special handling for very small screens - consolidated with main mobile section above */

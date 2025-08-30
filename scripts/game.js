@@ -94,6 +94,9 @@ class Game {
     this.startAutoSave();
     this.restoreGameStateIfNeeded();
     
+    // Add message handler for test interface
+    this.setupMessageHandler();
+    
     console.log('✅ Game initialized successfully');
   }
 
@@ -129,21 +132,36 @@ class Game {
     document.body.className = document.body.className.replace(/board-size-\d+/g, '');
     document.body.classList.add(`board-size-${this.size}`);
     
-    // Calculate optimal board dimensions for proper fitting
-    const viewport = Math.min(window.innerWidth, window.innerHeight);
-    let maxBoardSize;
+    // Set dynamic board sizing based on grid size
+    let baseBoardSize, gapMultiplier, fontScaleBase, fontScaleLarge, fontScaleMega;
     
-    // Dynamic sizing based on grid size and viewport
     if (this.size === 3) {
-      maxBoardSize = Math.min(viewport * 0.8, 450);
+      baseBoardSize = 'min(80vw, 80vh, 450px)';
+      gapMultiplier = 1.5;
+      fontScaleBase = 0.45;
+      fontScaleLarge = 0.35;
+      fontScaleMega = 0.28;
     } else if (this.size === 4) {
-      maxBoardSize = Math.min(viewport * 0.85, 500);
+      baseBoardSize = 'min(85vw, 85vh, 500px)';
+      gapMultiplier = 1;
+      fontScaleBase = 0.35;
+      fontScaleLarge = 0.28;
+      fontScaleMega = 0.22;
     } else if (this.size === 5) {
-      maxBoardSize = Math.min(viewport * 0.9, 520);
+      baseBoardSize = 'min(90vw, 90vh, 520px)';
+      gapMultiplier = 0.7;
+      fontScaleBase = 0.32;
+      fontScaleLarge = 0.25;
+      fontScaleMega = 0.18;
     }
     
-    // Apply dynamic sizing
-    document.documentElement.style.setProperty('--board-max-size', `${maxBoardSize}px`);
+    // Apply dynamic sizing variables
+    document.documentElement.style.setProperty('--base-board-size', baseBoardSize);
+    document.documentElement.style.setProperty('--board-max-size', baseBoardSize);
+    document.documentElement.style.setProperty('--gap-multiplier', gapMultiplier);
+    document.documentElement.style.setProperty('--font-scale-base', fontScaleBase);
+    document.documentElement.style.setProperty('--font-scale-large', fontScaleLarge);
+    document.documentElement.style.setProperty('--font-scale-mega', fontScaleMega);
     
     // Create grid cells
     for (let i = 0; i < this.size; i++) {
@@ -156,7 +174,28 @@ class Game {
       }
     }
     
-    console.log(`✅ Board container setup for ${this.size}x${this.size} grid - Max size: ${maxBoardSize}px`);
+    console.log(`✅ Board container setup for ${this.size}x${this.size} grid - Dynamic sizing applied`);
+  }
+
+  setupMessageHandler() {
+    // Handle messages from parent window (for test interface)
+    window.addEventListener('message', (event) => {
+      if (event.data.type === 'changeGridSize') {
+        const newSize = event.data.size;
+        if ([3, 4, 5].includes(newSize) && newSize !== this.size) {
+          console.log(`🔄 Changing grid size from ${this.size}x${this.size} to ${newSize}x${newSize}`);
+          this.size = newSize;
+          this.reset();
+          this.refreshLayout();
+          
+          // Notify parent of the change
+          window.parent.postMessage({
+            type: 'gridSizeChanged',
+            size: newSize
+          }, '*');
+        }
+      }
+    });
   }
 
   setupResponsiveHandlers() {
