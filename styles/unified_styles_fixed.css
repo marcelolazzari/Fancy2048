@@ -846,6 +846,7 @@ footer .container {
   /* Improve input handling on iOS */
   input {
     -webkit-appearance: none;
+    appearance: none;
     border-radius: 0;
   }
 }
@@ -1028,6 +1029,7 @@ footer .container {
   header {
     padding: 10px;
   }
+}
   
 /* Mobile responsive adjustments for board sizes */
 @media (max-width: 480px) {
