@@ -1,0 +1,438 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fancy2048 - Fixed Grid Layout Test</title>
+    <link rel="stylesheet" href="styles/unified_styles_fixed.css">
+    <style>
+        .test-container {
+            padding: 20px;
+            background: #1a1a1a;
+            min-height: 100vh;
+            color: white;
+        }
+        
+        .test-section {
+            margin: 30px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .controls button {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            margin: 0 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .controls button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(102, 126, 234, 0.3);
+        }
+        
+        .controls button.active {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            transform: scale(1.05);
+        }
+        
+        .game-showcase {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 30px;
+            margin: 30px 0;
+        }
+        
+        .game-instance {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            background: rgba(0, 0, 0, 0.2);
+            border-radius: 15px;
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+        
+        .game-instance:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .game-instance h3 {
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            color: #ff6b6b;
+        }
+        
+        .measurements {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.9);
+            padding: 15px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 11px;
+            line-height: 1.4;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            max-width: 300px;
+            z-index: 1000;
+        }
+        
+        .measurements h4 {
+            margin: 0 0 10px 0;
+            color: #4ecdc4;
+            font-size: 12px;
+        }
+        
+        .measurements .metric {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+        
+        .measurements .metric .label {
+            color: #ccc;
+        }
+        
+        .measurements .metric .value {
+            color: #fff;
+            font-weight: bold;
+        }
+        
+        .comparison-table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 20px 0;
+            font-size: 14px;
+        }
+        
+        .comparison-table th,
+        .comparison-table td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .comparison-table th {
+            background: rgba(255, 255, 255, 0.1);
+            color: #4ecdc4;
+            font-weight: 600;
+        }
+        
+        .comparison-table td {
+            color: #ccc;
+        }
+        
+        .success { color: #4CAF50; }
+        .warning { color: #FF9800; }
+        .error { color: #f44336; }
+        
+        @media (max-width: 768px) {
+            .measurements {
+                position: relative;
+                top: auto;
+                right: auto;
+                margin: 20px 0;
+            }
+            
+            .game-showcase {
+                gap: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="measurements" id="measurements">
+        <h4>📏 Live Measurements</h4>
+        <div class="metric">
+            <span class="label">Current Grid:</span>
+            <span class="value" id="current-grid">--</span>
+        </div>
+        <div class="metric">
+            <span class="label">Board Size:</span>
+            <span class="value" id="board-size">--</span>
+        </div>
+        <div class="metric">
+            <span class="label">Tile Size:</span>
+            <span class="value" id="tile-size">--</span>
+        </div>
+        <div class="metric">
+            <span class="label">Gap:</span>
+            <span class="value" id="gap-size">--</span>
+        </div>
+        <div class="metric">
+            <span class="label">Font Scale:</span>
+            <span class="value" id="font-scale">--</span>
+        </div>
+        <div class="metric">
+            <span class="label">Viewport:</span>
+            <span class="value" id="viewport">--</span>
+        </div>
+        <div class="metric">
+            <span class="label">Status:</span>
+            <span class="value" id="status">Loading...</span>
+        </div>
+    </div>
+
+    <div class="test-container">
+        <h1 style="text-align: center; margin-bottom: 10px;">🎮 Fancy2048 - Fixed Grid Layout</h1>
+        <p style="text-align: center; color: #ccc; margin-bottom: 30px;">
+            Testing improved 3x3 and 5x5 grid layouts with proper proportional scaling
+        </p>
+        
+        <div class="test-section">
+            <h2>🎯 Grid Layout Test Controls</h2>
+            <div class="controls">
+                <button onclick="testGrid(3)" id="btn-3">Test 3x3 Grid</button>
+                <button onclick="testGrid(4)" id="btn-4" class="active">Test 4x4 Grid</button>
+                <button onclick="testGrid(5)" id="btn-5">Test 5x5 Grid</button>
+                <button onclick="runAllTests()" style="margin-left: 20px; background: linear-gradient(135deg, #43cea2 0%, #185a9d 100%);">Test All Sizes</button>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📊 Expected vs Actual Comparison</h2>
+            <table class="comparison-table">
+                <thead>
+                    <tr>
+                        <th>Grid Size</th>
+                        <th>Expected Board Size</th>
+                        <th>Expected Gap Multiplier</th>
+                        <th>Expected Font Scale</th>
+                        <th>Actual Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>3x3</strong></td>
+                        <td>min(75vw, 75vh, 420px)</td>
+                        <td>1.5x (larger gaps)</td>
+                        <td>0.5 (larger fonts)</td>
+                        <td><span id="status-3x3" class="warning">Not tested</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>4x4</strong></td>
+                        <td>min(85vw, 85vh, 500px)</td>
+                        <td>1.0x (default)</td>
+                        <td>0.35 (balanced)</td>
+                        <td><span id="status-4x4" class="warning">Not tested</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>5x5</strong></td>
+                        <td>min(92vw, 92vh, 540px)</td>
+                        <td>0.8x (tighter gaps)</td>
+                        <td>0.3 (smaller fonts)</td>
+                        <td><span id="status-5x5" class="warning">Not tested</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="test-section">
+            <h2>🎮 Live Game Instance</h2>
+            <div class="game-showcase">
+                <div class="game-instance" id="current-game-container">
+                    <h3 id="current-game-title">Click a test button to load a game</h3>
+                    <div id="game-area">
+                        <div style="padding: 40px; text-align: center; color: #666;">
+                            No game loaded
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🔍 Debugging Information</h2>
+            <div id="debug-info" style="font-family: monospace; font-size: 12px; line-height: 1.6; background: rgba(0, 0, 0, 0.5); padding: 15px; border-radius: 5px;">
+                Debug information will appear here...
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts/advanced_ai_solver.js"></script>
+    <script src="scripts/enhanced_ai.js"></script>
+    <script src="scripts/game.js"></script>
+
+    <script>
+        let currentGame = null;
+        let testResults = {};
+
+        function updateMeasurements() {
+            const root = document.documentElement;
+            const computedStyle = getComputedStyle(root);
+            
+            // Get current measurements
+            const currentSize = computedStyle.getPropertyValue('--size').trim() || 'undefined';
+            const boardMaxSize = computedStyle.getPropertyValue('--board-max-size').trim() || 'undefined';
+            const tileSize = computedStyle.getPropertyValue('--tile-size').trim() || 'calculated';
+            const gap = computedStyle.getPropertyValue('--gap').trim() || 'undefined';
+            const fontScale = computedStyle.getPropertyValue('--font-scale-base').trim() || 'undefined';
+            
+            // Update display
+            document.getElementById('current-grid').textContent = currentSize + 'x' + currentSize;
+            document.getElementById('board-size').textContent = boardMaxSize;
+            document.getElementById('tile-size').textContent = tileSize;
+            document.getElementById('gap-size').textContent = gap;
+            document.getElementById('font-scale').textContent = fontScale;
+            document.getElementById('viewport').textContent = `${window.innerWidth}×${window.innerHeight}`;
+            
+            // Determine status
+            let status = currentGame ? 'Game Active' : 'No Game';
+            if (currentGame) {
+                const boardContainer = document.getElementById('board-container');
+                if (boardContainer) {
+                    const rect = boardContainer.getBoundingClientRect();
+                    status = `${Math.round(rect.width)}×${Math.round(rect.height)}px`;
+                }
+            }
+            document.getElementById('status').textContent = status;
+            
+            // Update debug info
+            updateDebugInfo();
+        }
+        
+        function updateDebugInfo() {
+            const debugInfo = document.getElementById('debug-info');
+            const bodyClasses = document.body.className;
+            const rootStyle = document.documentElement.getAttribute('style') || '';
+            
+            debugInfo.innerHTML = `
+                <strong>Body Classes:</strong> ${bodyClasses}<br>
+                <strong>Root Inline Styles:</strong> ${rootStyle}<br>
+                <strong>Current Game:</strong> ${currentGame ? `${currentGame.size}x${currentGame.size} (${currentGame.gameState})` : 'None'}<br>
+                <strong>Window Size:</strong> ${window.innerWidth}×${window.innerHeight}px<br>
+                <strong>Device Pixel Ratio:</strong> ${window.devicePixelRatio}x<br>
+                <strong>User Agent:</strong> ${navigator.userAgent.substring(0, 80)}...
+            `;
+        }
+        
+        function updateButtonStates(activeSize) {
+            document.querySelectorAll('.controls button').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            if (activeSize) {
+                const btn = document.getElementById(`btn-${activeSize}`);
+                if (btn) btn.classList.add('active');
+            }
+        }
+        
+        function testGrid(size) {
+            try {
+                // Clear existing game
+                const gameArea = document.getElementById('game-area');
+                gameArea.innerHTML = '';
+                
+                // Create game HTML structure
+                gameArea.innerHTML = `
+                    <div id="score-container" style="margin-bottom: 20px; display: flex; gap: 20px; justify-content: center;">
+                        <div class="score-item">
+                            <span class="label">Score</span>
+                            <span class="value" id="score">0</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="label">Best</span>
+                            <span class="value" id="best-score">0</span>
+                        </div>
+                    </div>
+                    <div id="board-container" tabindex="0"></div>
+                    <div id="controls-container" style="margin-top: 20px;"></div>
+                    <div id="game-over"></div>
+                `;
+                
+                // Create new game instance
+                currentGame = new Game(size);
+                
+                // Update UI
+                document.getElementById('current-game-title').textContent = `${size}x${size} Grid Layout Test`;
+                updateButtonStates(size);
+                updateMeasurements();
+                
+                // Test results
+                const boardContainer = document.getElementById('board-container');
+                if (boardContainer) {
+                    const rect = boardContainer.getBoundingClientRect();
+                    const isProperlyRendered = rect.width > 0 && rect.height > 0;
+                    
+                    testResults[`${size}x${size}`] = {
+                        success: isProperlyRendered,
+                        boardSize: `${Math.round(rect.width)}×${Math.round(rect.height)}px`,
+                        timestamp: new Date().toLocaleTimeString()
+                    };
+                    
+                    // Update status in table
+                    const statusEl = document.getElementById(`status-${size}x${size}`);
+                    if (statusEl) {
+                        statusEl.textContent = isProperlyRendered ? 
+                            `✅ ${Math.round(rect.width)}×${Math.round(rect.height)}px` : 
+                            '❌ Failed to render';
+                        statusEl.className = isProperlyRendered ? 'success' : 'error';
+                    }
+                }
+                
+                console.log(`✅ Created ${size}x${size} game successfully:`, currentGame);
+                
+            } catch (error) {
+                console.error(`❌ Error creating ${size}x${size} game:`, error);
+                
+                const gameArea = document.getElementById('game-area');
+                gameArea.innerHTML = `
+                    <div style="color: #f44336; text-align: center; padding: 20px;">
+                        <strong>Error:</strong> ${error.message}
+                    </div>
+                `;
+                
+                // Update status in table
+                const statusEl = document.getElementById(`status-${size}x${size}`);
+                if (statusEl) {
+                    statusEl.textContent = `❌ Error: ${error.message}`;
+                    statusEl.className = 'error';
+                }
+            }
+        }
+        
+        function runAllTests() {
+            console.log('🚀 Running comprehensive grid layout tests...');
+            
+            setTimeout(() => testGrid(3), 100);
+            setTimeout(() => testGrid(4), 2000);
+            setTimeout(() => testGrid(5), 4000);
+            
+            setTimeout(() => {
+                console.log('📊 Test Results Summary:', testResults);
+            }, 6000);
+        }
+        
+        // Initialize
+        setTimeout(() => {
+            updateMeasurements();
+            testGrid(4); // Start with default 4x4
+        }, 500);
+        
+        // Update measurements periodically
+        setInterval(updateMeasurements, 2000);
+        
+        // Handle window resize
+        window.addEventListener('resize', () => {
+            setTimeout(updateMeasurements, 100);
+        });
+    </script>
+</body>
+</html>

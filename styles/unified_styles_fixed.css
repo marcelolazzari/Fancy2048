@@ -427,8 +427,8 @@ main {
   grid-template-columns: repeat(var(--size), 1fr);
   grid-template-rows: repeat(var(--size), 1fr);
   gap: var(--gap);
-  width: var(--game-size);
-  height: var(--game-size);
+  width: var(--board-max-size);
+  height: var(--board-max-size);
   max-width: var(--board-max-size);
   max-height: var(--board-max-size);
   aspect-ratio: 1 / 1;
@@ -443,9 +443,6 @@ main {
   border: 1px solid rgba(255, 255, 255, 0.1);
   margin: 0 auto;
   overflow: hidden;
-  /* Ensure consistent sizing across all grid types */
-  min-width: 280px;
-  min-height: 280px;
   /* Mobile touch optimizations */
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -940,39 +937,23 @@ footer .container {
     padding: 6px 8px;
     font-size: 12px;
   }
-  
-  /* Ultra-small screens use slightly smaller scaling */
-  .board-size-3 {
-    --font-scale-base: 0.4;
-    --font-scale-large: 0.32;
-    --font-scale-mega: 0.25;
-  }
-  
-  .board-size-4 {
-    --font-scale-base: 0.3;
-    --font-scale-large: 0.24;
-    --font-scale-mega: 0.2;
-  }
-  
-  .board-size-5 {
-    --font-scale-base: 0.28;
-    --font-scale-large: 0.22;
-    --font-scale-mega: 0.16;
-  }
 }
 
 /* Landscape orientation adjustments for mobile */
 @media screen and (orientation: landscape) and (max-height: 500px) {
   .board-size-3 {
-    --base-board-size: min(70vh, 70vw, 400px);
+    --base-board-size: min(65vh, 65vw, 380px);
+    --board-max-size: min(65vh, 65vw, 380px);
   }
   
   .board-size-4 {
-    --base-board-size: min(75vh, 75vw, 420px);
+    --base-board-size: min(70vh, 70vw, 420px);
+    --board-max-size: min(70vh, 70vw, 420px);
   }
   
   .board-size-5 {
-    --base-board-size: min(80vh, 80vw, 450px);
+    --base-board-size: min(75vh, 75vw, 460px);
+    --board-max-size: min(75vh, 75vw, 460px);
   }
   
   body {
@@ -1009,16 +990,18 @@ footer .container {
 /* 3x3 Grid Optimizations - Larger tiles, better spacing */
 .board-size-3 {
   --gap-multiplier: 1.5;
-  --base-board-size: min(80vw, 80vh, 450px);
-  --font-scale-base: 0.45;
-  --font-scale-large: 0.35;
-  --font-scale-mega: 0.28;
+  --base-board-size: min(75vw, 75vh, 420px);
+  --board-max-size: min(75vw, 75vh, 420px);
+  --font-scale-base: 0.5;
+  --font-scale-large: 0.4;
+  --font-scale-mega: 0.32;
 }
 
 /* 4x4 Grid Optimizations (default) - Balanced sizing */
 .board-size-4 {
   --gap-multiplier: 1;
   --base-board-size: min(85vw, 85vh, 500px);
+  --board-max-size: min(85vw, 85vh, 500px);
   --font-scale-base: 0.35;
   --font-scale-large: 0.28;
   --font-scale-mega: 0.22;
@@ -1026,10 +1009,11 @@ footer .container {
 
 /* 5x5 Grid Optimizations - Compact tiles, tighter spacing */
 .board-size-5 {
-  --gap-multiplier: 0.7;
-  --base-board-size: min(90vw, 90vh, 520px);
-  --font-scale-base: 0.32;
-  --font-scale-large: 0.25;
+  --gap-multiplier: 0.8;
+  --base-board-size: min(92vw, 92vh, 540px);
+  --board-max-size: min(92vw, 92vh, 540px);
+  --font-scale-base: 0.3;
+  --font-scale-large: 0.24;
   --font-scale-mega: 0.18;
 }
 
@@ -1043,6 +1027,32 @@ footer .container {
   
   header {
     padding: 10px;
+  }
+  
+/* Mobile responsive adjustments for board sizes */
+@media (max-width: 480px) {
+  .board-size-3 {
+    --base-board-size: min(90vw, 85vh, 320px);
+    --board-max-size: min(90vw, 85vh, 320px);
+    --font-scale-base: 0.45;
+    --font-scale-large: 0.36;
+    --font-scale-mega: 0.28;
+  }
+  
+  .board-size-4 {
+    --base-board-size: min(92vw, 85vh, 340px);
+    --board-max-size: min(92vw, 85vh, 340px);
+    --font-scale-base: 0.32;
+    --font-scale-large: 0.26;
+    --font-scale-mega: 0.2;
+  }
+  
+  .board-size-5 {
+    --base-board-size: min(95vw, 85vh, 360px);
+    --board-max-size: min(95vw, 85vh, 360px);
+    --font-scale-base: 0.28;
+    --font-scale-large: 0.22;
+    --font-scale-mega: 0.16;
   }
   
   header h1 {

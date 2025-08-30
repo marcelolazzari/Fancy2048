@@ -1,0 +1,341 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fancy2048 - Grid Layout Fix Test</title>
+    <link rel="stylesheet" href="styles/unified_styles_fixed.css">
+    <style>
+        .test-container {
+            padding: 20px;
+            background: #1a1a1a;
+            min-height: 100vh;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+        
+        .grid-showcase {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 30px;
+            justify-content: center;
+            margin: 20px 0;
+        }
+        
+        .grid-demo {
+            text-align: center;
+        }
+        
+        .grid-demo h3 {
+            color: white;
+            margin-bottom: 15px;
+        }
+        
+        .demo-board {
+            display: grid;
+            gap: 8px;
+            background: rgba(0, 16, 71, 0.3);
+            padding: 10px;
+            border-radius: 8px;
+            margin: 0 auto;
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+        
+        .demo-3x3 {
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+            width: 200px;
+            height: 200px;
+        }
+        
+        .demo-4x4 {
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            width: 200px;
+            height: 200px;
+        }
+        
+        .demo-5x5 {
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+            width: 200px;
+            height: 200px;
+        }
+        
+        .demo-tile {
+            background: linear-gradient(135deg, #ff6b6b, #4ecdc4);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: white;
+            font-size: 12px;
+        }
+        
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .controls button {
+            background: var(--button-background);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 14px;
+        }
+        
+        .controls button:hover {
+            background: var(--button-hover-background);
+        }
+        
+        .info {
+            color: white;
+            background: rgba(0, 100, 200, 0.2);
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+        }
+        
+        .current-test {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: monospace;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="current-test" id="current-test">
+        Loading...
+    </div>
+
+    <div class="test-container">
+        <h1 style="color: white; text-align: center;">🎮 Grid Layout Fix Test - All Board Sizes</h1>
+        
+        <div class="info">
+            <h3>🔧 Current Grid Layout Issues to Fix:</h3>
+            <ul>
+                <li><strong>3x3 Grid</strong>: Should have larger tiles, optimal spacing within board container</li>
+                <li><strong>4x4 Grid</strong>: Default balanced sizing (reference)</li>
+                <li><strong>5x5 Grid</strong>: Should have compact tiles but still readable, tight spacing</li>
+                <li><strong>Responsive</strong>: All sizes should scale proportionally on different screen sizes</li>
+                <li><strong>Consistent Board Size</strong>: All grids should fit properly within the main game board area</li>
+            </ul>
+        </div>
+        
+        <div class="test-section">
+            <h2 style="color: white;">📐 Visual Grid Size Comparison</h2>
+            <div class="grid-showcase">
+                <div class="grid-demo">
+                    <h3>3x3 Grid</h3>
+                    <div class="demo-board demo-3x3">
+                        <div class="demo-tile">2</div>
+                        <div class="demo-tile">4</div>
+                        <div class="demo-tile">8</div>
+                        <div class="demo-tile">16</div>
+                        <div class="demo-tile">32</div>
+                        <div class="demo-tile">64</div>
+                        <div class="demo-tile">128</div>
+                        <div class="demo-tile">256</div>
+                        <div class="demo-tile">512</div>
+                    </div>
+                    <p style="color: #ccc; font-size: 12px;">Larger tiles, more spacing</p>
+                </div>
+                
+                <div class="grid-demo">
+                    <h3>4x4 Grid (Default)</h3>
+                    <div class="demo-board demo-4x4">
+                        <div class="demo-tile">2</div>
+                        <div class="demo-tile">4</div>
+                        <div class="demo-tile">8</div>
+                        <div class="demo-tile">16</div>
+                        <div class="demo-tile">32</div>
+                        <div class="demo-tile">64</div>
+                        <div class="demo-tile">128</div>
+                        <div class="demo-tile">256</div>
+                        <div class="demo-tile">512</div>
+                        <div class="demo-tile">1024</div>
+                        <div class="demo-tile">2048</div>
+                        <div class="demo-tile">4096</div>
+                        <div class="demo-tile"></div>
+                        <div class="demo-tile"></div>
+                        <div class="demo-tile"></div>
+                        <div class="demo-tile"></div>
+                    </div>
+                    <p style="color: #ccc; font-size: 12px;">Balanced size and spacing</p>
+                </div>
+                
+                <div class="grid-demo">
+                    <h3>5x5 Grid</h3>
+                    <div class="demo-board demo-5x5">
+                        <div class="demo-tile">2</div>
+                        <div class="demo-tile">4</div>
+                        <div class="demo-tile">8</div>
+                        <div class="demo-tile">16</div>
+                        <div class="demo-tile">32</div>
+                        <div class="demo-tile">64</div>
+                        <div class="demo-tile">128</div>
+                        <div class="demo-tile">256</div>
+                        <div class="demo-tile">512</div>
+                        <div class="demo-tile">1024</div>
+                        <div class="demo-tile">2048</div>
+                        <div class="demo-tile">4096</div>
+                        <div class="demo-tile"></div>
+                        <div class="demo-tile"></div>
+                        <div class="demo-tile"></div>
+                        <div class="demo-tile"></div>
+                        <div class="demo-tile"></div>
+                        <div class="demo-tile"></div>
+                        <div class="demo-tile"></div>
+                        <div class="demo-tile"></div>
+                        <div class="demo-tile"></div>
+                        <div class="demo-tile"></div>
+                        <div class="demo-tile"></div>
+                        <div class="demo-tile"></div>
+                        <div class="demo-tile"></div>
+                    </div>
+                    <p style="color: #ccc; font-size: 12px;">Compact tiles, tight spacing</p>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2 style="color: white;">🎮 Live Game Test</h2>
+            <div class="controls">
+                <button onclick="loadGame(3)">Test 3x3 Grid</button>
+                <button onclick="loadGame(4)">Test 4x4 Grid</button>
+                <button onclick="loadGame(5)">Test 5x5 Grid</button>
+            </div>
+            
+            <div id="game-area" style="display: flex; justify-content: center; margin-top: 20px;">
+                <div style="color: white; text-align: center; padding: 40px;">
+                    Click a button above to test the grid layout
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2 style="color: white;">📊 CSS Variables Test</h2>
+            <div id="css-vars-info" style="font-family: monospace; color: #ccc; font-size: 12px;">
+                <div>Current --size: <span id="current-size">--</span></div>
+                <div>Current --board-max-size: <span id="current-board-size">--</span></div>
+                <div>Current --tile-size: <span id="current-tile-size">--</span></div>
+                <div>Current --gap: <span id="current-gap">--</span></div>
+                <div>Current --font-scale-base: <span id="current-font-scale">--</span></div>
+                <div>Viewport: <span id="viewport-size">--</span></div>
+                <div>Device Pixel Ratio: <span id="device-pixel-ratio">--</span></div>
+            </div>
+        </div>
+    </div>
+
+    <script src="scripts/advanced_ai_solver.js"></script>
+    <script src="scripts/enhanced_ai.js"></script>
+    <script src="scripts/game.js"></script>
+    
+    <script>
+        let currentGame = null;
+        
+        function updateCurrentTest() {
+            const testEl = document.getElementById('current-test');
+            const bodyClasses = document.body.className;
+            const boardSizeClass = bodyClasses.match(/board-size-(\d+)/);
+            const currentSize = boardSizeClass ? boardSizeClass[1] : 'none';
+            
+            testEl.innerHTML = `
+                Current Test: ${currentSize}x${currentSize}<br>
+                Body Classes: ${bodyClasses}<br>
+                Game Instance: ${currentGame ? 'Active' : 'None'}
+            `;
+        }
+        
+        function updateCSSVars() {
+            const root = document.documentElement;
+            const computedStyle = getComputedStyle(root);
+            
+            document.getElementById('current-size').textContent = 
+                computedStyle.getPropertyValue('--size') || 'undefined';
+            document.getElementById('current-board-size').textContent = 
+                computedStyle.getPropertyValue('--board-max-size') || 'undefined';
+            document.getElementById('current-tile-size').textContent = 
+                computedStyle.getPropertyValue('--tile-size') || 'undefined';
+            document.getElementById('current-gap').textContent = 
+                computedStyle.getPropertyValue('--gap') || 'undefined';
+            document.getElementById('current-font-scale').textContent = 
+                computedStyle.getPropertyValue('--font-scale-base') || 'undefined';
+            document.getElementById('viewport-size').textContent = 
+                `${window.innerWidth} x ${window.innerHeight}px`;
+            document.getElementById('device-pixel-ratio').textContent = 
+                window.devicePixelRatio + 'x';
+        }
+        
+        function loadGame(size) {
+            // Clear existing game
+            const gameArea = document.getElementById('game-area');
+            gameArea.innerHTML = '';
+            
+            // Create game container
+            gameArea.innerHTML = `
+                <div style="display: flex; flex-direction: column; align-items: center;">
+                    <div id="score-container" style="margin-bottom: 20px;">
+                        <div class="score-item">
+                            <span class="label">Score</span>
+                            <span class="value" id="score">0</span>
+                        </div>
+                        <div class="score-item">
+                            <span class="label">Best</span>
+                            <span class="value" id="best-score">0</span>
+                        </div>
+                    </div>
+                    <div id="board-container" tabindex="0"></div>
+                    <div id="controls-container" style="margin-top: 20px;"></div>
+                    <div id="game-over"></div>
+                </div>
+            `;
+            
+            try {
+                // Create new game with specified size
+                currentGame = new Game(size);
+                updateCurrentTest();
+                updateCSSVars();
+                
+                console.log(`Created ${size}x${size} game:`, currentGame);
+            } catch (error) {
+                console.error('Error creating game:', error);
+                gameArea.innerHTML = `<div style="color: red;">Error: ${error.message}</div>`;
+            }
+        }
+        
+        // Update info periodically
+        setInterval(() => {
+            updateCurrentTest();
+            updateCSSVars();
+        }, 1000);
+        
+        // Initial update
+        setTimeout(() => {
+            updateCurrentTest();
+            updateCSSVars();
+        }, 500);
+        
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            updateCSSVars();
+        });
+    </script>
+</body>
+</html>

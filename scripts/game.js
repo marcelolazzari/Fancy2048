@@ -132,32 +132,27 @@ class Game {
     document.body.className = document.body.className.replace(/board-size-\d+/g, '');
     document.body.classList.add(`board-size-${this.size}`);
     
-    // Set dynamic board sizing based on grid size
-    let baseBoardSize, gapMultiplier, fontScaleBase, fontScaleLarge, fontScaleMega;
+    // Set dynamic board sizing based on grid size - let CSS handle the specifics
+    let gapMultiplier, fontScaleBase, fontScaleLarge, fontScaleMega;
     
     if (this.size === 3) {
-      baseBoardSize = 'min(80vw, 80vh, 450px)';
       gapMultiplier = 1.5;
-      fontScaleBase = 0.45;
-      fontScaleLarge = 0.35;
-      fontScaleMega = 0.28;
+      fontScaleBase = 0.5;
+      fontScaleLarge = 0.4;
+      fontScaleMega = 0.32;
     } else if (this.size === 4) {
-      baseBoardSize = 'min(85vw, 85vh, 500px)';
       gapMultiplier = 1;
       fontScaleBase = 0.35;
       fontScaleLarge = 0.28;
       fontScaleMega = 0.22;
     } else if (this.size === 5) {
-      baseBoardSize = 'min(90vw, 90vh, 520px)';
-      gapMultiplier = 0.7;
-      fontScaleBase = 0.32;
-      fontScaleLarge = 0.25;
+      gapMultiplier = 0.8;
+      fontScaleBase = 0.3;
+      fontScaleLarge = 0.24;
       fontScaleMega = 0.18;
     }
     
-    // Apply dynamic sizing variables
-    document.documentElement.style.setProperty('--base-board-size', baseBoardSize);
-    document.documentElement.style.setProperty('--board-max-size', baseBoardSize);
+    // Apply dynamic sizing variables (CSS classes will handle board-max-size)
     document.documentElement.style.setProperty('--gap-multiplier', gapMultiplier);
     document.documentElement.style.setProperty('--font-scale-base', fontScaleBase);
     document.documentElement.style.setProperty('--font-scale-large', fontScaleLarge);
@@ -2063,15 +2058,20 @@ class Game {
     // Update CSS variables for responsive layout
     document.documentElement.style.setProperty('--size', this.size);
     
-    // Calculate optimal sizes based on viewport
+    // Add board size class to body for CSS targeting
+    document.body.className = document.body.className.replace(/board-size-\d+/g, '');
+    document.body.classList.add(`board-size-${this.size}`);
+    
+    // Calculate optimal gap based on viewport and grid size
     const vmin = Math.min(window.innerWidth, window.innerHeight);
-    const availableSpace = vmin * 0.85; // Use 85% of smallest viewport dimension
-    const gap = Math.max(8, Math.min(20, availableSpace * 0.02)); // Responsive gap
+    const gapMultiplier = this.size === 3 ? 1.5 : (this.size === 5 ? 0.8 : 1);
+    const baseGap = Math.max(6, Math.min(15, vmin * 0.02));
+    const gap = baseGap * gapMultiplier;
     
     document.documentElement.style.setProperty('--gap', `${gap}px`);
     
-    // Adjust tile border radius based on size
-    const borderRadius = Math.max(8, Math.min(15, gap * 0.8));
+    // Adjust tile border radius based on gap size
+    const borderRadius = Math.max(6, Math.min(12, gap * 0.8));
     document.documentElement.style.setProperty('--tile-border-radius', `${borderRadius}px`);
     
     // Update mobile-specific measurements
