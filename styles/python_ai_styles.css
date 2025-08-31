@@ -1,0 +1,650 @@
+/* 🧠 Python AI Integration Styles */
+
+/* ====================================
+   AI Status Display
+   ==================================== */
+
+.ai-status-container {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 16px;
+    padding: 20px;
+    margin: 16px 0;
+    color: white;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    box-shadow: 0 8px 32px rgba(102, 126, 234, 0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    position: relative;
+    overflow: hidden;
+}
+
+.ai-status-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: 
+        radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.15) 0%, transparent 50%);
+    pointer-events: none;
+}
+
+.ai-status-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 16px;
+    position: relative;
+    z-index: 1;
+}
+
+.ai-status-header h3 {
+    margin: 0;
+    font-size: 1.4em;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ai-status-header i {
+    font-size: 1.2em;
+    animation: pulse 2s ease-in-out infinite alternate;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.7; transform: scale(1); }
+    100% { opacity: 1; transform: scale(1.05); }
+}
+
+.ai-toggle {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 0.9em;
+}
+
+.switch {
+    position: relative;
+    display: inline-block;
+    width: 50px;
+    height: 24px;
+}
+
+.switch input {
+    opacity: 0;
+    width: 0;
+    height: 0;
+}
+
+.slider {
+    position: absolute;
+    cursor: pointer;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(255, 255, 255, 0.3);
+    transition: 0.3s;
+    border-radius: 24px;
+}
+
+.slider:before {
+    position: absolute;
+    content: "";
+    height: 18px;
+    width: 18px;
+    left: 3px;
+    bottom: 3px;
+    background-color: white;
+    transition: 0.3s;
+    border-radius: 50%;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+input:checked + .slider {
+    background-color: rgba(76, 175, 80, 0.8);
+}
+
+input:checked + .slider:before {
+    transform: translateX(26px);
+}
+
+.ai-status-content {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    position: relative;
+    z-index: 1;
+}
+
+.ai-metric {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.metric-label {
+    font-size: 0.85em;
+    opacity: 0.9;
+    font-weight: 500;
+}
+
+.metric-value {
+    font-size: 1.1em;
+    font-weight: 600;
+    color: #fff;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+/* ====================================
+   AI Controls Panel
+   ==================================== */
+
+.ai-controls-container {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    border-radius: 16px;
+    padding: 20px;
+    margin: 16px 0;
+    color: white;
+    box-shadow: 0 8px 32px rgba(240, 147, 251, 0.2);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.ai-controls-header h4 {
+    margin: 0 0 16px 0;
+    font-size: 1.2em;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.ai-controls-content {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.control-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.control-group label {
+    font-size: 0.9em;
+    font-weight: 500;
+    opacity: 0.95;
+}
+
+.ai-select {
+    padding: 8px 12px;
+    border: none;
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.9);
+    color: #333;
+    font-size: 0.9em;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.ai-select:hover {
+    background: rgba(255, 255, 255, 1);
+    transform: translateY(-1px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.ai-select:focus {
+    outline: none;
+    background: rgba(255, 255, 255, 1);
+    box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.5);
+}
+
+.control-buttons {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 12px;
+    margin-top: 8px;
+}
+
+.ai-btn {
+    padding: 12px 16px;
+    border: none;
+    border-radius: 8px;
+    font-size: 0.85em;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
+.ai-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2);
+}
+
+.ai-btn:active {
+    transform: translateY(0);
+}
+
+.ai-btn-primary {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.ai-btn-secondary {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+    color: white;
+}
+
+.ai-btn-success {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+    color: white;
+}
+
+.ai-btn-warning {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+    color: white;
+}
+
+.ai-btn-info {
+    background: linear-gradient(135deg, #a8edea 0%, #fed6e3 100%);
+    color: #333;
+}
+
+/* ====================================
+   Move Suggestion Highlights
+   ==================================== */
+
+#board-container.suggest-up {
+    animation: suggest-up 1s ease-in-out;
+}
+
+#board-container.suggest-down {
+    animation: suggest-down 1s ease-in-out;
+}
+
+#board-container.suggest-left {
+    animation: suggest-left 1s ease-in-out;
+}
+
+#board-container.suggest-right {
+    animation: suggest-right 1s ease-in-out;
+}
+
+@keyframes suggest-up {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4); }
+}
+
+@keyframes suggest-down {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(4px); box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4); }
+}
+
+@keyframes suggest-left {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(-4px); box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4); }
+}
+
+@keyframes suggest-right {
+    0%, 100% { transform: translateX(0); }
+    50% { transform: translateX(4px); box-shadow: 0 8px 24px rgba(102, 126, 234, 0.4); }
+}
+
+/* ====================================
+   Modal Styles
+   ==================================== */
+
+.ai-modal {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+    backdrop-filter: blur(5px);
+}
+
+.modal-content {
+    background: white;
+    border-radius: 16px;
+    max-width: 90vw;
+    max-height: 90vh;
+    overflow: auto;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+    animation: modal-appear 0.3s ease-out;
+}
+
+@keyframes modal-appear {
+    0% { opacity: 0; transform: scale(0.8) translateY(-20px); }
+    100% { opacity: 1; transform: scale(1) translateY(0); }
+}
+
+.modal-header {
+    padding: 20px;
+    border-bottom: 1px solid #eee;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border-radius: 16px 16px 0 0;
+}
+
+.modal-header h3 {
+    margin: 0;
+    font-size: 1.3em;
+    font-weight: 600;
+}
+
+.modal-close {
+    background: none;
+    border: none;
+    font-size: 24px;
+    cursor: pointer;
+    color: white;
+    padding: 0;
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s ease;
+}
+
+.modal-close:hover {
+    background: rgba(255, 255, 255, 0.2);
+}
+
+.modal-body {
+    padding: 20px;
+}
+
+.analysis-content {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.analysis-section h4 {
+    margin: 0 0 12px 0;
+    color: #333;
+    font-weight: 600;
+    border-bottom: 2px solid #667eea;
+    padding-bottom: 4px;
+}
+
+.game-metrics, .ai-settings {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+    gap: 10px;
+}
+
+.metric {
+    background: #f8f9fa;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.9em;
+    border-left: 3px solid #667eea;
+}
+
+.move-analysis {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.move-option {
+    background: #f8f9fa;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 0.9em;
+    border-left: 3px solid #f093fb;
+}
+
+.benchmark-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 16px;
+}
+
+.benchmark-table th,
+.benchmark-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #eee;
+}
+
+.benchmark-table th {
+    background: #f8f9fa;
+    font-weight: 600;
+    color: #333;
+}
+
+.benchmark-table tr:hover {
+    background: #f8f9fa;
+}
+
+.benchmark-info {
+    background: #f8f9fa;
+    padding: 16px;
+    border-radius: 8px;
+    border-left: 4px solid #667eea;
+}
+
+/* ====================================
+   Toast Notifications
+   ==================================== */
+
+.ai-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    padding: 16px 20px;
+    border-radius: 8px;
+    color: white;
+    font-weight: 500;
+    font-size: 0.9em;
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2);
+    z-index: 10001;
+    transform: translateX(400px);
+    opacity: 0;
+    transition: all 0.3s ease;
+    max-width: 320px;
+    word-wrap: break-word;
+}
+
+.ai-toast.show {
+    transform: translateX(0);
+    opacity: 1;
+}
+
+.ai-toast-success {
+    background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+}
+
+.ai-toast-error {
+    background: linear-gradient(135deg, #fa709a 0%, #fee140 100%);
+}
+
+.ai-toast-warning {
+    background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+}
+
+.ai-toast-info {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+}
+
+/* ====================================
+   Mobile Responsive
+   ==================================== */
+
+@media screen and (max-width: 768px) {
+    .ai-status-container,
+    .ai-controls-container {
+        margin: 12px 0;
+        padding: 16px;
+        border-radius: 12px;
+    }
+    
+    .ai-status-content {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+    
+    .ai-controls-content {
+        gap: 12px;
+    }
+    
+    .control-buttons {
+        grid-template-columns: 1fr 1fr;
+        gap: 8px;
+    }
+    
+    .ai-btn {
+        padding: 10px 12px;
+        font-size: 0.8em;
+    }
+    
+    .modal-content {
+        max-width: 95vw;
+        max-height: 95vh;
+        margin: 2.5vh 2.5vw;
+    }
+    
+    .modal-header,
+    .modal-body {
+        padding: 16px;
+    }
+    
+    .benchmark-table {
+        font-size: 0.8em;
+    }
+    
+    .benchmark-table th,
+    .benchmark-table td {
+        padding: 8px;
+    }
+    
+    .ai-toast {
+        right: 10px;
+        left: 10px;
+        max-width: none;
+        transform: translateY(-100px);
+    }
+    
+    .ai-toast.show {
+        transform: translateY(0);
+    }
+}
+
+/* ====================================
+   Dark Mode Support
+   ==================================== */
+
+@media (prefers-color-scheme: dark) {
+    .modal-content {
+        background: #1a1a1a;
+        color: #fff;
+    }
+    
+    .modal-header {
+        border-bottom-color: #333;
+    }
+    
+    .analysis-section h4 {
+        color: #fff;
+    }
+    
+    .metric,
+    .move-option,
+    .benchmark-info {
+        background: #2a2a2a;
+        color: #fff;
+    }
+    
+    .benchmark-table th {
+        background: #2a2a2a;
+        color: #fff;
+    }
+    
+    .benchmark-table tr:hover {
+        background: #2a2a2a;
+    }
+    
+    .benchmark-table {
+        border-color: #333;
+    }
+    
+    .benchmark-table th,
+    .benchmark-table td {
+        border-bottom-color: #333;
+    }
+}
+
+/* ====================================
+   Accessibility Enhancements
+   ==================================== */
+
+.ai-btn:focus,
+.ai-select:focus,
+.modal-close:focus {
+    outline: 2px solid #fff;
+    outline-offset: 2px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .ai-status-header i,
+    .ai-btn,
+    .ai-toast,
+    .modal-content,
+    #board-container {
+        animation: none !important;
+        transition: none !important;
+    }
+}
+
+/* ====================================
+   Integration with existing controls
+   ==================================== */
+
+#controls-container #ai-hint-button {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    border: none;
+    border-radius: 8px;
+    width: 48px;
+    height: 48px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 8px rgba(102, 126, 234, 0.2);
+}
+
+#controls-container #ai-hint-button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(102, 126, 234, 0.3);
+}
+
+#controls-container #ai-hint-button i {
+    font-size: 18px;
+    animation: pulse 2s ease-in-out infinite alternate;
+}
