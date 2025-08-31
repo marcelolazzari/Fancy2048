@@ -56,7 +56,7 @@ class Game {
     this.isAutoPlaying = false;
     this.autoPlayInterval = null;
     this.autoPlaySpeed = 800; // milliseconds between moves
-    this.speedMultipliers = [1, 1.5, 2, 4, 8]; // Speed options including x8
+    this.speedMultipliers = [1, 1.5, 2, 4, 8, 'MAX']; // Speed options including MAX
     this.currentSpeedIndex = 0; // Current speed index
     this.isAutoPlayedGame = false; // Track if current game used autoplay
     this.hasHumanMoves = false; // Track if current game has human moves
@@ -2936,15 +2936,35 @@ class Game {
     };
 
     // Start the autoplay loop
-    this.autoPlayInterval = setInterval(makeMove, this.getAutoPlayDelay());
+    const delay = this.getAutoPlayDelay();
+    
+    if (delay === 0) {
+      // MAX speed - use requestAnimationFrame for maximum performance
+      const maxSpeedLoop = () => {
+        if (this.isAutoPlaying) {
+          makeMove();
+          // Use requestAnimationFrame for smooth, maximum speed execution
+          requestAnimationFrame(maxSpeedLoop);
+        }
+      };
+      requestAnimationFrame(maxSpeedLoop);
+      this.autoPlayInterval = 'MAX_SPEED'; // Mark that we're using max speed mode
+    } else {
+      // Normal speed - use setInterval
+      this.autoPlayInterval = setInterval(makeMove, delay);
+    }
+    
     this.updateAutoPlayButton();
     
-    console.log(`🤖 Enhanced AI autoplay started (difficulty: ${this.aiDifficulty})`);
+    const speedText = this.speedMultipliers[this.currentSpeedIndex] === 'MAX' ? 'MAX speed' : `${this.speedMultipliers[this.currentSpeedIndex]}x speed`;
+    console.log(`🤖 Enhanced AI autoplay started (difficulty: ${this.aiDifficulty}, ${speedText})`);
   }
 
   stopAutoPlay() {
     if (this.autoPlayInterval) {
-      clearInterval(this.autoPlayInterval);
+      if (this.autoPlayInterval !== 'MAX_SPEED') {
+        clearInterval(this.autoPlayInterval);
+      }
       this.autoPlayInterval = null;
     }
     
@@ -2952,7 +2972,8 @@ class Game {
       const duration = (Date.now() - this.autoPlayStartTime) / 1000;
       const movesPerSecond = (this.autoPlayMoves / duration).toFixed(2);
       
-      console.log(`🏁 AI autoplay stopped: ${this.autoPlayMoves} moves in ${duration.toFixed(1)}s (${movesPerSecond} moves/sec)`);
+      const speedText = this.speedMultipliers[this.currentSpeedIndex] === 'MAX' ? 'MAX speed' : `${this.speedMultipliers[this.currentSpeedIndex]}x speed`;
+      console.log(`🏁 AI autoplay stopped: ${this.autoPlayMoves} moves in ${duration.toFixed(1)}s (${movesPerSecond} moves/sec) at ${speedText}`);
       
       // Show AI performance stats
       if (this.enhancedAI && window.debugAI) {
@@ -2992,17 +3013,29 @@ class Game {
     if (!speedText) return;
 
     const multiplier = this.speedMultipliers[this.currentSpeedIndex];
-    speedText.textContent = `${multiplier}x`;
+    speedText.textContent = multiplier === 'MAX' ? 'MAX' : `${multiplier}x`;
     
-    const tooltipText = multiplier === 1 ? 
-      'Normal speed' : 
-      `${multiplier}x speed (${(this.autoPlaySpeed / multiplier)}ms between moves)`;
+    let tooltipText;
+    if (multiplier === 'MAX') {
+      tooltipText = 'Maximum speed (no delay between moves)';
+    } else if (multiplier === 1) {
+      tooltipText = 'Normal speed';
+    } else {
+      tooltipText = `${multiplier}x speed (${Math.round(this.autoPlaySpeed / multiplier)}ms between moves)`;
+    }
+    
     speedButton.setAttribute('data-tooltip', tooltipText);
   }
 
   getAutoPlayDelay() {
     const multiplier = this.speedMultipliers[this.currentSpeedIndex];
-    return Math.max(50, this.autoPlaySpeed / multiplier); // Minimum 50ms delay
+    
+    // MAX speed = no delay (immediate execution)
+    if (multiplier === 'MAX') {
+      return 0;
+    }
+    
+    return Math.max(50, this.autoPlaySpeed / multiplier); // Minimum 50ms delay for other speeds
   }
 
   changeSpeed() {
@@ -3012,28 +3045,99 @@ class Game {
     
     // If autoplay is running, restart it with new speed
     if (this.isAutoPlaying) {
-      clearInterval(this.autoPlayInterval);
+      // Stop current autoplay
+      if (this.autoPlayInterval && this.autoPlayInterval !== 'MAX_SPEED') {
+        clearInterval(this.autoPlayInterval);
+      }
+      this.autoPlayInterval = null;
+      
       const makeMove = () => {
-        if (!this.isAutoPlaying || this.gameState === 'over' || this.isPaused) {
+        // Check stopping conditions
+        if (!this.isAutoPlaying) {
+          console.log('🤖 Autoplay stopped: isAutoPlaying = false');
           this.stopAutoPlay();
           return;
         }
+        
+        if (this.gameState === 'over') {
+          console.log('🤖 Autoplay stopped: game state = over');
+          this.stopAutoPlay();
+          return;
+        }
+        
+        if (this.isPaused) {
+          console.log('🤖 Autoplay paused: game is paused');
+          return;
+        }
 
-        const move = this.getBestMove();
-        if (move && this.canMove(move)) {
+        try {
+          const move = this.getBestMove();
+          
+          if (!move) {
+            console.log('🤖 AI could not determine a move');
+            const hasValidMoves = this.canMove('up') || this.canMove('down') || 
+                                this.canMove('left') || this.canMove('right');
+            
+            if (!hasValidMoves) {
+              console.log('🤖 Confirmed: No valid moves available');
+              this.stopAutoPlay();
+            } else {
+              console.log('⚠️ AI failed to find move, but moves are available. Retrying...');
+            }
+            return;
+          }
+          
+          if (!this.canMove(move)) {
+            console.log(`🤖 AI suggested invalid move: ${move}`);
+            const hasValidMoves = this.canMove('up') || this.canMove('down') || 
+                                this.canMove('left') || this.canMove('right');
+            
+            if (!hasValidMoves) {
+              console.log('🤖 Confirmed: No valid moves available');
+              this.stopAutoPlay();
+            } else {
+              console.log('⚠️ AI suggested bad move, but other moves available. Retrying...');
+            }
+            return;
+          }
+          
+          // Execute the move
           this.move(move);
           this.autoPlayMoves++;
           this.updateAutoPlayButton();
-        } else {
+          
+          if (window.debugAI) {
+            console.log(`🤖 AI made move: ${move} (total moves: ${this.autoPlayMoves})`);
+          }
+          
+        } catch (error) {
+          console.error('🤖 Error in AI autoplay:', error);
           this.stopAutoPlay();
         }
       };
 
-      this.autoPlayInterval = setInterval(makeMove, this.getAutoPlayDelay());
+      // Start with new speed
+      const delay = this.getAutoPlayDelay();
+      
+      if (delay === 0) {
+        // MAX speed - use requestAnimationFrame
+        const maxSpeedLoop = () => {
+          if (this.isAutoPlaying) {
+            makeMove();
+            requestAnimationFrame(maxSpeedLoop);
+          }
+        };
+        requestAnimationFrame(maxSpeedLoop);
+        this.autoPlayInterval = 'MAX_SPEED';
+      } else {
+        // Normal speed - use setInterval
+        this.autoPlayInterval = setInterval(makeMove, delay);
+      }
     }
     
     const multiplier = this.speedMultipliers[this.currentSpeedIndex];
-    console.log(`Speed changed to ${multiplier}x`);
+    const speedText = multiplier === 'MAX' ? 'MAX' : `${multiplier}x`;
+    console.log(`Speed changed to ${speedText}`);
   }
 
   // AI Algorithm for 2048 - Uses a simple heuristic approach
