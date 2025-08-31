@@ -1424,6 +1424,173 @@ class Game {
     }
   }
 
+  // AI Learning Integration Methods
+
+  /**
+   * Record game completion for AI learning
+   */
+  recordGameCompletion(won) {
+    try {
+      // Get max tile value
+      let maxTile = 0;
+      for (let row = 0; row < this.size; row++) {
+        for (let col = 0; col < this.size; col++) {
+          if (this.board[row][col] > maxTile) {
+            maxTile = this.board[row][col];
+          }
+        }
+      }
+
+      // Record with Advanced AI if available
+      if (this.advancedAI && this.advancedAI.recordGameCompletion) {
+        this.advancedAI.recordGameCompletion(this.score, maxTile, won);
+        
+        if (window.debugAI) {
+          console.log(`🎓 AI Learning: Game completed - Score: ${this.score}, Max Tile: ${maxTile}, Won: ${won}`);
+        }
+      }
+
+      // Record with Enhanced AI if available (fallback)
+      if (!this.advancedAI && this.enhancedAI && this.enhancedAI.getLearningSystem) {
+        const learningSystem = this.enhancedAI.getLearningSystem();
+        if (learningSystem) {
+          learningSystem.recordGameEnd(this.score, maxTile, won, this.moves);
+          
+          if (window.debugAI) {
+            console.log(`🎓 Enhanced AI Learning: Game completed - Score: ${this.score}, Max Tile: ${maxTile}, Won: ${won}`);
+          }
+        }
+      }
+    } catch (error) {
+      console.warn('⚠️ Failed to record game completion for learning:', error);
+    }
+  }
+
+  /**
+   * Get AI learning statistics
+   */
+  getAILearningStats() {
+    try {
+      if (this.advancedAI && this.advancedAI.getLearningSystem) {
+        const learningSystem = this.advancedAI.getLearningSystem();
+        if (learningSystem) {
+          return learningSystem.getLearningStats();
+        }
+      }
+      
+      if (this.enhancedAI && this.enhancedAI.getLearningSystem) {
+        const learningSystem = this.enhancedAI.getLearningSystem();
+        if (learningSystem) {
+          return learningSystem.getLearningStats();
+        }
+      }
+      
+      return null;
+    } catch (error) {
+      console.warn('⚠️ Failed to get AI learning stats:', error);
+      return null;
+    }
+  }
+
+  /**
+   * Export AI learning data
+   */
+  exportAILearningData() {
+    try {
+      let learningSystem = null;
+      
+      if (this.advancedAI && this.advancedAI.getLearningSystem) {
+        learningSystem = this.advancedAI.getLearningSystem();
+      } else if (this.enhancedAI && this.enhancedAI.getLearningSystem) {
+        learningSystem = this.enhancedAI.getLearningSystem();
+      }
+      
+      if (learningSystem && learningSystem.exportLearningData) {
+        learningSystem.exportLearningData();
+        return true;
+      } else {
+        console.warn('⚠️ No learning system available for export');
+        return false;
+      }
+    } catch (error) {
+      console.error('❌ Failed to export AI learning data:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Import AI learning data
+   */
+  async importAILearningData(file) {
+    try {
+      let learningSystem = null;
+      
+      if (this.advancedAI && this.advancedAI.getLearningSystem) {
+        learningSystem = this.advancedAI.getLearningSystem();
+      } else if (this.enhancedAI && this.enhancedAI.getLearningSystem) {
+        learningSystem = this.enhancedAI.getLearningSystem();
+      }
+      
+      if (learningSystem && learningSystem.importLearningData) {
+        const result = await learningSystem.importLearningData(file);
+        console.log('✅ AI learning data imported successfully');
+        return result;
+      } else {
+        throw new Error('No learning system available for import');
+      }
+    } catch (error) {
+      console.error('❌ Failed to import AI learning data:', error);
+      throw error;
+    }
+  }
+
+  /**
+   * Toggle AI learning on/off
+   */
+  toggleAILearning() {
+    try {
+      if (this.advancedAI && this.advancedAI.setLearningEnabled) {
+        const currentState = this.advancedAI.isLearningEnabled;
+        this.advancedAI.setLearningEnabled(!currentState);
+        
+        console.log(`🧠 AI Learning ${!currentState ? 'enabled' : 'disabled'}`);
+        return !currentState;
+      }
+      
+      return false;
+    } catch (error) {
+      console.error('❌ Failed to toggle AI learning:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Clear AI learning data
+   */
+  clearAILearningData() {
+    try {
+      let learningSystem = null;
+      
+      if (this.advancedAI && this.advancedAI.getLearningSystem) {
+        learningSystem = this.advancedAI.getLearningSystem();
+      } else if (this.enhancedAI && this.enhancedAI.getLearningSystem) {
+        learningSystem = this.enhancedAI.getLearningSystem();
+      }
+      
+      if (learningSystem && learningSystem.clearLearningData) {
+        learningSystem.clearLearningData();
+        console.log('🔄 AI learning data cleared');
+        return true;
+      } else {
+        console.warn('⚠️ No learning system available to clear');
+        return false;
+      }
+    } catch (error) {
+      console.error('❌ Failed to clear AI learning data:', error);
+      return false;
+    }
+  }
+
   animateNumberChange(element, fromValue, toValue) {
     const duration = 300;
     const steps = 20;
@@ -1669,6 +1836,9 @@ class Game {
   showGameOver() {
     const gameOverElement = document.getElementById('game-over');
     
+    // Record game completion for AI learning
+    this.recordGameCompletion(false);
+    
     if (this.isMobileDevice()) {
       // Smaller, mobile-friendly game over message
       gameOverElement.innerHTML = `
@@ -1702,6 +1872,9 @@ class Game {
   showWinMessage() {
     const gameOverElement = document.getElementById('game-over');
     gameOverElement.innerHTML = ''; // Clear any existing content
+    
+    // Record game completion for AI learning (win = true)
+    this.recordGameCompletion(true);
     
     if (this.isMobileDevice()) {
       // Compact mobile win message
@@ -3625,6 +3798,9 @@ function initializeFancy2048() {
         detail: { game: window.game, attempts: initAttempts }
       }));
       
+      // Initialize AI Learning Panel
+      setupAILearningPanel();
+      
       // Optional: Remove any loading indicators
       const loadingIndicators = document.querySelectorAll('.loading-indicator, .init-status');
       loadingIndicators.forEach(indicator => {
@@ -3898,6 +4074,242 @@ window.aiDebugTools = {
     }
   }
 };
+
+// AI Learning Panel Setup and Management
+function setupAILearningPanel() {
+  console.log('🎓 Setting up AI Learning Panel...');
+  
+  // Setup AI Learning Button
+  const aiLearningButton = document.getElementById('ai-learning-button');
+  if (aiLearningButton) {
+    aiLearningButton.addEventListener('click', () => {
+      const panel = document.getElementById('ai-learning-panel');
+      if (panel) {
+        panel.classList.remove('hidden');
+        updateAILearningStats();
+      }
+    });
+  }
+  
+  // Setup Learning Controls
+  setupLearningControls();
+  
+  console.log('✅ AI Learning Panel setup complete');
+}
+
+function setupLearningControls() {
+  // Toggle Learning Button
+  const toggleButton = document.getElementById('toggle-learning-button');
+  if (toggleButton) {
+    toggleButton.addEventListener('click', () => {
+      if (window.game) {
+        const newState = window.game.toggleAILearning();
+        const icon = toggleButton.querySelector('i');
+        const text = toggleButton.querySelector('span');
+        
+        if (newState) {
+          icon.className = 'fas fa-toggle-on';
+          text.textContent = 'Learning: On';
+          toggleButton.style.background = 'linear-gradient(135deg, #4CAF50, #45a049)';
+        } else {
+          icon.className = 'fas fa-toggle-off';
+          text.textContent = 'Learning: Off';
+          toggleButton.style.background = 'linear-gradient(135deg, #f44336, #d32f2f)';
+        }
+      }
+    });
+  }
+  
+  // Export Data Button
+  const exportButton = document.getElementById('export-learning-button');
+  if (exportButton) {
+    exportButton.addEventListener('click', () => {
+      if (window.game) {
+        const success = window.game.exportAILearningData();
+        if (success) {
+          showNotification('📁 Learning data exported successfully!', 'success');
+        } else {
+          showNotification('❌ Failed to export learning data', 'error');
+        }
+      }
+    });
+  }
+  
+  // Import Data Button
+  const importButton = document.getElementById('import-learning-button');
+  const fileInput = document.getElementById('learning-file-input');
+  
+  if (importButton && fileInput) {
+    importButton.addEventListener('click', () => {
+      fileInput.click();
+    });
+    
+    fileInput.addEventListener('change', async (event) => {
+      const file = event.target.files[0];
+      if (file && window.game) {
+        try {
+          await window.game.importAILearningData(file);
+          showNotification('📥 Learning data imported successfully!', 'success');
+          updateAILearningStats();
+        } catch (error) {
+          showNotification('❌ Failed to import learning data: ' + error.message, 'error');
+        }
+        fileInput.value = ''; // Reset file input
+      }
+    });
+  }
+  
+  // Clear Data Button
+  const clearButton = document.getElementById('clear-learning-button');
+  if (clearButton) {
+    clearButton.addEventListener('click', () => {
+      if (confirm('Are you sure you want to clear all AI learning data? This cannot be undone.')) {
+        if (window.game) {
+          const success = window.game.clearAILearningData();
+          if (success) {
+            showNotification('🔄 Learning data cleared', 'info');
+            updateAILearningStats();
+          } else {
+            showNotification('❌ Failed to clear learning data', 'error');
+          }
+        }
+      }
+    });
+  }
+}
+
+function updateAILearningStats() {
+  if (!window.game) return;
+  
+  const stats = window.game.getAILearningStats();
+  if (!stats) {
+    updateStatsDisplay({
+      totalGames: 0,
+      performance: { averageScore: 0, winRate: 0, bestGame: { finalScore: 0 } },
+      patternsLearned: 0,
+      recentImprovement: 0
+    });
+    return;
+  }
+  
+  updateStatsDisplay(stats);
+  updateInsightsContent(stats);
+}
+
+function updateStatsDisplay(stats) {
+  // Update stats display elements
+  const elements = {
+    'ai-total-games': stats.totalGames || 0,
+    'ai-avg-score': Math.round(stats.performance?.averageScore || 0).toLocaleString(),
+    'ai-win-rate': ((stats.performance?.winRate || 0) * 100).toFixed(1) + '%',
+    'ai-best-score': (stats.performance?.bestGame?.finalScore || 0).toLocaleString(),
+    'ai-patterns-learned': stats.patternsLearned || 0,
+    'ai-recent-improvement': ((stats.recentImprovement || 0) >= 0 ? '+' : '') + 
+                             (stats.recentImprovement || 0).toFixed(1) + '%'
+  };
+  
+  Object.entries(elements).forEach(([id, value]) => {
+    const element = document.getElementById(id);
+    if (element) {
+      element.textContent = value;
+      
+      // Add color coding for improvement
+      if (id === 'ai-recent-improvement') {
+        const improvement = stats.recentImprovement || 0;
+        if (improvement > 5) {
+          element.style.color = '#4CAF50';
+        } else if (improvement < -5) {
+          element.style.color = '#f44336';
+        } else {
+          element.style.color = '#ffcc00';
+        }
+      }
+    }
+  });
+}
+
+function updateInsightsContent(stats) {
+  const insightsElement = document.getElementById('ai-insights-content');
+  if (!insightsElement) return;
+  
+  let insights = [];
+  
+  if (stats.totalGames === 0) {
+    insights.push('🎮 No games played yet. Start playing to begin learning!');
+  } else {
+    if (stats.totalGames < 10) {
+      insights.push(`🌱 Learning in progress... Play ${10 - stats.totalGames} more games for better insights.`);
+    }
+    
+    if (stats.recentImprovement > 10) {
+      insights.push('📈 Great progress! Your AI is improving significantly.');
+    } else if (stats.recentImprovement < -10) {
+      insights.push('📉 Performance declining. Consider adjusting strategy or difficulty.');
+    }
+    
+    if (stats.performance?.winRate > 0.3) {
+      insights.push('🏆 Excellent win rate! Your AI has learned effective strategies.');
+    }
+    
+    if (stats.patternsLearned > 100) {
+      insights.push('🧠 Rich pattern knowledge accumulated - AI is making sophisticated decisions.');
+    }
+    
+    const topStrategies = stats.topStrategies || [];
+    if (topStrategies.length > 0) {
+      const bestStrategy = topStrategies[0];
+      insights.push(`🎯 Most successful strategy: ${bestStrategy.move} moves (${(bestStrategy.weight * 100).toFixed(0)}% effectiveness)`);
+    }
+    
+    if (insights.length === 0) {
+      insights.push('🤖 AI is learning steadily. Keep playing to unlock more insights!');
+    }
+  }
+  
+  insightsElement.innerHTML = insights.map(insight => `<p>${insight}</p>`).join('');
+}
+
+function showNotification(message, type = 'info') {
+  const notification = document.createElement('div');
+  notification.className = `notification ${type}`;
+  notification.style.cssText = `
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: ${type === 'success' ? '#4CAF50' : type === 'error' ? '#f44336' : '#2196F3'};
+    color: white;
+    padding: 12px 20px;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+    z-index: 10001;
+    max-width: 300px;
+    font-weight: 500;
+    animation: slideInRight 0.3s ease;
+  `;
+  notification.textContent = message;
+  
+  document.body.appendChild(notification);
+  
+  setTimeout(() => {
+    notification.style.animation = 'slideOutRight 0.3s ease forwards';
+    setTimeout(() => notification.remove(), 300);
+  }, 3000);
+}
+
+// Add notification animations
+const notificationStyle = document.createElement('style');
+notificationStyle.textContent = `
+  @keyframes slideInRight {
+    from { transform: translateX(100%); opacity: 0; }
+    to { transform: translateX(0); opacity: 1; }
+  }
+  
+  @keyframes slideOutRight {
+    from { transform: translateX(0); opacity: 1; }
+    to { transform: translateX(100%); opacity: 0; }
+  }
+`;
+document.head.appendChild(notificationStyle);
 
 // Initialize the game when DOM is ready
 if (document.readyState === 'loading') {

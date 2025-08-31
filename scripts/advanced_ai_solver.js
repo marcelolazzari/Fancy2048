@@ -11,6 +11,11 @@ class AdvancedAI2048Solver {
     this.cacheHits = 0;
     this.totalLookups = 0;
     
+    // Initialize learning system
+    this.learningSystem = new AILearningSystem();
+    this.isLearningEnabled = true;
+    this.currentGameMoves = [];
+    
     // Enhanced heuristic weights optimized for better performance
     this.weights = {
       openness: 2.7,        // Increased weight for empty cells
@@ -33,6 +38,9 @@ class AdvancedAI2048Solver {
     
     // Precomputed lookup tables for performance
     this.initializeLookupTables();
+
+    // Learning integration
+    this.adaptWeightsFromLearning();
   }
 
   /**
@@ -91,7 +99,7 @@ class AdvancedAI2048Solver {
   }
 
   /**
-   * Enhanced AI decision method with adaptive depth and move ordering
+   * Enhanced AI decision method with adaptive depth, move ordering, and learning integration
    */
   getBestMove() {
     const startTime = performance.now();
@@ -111,6 +119,21 @@ class AdvancedAI2048Solver {
     // Evaluate moves in strategic order (corners first, then edges)
     const directions = this.getMoveOrderByStrategy(boardState);
     
+    // Get learning-based recommendations if available
+    let learningRecommendations = null;
+    if (this.isLearningEnabled && this.learningSystem) {
+      const validMoves = directions.filter(dir => 
+        this.simulateMove(boardState, dir) !== boardState
+      );
+      
+      if (validMoves.length > 0) {
+        learningRecommendations = this.learningSystem.getLearnedMoveRecommendation(
+          this.decodeBoardStateToArray(boardState), 
+          validMoves
+        );
+      }
+    }
+    
     for (const direction of directions) {
       const nextState = this.simulateMove(boardState, direction);
       
@@ -121,13 +144,23 @@ class AdvancedAI2048Solver {
         // Deep evaluation with expectimax
         const deepScore = this.expectimax(nextState, searchDepth, false, 1.0);
         
-        // Combined score with quick and deep evaluation
-        const combinedScore = deepScore + (quickScore * 0.1);
+        // Learning-based score adjustment
+        let learningBonus = 0;
+        if (learningRecommendations) {
+          const recommendation = learningRecommendations.find(r => r.move === direction);
+          if (recommendation) {
+            learningBonus = (recommendation.score - 1.0) * 1000 * recommendation.confidence;
+          }
+        }
+        
+        // Combined score with quick, deep evaluation, and learning bonus
+        const combinedScore = deepScore + (quickScore * 0.1) + learningBonus;
         
         moveScores[direction] = combinedScore;
         moveAnalysis[direction] = {
           quick: quickScore,
           deep: deepScore,
+          learningBonus: learningBonus,
           combined: combinedScore
         };
         
@@ -139,6 +172,15 @@ class AdvancedAI2048Solver {
     }
     
     const executionTime = performance.now() - startTime;
+    
+    // Record move for learning (if enabled)
+    if (this.isLearningEnabled && bestMove && this.learningSystem) {
+      const currentBoard = this.decodeBoardStateToArray(boardState);
+      const nextBoard = this.decodeBoardStateToArray(this.simulateMove(boardState, bestMove));
+      const scoreGained = this.calculateScoreGain(currentBoard, nextBoard);
+      
+      this.learningSystem.recordMove(currentBoard, bestMove, nextBoard, scoreGained);
+    }
     
     // Periodic cache cleanup for memory management
     if (this.transpositionTable.size > this.maxCacheSize) {
@@ -152,6 +194,8 @@ class AdvancedAI2048Solver {
         bestMove,
         scores: moveScores,
         analysis: moveAnalysis,
+        learningActive: this.isLearningEnabled,
+        learningRecommendations: learningRecommendations,
         cacheHitRate: (this.cacheHits / Math.max(this.totalLookups, 1) * 100).toFixed(1) + '%'
       });
     }
@@ -1122,13 +1166,24 @@ class AdvancedAI2048Solver {
    * Get performance statistics
    */
   getStats() {
-    return {
+    const baseStats = {
       cacheHits: this.cacheHits,
       totalLookups: this.totalLookups,
       cacheHitRate: this.totalLookups > 0 ? (this.cacheHits / this.totalLookups) : 0,
       transpositionTableSize: this.transpositionTable.size,
       weights: { ...this.weights }
     };
+
+    // Add learning statistics if available
+    if (this.isLearningEnabled && this.learningSystem) {
+      const learningStats = this.learningSystem.getLearningStats();
+      return {
+        ...baseStats,
+        learning: learningStats
+      };
+    }
+
+    return baseStats;
   }
 
   /**
@@ -1151,6 +1206,120 @@ class AdvancedAI2048Solver {
     this.transpositionTable.clear();
     this.cacheHits = 0;
     this.totalLookups = 0;
+    
+    if (this.isLearningEnabled && this.learningSystem) {
+      this.currentGameMoves = [];
+    }
+  }
+
+  // Learning Integration Methods
+
+  /**
+   * Adapt AI weights based on learning data
+   */
+  adaptWeightsFromLearning() {
+    if (!this.isLearningEnabled || !this.learningSystem) return;
+    
+    const learningStats = this.learningSystem.getLearningStats();
+    const performance = learningStats.performance;
+    
+    if (learningStats.totalGames > 10) {
+      // Adjust weights based on recent performance
+      const recentImprovement = learningStats.recentImprovement || 0;
+      
+      if (recentImprovement > 5) {
+        // Recent performance is good, slightly increase exploration
+        this.weights.openness *= 1.05;
+        this.weights.merging *= 1.02;
+      } else if (recentImprovement < -5) {
+        // Recent performance is poor, focus more on proven strategies
+        this.weights.monotonicity *= 1.05;
+        this.weights.maxTileCorner *= 1.03;
+      }
+      
+      // Ensure weights stay within reasonable bounds
+      Object.keys(this.weights).forEach(key => {
+        this.weights[key] = Math.max(0.5, Math.min(20.0, this.weights[key]));
+      });
+      
+      if (window.debugAI) {
+        console.log('🎯 AI weights adapted based on learning data:', this.weights);
+      }
+    }
+  }
+
+  /**
+   * Record game completion for learning
+   */
+  recordGameCompletion(finalScore, maxTile, won) {
+    if (!this.isLearningEnabled || !this.learningSystem) return;
+    
+    const totalMoves = this.currentGameMoves.length;
+    this.learningSystem.recordGameEnd(finalScore, maxTile, won, totalMoves);
+    
+    // Adapt weights after each game
+    this.adaptWeightsFromLearning();
+    
+    if (window.debugAI) {
+      console.log(`🎓 Game learning recorded: Score ${finalScore}, Max ${maxTile}, ${won ? 'Won' : 'Lost'}`);
+    }
+  }
+
+  /**
+   * Enable/disable learning system
+   */
+  setLearningEnabled(enabled) {
+    this.isLearningEnabled = enabled;
+    
+    if (window.debugAI) {
+      console.log(`🧠 AI Learning ${enabled ? 'enabled' : 'disabled'}`);
+    }
+  }
+
+  /**
+   * Get learning system reference for external access
+   */
+  getLearningSystem() {
+    return this.learningSystem;
+  }
+
+  /**
+   * Helper method to decode board state to array
+   */
+  decodeBoardStateToArray(boardState) {
+    const board = [];
+    for (let i = 0; i < 16; i++) {
+      board[i] = this.extractTileValue(boardState, i);
+    }
+    return board;
+  }
+
+  /**
+   * Calculate score gained from a move
+   */
+  calculateScoreGain(beforeBoard, afterBoard) {
+    // Simple estimation based on tiles merged
+    let scoreGain = 0;
+    const size = Math.sqrt(beforeBoard.length);
+    
+    for (let i = 0; i < beforeBoard.length; i++) {
+      if (afterBoard[i] > beforeBoard[i] && beforeBoard[i] > 0) {
+        // Tile was merged
+        scoreGain += afterBoard[i];
+      }
+    }
+    
+    return scoreGain;
+  }
+
+  /**
+   * Extract tile value from encoded board state at position
+   */
+  extractTileValue(boardState, position) {
+    const shift = position * 4;
+    const mask = 0xF;
+    const tileCode = (boardState >> shift) & mask;
+    return tileCode === 0 ? 0 : Math.pow(2, tileCode);
   }
 }
 

@@ -132,6 +132,11 @@
                 <span class="button-text">Normal</span>
               </button>
             </li>
+            <li role="none">
+              <button type="button" id="ai-learning-button" aria-label="AI Learning Controls" tabindex="0" role="menuitem" data-tooltip="AI Learning statistics and controls">
+                <i class="fas fa-graduation-cap" aria-hidden="true"></i>
+              </button>
+            </li>
           </ul>
         </nav>
       </div>
@@ -154,6 +159,82 @@
           <li>Time: <span id="time">00:00</span></li>
         </ul>
       </aside>
+
+      <!-- AI Learning Panel -->
+      <div id="ai-learning-panel" class="ai-learning-panel hidden" role="dialog" aria-labelledby="ai-learning-title">
+        <div class="panel-content">
+          <div class="panel-header">
+            <h3 id="ai-learning-title">🧠 AI Learning System</h3>
+            <button type="button" class="close-button" onclick="document.getElementById('ai-learning-panel').classList.add('hidden')" aria-label="Close AI Learning Panel">
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+          
+          <div class="panel-body">
+            <div class="learning-stats">
+              <h4>📊 Learning Statistics</h4>
+              <div class="stats-grid">
+                <div class="stat-item">
+                  <span class="stat-label">Games Played:</span>
+                  <span id="ai-total-games" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Average Score:</span>
+                  <span id="ai-avg-score" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Win Rate:</span>
+                  <span id="ai-win-rate" class="stat-value">0%</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Best Score:</span>
+                  <span id="ai-best-score" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Patterns Learned:</span>
+                  <span id="ai-patterns-learned" class="stat-value">0</span>
+                </div>
+                <div class="stat-item">
+                  <span class="stat-label">Recent Improvement:</span>
+                  <span id="ai-recent-improvement" class="stat-value">0%</span>
+                </div>
+              </div>
+            </div>
+            
+            <div class="learning-controls">
+              <h4>⚙️ Learning Controls</h4>
+              <div class="controls-grid">
+                <button type="button" id="toggle-learning-button" class="control-button" data-tooltip="Enable/disable AI learning">
+                  <i class="fas fa-toggle-on"></i>
+                  <span>Learning: On</span>
+                </button>
+                <button type="button" id="export-learning-button" class="control-button" data-tooltip="Export learning data">
+                  <i class="fas fa-download"></i>
+                  <span>Export Data</span>
+                </button>
+                <button type="button" id="import-learning-button" class="control-button" data-tooltip="Import learning data">
+                  <i class="fas fa-upload"></i>
+                  <span>Import Data</span>
+                </button>
+                <button type="button" id="clear-learning-button" class="control-button warning" data-tooltip="Clear all learning data">
+                  <i class="fas fa-trash"></i>
+                  <span>Clear Data</span>
+                </button>
+              </div>
+            </div>
+            
+            <div class="learning-insights">
+              <h4>💡 AI Insights</h4>
+              <div id="ai-insights-content" class="insights-content">
+                <p>AI learning system will analyze your gameplay and provide insights here.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Hidden file input for import -->
+        <input type="file" id="learning-file-input" accept=".json,.2048brain" style="display: none;">
+      </div>
     </main>
 
     <!-- Footer section -->
@@ -223,6 +304,7 @@
       // Load scripts sequentially with fallback support
       async function loadAllScripts() {
         try {
+          await loadScript('../scripts/ai_learning_system.js', '/Fancy2048/scripts/ai_learning_system.js', 'ai_learning_system.js');
           await loadScript('../scripts/advanced_ai_solver.js', '/Fancy2048/scripts/advanced_ai_solver.js', 'advanced_ai_solver.js');
           await loadScript('../scripts/enhanced_ai.js', '/Fancy2048/scripts/enhanced_ai.js', 'enhanced_ai.js');
           await loadScript('../scripts/game.js', '/Fancy2048/scripts/game.js', 'game.js');

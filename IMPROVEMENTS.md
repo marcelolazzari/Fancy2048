@@ -47,6 +47,14 @@ Comprehensive improvements to responsiveness, mobile experience, game logic, and
 - **Enhanced Heuristics**: Weighted evaluation system for smarter decisions
 - **Performance Optimization**: Improved caching and cleanup systems
 
+### AI Learning System (`scripts/ai_learning_system.js`) 🆕
+- **Continuous Learning**: Records every move and game outcome for pattern recognition
+- **Adaptive Intelligence**: Weights and strategies evolve based on performance
+- **Pattern Recognition**: Identifies successful board configurations and strategies
+- **Performance Tracking**: Comprehensive statistics and improvement metrics
+- **Data Management**: Export/import learning data with `.2048brain` format
+- **Strategic Evolution**: Heuristic weights adapt to improve decision making
+
 ### AI Improvements
 ```javascript
 // Strategic weights for better decision making
@@ -57,6 +65,12 @@ heuristicWeights: {
   maxTile: 7000,         // Corner positioning bonus
   strategic: 15000        // Pattern recognition bonus
 }
+
+// Learning integration
+const recommendations = learningSystem.getLearnedMoveRecommendation(
+  boardState, possibleMoves
+);
+const learningBonus = recommendation.confidence * recommendation.score * 1000;
 ```
 
 ### New AI Methods
@@ -64,6 +78,26 @@ heuristicWeights: {
 - `getAdaptiveSearchDepth()`: Dynamic depth based on game state
 - `checkMonotonicityPatterns()`: Advanced pattern recognition
 - `calculateStrategicEvaluation()`: Comprehensive board evaluation
+
+### AI Learning System Methods 🆝
+- `recordMove()`: Captures move data for learning
+- `recordGameEnd()`: Analyzes complete game for pattern extraction
+- `getLearnedMoveRecommendation()`: Provides learned move suggestions
+- `exportLearningData()`: Saves learning data to `.2048brain` file
+- `importLearningData()`: Loads previously saved learning data
+- `getLearningStats()`: Returns comprehensive performance metrics
+
+### Learning Data Format
+```json
+{
+  "version": "1.0.0",
+  "games": [/* Game records with move sequences */],
+  "patterns": {/* Learned board patterns and success rates */},
+  "moveStats": {/* Move success statistics by board position */},
+  "positionWeights": {/* Strategic weights for different positions */},
+  "performance": {/* Overall AI performance metrics */}
+}
+```
 
 ## 🎮 Game Logic Improvements
 
@@ -97,10 +131,18 @@ heuristicWeights: {
 // Enable in browser console
 window.debugAI = true;
 
-// See detailed AI decision making
+// See detailed AI decision making with learning integration
 🤖 AI thinking... (depth: 5)
-🎯 Best move: up (score: 12847.2, confidence: 87%)
+🎯 Best move: up (score: 12847.2, confidence: 87%, learning bonus: +340)
+🎓 AI Learning: 247 games played, 23% win rate, +12% recent improvement
 🧹 Cleaned 23 old cache entries
+
+// Access learning system directly
+const learningSystem = game.advancedAI?.getLearningSystem();
+console.log(learningSystem.getLearningStats());
+
+// Export learning data
+game.exportAILearningData(); // Downloads .2048brain file
 ```
 
 ## 📊 Performance Metrics
@@ -116,6 +158,9 @@ window.debugAI = true;
 - ✅ Cache hit rate: ~80% for repeated positions
 - ✅ Move evaluation: <100ms average response time
 - ✅ Memory management: Auto-cleanup of old cache entries
+- ✅ Learning system: Continuous improvement from gameplay data 🆕
+- ✅ Pattern recognition: Identifies successful strategies automatically 🆕
+- ✅ Data persistence: Export/import learning data for backup 🆝
 
 ### Mobile Experience
 - ✅ Gesture recognition: <50ms response time
@@ -131,7 +176,9 @@ window.debugAI = true;
 - Graceful degradation for older browsers
 
 ### Future Enhancements
-- Machine learning integration for AI improvement
+- Machine learning integration for AI improvement ✅ **COMPLETED** 
 - Cloud leaderboard synchronization
 - Advanced gesture customization
 - Accessibility improvements (screen reader support)
+- Community learning: Share AI patterns with other players 🆕
+- Real-time strategy adaptation during gameplay 🆕
