@@ -5,15 +5,13 @@ import uuid
 import time
 import json
 import os
-from advanced_ai_solver import Advanced2048AI, create_ai_solver, game_to_ai_state, direction_to_string, AIAlgorithm
 
 
 app = Flask(__name__, template_folder='pages')
 CORS(app)
 
-# In-memory storage for games and AI instances
+# In-memory storage for games
 games = {}  # session_id -> game_instance
-ai_solvers = {}  # session_id -> AI solver instance
 
 class Game:
     def __init__(self, size=4):
@@ -341,34 +339,6 @@ class Game:
             'time': time_str,
             'moves': self.moves
         }
-    
-    def is_game_over(self):
-        """Check if the game is over (no possible moves)"""
-        # Check if board is full
-        for row in self.board:
-            if 0 in row:
-                return False
-        
-        # Check if any adjacent tiles can merge
-        for i in range(self.size):
-            for j in range(self.size):
-                current = self.board[i][j]
-                # Check right
-                if j < self.size - 1 and self.board[i][j + 1] == current:
-                    return False
-                # Check down
-                if i < self.size - 1 and self.board[i + 1][j] == current:
-                    return False
-        
-        return True
-    
-    def get_possible_moves(self):
-        """Get list of possible moves"""
-        possible_moves = []
-        for direction in ['up', 'down', 'left', 'right']:
-            if self.can_move(direction):
-                possible_moves.append(direction)
-        return possible_moves
 
 
 # Routes for static files
@@ -500,218 +470,7 @@ def change_board_size():
         'gameState': games[game_id].get_state()
     })
 
-# Enhanced endpoints for AI solver integration
-@app.route('/api/ai/get_move', methods=['POST'])
-def get_ai_move():
-    """Get the best move from the AI solver"""
-    data = request.json or {}
-    game_id = data.get('gameId')
-    algorithm = data.get('algorithm', 'expectimax')
-    difficulty = data.get('difficulty', 'expert')
-    
-    if not game_id or game_id not in games:
-        return jsonify({'error': 'Invalid game ID'}), 400
-    
-    game = games[game_id]
-    
-    # Create or get AI solver instance
-    if game_id not in ai_solvers:
-        ai_solvers[game_id] = create_ai_solver(algorithm, difficulty)
-    
-    ai_solver = ai_solvers[game_id]
-    
-    # Convert game state for AI
-    ai_state = game_to_ai_state(game)
-    
-    # Get best move from AI
-    start_time = time.time()
-    best_direction = ai_solver.get_best_move(ai_state)
-    computation_time = time.time() - start_time
-    
-    if best_direction:
-        best_move = direction_to_string(best_direction)
-        
-        return jsonify({
-            'bestMove': best_move,
-            'confidence': min(100, max(0, 100 - (computation_time * 100))),  # Higher confidence for faster decisions
-            'algorithm': algorithm,
-            'difficulty': difficulty,
-            'nodesEvaluated': ai_solver.nodes_evaluated,
-            'computationTime': round(computation_time * 1000, 2),  # in milliseconds
-            'evaluation': ai_solver._evaluate_state(ai_state),
-            'possibleMoves': game.get_possible_moves()
-        })
-    else:
-        return jsonify({
-            'bestMove': None,
-            'message': 'No moves available',
-            'gameOver': game.is_game_over()
-        })
-
-@app.route('/api/ai/analyze_position', methods=['POST'])
-def analyze_position():
-    """Analyze current position and return detailed evaluation"""
-    data = request.json or {}
-    game_id = data.get('gameId')
-    algorithm = data.get('algorithm', 'expectimax')
-    difficulty = data.get('difficulty', 'expert')
-    
-    if not game_id or game_id not in games:
-        return jsonify({'error': 'Invalid game ID'}), 400
-    
-    game = games[game_id]
-    
-    # Create AI solver for analysis
-    ai_solver = create_ai_solver(algorithm, difficulty)
-    ai_state = game_to_ai_state(game)
-    
-    # Analyze all possible moves
-    move_analysis = {}
-    for direction in ['up', 'down', 'left', 'right']:
-        if game.can_move(direction):
-            # Simulate the move
-            from advanced_ai_solver import Direction
-            direction_enum = Direction(direction)
-            simulated_state = ai_solver._simulate_move(ai_state, direction_enum)
-            
-            if simulated_state:
-                evaluation = ai_solver._evaluate_state(simulated_state)
-                move_analysis[direction] = {
-                    'evaluation': evaluation,
-                    'scoreGain': simulated_state.score - ai_state.score,
-                    'emptySpaces': len(simulated_state.get_empty_cells()),
-                    'maxTile': simulated_state.get_max_tile()
-                }
-    
-    # Overall position evaluation
-    position_eval = ai_solver._evaluate_state(ai_state)
-    
-    return jsonify({
-        'positionEvaluation': position_eval,
-        'moveAnalysis': move_analysis,
-        'gameMetrics': {
-            'emptySpaces': len(ai_state.get_empty_cells()),
-            'maxTile': ai_state.get_max_tile(),
-            'filledSpaces': ai_state.get_filled_cells(),
-            'gameProgress': (ai_state.get_filled_calls() / (ai_state.size * ai_state.size)) * 100
-        },
-        'aiSettings': {
-            'algorithm': algorithm,
-            'difficulty': difficulty,
-            'maxDepth': ai_solver.max_depth
-        }
-    })
-
-@app.route('/api/ai/auto_play', methods=['POST'])
-def auto_play_move():
-    """Execute one move automatically using AI"""
-    data = request.json or {}
-    game_id = data.get('gameId')
-    algorithm = data.get('algorithm', 'expectimax')
-    difficulty = data.get('difficulty', 'expert')
-    
-    if not game_id or game_id not in games:
-        return jsonify({'error': 'Invalid game ID'}), 400
-    
-    game = games[game_id]
-    
-    # Create or get AI solver
-    if game_id not in ai_solvers:
-        ai_solvers[game_id] = create_ai_solver(algorithm, difficulty)
-    
-    ai_solver = ai_solvers[game_id]
-    ai_state = game_to_ai_state(game)
-    
-    # Get and execute best move
-    start_time = time.time()
-    best_direction = ai_solver.get_best_move(ai_state)
-    computation_time = time.time() - start_time
-    
-    if best_direction:
-        best_move = direction_to_string(best_direction)
-        moved = game.move(best_move)
-        
-        return jsonify({
-            'moved': moved,
-            'direction': best_move,
-            'gameState': game.get_state(),
-            'aiAnalysis': {
-                'algorithm': algorithm,
-                'difficulty': difficulty,
-                'computationTime': round(computation_time * 1000, 2),
-                'nodesEvaluated': ai_solver.nodes_evaluated,
-                'evaluation': ai_solver._evaluate_state(game_to_ai_state(game))
-            }
-        })
-    else:
-        return jsonify({
-            'moved': False,
-            'gameOver': game.is_game_over(),
-            'gameState': game.get_state()
-        })
-
-@app.route('/api/ai/set_algorithm', methods=['POST'])
-def set_ai_algorithm():
-    """Change AI algorithm and difficulty"""
-    data = request.json or {}
-    game_id = data.get('gameId')
-    algorithm = data.get('algorithm', 'expectimax')
-    difficulty = data.get('difficulty', 'expert')
-    
-    if not game_id or game_id not in games:
-        return jsonify({'error': 'Invalid game ID'}), 400
-    
-    # Create new AI solver with updated settings
-    ai_solvers[game_id] = create_ai_solver(algorithm, difficulty)
-    
-    return jsonify({
-        'success': True,
-        'algorithm': algorithm,
-        'difficulty': difficulty,
-        'maxDepth': ai_solvers[game_id].max_depth
-    })
-
-@app.route('/api/ai/benchmark', methods=['POST'])
-def benchmark_ai():
-    """Benchmark different AI algorithms"""
-    data = request.json or {}
-    game_id = data.get('gameId')
-    algorithms = data.get('algorithms', ['expectimax', 'alpha_beta', 'monte_carlo'])
-    difficulty = data.get('difficulty', 'normal')
-    
-    if not game_id or game_id not in games:
-        return jsonify({'error': 'Invalid game ID'}), 400
-    
-    game = games[game_id]
-    ai_state = game_to_ai_state(game)
-    
-    benchmark_results = {}
-    
-    for algorithm in algorithms:
-        ai_solver = create_ai_solver(algorithm, difficulty)
-        
-        start_time = time.time()
-        best_direction = ai_solver.get_best_move(ai_state)
-        computation_time = time.time() - start_time
-        
-        benchmark_results[algorithm] = {
-            'bestMove': direction_to_string(best_direction),
-            'computationTime': round(computation_time * 1000, 2),
-            'nodesEvaluated': ai_solver.nodes_evaluated,
-            'evaluation': ai_solver._evaluate_state(ai_state) if best_direction else 0
-        }
-    
-    return jsonify({
-        'benchmarkResults': benchmark_results,
-        'difficulty': difficulty,
-        'currentState': {
-            'score': game.score,
-            'maxTile': max([max(row) for row in game.board]),
-            'emptySpaces': len(ai_state.get_empty_cells())
-        }
-    })
-
-# Original endpoints for theme and visual settings
+# New endpoints for theme and visual settings
 @app.route('/api/change_theme', methods=['POST'])
 def change_theme():
     """Toggle light/dark theme"""
