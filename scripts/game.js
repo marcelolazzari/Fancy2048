@@ -83,20 +83,13 @@ class Game {
     this.updateUI();
     this.startTimer();
     
-    // Initialize enhanced AI with automatic learning
+    // Initialize enhanced AI and learning systems automatically
     this.enhancedAI = null;
     this.aiLearningSystem = null;
     try {
-      this.initializeEnhancedAI();
-      // Initialize AI Learning System automatically
-      if (typeof AILearningSystem !== 'undefined') {
-        this.aiLearningSystem = new AILearningSystem();
-        console.log('🧠 AI Learning System initialized automatically');
-      }
+      this.initializeEnhancedSystems();
     } catch (error) {
-      console.error('❌ Failed to initialize AI in constructor:', error);
-      this.enhancedAI = null;
-      this.aiLearningSystem = null;
+      console.error('❌ Failed to initialize enhanced systems in constructor:', error);
     }
     
     // AI performance settings
@@ -296,242 +289,6 @@ class Game {
     handleResize();
     
     console.log('✅ Enhanced responsive system initialized');
-  }
-
-  // Enhanced page visibility handlers
-  handlePageHidden() {
-    // Save current game state before potentially losing focus
-    this.saveCurrentGameState();
-    
-    if (!this.isPaused && this.gameState === 'playing') {
-      this.pauseGame(false); // Auto-pause (not user-initiated)
-      
-      // Show smaller, less intrusive message for mobile
-      if (this.isMobileDevice()) {
-        this.showMobileHiddenMessage();
-      } else {
-        this.showPageHiddenMessage();
-      }
-    }
-    
-    // Clear any timeout for automatic resume
-    if (this.pageVisibilityTimeout) {
-      clearTimeout(this.pageVisibilityTimeout);
-      this.pageVisibilityTimeout = null;
-    }
-  }
-
-  handlePageVisible() {
-    // Add a small delay to avoid rapid state changes on mobile
-    if (this.pageVisibilityTimeout) {
-      clearTimeout(this.pageVisibilityTimeout);
-    }
-    
-    this.pageVisibilityTimeout = setTimeout(() => {
-      // Only resume if it was auto-paused (not paused by user)
-      if (this.isPaused && !this.wasPausedByUser && this.gameState === 'playing') {
-        this.resumeGame();
-        this.hidePageHiddenMessage();
-        this.hideMobileHiddenMessage();
-      } else if (this.isPaused && this.wasPausedByUser) {
-        // Show brief message that game is still paused by user
-        this.showUserPausedMessage();
-      }
-      
-      // Restore game state if needed (for mobile app switching)
-      if (this.isMobileDevice() && this.gameState === 'playing') {
-        this.restoreGameStateIfNeeded();
-      }
-    }, this.isMobileDevice() ? 200 : 50); // Longer delay for mobile
-  }
-
-  showPageHiddenMessage() {
-    // Remove existing message first
-    this.hidePageHiddenMessage();
-    
-    const message = document.createElement('div');
-    message.id = 'page-hidden-message';
-    message.className = 'pause-message';
-    message.innerHTML = `
-      <div class="pause-content">
-        <i class="fas fa-eye-slash"></i>
-        <h3>Game Auto-Paused</h3>
-        <p>The game was paused because you switched tabs or minimized the window.</p>
-        <p>It will resume automatically when you return.</p>
-      </div>
-    `;
-    document.body.appendChild(message);
-  }
-
-  showMobileHiddenMessage() {
-    // Remove existing message first
-    this.hideMobileHiddenMessage();
-    
-    const message = document.createElement('div');
-    message.id = 'mobile-hidden-message';
-    message.className = 'mobile-pause-toast enhanced-resume';
-    message.innerHTML = `
-      <div class="toast-content-enhanced">
-        <div class="toast-icon">
-          <i class="fas fa-pause-circle"></i>
-        </div>
-        <div class="toast-text">
-          <span class="toast-title">Game Auto-Paused</span>
-          <span class="toast-subtitle">Tap resume to continue</span>
-        </div>
-        <button class="mobile-resume-btn" id="mobile-resume-button">
-          <i class="fas fa-play"></i>
-          Resume
-        </button>
-      </div>
-    `;
-    
-    // Enhanced positioning and styling for mobile
-    message.style.cssText = `
-      position: fixed;
-      top: 20px;
-      left: 50%;
-      transform: translateX(-50%);
-      z-index: 10000;
-      background: rgba(0, 0, 0, 0.9);
-      color: white;
-      padding: 16px 20px;
-      border-radius: 20px;
-      font-size: 14px;
-      backdrop-filter: blur(15px);
-      border: 1px solid rgba(255, 255, 255, 0.2);
-      box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-      animation: slideInTop 0.4s ease-out;
-      max-width: calc(100vw - 40px);
-      min-width: 280px;
-    `;
-    
-    document.body.appendChild(message);
-    
-    // Add click handler for resume button
-    const resumeBtn = message.querySelector('#mobile-resume-button');
-    if (resumeBtn) {
-      resumeBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.resumeGame();
-        this.hideMobileHiddenMessage();
-      });
-    }
-    
-    // Add tap-to-dismiss for the entire message (but not if clicking the button)
-    message.addEventListener('click', (e) => {
-      if (!e.target.closest('#mobile-resume-button')) {
-        this.resumeGame();
-        this.hideMobileHiddenMessage();
-      }
-    });
-    
-    // Auto-hide after 8 seconds (longer to give user time to interact)
-    this.mobileHiddenMessageTimeout = setTimeout(() => {
-      this.hideMobileHiddenMessage();
-    }, 8000);
-  }
-
-  hidePageHiddenMessage() {
-    const message = document.getElementById('page-hidden-message');
-    if (message) {
-      message.remove();
-    }
-  }
-
-  hideMobileHiddenMessage() {
-    // Clear any pending timeout
-    if (this.mobileHiddenMessageTimeout) {
-      clearTimeout(this.mobileHiddenMessageTimeout);
-      this.mobileHiddenMessageTimeout = null;
-    }
-    
-    const message = document.getElementById('mobile-hidden-message');
-    if (message) {
-      message.style.animation = 'slideOutTop 0.3s ease-in forwards';
-      setTimeout(() => {
-        if (message.parentNode) {
-          message.remove();
-        }
-      }, 300);
-    }
-  }
-
-  showUserPausedMessage() {
-    // Show a brief message that the game is still paused by user choice
-    const existingMessage = document.getElementById('user-paused-reminder');
-    if (existingMessage) return;
-
-    const message = document.createElement('div');
-    message.id = 'user-paused-reminder';
-    message.className = 'pause-reminder-toast enhanced-user-pause';
-    
-    if (this.isMobileDevice()) {
-      message.innerHTML = `
-        <div class="toast-content-enhanced">
-          <div class="toast-icon">
-            <i class="fas fa-pause"></i>
-          </div>
-          <div class="toast-text">
-            <span class="toast-title">Game Paused</span>
-            <span class="toast-subtitle">Manually paused by you</span>
-          </div>
-          <button class="mobile-resume-btn" id="user-pause-resume-button">
-            <i class="fas fa-play"></i>
-            Resume
-          </button>
-        </div>
-      `;
-      message.style.cssText = `
-        position: fixed;
-        bottom: 100px;
-        left: 50%;
-        transform: translateX(-50%);
-        z-index: 10000;
-        background: rgba(255, 153, 0, 0.92);
-        color: white;
-        padding: 16px 20px;
-        border-radius: 20px;
-        font-size: 14px;
-        backdrop-filter: blur(15px);
-        box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
-        animation: pulseIn 0.3s ease-out;
-        max-width: calc(100vw - 40px);
-        min-width: 300px;
-      `;
-    } else {
-      message.innerHTML = `
-        <div class="reminder-content">
-          <i class="fas fa-pause"></i>
-          <span>Game is paused - Click the pause button to resume</span>
-        </div>
-      `;
-      message.className = 'pause-reminder';
-    }
-    
-    document.body.appendChild(message);
-
-    // Add click handler for resume button (mobile only)
-    const resumeBtn = message.querySelector('#user-pause-resume-button');
-    if (resumeBtn) {
-      resumeBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        this.resumeGame();
-        message.remove();
-      });
-    }
-
-    // Auto-remove after 4 seconds (longer for mobile with button)
-    setTimeout(() => {
-      if (message.parentNode) {
-        if (this.isMobileDevice()) {
-          message.style.animation = 'fadeOut 0.3s ease-in forwards';
-          setTimeout(() => message.remove(), 300);
-        } else {
-          message.remove();
-        }
-      }
-    }, this.isMobileDevice() ? 4000 : 3000);
   }
 
   adjustViewportForMobile() {
@@ -1017,8 +774,6 @@ class Game {
     
     // Clean up pause overlays and messages
     this.hidePauseOverlay();
-    this.hidePageHiddenMessage();
-    this.hideMobileHiddenMessage();
     
     // Clear saved mobile state
     localStorage.removeItem('currentGameState');
@@ -1184,13 +939,13 @@ class Game {
     // Remove any inline font-size styles to allow CSS to take over
     tileElement.style.fontSize = '';
     
-    // Apply appropriate CSS class for font scaling
-    if (value >= 1024) {
-      // Use CSS variable --font-scale-large for 4-digit numbers
-      tileElement.style.fontSize = `calc(var(--tile-size) * var(--font-scale-large))`;
-    } else if (value >= 4096) {
+    // Apply appropriate CSS class for font scaling based on value length
+    if (value >= 4096) {
       // Use CSS variable --font-scale-mega for 5+ digit numbers
       tileElement.style.fontSize = `calc(var(--tile-size) * var(--font-scale-mega))`;
+    } else if (value >= 1024) {
+      // Use CSS variable --font-scale-large for 4-digit numbers
+      tileElement.style.fontSize = `calc(var(--tile-size) * var(--font-scale-large))`;
     } else {
       // Use CSS variable --font-scale-base for 1-3 digit numbers
       tileElement.style.fontSize = `calc(var(--tile-size) * var(--font-scale-base))`;
@@ -1221,14 +976,6 @@ class Game {
       clearTimeout(this.debounceTimeout);
       this.debounceTimeout = setTimeout(() => func.apply(this, args), wait);
     };
-  }
-
-  // Add method to update all tiles' font sizes
-  updateTileFontSizes() {
-    const tiles = document.querySelectorAll('.tile');
-    tiles.forEach(tile => {
-      this.adjustTileFontSize(tile);
-    });
   }
 
   // Game mechanics
@@ -1439,12 +1186,17 @@ class Game {
           try {
             const previousState = this.gameStateStack[this.gameStateStack.length - 2];
             const currentState = this.board.flat();
-            this.aiLearningSystem.recordMove(
-              previousState.board.flat(),
-              direction,
-              currentState,
-              this.scoreDelta
-            );
+            
+            // Ensure we have valid states before recording
+            if (previousState && previousState.board && Array.isArray(previousState.board)) {
+              this.aiLearningSystem.recordMove(
+                previousState.board.flat(),
+                direction,
+                currentState,
+                this.scoreDelta
+              );
+              console.log('📊 Move recorded for AI learning:', direction, 'Score delta:', this.scoreDelta);
+            }
           } catch (error) {
             console.warn('⚠️ Failed to record move for AI learning:', error);
           }
@@ -2576,6 +2328,33 @@ class Game {
           maxBoardSize = Math.min(vw * 0.50, vh * 0.60, 480);
         }
         break;
+      case 7:
+        gapMultiplier = 0.5;
+        if (isMobile) {
+          maxBoardSize = isPortrait ? 
+            Math.min(vw * 0.95, vh * 0.58, 420) :
+            Math.min(vw * 0.65, vh * 0.85, 450);
+        } else {
+          maxBoardSize = Math.min(vw * 0.55, vh * 0.65, 520);
+        }
+        break;
+      case 9:
+        gapMultiplier = 0.3;
+        if (isMobile) {
+          maxBoardSize = isPortrait ? 
+            Math.min(vw * 0.98, vh * 0.62, 480) :
+            Math.min(vw * 0.70, vh * 0.90, 500);
+        } else {
+          maxBoardSize = Math.min(vw * 0.60, vh * 0.70, 580);
+        }
+        break;
+      default:
+        // Fallback for any unexpected grid size
+        gapMultiplier = 1.0 / this.size;
+        maxBoardSize = isMobile ? 
+          Math.min(vw * 0.92, vh * 0.55, 400) :
+          Math.min(vw * 0.50, vh * 0.60, 500);
+        break;
     }
     
     // Calculate gap size with improved scaling
@@ -3097,8 +2876,6 @@ class Game {
 
     // Hide pause overlay and messages
     this.hidePauseOverlay();
-    this.hidePageHiddenMessage();
-    this.hideMobileHiddenMessage();
 
     // Dispatch resume event
     document.dispatchEvent(new CustomEvent('gameResumed'));
@@ -3795,6 +3572,73 @@ class Game {
       expert: 'Maximum strength, 5-6 depth search'
     };
     return info[difficulty] || '';
+  }
+
+  /**
+   * Enhanced initialization with comprehensive error handling and debugging
+   */
+  initializeEnhancedSystems() {
+    console.log('🔧 Initializing Enhanced Systems...');
+    
+    try {
+      // Initialize AI Learning System if available
+      if (typeof AILearningSystem !== 'undefined') {
+        this.aiLearningSystem = new AILearningSystem();
+        console.log('✅ AI Learning System initialized automatically');
+      } else {
+        console.warn('⚠️ AILearningSystem not available - automatic learning disabled');
+      }
+      
+      // Initialize Enhanced AI if available
+      this.initializeEnhancedAI();
+      
+      // Validate game state
+      this.validateGameState();
+      
+      console.log('✅ All enhanced systems initialized successfully');
+      
+    } catch (error) {
+      console.error('❌ Failed to initialize enhanced systems:', error);
+    }
+  }
+  
+  /**
+   * Validate game state and fix any inconsistencies
+   */
+  validateGameState() {
+    // Ensure board is valid
+    if (!Array.isArray(this.board) || this.board.length !== this.size) {
+      console.warn('⚠️ Invalid board detected, creating new board');
+      this.board = this.createEmptyBoard();
+    }
+    
+    // Ensure board rows are valid
+    for (let i = 0; i < this.size; i++) {
+      if (!Array.isArray(this.board[i]) || this.board[i].length !== this.size) {
+        console.warn(`⚠️ Invalid board row ${i} detected, fixing`);
+        this.board[i] = new Array(this.size).fill(0);
+      }
+    }
+    
+    // Ensure gameState is valid
+    if (!['playing', 'won', 'won-continue', 'over'].includes(this.gameState)) {
+      console.warn('⚠️ Invalid gameState detected, resetting to playing');
+      this.gameState = 'playing';
+    }
+    
+    // Ensure size is valid
+    if (![4, 5, 7, 9].includes(this.size)) {
+      console.warn('⚠️ Invalid board size detected, resetting to 4x4');
+      this.size = 4;
+    }
+    
+    // Ensure score is valid
+    if (typeof this.score !== 'number' || this.score < 0) {
+      console.warn('⚠️ Invalid score detected, resetting to 0');
+      this.score = 0;
+    }
+    
+    console.log('✅ Game state validation completed');
   }
 
   initializeEnhancedAI() {
