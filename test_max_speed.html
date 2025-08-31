@@ -1,0 +1,223 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MAX Speed Test - Fancy2048</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #f2f2f2;
+            padding: 20px;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            border: 1px solid #333;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+        }
+        button {
+            background: #ffcc00;
+            color: #000;
+            border: none;
+            padding: 10px 15px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #e6b800;
+        }
+        .speed-indicator {
+            font-size: 18px;
+            font-weight: bold;
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 204, 0, 0.1);
+            border-radius: 5px;
+        }
+        .performance-stats {
+            background: #000;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            font-size: 12px;
+            margin: 10px 0;
+        }
+        .status {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            font-weight: bold;
+        }
+        .success { background: #4CAF50; }
+        .error { background: #f44336; }
+        .info { background: #2196F3; }
+        .warning { background: #FF9800; }
+    </style>
+</head>
+<body>
+    <h1>🚀 MAX Speed Test - Fancy2048</h1>
+    
+    <div class="test-section">
+        <h2>🎮 Speed Control Test</h2>
+        <p>Test the new MAX speed option and performance at different speeds:</p>
+        
+        <button onclick="testSpeedCycling()">Cycle Through All Speeds</button>
+        <button onclick="testMaxSpeed()">Test MAX Speed</button>
+        <button onclick="startAutoPlay()">Start AI Autoplay</button>
+        <button onclick="stopAutoPlay()">Stop Autoplay</button>
+        <button onclick="resetGame()">Reset Game</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>📊 Current Status</h2>
+        <div class="speed-indicator" id="speed-indicator">Loading...</div>
+        <div id="game-status" class="status info">Waiting for game to load...</div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📈 Performance Stats</h2>
+        <div class="performance-stats" id="performance-stats">
+            No performance data yet - start autoplay to see stats
+        </div>
+    </div>
+    
+    <!-- Load the game scripts -->
+    <script src="scripts/advanced_ai_solver.js"></script>
+    <script src="scripts/enhanced_ai.js"></script>
+    <script src="scripts/game.js"></script>
+    
+    <script>
+        let testGame;
+        let performanceInterval;
+        let lastMoveCount = 0;
+        let lastTime = Date.now();
+        
+        function updateStatus() {
+            if (!testGame) return;
+            
+            const speedIndicator = document.getElementById('speed-indicator');
+            const gameStatus = document.getElementById('game-status');
+            const performanceStats = document.getElementById('performance-stats');
+            
+            const currentSpeed = testGame.speedMultipliers[testGame.currentSpeedIndex];
+            const delay = testGame.getAutoPlayDelay();
+            
+            speedIndicator.innerHTML = `
+                Current Speed: <span style="color: #ffcc00;">${currentSpeed === 'MAX' ? 'MAX' : currentSpeed + 'x'}</span>
+                ${delay === 0 ? '(No delay - Maximum Performance)' : `(${delay}ms delay)`}
+            `;
+            
+            gameStatus.className = 'status ' + (testGame.isAutoPlaying ? 'success' : 'info');
+            gameStatus.innerHTML = `
+                <strong>Autoplay:</strong> ${testGame.isAutoPlaying ? 'RUNNING' : 'STOPPED'} | 
+                <strong>Game State:</strong> ${testGame.gameState} | 
+                <strong>Moves:</strong> ${testGame.moves} |
+                <strong>Score:</strong> ${testGame.score}
+            `;
+            
+            if (testGame.isAutoPlaying) {
+                const currentTime = Date.now();
+                const timeDelta = (currentTime - lastTime) / 1000;
+                const movesDelta = testGame.autoPlayMoves - lastMoveCount;
+                const movesPerSecond = timeDelta > 0 ? (movesDelta / timeDelta).toFixed(2) : '0';
+                
+                performanceStats.innerHTML = `
+AI Performance (Live):
+- Current Speed: ${currentSpeed === 'MAX' ? 'MAX (Unlimited)' : currentSpeed + 'x'}
+- Delay: ${delay === 0 ? 'None (requestAnimationFrame)' : delay + 'ms'}
+- Total AI Moves: ${testGame.autoPlayMoves}
+- Current Rate: ${movesPerSecond} moves/sec
+- Game Score: ${testGame.score}
+- Best Tile: ${Math.max(...testGame.board.flat())}
+- Empty Cells: ${testGame.board.flat().filter(cell => cell === 0).length}
+                `;
+                
+                lastMoveCount = testGame.autoPlayMoves;
+                lastTime = currentTime;
+            }
+        }
+        
+        // Initialize game when scripts load
+        window.addEventListener('load', function() {
+            setTimeout(() => {
+                if (typeof Game !== 'undefined') {
+                    testGame = new Game(4);
+                    window.game = testGame;
+                    console.log('✅ Test game initialized');
+                    updateStatus();
+                    
+                    // Update status every 500ms
+                    setInterval(updateStatus, 500);
+                } else {
+                    console.log('❌ Game class not available');
+                }
+            }, 1000);
+        });
+        
+        function testSpeedCycling() {
+            if (!testGame) return;
+            
+            console.log('🧪 Testing speed cycling...');
+            
+            let cycleCount = 0;
+            const totalSpeeds = testGame.speedMultipliers.length;
+            
+            const cycleSpeed = () => {
+                if (cycleCount < totalSpeeds) {
+                    testGame.changeSpeed();
+                    console.log(`Speed ${cycleCount + 1}/${totalSpeeds}: ${testGame.speedMultipliers[testGame.currentSpeedIndex]}`);
+                    cycleCount++;
+                    setTimeout(cycleSpeed, 1000);
+                } else {
+                    console.log('✅ Speed cycling test completed');
+                }
+            };
+            
+            cycleSpeed();
+        }
+        
+        function testMaxSpeed() {
+            if (!testGame) return;
+            
+            // Cycle to MAX speed
+            while (testGame.speedMultipliers[testGame.currentSpeedIndex] !== 'MAX') {
+                testGame.changeSpeed();
+            }
+            
+            console.log('🚀 MAX speed selected - ready for unlimited speed testing');
+            updateStatus();
+        }
+        
+        function startAutoPlay() {
+            if (!testGame) return;
+            testGame.toggleAutoPlay();
+        }
+        
+        function stopAutoPlay() {
+            if (!testGame) return;
+            if (testGame.isAutoPlaying) {
+                testGame.toggleAutoPlay();
+            }
+        }
+        
+        function resetGame() {
+            if (!testGame) return;
+            testGame.reset();
+            lastMoveCount = 0;
+            lastTime = Date.now();
+            updateStatus();
+        }
+        
+        // Global error handler
+        window.addEventListener('error', function(event) {
+            console.error(`🚨 Error: ${event.error}`);
+        });
+    </script>
+</body>
+</html>
