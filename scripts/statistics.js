@@ -188,11 +188,85 @@ document.addEventListener('DOMContentLoaded', () => {
     downloadCSV(csvContent, "fancy2048_statistics.csv");
   }
 
+  // Export stats to JSON
+  function exportStatsJSON() {
+    let stats = [];
+    try {
+      stats = JSON.parse(localStorage.getItem('gameStats')) || [];
+    } catch (e) {
+      alert('No game statistics to export!');
+      return;
+    }
+    const uniqueStats = Array.from(new Set(stats.map(stat => JSON.stringify(stat)))).map(stat => JSON.parse(stat));
+    if (uniqueStats.length === 0) {
+      alert('No game statistics to export!');
+      return;
+    }
+
+    // Create enhanced JSON structure with metadata
+    const exportData = {
+      exportInfo: {
+        exportedAt: new Date().toISOString(),
+        gameVersion: "Fancy2048",
+        totalGames: uniqueStats.length,
+        dataVersion: "1.0"
+      },
+      summary: {
+        totalGames: uniqueStats.length,
+        bestScore: Math.max(...uniqueStats.map(stat => parseInt(stat.score) || 0)),
+        bestTile: Math.max(...uniqueStats.map(stat => parseInt(stat.bestTile) || 0)),
+        totalMoves: uniqueStats.reduce((sum, stat) => sum + (parseInt(stat.moves) || 0), 0),
+        averageScore: Math.round(uniqueStats.reduce((sum, stat) => sum + (parseInt(stat.score) || 0), 0) / uniqueStats.length),
+        gamesWon: uniqueStats.filter(stat => parseInt(stat.bestTile) >= 2048).length,
+        winRate: ((uniqueStats.filter(stat => parseInt(stat.bestTile) >= 2048).length / uniqueStats.length) * 100).toFixed(1) + '%',
+        gamesByMode: {
+          human: uniqueStats.filter(stat => (stat.playMode || (stat.isAutoPlayed ? 'AI' : 'Human')) === 'Human').length,
+          ai: uniqueStats.filter(stat => (stat.playMode || (stat.isAutoPlayed ? 'AI' : 'Human')) === 'AI').length,
+          mixed: uniqueStats.filter(stat => (stat.playMode || (stat.isAutoPlayed ? 'AI' : 'Human')) === 'Mixed').length
+        },
+        gamesByGridSize: uniqueStats.reduce((acc, stat) => {
+          const gridSize = stat.gridSize || 4;
+          acc[`${gridSize}x${gridSize}`] = (acc[`${gridSize}x${gridSize}`] || 0) + 1;
+          return acc;
+        }, {})
+      },
+      games: uniqueStats.map(stat => ({
+        ...stat,
+        // Ensure consistent field formatting
+        date: stat.date,
+        dateFormatted: formatDate(new Date(stat.date)),
+        gridSize: stat.gridSize || 4,
+        gridType: stat.gridType || `${stat.gridSize || 4}x${stat.gridSize || 4}`,
+        playMode: stat.playMode || (stat.isAutoPlayed ? 'AI' : 'Human'),
+        score: parseInt(stat.score) || 0,
+        bestScore: parseInt(stat.bestScore) || 0,
+        bestTile: parseInt(stat.bestTile) || 0,
+        moves: parseInt(stat.moves) || 0,
+        duration: stat.time,
+        won: parseInt(stat.bestTile) >= 2048
+      }))
+    };
+
+    const jsonContent = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(exportData, null, 2));
+    const filename = `fancy2048_statistics_${new Date().toISOString().split('T')[0]}.json`;
+    downloadFile(jsonContent, filename);
+  }
+
   // Helper function for CSV download
   function downloadCSV(csvContent, filename) {
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
     link.setAttribute("href", encodedUri);
+    link.setAttribute("download", filename);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  }
+
+  // Helper function for file download (JSON, CSV, etc.)
+  function downloadFile(dataUri, filename) {
+    const link = document.createElement("a");
+    link.setAttribute("href", dataUri);
     link.setAttribute("download", filename);
     document.body.appendChild(link);
     link.click();
@@ -208,13 +282,13 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }
 
-  // DOMContentLoaded main logic
+    // DOMContentLoaded main logic
   loadAndDisplayStats();
   safeAddEventListener('save-csv-button', 'click', exportStatsCSV);
+  safeAddEventListener('save-json-button', 'click', exportStatsJSON);
   safeAddEventListener('reset-data-button', 'click', () => {
     if (confirm('Are you sure you want to reset all game statistics? This action cannot be undone.')) {
       localStorage.removeItem('gameStats');
-      localStorage.removeItem('bestScore');
       loadAndDisplayStats();
     }
   });

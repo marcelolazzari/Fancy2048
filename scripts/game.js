@@ -642,6 +642,17 @@ class Game {
       leaderboardButton.addEventListener('click', this.openStatisticsPage.bind(this));
     }
     
+    const exportStatsButton = document.getElementById('export-stats-button');
+    if (exportStatsButton) {
+      exportStatsButton.addEventListener('click', this.exportGameStatistics.bind(this));
+      exportStatsButton.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter' || e.key === ' ') {
+          e.preventDefault();
+          this.exportGameStatistics();
+        }
+      });
+    }
+    
     const pauseButton = document.getElementById('pause-button');
     if (pauseButton) {
       pauseButton.addEventListener('click', this.togglePause.bind(this));
@@ -853,6 +864,94 @@ class Game {
 
   openStatisticsPage() {
     window.location.href = '../pages/leaderboard.html';
+  }
+
+  exportGameStatistics() {
+    try {
+      let stats = [];
+      try {
+        stats = JSON.parse(localStorage.getItem('gameStats')) || [];
+      } catch (e) {
+        this.showNotification('No game statistics to export!', 'error');
+        return;
+      }
+      
+      const uniqueStats = Array.from(new Set(stats.map(stat => JSON.stringify(stat)))).map(stat => JSON.parse(stat));
+      if (uniqueStats.length === 0) {
+        this.showNotification('No game statistics to export!', 'error');
+        return;
+      }
+
+      // Format date helper
+      const formatDate = (date) => {
+        return `${date.getDate().toString().padStart(2, '0')}/${(date.getMonth() + 1).toString().padStart(2, '0')}/${date.getFullYear().toString().slice(-2)} ${date.getHours().toString().padStart(2, '0')}:${date.getMinutes().toString().padStart(2, '0')}`;
+      };
+
+      // Create enhanced JSON structure with metadata
+      const exportData = {
+        exportInfo: {
+          exportedAt: new Date().toISOString(),
+          gameVersion: "Fancy2048",
+          totalGames: uniqueStats.length,
+          dataVersion: "1.0",
+          exportedFrom: "Main Game Interface"
+        },
+        summary: {
+          totalGames: uniqueStats.length,
+          bestScore: Math.max(...uniqueStats.map(stat => parseInt(stat.score) || 0)),
+          bestTile: Math.max(...uniqueStats.map(stat => parseInt(stat.bestTile) || 0)),
+          totalMoves: uniqueStats.reduce((sum, stat) => sum + (parseInt(stat.moves) || 0), 0),
+          averageScore: Math.round(uniqueStats.reduce((sum, stat) => sum + (parseInt(stat.score) || 0), 0) / uniqueStats.length),
+          gamesWon: uniqueStats.filter(stat => parseInt(stat.bestTile) >= 2048).length,
+          winRate: ((uniqueStats.filter(stat => parseInt(stat.bestTile) >= 2048).length / uniqueStats.length) * 100).toFixed(1) + '%',
+          gamesByMode: {
+            human: uniqueStats.filter(stat => (stat.playMode || (stat.isAutoPlayed ? 'AI' : 'Human')) === 'Human').length,
+            ai: uniqueStats.filter(stat => (stat.playMode || (stat.isAutoPlayed ? 'AI' : 'Human')) === 'AI').length,
+            mixed: uniqueStats.filter(stat => (stat.playMode || (stat.isAutoPlayed ? 'AI' : 'Human')) === 'Mixed').length
+          },
+          gamesByGridSize: uniqueStats.reduce((acc, stat) => {
+            const gridSize = stat.gridSize || 4;
+            acc[`${gridSize}x${gridSize}`] = (acc[`${gridSize}x${gridSize}`] || 0) + 1;
+            return acc;
+          }, {})
+        },
+        games: uniqueStats.map(stat => ({
+          ...stat,
+          // Ensure consistent field formatting
+          date: stat.date,
+          dateFormatted: formatDate(new Date(stat.date)),
+          gridSize: stat.gridSize || 4,
+          gridType: stat.gridType || `${stat.gridSize || 4}x${stat.gridSize || 4}`,
+          playMode: stat.playMode || (stat.isAutoPlayed ? 'AI' : 'Human'),
+          score: parseInt(stat.score) || 0,
+          bestScore: parseInt(stat.bestScore) || 0,
+          bestTile: parseInt(stat.bestTile) || 0,
+          moves: parseInt(stat.moves) || 0,
+          duration: stat.time,
+          won: parseInt(stat.bestTile) >= 2048
+        }))
+      };
+
+      const jsonContent = JSON.stringify(exportData, null, 2);
+      const filename = `fancy2048_statistics_${new Date().toISOString().split('T')[0]}.json`;
+      
+      // Create download
+      const blob = new Blob([jsonContent], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+      
+      this.showNotification(`Statistics exported to ${filename}`, 'success');
+      
+    } catch (error) {
+      console.error('Failed to export statistics:', error);
+      this.showNotification('Failed to export statistics', 'error');
+    }
   }
 
   saveStats() {
@@ -3411,7 +3510,17 @@ class Game {
           console.log(`Enhanced AI move: ${move} (${(endTime - startTime).toFixed(2)}ms)`);
         }
         
-        return move;
+        // Ensure the move is valid
+        if (move && this.canMove(move)) {
+          return move;
+        } else if (move) {
+          console.warn(`⚠️ Enhanced AI suggested invalid move: ${move}`);
+        }
+        
+        // If Enhanced AI failed, try basic AI
+        console.warn('⚠️ Enhanced AI failed, trying basic AI');
+        return this.getBasicAIMove();
+        
       } catch (error) {
         console.error('❌ Enhanced AI failed:', error);
         console.warn('⚠️ Falling back to basic AI');
@@ -3430,6 +3539,7 @@ class Game {
     let bestMove = null;
     let bestScore = -Infinity;
 
+    // First, try to find the best valid move using evaluation
     for (const direction of directions) {
       if (this.canMove(direction)) {
         const score = this.evaluateMove(direction);
@@ -3440,7 +3550,179 @@ class Game {
       }
     }
 
-    return bestMove || directions[0];
+    // If we found a good move, return it
+    if (bestMove) return bestMove;
+
+    // Emergency fallback - just find any valid move
+    for (const direction of directions) {
+      if (this.canMove(direction)) {
+        console.warn(`⚠️ Basic AI using emergency fallback move: ${direction}`);
+        return direction;
+      }
+    }
+
+    // No moves available
+    console.warn('⚠️ No valid moves available for Basic AI');
+    return null;
+  }
+
+  // Basic move evaluation for fallback AI
+  evaluateMove(direction) {
+    // Create a copy of the board and game state to simulate the move
+    const originalBoard = this.board.map(row => [...row]);
+    const originalScore = this.score;
+    const originalAnimationInProgress = this.animationInProgress;
+    const originalGameState = this.gameState;
+    
+    // Temporarily allow moves during simulation
+    this.animationInProgress = false;
+    if (this.gameState === 'over') this.gameState = 'playing';
+    
+    // Simulate the move
+    const moveSuccessful = this.simulateMoveDirection(direction);
+    
+    if (!moveSuccessful) {
+      // Restore state and return invalid score
+      this.board = originalBoard;
+      this.score = originalScore;
+      this.animationInProgress = originalAnimationInProgress;
+      this.gameState = originalGameState;
+      return -Infinity;
+    }
+    
+    // Calculate the score difference
+    let score = this.score - originalScore;
+    
+    // Add heuristic scores
+    score += this.countEmptyTiles(this.board) * 10; // Empty tiles bonus
+    score += this.evaluateMonotonicity(this.board) * 5; // Monotonicity bonus
+    score += this.evaluateSmoothness(this.board) * 3; // Smoothness bonus
+    
+    // Check if the move creates merge opportunities
+    score += this.countMergeOpportunities(this.board) * 8;
+    
+    // Bonus for keeping max tile in corner
+    const maxTile = this.getMaxTile();
+    if (this.board[0][0] === maxTile || this.board[0][this.size-1] === maxTile || 
+        this.board[this.size-1][0] === maxTile || this.board[this.size-1][this.size-1] === maxTile) {
+      score += 15;
+    }
+    
+    // Restore original state
+    this.board = originalBoard;
+    this.score = originalScore;
+    this.animationInProgress = originalAnimationInProgress;
+    this.gameState = originalGameState;
+    
+    return score;
+  }
+
+  // Simulate move without animations or side effects
+  simulateMoveDirection(direction) {
+    switch (direction) {
+      case 'up':
+        return this.moveUp();
+      case 'down':
+        return this.moveDown();
+      case 'left':
+        return this.moveLeft();
+      case 'right':
+        return this.moveRight();
+      default:
+        return false;
+    }
+  }
+
+  // Count potential merge opportunities
+  countMergeOpportunities(board) {
+    let opportunities = 0;
+    
+    for (let row = 0; row < this.size; row++) {
+      for (let col = 0; col < this.size; col++) {
+        if (board[row][col] === 0) continue;
+        
+        const value = board[row][col];
+        // Check adjacent tiles for merge opportunities
+        const adjacent = [
+          row > 0 ? board[row-1][col] : null,
+          row < this.size-1 ? board[row+1][col] : null,
+          col > 0 ? board[row][col-1] : null,
+          col < this.size-1 ? board[row][col+1] : null
+        ];
+        
+        for (const neighbor of adjacent) {
+          if (neighbor === value) {
+            opportunities++;
+          }
+        }
+      }
+    }
+    
+    return opportunities;
+  }
+
+  // Helper methods for basic AI evaluation
+  countEmptyTiles(board) {
+    let count = 0;
+    for (let row = 0; row < this.size; row++) {
+      for (let col = 0; col < this.size; col++) {
+        if (board[row][col] === 0) count++;
+      }
+    }
+    return count;
+  }
+
+  evaluateMonotonicity(board) {
+    let score = 0;
+    
+    // Check rows
+    for (let row = 0; row < this.size; row++) {
+      let increasing = true, decreasing = true;
+      for (let col = 1; col < this.size; col++) {
+        if (board[row][col] < board[row][col-1]) increasing = false;
+        if (board[row][col] > board[row][col-1]) decreasing = false;
+      }
+      if (increasing || decreasing) score += 10;
+    }
+    
+    // Check columns
+    for (let col = 0; col < this.size; col++) {
+      let increasing = true, decreasing = true;
+      for (let row = 1; row < this.size; row++) {
+        if (board[row][col] < board[row-1][col]) increasing = false;
+        if (board[row][col] > board[row-1][col]) decreasing = false;
+      }
+      if (increasing || decreasing) score += 10;
+    }
+    
+    return score;
+  }
+
+  evaluateSmoothness(board) {
+    let score = 0;
+    
+    for (let row = 0; row < this.size; row++) {
+      for (let col = 0; col < this.size; col++) {
+        if (board[row][col] === 0) continue;
+        
+        const value = board[row][col];
+        // Check adjacent tiles
+        const neighbors = [
+          row > 0 ? board[row-1][col] : 0,
+          row < this.size-1 ? board[row+1][col] : 0,
+          col > 0 ? board[row][col-1] : 0,
+          col < this.size-1 ? board[row][col+1] : 0
+        ];
+        
+        for (const neighbor of neighbors) {
+          if (neighbor === 0) continue;
+          if (neighbor === value) score += 5; // Same value bonus
+          else if (Math.abs(Math.log2(neighbor) - Math.log2(value)) <= 1) score += 2; // Close value bonus
+        }
+      }
+    }
+    
+    return score;
   }
 
   // Add helper method to get max tile
@@ -3558,11 +3840,18 @@ class Game {
   initializeEnhancedAI() {
     // Try to initialize the advanced AI first, fallback to enhanced AI
     try {
+      console.log('🔍 Checking available AI classes...');
+      console.log('AdvancedAI2048Solver available:', !!window.AdvancedAI2048Solver);
+      console.log('Enhanced2048AI available:', !!window.Enhanced2048AI);
+      console.log('AILearningSystem available:', !!window.AILearningSystem);
+      
       if (window.AdvancedAI2048Solver) {
+        console.log('🚀 Initializing Advanced AI Solver...');
         this.advancedAI = new window.AdvancedAI2048Solver(this);
         this.enhancedAI = this.advancedAI; // Keep compatibility
         console.log('✅ Advanced AI Solver initialized with Expectimax algorithm');
       } else if (window.Enhanced2048AI) {
+        console.log('🚀 Initializing Enhanced AI...');
         this.enhancedAI = new window.Enhanced2048AI(this);
         console.log('✅ Enhanced AI initialized with Minimax algorithm');
       } else {
@@ -3571,6 +3860,7 @@ class Game {
       }
     } catch (error) {
       console.error('❌ Failed to initialize AI:', error);
+      console.error('Error details:', error.message, error.stack);
       console.warn('⚠️ Falling back to basic AI');
       this.enhancedAI = null;
       this.advancedAI = null;
@@ -3584,6 +3874,7 @@ class Game {
     // Adjust AI difficulty based on board size and performance
     try {
       this.adjustAIDifficulty();
+      console.log(`AI difficulty set to: ${this.aiDifficulty}`);
     } catch (error) {
       console.error('❌ Failed to adjust AI difficulty:', error);
     }
@@ -3598,7 +3889,7 @@ class Game {
       }
     }
     
-    console.log(`AI difficulty set to: ${this.aiDifficulty}`);
+    console.log('✅ AI initialization complete');
   }
 
   adjustAIDifficulty() {
@@ -4318,3 +4609,56 @@ if (document.readyState === 'loading') {
   // DOM is already loaded
   initializeFancy2048();
 }
+
+// AI Debug Tools - Enhanced Version
+window.aiDebugTools = {
+  testAI: (moves = 5) => {
+    if (window.game && window.game.getBestMove) {
+      console.log('🧪 Testing AI for', moves, 'moves...');
+      for (let i = 0; i < moves; i++) {
+        try {
+          const move = window.game.getBestMove();
+          console.log(`Move ${i + 1}: ${move}`);
+          if (move && window.game.canMove(move)) {
+            window.game.move(move);
+            // Wait for move to complete
+            setTimeout(() => {}, 100);
+          } else {
+            console.log('Invalid move or no move available, stopping test');
+            break;
+          }
+        } catch (error) {
+          console.error('AI test failed at move', i + 1, ':', error);
+          break;
+        }
+      }
+    } else {
+      console.error('Game or AI not available');
+    }
+  },
+  
+  testAutoplay: () => {
+    if (window.game && window.game.toggleAutoPlay) {
+      console.log('🧪 Testing autoplay...');
+      window.game.toggleAutoPlay();
+    } else {
+      console.error('Autoplay not available');
+    }
+  },
+  
+  checkAI: () => {
+    console.log('🔍 AI Status Check:');
+    if (window.game) {
+      console.log('- Game instance:', !!window.game);
+      console.log('- Enhanced AI:', !!window.game.enhancedAI);
+      console.log('- Advanced AI:', !!window.game.advancedAI);
+      console.log('- getBestMove method:', typeof window.game.getBestMove);
+      console.log('- AI Classes Available:');
+      console.log('  * AdvancedAI2048Solver:', !!window.AdvancedAI2048Solver);
+      console.log('  * Enhanced2048AI:', !!window.Enhanced2048AI);
+      console.log('  * AILearningSystem:', !!window.AILearningSystem);
+    } else {
+      console.error('Game instance not available');
+    }
+  }
+};

@@ -11,9 +11,23 @@ class AdvancedAI2048Solver {
     this.cacheHits = 0;
     this.totalLookups = 0;
     
-    // Initialize learning system
-    this.learningSystem = new AILearningSystem();
-    this.isLearningEnabled = true;
+    // Initialize learning system with error handling
+    try {
+      if (window.AILearningSystem) {
+        this.learningSystem = new window.AILearningSystem();
+        this.isLearningEnabled = true;
+        console.log('✅ AI Learning System integrated with Advanced AI');
+      } else {
+        console.warn('⚠️ AI Learning System not available, using basic AI mode');
+        this.learningSystem = null;
+        this.isLearningEnabled = false;
+      }
+    } catch (error) {
+      console.error('❌ Failed to initialize AI Learning System:', error);
+      this.learningSystem = null;
+      this.isLearningEnabled = false;
+    }
+    
     this.currentGameMoves = [];
     
     // Enhanced heuristic weights optimized for better performance
@@ -39,8 +53,13 @@ class AdvancedAI2048Solver {
     // Precomputed lookup tables for performance
     this.initializeLookupTables();
 
-    // Learning integration
-    this.adaptWeightsFromLearning();
+    // Learning integration with error handling
+    try {
+      this.adaptWeightsFromLearning();
+    } catch (error) {
+      console.error('❌ Failed to adapt weights from learning:', error);
+      // Continue without learning adaptation
+    }
   }
 
   /**
@@ -200,7 +219,21 @@ class AdvancedAI2048Solver {
       });
     }
     
-    return bestMove || directions[0]; // Fallback to first available direction
+    // Enhanced fallback logic - ensure we return a valid move
+    if (!bestMove) {
+      // Find any valid move as fallback
+      for (const direction of directions) {
+        const nextState = this.simulateMove(boardState, direction);
+        if (nextState !== boardState) {
+          console.warn(`⚠️ AI using fallback move: ${direction}`);
+          return direction;
+        }
+      }
+      console.warn('⚠️ No valid moves found by Advanced AI');
+      return null; // No moves available
+    }
+    
+    return bestMove;
   }
 
   /**
