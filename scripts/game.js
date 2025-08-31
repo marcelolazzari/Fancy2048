@@ -1273,54 +1273,7 @@ class Game {
   }
 
   // Enhanced UI update with smoother animations
-  updateUI() {
-    // Update score display with animation
-    this.updateScoreDisplay();
-    
-    // Update best score if needed
-    this.updateBestScore();
-    
-    // Clear existing tiles but keep grid cells
-    const boardContainer = document.getElementById('board-container');
-    if (boardContainer) {
-      const gridCells = boardContainer.querySelectorAll('.grid-cell');
-      gridCells.forEach(cell => {
-        // Remove tiles with fade out animation
-        const tiles = cell.querySelectorAll('.tile');
-        tiles.forEach(tile => {
-          tile.style.transition = 'opacity 0.1s ease';
-          tile.style.opacity = '0';
-          setTimeout(() => {
-            if (tile.parentNode) {
-              tile.parentNode.removeChild(tile);
-            }
-          }, 100);
-        });
-      });
-    }
-    
-    // Create new tiles after slight delay
-    setTimeout(() => {
-      for (let i = 0; i < this.size; i++) {
-        for (let j = 0; j < this.size; j++) {
-          if (this.board[i][j] !== 0) {
-            const tile = this.createTileElement(i, j, this.board[i][j]);
-            
-            // Add slide animation based on last move direction
-            if (this.lastMoveDirection && !this.lastMerged.some(pos => pos.row === i && pos.col === j)) {
-              tile.classList.add(`slide-from-${this.getOppositeDirection(this.lastMoveDirection)}`);
-            }
-          }
-        }
-      }
-      
-      // Update tile fonts after rendering
-      setTimeout(() => this.updateTileFontSizes(), 50);
-    }, 110);
-    
-    // Update back button state
-    this.updateBackButtonState();
-  }
+
 
   updateScoreDisplay() {
     const scoreElement = document.getElementById('score');
