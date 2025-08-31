@@ -9,35 +9,35 @@
   --viewport-available: min(100vw - 40px, 100vh - 200px); /* Account for UI elements */
   
   /* Dynamic Board Sizing - Grid-specific optimization */
-  --base-board-size-3x3: min(85vw, 75vh, 400px);
-  --base-board-size-4x4: min(85vw, 80vh, 500px);
-  --base-board-size-5x5: min(90vw, 85vh, 600px);
+  --base-board-size-3x3: min(90vw, 70vh, 350px);
+  --base-board-size-4x4: min(88vw, 75vh, 450px);
+  --base-board-size-5x5: min(95vw, 80vh, 520px);
   
   /* Current board size (set by JavaScript) */
   --board-max-size: var(--base-board-size-4x4);
   
   /* Grid-specific gap optimization for perfect fitting */
-  --gap-base: clamp(2px, 1.5vmin, 12px);
-  --gap-3x3: calc(var(--gap-base) * 1.4);
+  --gap-base: clamp(2px, 1.2vmin, 10px);
+  --gap-3x3: calc(var(--gap-base) * 1.6);
   --gap-4x4: calc(var(--gap-base) * 1.0);
-  --gap-5x5: calc(var(--gap-base) * 0.7);
+  --gap-5x5: calc(var(--gap-base) * 0.6);
   --gap: var(--gap-4x4); /* Default, updated by JS */
   
   /* Calculated tile size with perfect aspect ratio */
   --tile-size: calc((var(--board-max-size) - var(--gap) * (var(--size) + 1)) / var(--size));
   
   /* Font scaling optimized for each grid size */
-  --font-scale-3x3-base: 0.42;
-  --font-scale-3x3-large: 0.32; 
-  --font-scale-3x3-mega: 0.25;
+  --font-scale-3x3-base: 0.45;
+  --font-scale-3x3-large: 0.35; 
+  --font-scale-3x3-mega: 0.28;
   
   --font-scale-4x4-base: 0.35;
   --font-scale-4x4-large: 0.28;
   --font-scale-4x4-mega: 0.22;
   
-  --font-scale-5x5-base: 0.28;
-  --font-scale-5x5-large: 0.22;
-  --font-scale-5x5-mega: 0.18;
+  --font-scale-5x5-base: 0.25;
+  --font-scale-5x5-large: 0.20;
+  --font-scale-5x5-mega: 0.16;
   
   /* Current font scales (set by JavaScript) */
   --font-scale-base: var(--font-scale-4x4-base);
@@ -902,13 +902,16 @@ footer .container {
 /* Mobile phones - Enhanced responsive breakpoints */
 @media (max-width: 480px) {
   :root {
-    /* Mobile-optimized board sizes */
-    --base-board-size-3x3: min(95vw, 70vh, 300px);
-    --base-board-size-4x4: min(95vw, 75vh, 340px);
-    --base-board-size-5x5: min(98vw, 80vh, 380px);
+    /* Mobile-optimized board sizes with better scaling */
+    --base-board-size-3x3: min(92vw, 50vh, 300px);
+    --base-board-size-4x4: min(95vw, 55vh, 340px);
+    --base-board-size-5x5: min(98vw, 60vh, 380px);
     
-    /* Mobile-optimized gaps */
-    --gap-base: clamp(1px, 1vmin, 6px);
+    /* Mobile-optimized gaps with tighter spacing */
+    --gap-base: clamp(1px, 0.8vmin, 5px);
+    --gap-3x3: calc(var(--gap-base) * 1.8);
+    --gap-4x4: calc(var(--gap-base) * 1.0);
+    --gap-5x5: calc(var(--gap-base) * 0.5);
     --mobile-button-size: 42px;
   }
   
@@ -974,8 +977,42 @@ footer .container {
   /* Mobile-specific board adjustments */
   #board-container {
     /* Ensure board fits in mobile viewport */
-    max-width: min(95vw, 95vh);
-    max-height: min(95vw, 95vh);
+    max-width: min(98vw, 65vh);
+    max-height: min(98vw, 65vh);
+  }
+}
+
+/* Mobile Landscape - Better optimization for landscape mode */
+@media (max-width: 768px) and (orientation: landscape) {
+  :root {
+    /* Landscape-optimized board sizes */
+    --base-board-size-3x3: min(55vw, 85vh, 350px);
+    --base-board-size-4x4: min(60vw, 90vh, 400px);
+    --base-board-size-5x5: min(65vw, 95vh, 450px);
+  }
+  
+  main {
+    justify-content: flex-start;
+    padding: 4px;
+  }
+  
+  header {
+    padding: 4px 8px;
+  }
+  
+  header h1 {
+    font-size: 1.4rem;
+    margin-bottom: 4px;
+  }
+  
+  #score-container {
+    padding: 6px;
+    font-size: 0.8rem;
+  }
+  
+  #board-container {
+    max-width: min(70vw, 95vh);
+    max-height: min(70vw, 95vh);
   }
 }
 

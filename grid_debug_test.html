@@ -1,0 +1,434 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Grid Size Debug Test - Fancy2048</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #f2f2f2;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .debug-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .debug-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .grid-test {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        .grid-container {
+            border: 2px solid #333;
+            padding: 20px;
+            border-radius: 10px;
+            background: rgba(0, 0, 0, 0.3);
+        }
+        
+        .test-board {
+            background: var(--board-bg);
+            padding: var(--gap);
+            border-radius: 15px;
+            margin: 20px auto;
+            display: grid;
+            gap: var(--gap);
+        }
+        
+        .test-board.grid-3x3 {
+            width: var(--base-board-size-3x3);
+            height: var(--base-board-size-3x3);
+            grid-template-columns: repeat(3, 1fr);
+            grid-template-rows: repeat(3, 1fr);
+        }
+        
+        .test-board.grid-4x4 {
+            width: var(--base-board-size-4x4);
+            height: var(--base-board-size-4x4);
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+        }
+        
+        .test-board.grid-5x5 {
+            width: var(--base-board-size-5x5);
+            height: var(--base-board-size-5x5);
+            grid-template-columns: repeat(5, 1fr);
+            grid-template-rows: repeat(5, 1fr);
+        }
+        
+        .test-cell {
+            background: var(--grid-cell-bg);
+            border-radius: var(--tile-border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            aspect-ratio: 1;
+            font-weight: bold;
+            color: #888;
+        }
+        
+        .test-tile {
+            background: var(--tile-2-bg);
+            color: var(--tile-2-text);
+            border-radius: var(--tile-border-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            aspect-ratio: 1;
+            width: 100%;
+            height: 100%;
+        }
+        
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .controls button {
+            background: #ffcc00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .controls button:hover {
+            background: #ffd700;
+        }
+        
+        .controls button.active {
+            background: #ff7f50;
+            color: white;
+        }
+        
+        .info-display {
+            background: rgba(76, 175, 80, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+            font-family: monospace;
+            font-size: 14px;
+        }
+        
+        .viewport-info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.9);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-family: monospace;
+            z-index: 1000;
+        }
+    </style>
+</head>
+<body>
+    <div class="viewport-info" id="viewport-info">
+        Loading...
+    </div>
+    
+    <div class="debug-container">
+        <header>
+            <h1>🔍 Grid Size Debug Test</h1>
+            <p>Testing and fixing 3×3 and 5×5 grid scaling issues</p>
+        </header>
+        
+        <div class="debug-section">
+            <h2>🎮 Interactive Grid Test</h2>
+            <div class="controls">
+                <button onclick="testGrid(3)" id="btn-3x3">Test 3×3 Grid</button>
+                <button onclick="testGrid(4)" id="btn-4x4" class="active">Test 4×4 Grid</button>
+                <button onclick="testGrid(5)" id="btn-5x5">Test 5×5 Grid</button>
+                <button onclick="resetTest()">Reset</button>
+            </div>
+            
+            <div id="current-info" class="info-display">Loading...</div>
+        </div>
+        
+        <div class="debug-section">
+            <h2>📏 Visual Grid Comparison</h2>
+            <div class="grid-test">
+                <!-- 3x3 Grid -->
+                <div class="grid-container">
+                    <h3>3×3 Grid</h3>
+                    <div class="test-board grid-3x3" id="board-3x3">
+                        <div class="test-cell"><div class="test-tile">2</div></div>
+                        <div class="test-cell"><div class="test-tile">4</div></div>
+                        <div class="test-cell"></div>
+                        <div class="test-cell"><div class="test-tile">8</div></div>
+                        <div class="test-cell"></div>
+                        <div class="test-cell"><div class="test-tile">16</div></div>
+                        <div class="test-cell"></div>
+                        <div class="test-cell"><div class="test-tile">32</div></div>
+                        <div class="test-cell"></div>
+                    </div>
+                </div>
+                
+                <!-- 4x4 Grid -->
+                <div class="grid-container">
+                    <h3>4×4 Grid</h3>
+                    <div class="test-board grid-4x4" id="board-4x4">
+                        <div class="test-cell"><div class="test-tile">2</div></div>
+                        <div class="test-cell"><div class="test-tile">4</div></div>
+                        <div class="test-cell"></div>
+                        <div class="test-cell"></div>
+                        <div class="test-cell"><div class="test-tile">8</div></div>
+                        <div class="test-cell"></div>
+                        <div class="test-cell"><div class="test-tile">16</div></div>
+                        <div class="test-cell"></div>
+                        <div class="test-cell"></div>
+                        <div class="test-cell"><div class="test-tile">32</div></div>
+                        <div class="test-cell"></div>
+                        <div class="test-cell"><div class="test-tile">64</div></div>
+                        <div class="test-cell"></div>
+                        <div class="test-cell"></div>
+                        <div class="test-cell"><div class="test-tile">128</div></div>
+                        <div class="test-cell"></div>
+                    </div>
+                </div>
+                
+                <!-- 5x5 Grid -->
+                <div class="grid-container">
+                    <h3>5×5 Grid</h3>
+                    <div class="test-board grid-5x5" id="board-5x5">
+                        <div class="test-cell"><div class="test-tile">2</div></div>
+                        <div class="test-cell"><div class="test-tile">4</div></div>
+                        <div class="test-cell"></div>
+                        <div class="test-cell"></div>
+                        <div class="test-cell"></div>
+                        <div class="test-cell"><div class="test-tile">8</div></div>
+                        <div class="test-cell"></div>
+                        <div class="test-cell"><div class="test-tile">16</div></div>
+                        <div class="test-cell"></div>
+                        <div class="test-cell"></div>
+                        <div class="test-cell"></div>
+                        <div class="test-cell"><div class="test-tile">32</div></div>
+                        <div class="test-cell"></div>
+                        <div class="test-cell"><div class="test-tile">64</div></div>
+                        <div class="test-cell"></div>
+                        <div class="test-cell"></div>
+                        <div class="test-cell"></div>
+                        <div class="test-cell"><div class="test-tile">128</div></div>
+                        <div class="test-cell"></div>
+                        <div class="test-cell"><div class="test-tile">256</div></div>
+                        <div class="test-cell"></div>
+                        <div class="test-cell"></div>
+                        <div class="test-cell"><div class="test-tile">512</div></div>
+                        <div class="test-cell"></div>
+                        <div class="test-cell"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="debug-section">
+            <h2>📊 CSS Variables Debug</h2>
+            <div id="css-debug" class="info-display">Loading...</div>
+        </div>
+    </div>
+    
+    <script>
+        let currentSize = 4;
+        
+        function updateViewportInfo() {
+            const info = document.getElementById('viewport-info');
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const ratio = window.devicePixelRatio || 1;
+            
+            info.innerHTML = `
+                ${width} × ${height}px<br>
+                Grid: ${currentSize}×${currentSize}<br>
+                DPR: ${ratio}x
+            `;
+        }
+        
+        function updateCurrentInfo() {
+            const info = document.getElementById('current-info');
+            const styles = getComputedStyle(document.documentElement);
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            
+            // Get computed CSS values
+            const boardSize = styles.getPropertyValue('--board-max-size');
+            const gap = styles.getPropertyValue('--gap');
+            const tileSize = styles.getPropertyValue('--tile-size');
+            const fontBase = styles.getPropertyValue('--font-scale-base');
+            
+            info.innerHTML = `
+                <strong>Current Grid:</strong> ${currentSize}×${currentSize}<br>
+                <strong>Viewport:</strong> ${width} × ${height}px<br>
+                <strong>Board Size:</strong> ${boardSize}<br>
+                <strong>Gap:</strong> ${gap}<br>
+                <strong>Tile Size:</strong> ${tileSize}<br>
+                <strong>Font Scale:</strong> ${fontBase}
+            `;
+        }
+        
+        function updateCSSDebug() {
+            const debug = document.getElementById('css-debug');
+            const styles = getComputedStyle(document.documentElement);
+            
+            debug.innerHTML = `
+                <strong>Base Board Sizes:</strong><br>
+                --base-board-size-3x3: ${styles.getPropertyValue('--base-board-size-3x3')}<br>
+                --base-board-size-4x4: ${styles.getPropertyValue('--base-board-size-4x4')}<br>
+                --base-board-size-5x5: ${styles.getPropertyValue('--base-board-size-5x5')}<br><br>
+                
+                <strong>Current Active Variables:</strong><br>
+                --board-max-size: ${styles.getPropertyValue('--board-max-size')}<br>
+                --gap: ${styles.getPropertyValue('--gap')}<br>
+                --tile-size: ${styles.getPropertyValue('--tile-size')}<br>
+                --size: ${styles.getPropertyValue('--size')}<br><br>
+                
+                <strong>Gap Variables:</strong><br>
+                --gap-3x3: ${styles.getPropertyValue('--gap-3x3')}<br>
+                --gap-4x4: ${styles.getPropertyValue('--gap-4x4')}<br>
+                --gap-5x5: ${styles.getPropertyValue('--gap-5x5')}<br><br>
+                
+                <strong>Font Scale Variables:</strong><br>
+                --font-scale-base: ${styles.getPropertyValue('--font-scale-base')}<br>
+                --font-scale-large: ${styles.getPropertyValue('--font-scale-large')}<br>
+                --font-scale-mega: ${styles.getPropertyValue('--font-scale-mega')}
+            `;
+        }
+        
+        function testGrid(size) {
+            currentSize = size;
+            
+            // Update active button
+            document.querySelectorAll('.controls button').forEach(btn => btn.classList.remove('active'));
+            document.getElementById(`btn-${size}x${size}`).classList.add('active');
+            
+            // Simulate the game's grid size change
+            document.documentElement.style.setProperty('--size', size);
+            
+            // Update board-max-size based on size
+            const vw = window.innerWidth;
+            const vh = window.innerHeight;
+            let maxBoardSize;
+            let gap;
+            
+            // Replicate the updated logic from game.js
+            const isMobile = vw <= 768;
+            const isPortrait = vh > vw;
+            
+            switch (size) {
+                case 3:
+                    if (isMobile) {
+                        maxBoardSize = isPortrait ? 
+                            Math.min(vw * 0.92, vh * 0.50, 320) :
+                            Math.min(vw * 0.55, vh * 0.75, 350);
+                    } else {
+                        maxBoardSize = Math.min(vw * 0.45, vh * 0.55, 400);
+                    }
+                    gap = (isMobile ? Math.max(2, Math.min(8, Math.min(vw, vh) * 0.012)) : 
+                           Math.max(6, Math.min(14, Math.min(vw, vh) * 0.018))) * 1.6;
+                    break;
+                case 4:
+                    if (isMobile) {
+                        maxBoardSize = isPortrait ? 
+                            Math.min(vw * 0.95, vh * 0.55, 360) :
+                            Math.min(vw * 0.60, vh * 0.80, 380);
+                    } else {
+                        maxBoardSize = Math.min(vw * 0.50, vh * 0.60, 480);
+                    }
+                    gap = (isMobile ? Math.max(2, Math.min(8, Math.min(vw, vh) * 0.012)) : 
+                           Math.max(6, Math.min(14, Math.min(vw, vh) * 0.018))) * 1.0;
+                    break;
+                case 5:
+                    if (isMobile) {
+                        maxBoardSize = isPortrait ? 
+                            Math.min(vw * 0.98, vh * 0.60, 400) :
+                            Math.min(vw * 0.65, vh * 0.85, 420);
+                    } else {
+                        maxBoardSize = Math.min(vw * 0.55, vh * 0.65, 550);
+                    }
+                    gap = (isMobile ? Math.max(2, Math.min(8, Math.min(vw, vh) * 0.012)) : 
+                           Math.max(6, Math.min(14, Math.min(vw, vh) * 0.018))) * 0.6;
+                    break;
+            }
+            
+            const tileSize = (maxBoardSize - gap * (size + 1)) / size;
+            
+            // Ensure minimum tile size for usability
+            const minTileSize = isMobile ? 35 : 50;
+            const adjustedTileSize = Math.max(minTileSize, tileSize);
+            const adjustedBoardSize = adjustedTileSize * size + gap * (size + 1);
+            
+            // Update CSS variables
+            document.documentElement.style.setProperty('--board-max-size', `${adjustedBoardSize}px`);
+            document.documentElement.style.setProperty('--gap', `${gap}px`);
+            document.documentElement.style.setProperty('--tile-size', `${adjustedTileSize}px`);
+            
+            // Update font scaling with new method
+            let baseFontScale, largeFontScale, megaFontScale;
+            
+            switch (size) {
+                case 3:
+                    baseFontScale = Math.max(0.25, Math.min(0.50, adjustedTileSize / 90));
+                    largeFontScale = baseFontScale * 0.75;
+                    megaFontScale = baseFontScale * 0.60;
+                    break;
+                case 4:
+                    baseFontScale = Math.max(0.20, Math.min(0.45, adjustedTileSize / 100));
+                    largeFontScale = baseFontScale * 0.80;
+                    megaFontScale = baseFontScale * 0.65;
+                    break;
+                case 5:
+                    baseFontScale = Math.max(0.15, Math.min(0.35, adjustedTileSize / 120));
+                    largeFontScale = baseFontScale * 0.85;
+                    megaFontScale = baseFontScale * 0.70;
+                    break;
+            }
+            
+            document.documentElement.style.setProperty('--font-scale-base', baseFontScale);
+            document.documentElement.style.setProperty('--font-scale-large', largeFontScale);
+            document.documentElement.style.setProperty('--font-scale-mega', megaFontScale);
+            
+            updateAll();
+        }
+        
+        function resetTest() {
+            testGrid(4); // Reset to 4x4
+        }
+        
+        function updateAll() {
+            updateViewportInfo();
+            updateCurrentInfo();
+            updateCSSDebug();
+        }
+        
+        // Initialize
+        testGrid(4);
+        
+        // Update on resize
+        window.addEventListener('resize', () => {
+            testGrid(currentSize); // Re-test current grid on resize
+        });
+        
+        // Update every 2 seconds
+        setInterval(updateAll, 2000);
+    </script>
+</body>
+</html>
