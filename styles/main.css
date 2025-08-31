@@ -188,21 +188,18 @@ body {
   text-size-adjust: none;
   /* Improved scrolling behavior */
   scroll-behavior: smooth;
+  padding-left: var(--safe-area-inset-left);
+  padding-right: var(--safe-area-inset-right);
 }
 
 /* Safe area padding for modern iOS devices and notched Android devices */
 @supports (padding-top: env(safe-area-inset-top)) {
-  body {
-    padding-top: max(10px, var(--safe-area-inset-top));
-    padding-bottom: max(10px, var(--safe-area-inset-bottom));
-    padding-left: var(--safe-area-inset-left, 0);
-    padding-right: var(--safe-area-inset-right, 0);
+  header {
+    padding-top: max(20px, var(--safe-area-inset-top));
   }
   
-  /* Ensure controls don't get hidden behind notches */
-  #controls-container {
-    padding-left: max(10px, var(--safe-area-inset-left, 0));
-    padding-right: max(10px, var(--safe-area-inset-right, 0));
+  footer {
+    padding-bottom: max(20px, var(--safe-area-inset-bottom));
   }
 }
 
