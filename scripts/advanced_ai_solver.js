@@ -11,16 +11,58 @@ class AdvancedAI2048Solver {
     this.cacheHits = 0;
     this.totalLookups = 0;
     
-    // Heuristic weights optimized for performance
+    // Enhanced heuristic weights optimized for better performance
     this.weights = {
-      openness: 1.0,      // Empty cells weight
-      smoothness: 5.0,    // Tile value differences
-      monotonicity: 5.0,  // Ordered arrangement
-      maxTileCorner: 0.1  // Max tile position bonus
+      openness: 2.7,        // Increased weight for empty cells
+      smoothness: 8.0,      // Higher weight for tile smoothness
+      monotonicity: 12.0,   // Much higher weight for monotonicity
+      maxTileCorner: 3.0,   // Increased corner preference
+      merging: 4.0,         // New: weight for merge potential
+      positioning: 2.0      // New: weight for tile positioning strategy
     };
+    
+    // Performance optimization settings
+    this.maxCacheSize = 50000;
+    this.cleanupThreshold = 40000;
+    
+    // Enhanced monotonicity patterns for better evaluation
+    this.monotonicityPatterns = this.generateMonotonicityPatterns();
+    
+    // Position scoring matrix for strategic tile placement
+    this.positionWeights = this.generatePositionWeights(game.size);
     
     // Precomputed lookup tables for performance
     this.initializeLookupTables();
+  }
+
+  /**
+   * Generate enhanced monotonicity patterns for better evaluation
+   */
+  generateMonotonicityPatterns() {
+    return {
+      // Corner strategies - prioritize corners for max tile
+      topLeft: { row: [1, 1, 1, 1], col: [1, 1, 1, 1] },
+      topRight: { row: [1, 1, 1, 1], col: [-1, -1, -1, -1] },
+      bottomLeft: { row: [-1, -1, -1, -1], col: [1, 1, 1, 1] },
+      bottomRight: { row: [-1, -1, -1, -1], col: [-1, -1, -1, -1] }
+    };
+  }
+
+  /**
+   * Generate position weight matrix for strategic evaluation
+   */
+  generatePositionWeights(size) {
+    const weights = [];
+    for (let row = 0; row < size; row++) {
+      weights[row] = [];
+      for (let col = 0; col < size; col++) {
+        // Higher weights for corners and edges
+        const edgeBonus = (row === 0 || row === size - 1 || col === 0 || col === size - 1) ? 1.5 : 1.0;
+        const cornerBonus = ((row === 0 || row === size - 1) && (col === 0 || col === size - 1)) ? 2.0 : 1.0;
+        weights[row][col] = edgeBonus * cornerBonus;
+      }
+    }
+    return weights;
   }
 
   /**
@@ -49,7 +91,7 @@ class AdvancedAI2048Solver {
   }
 
   /**
-   * Main AI decision method - returns best move direction
+   * Enhanced AI decision method with adaptive depth and move ordering
    */
   getBestMove() {
     const startTime = performance.now();
@@ -58,23 +100,39 @@ class AdvancedAI2048Solver {
     const boardState = this.encodeBoardState(this.game.board);
     
     // Get adaptive search depth based on game state
-    const searchDepth = this.getSearchDepth(boardState);
+    const searchDepth = this.getAdaptiveSearchDepth(boardState);
     
-    // Find best move using Expectimax algorithm
+    // Find best move using enhanced Expectimax algorithm
     let bestMove = null;
     let bestScore = -Infinity;
     const moveScores = {};
+    const moveAnalysis = {};
     
-    const directions = ['up', 'down', 'left', 'right'];
+    // Evaluate moves in strategic order (corners first, then edges)
+    const directions = this.getMoveOrderByStrategy(boardState);
+    
     for (const direction of directions) {
       const nextState = this.simulateMove(boardState, direction);
       
       if (nextState !== boardState) { // Move is valid
-        const score = this.expectimax(nextState, searchDepth, false, 1.0);
-        moveScores[direction] = score;
+        // Quick evaluation for move ordering
+        const quickScore = this.evaluateBoard(nextState);
         
-        if (score > bestScore) {
-          bestScore = score;
+        // Deep evaluation with expectimax
+        const deepScore = this.expectimax(nextState, searchDepth, false, 1.0);
+        
+        // Combined score with quick and deep evaluation
+        const combinedScore = deepScore + (quickScore * 0.1);
+        
+        moveScores[direction] = combinedScore;
+        moveAnalysis[direction] = {
+          quick: quickScore,
+          deep: deepScore,
+          combined: combinedScore
+        };
+        
+        if (combinedScore > bestScore) {
+          bestScore = combinedScore;
           bestMove = direction;
         }
       }
@@ -82,15 +140,23 @@ class AdvancedAI2048Solver {
     
     const executionTime = performance.now() - startTime;
     
-    if (window.debugAI) {
-      console.log(`Advanced AI Decision in ${executionTime.toFixed(2)}ms:`);
-      console.log('Move scores:', moveScores);
-      console.log('Best move:', bestMove, 'Score:', bestScore);
-      console.log(`Cache hit rate: ${(this.cacheHits / this.totalLookups * 100).toFixed(1)}%`);
-      console.log(`Search depth: ${searchDepth}`);
+    // Periodic cache cleanup for memory management
+    if (this.transpositionTable.size > this.maxCacheSize) {
+      this.cleanupTranspositionTable();
     }
     
-    return bestMove || directions[Math.floor(Math.random() * directions.length)];
+    // Debug logging for development
+    if (window.debugAI) {
+      console.log(`🤖 Advanced AI Analysis (${executionTime.toFixed(1)}ms):`, {
+        depth: searchDepth,
+        bestMove,
+        scores: moveScores,
+        analysis: moveAnalysis,
+        cacheHitRate: (this.cacheHits / Math.max(this.totalLookups, 1) * 100).toFixed(1) + '%'
+      });
+    }
+    
+    return bestMove || directions[0]; // Fallback to first available direction
   }
 
   /**
@@ -792,6 +858,80 @@ class AdvancedAI2048Solver {
   }
 
   /**
+   * Get strategic move order based on current board state
+   */
+  getMoveOrderByStrategy(boardState) {
+    const directions = ['up', 'down', 'left', 'right'];
+    const board = this.decodeBoardState(boardState);
+    const maxTile = this.getMaxTile(board);
+    
+    // Find where the max tile is located
+    let maxTilePosition = null;
+    for (let row = 0; row < this.game.size; row++) {
+      for (let col = 0; col < this.game.size; col++) {
+        if (board[row][col] === maxTile) {
+          maxTilePosition = { row, col };
+          break;
+        }
+      }
+      if (maxTilePosition) break;
+    }
+    
+    // Order moves to maintain max tile in corner
+    if (maxTilePosition) {
+      const { row, col } = maxTilePosition;
+      const isTopRow = row === 0;
+      const isBottomRow = row === this.game.size - 1;
+      const isLeftCol = col === 0;
+      const isRightCol = col === this.game.size - 1;
+      
+      // Prioritize moves that keep max tile in corner
+      if (isTopRow && isLeftCol) {
+        return ['left', 'up', 'right', 'down'];
+      } else if (isTopRow && isRightCol) {
+        return ['right', 'up', 'left', 'down'];
+      } else if (isBottomRow && isLeftCol) {
+        return ['left', 'down', 'right', 'up'];
+      } else if (isBottomRow && isRightCol) {
+        return ['right', 'down', 'left', 'up'];
+      }
+    }
+    
+    // Default strategic order
+    return ['up', 'left', 'right', 'down'];
+  }
+
+  /**
+   * Get adaptive search depth based on game complexity
+   */
+  getAdaptiveSearchDepth(boardState) {
+    const emptyCells = this.getEmptyCells(boardState);
+    const maxTileLog = this.getMaxTileLog(boardState);
+    const boardSize = this.game.size * this.game.size;
+    const fillRatio = (boardSize - emptyCells.length) / boardSize;
+    
+    // Base depth increases with game progression
+    let baseDepth = 3;
+    
+    // Increase depth based on max tile achieved
+    if (maxTileLog >= 11) baseDepth = 4; // 2048 tile
+    if (maxTileLog >= 12) baseDepth = 5; // 4096 tile
+    if (maxTileLog >= 13) baseDepth = 6; // 8192 tile
+    
+    // Increase depth as board fills up (critical decisions)
+    if (fillRatio > 0.8) baseDepth += 1;
+    if (fillRatio > 0.9) baseDepth += 1;
+    
+    // Decrease depth if performance is critical (many empty cells)
+    if (emptyCells.length > 8) baseDepth = Math.max(3, baseDepth - 1);
+    
+    // Cap depth based on board size to maintain performance
+    const maxDepth = this.game.size === 3 ? 6 : this.game.size === 4 ? 8 : 6;
+    
+    return Math.min(baseDepth, maxDepth);
+  }
+
+  /**
    * Clean up old transposition table entries
    */
   cleanupTranspositionTable() {
@@ -807,8 +947,175 @@ class AdvancedAI2048Solver {
     keysToDelete.forEach(key => this.transpositionTable.delete(key));
     
     if (window.debugAI) {
-      console.log(`Cleaned ${keysToDelete.length} old cache entries`);
+      console.log(`🧹 Cleaned ${keysToDelete.length} old cache entries`);
     }
+  }
+
+  /**
+   * Decode board state to 2D array
+   */
+  decodeBoardState(boardState) {
+    const board = [];
+    for (let row = 0; row < this.game.size; row++) {
+      board[row] = [];
+      for (let col = 0; col < this.game.size; col++) {
+        board[row][col] = boardState[row * this.game.size + col];
+      }
+    }
+    return board;
+  }
+
+  /**
+   * Get maximum tile value on the board
+   */
+  getMaxTile(board) {
+    let max = 0;
+    for (let row = 0; row < this.game.size; row++) {
+      for (let col = 0; col < this.game.size; col++) {
+        if (board[row][col] > max) {
+          max = board[row][col];
+        }
+      }
+    }
+    return max;
+  }
+
+  /**
+   * Get maximum tile value log2 on the board state
+   */
+  getMaxTileLog(boardState) {
+    let max = 0;
+    for (let i = 0; i < boardState.length; i++) {
+      if (boardState[i] > max) {
+        max = boardState[i];
+      }
+    }
+    return max === 0 ? 0 : Math.log2(max);
+  }
+
+  /**
+   * Check monotonicity patterns in the board
+   */
+  checkMonotonicityPatterns(board) {
+    const size = this.game.size;
+    
+    // Check for snake patterns (zigzag)
+    const patterns = {
+      snakeDown: true,
+      snakeRight: true,
+      cornerTopLeft: true,
+      cornerTopRight: true,
+      cornerBottomLeft: true,
+      cornerBottomRight: true
+    };
+    
+    // Snake down pattern (columns decreasing left to right, rows increasing top to bottom)
+    for (let col = 0; col < size - 1; col++) {
+      for (let row = 0; row < size - 1; row++) {
+        if (board[row][col] < board[row][col + 1] || board[row][col] < board[row + 1][col]) {
+          patterns.snakeDown = false;
+          break;
+        }
+      }
+    }
+    
+    // Check corner patterns
+    const corners = [
+      { pattern: 'cornerTopLeft', row: 0, col: 0 },
+      { pattern: 'cornerTopRight', row: 0, col: size - 1 },
+      { pattern: 'cornerBottomLeft', row: size - 1, col: 0 },
+      { pattern: 'cornerBottomRight', row: size - 1, col: size - 1 }
+    ];
+    
+    corners.forEach(({ pattern, row, col }) => {
+      const cornerValue = board[row][col];
+      let isCornerMax = true;
+      
+      // Check if corner has the maximum or near-maximum value
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          if (board[r][c] > cornerValue * 2) {
+            isCornerMax = false;
+            break;
+          }
+        }
+        if (!isCornerMax) break;
+      }
+      
+      patterns[pattern] = isCornerMax;
+    });
+    
+    return patterns;
+  }
+
+  /**
+   * Calculate position-based tile weights
+   */
+  getPositionWeights(board) {
+    const size = this.game.size;
+    const weights = [];
+    
+    // Create weight matrix favoring corners and edges
+    for (let row = 0; row < size; row++) {
+      weights[row] = [];
+      for (let col = 0; col < size; col++) {
+        let weight = 1;
+        
+        // Corner bonus
+        if ((row === 0 || row === size - 1) && (col === 0 || col === size - 1)) {
+          weight += 3;
+        }
+        // Edge bonus
+        else if (row === 0 || row === size - 1 || col === 0 || col === size - 1) {
+          weight += 1;
+        }
+        
+        // Distance from corners (penalty for center)
+        const distanceFromCorner = Math.min(
+          Math.min(row, size - 1 - row) + Math.min(col, size - 1 - col),
+          Math.min(row, size - 1 - row) + Math.min(col, size - 1 - col)
+        );
+        
+        weight -= distanceFromCorner * 0.5;
+        
+        weights[row][col] = Math.max(0.1, weight);
+      }
+    }
+    
+    return weights;
+  }
+
+  /**
+   * Calculate strategic board evaluation
+   */
+  calculateStrategicEvaluation(board) {
+    const patterns = this.checkMonotonicityPatterns(board);
+    const positionWeights = this.getPositionWeights(board);
+    const size = this.game.size;
+    
+    let strategicScore = 0;
+    
+    // Monotonicity bonus
+    if (patterns.snakeDown) strategicScore += 1000;
+    if (patterns.snakeRight) strategicScore += 500;
+    
+    // Corner strategy bonus
+    Object.keys(patterns).forEach(pattern => {
+      if (pattern.startsWith('corner') && patterns[pattern]) {
+        strategicScore += 2000;
+      }
+    });
+    
+    // Position-weighted tile values
+    for (let row = 0; row < size; row++) {
+      for (let col = 0; col < size; col++) {
+        if (board[row][col] > 0) {
+          strategicScore += board[row][col] * positionWeights[row][col];
+        }
+      }
+    }
+    
+    return strategicScore;
   }
 
   /**

@@ -1,76 +1,106 @@
 /* Fancy2048 - Fixed Unified Styles */
 
-/* Root CSS Variables - Enhanced Responsive System */
+/* Root CSS Variables - Advanced Responsive System with Enhanced Safe Areas */
 :root {
   --size: 4;
   
-  /* Advanced Viewport-Based Sizing */
-  --viewport-min: min(100vw, 100vh);
-  --viewport-available: min(100vw - 40px, 100vh - 200px); /* Account for UI elements */
+  /* Enhanced Viewport System - Support for all viewport units */
+  --viewport-width: 100vw;
+  --viewport-height: 100vh;
+  --viewport-width-small: 100svw; /* Small viewport width */
+  --viewport-height-small: 100svh; /* Small viewport height */
+  --viewport-width-large: 100lvw; /* Large viewport width */
+  --viewport-height-large: 100lvh; /* Large viewport height */
+  --viewport-width-dynamic: 100dvw; /* Dynamic viewport width */
+  --viewport-height-dynamic: 100dvh; /* Dynamic viewport height */
   
-  /* Dynamic Board Sizing - Grid-specific optimization */
-  --base-board-size-3x3: min(90vw, 70vh, 350px);
-  --base-board-size-4x4: min(88vw, 75vh, 450px);
-  --base-board-size-5x5: min(95vw, 80vh, 520px);
+  /* Effective viewport accounting for safe areas */
+  --safe-viewport-width: calc(var(--viewport-width) - var(--safe-area-inset-left) - var(--safe-area-inset-right));
+  --safe-viewport-height: calc(var(--viewport-height) - var(--safe-area-inset-top) - var(--safe-area-inset-bottom));
+  
+  /* Dynamic Board Sizing - Multi-device responsive optimization */
+  --base-board-size-3x3: min(min(82vw, 82svw), min(65vh, 65svh), 420px);
+  --base-board-size-4x4: min(min(85vw, 85svw), min(70vh, 70svh), 480px);
+  --base-board-size-5x5: min(min(90vw, 90svw), min(75vh, 75svh), 540px);
   
   /* Current board size (set by JavaScript) */
   --board-max-size: var(--base-board-size-4x4);
   
-  /* Grid-specific gap optimization for perfect fitting */
-  --gap-base: clamp(2px, 1.2vmin, 10px);
-  --gap-3x3: calc(var(--gap-base) * 1.6);
-  --gap-4x4: calc(var(--gap-base) * 1.0);
-  --gap-5x5: calc(var(--gap-base) * 0.6);
-  --gap: var(--gap-4x4); /* Default, updated by JS */
+  /* Advanced Gap System - Responsive and scalable */
+  --gap-base: clamp(1px, 1.0vmin, 12px);
+  --gap-3x3: calc(var(--gap-base) * 1.8);
+  --gap-4x4: calc(var(--gap-base) * 1.2);
+  --gap-5x5: calc(var(--gap-base) * 0.8);
+  --gap: var(--gap-4x4);
   
-  /* Calculated tile size with perfect aspect ratio */
-  --tile-size: calc((var(--board-max-size) - var(--gap) * (var(--size) + 1)) / var(--size));
+  /* Dynamic tile size calculation */
+  --tile-size: calc((var(--board-max-size) - (var(--size) + 1) * var(--gap)) / var(--size));
   
-  /* Font scaling optimized for each grid size */
-  --font-scale-3x3-base: 0.45;
-  --font-scale-3x3-large: 0.35; 
-  --font-scale-3x3-mega: 0.28;
+  /* Enhanced Font Scaling System with Grid-Specific Optimization */
+  --font-scale-3x3-base: clamp(0.40, 0.45, 0.50);
+  --font-scale-3x3-large: clamp(0.32, 0.35, 0.38); 
+  --font-scale-3x3-mega: clamp(0.24, 0.28, 0.32);
   
-  --font-scale-4x4-base: 0.35;
-  --font-scale-4x4-large: 0.28;
-  --font-scale-4x4-mega: 0.22;
+  --font-scale-4x4-base: clamp(0.30, 0.35, 0.40);
+  --font-scale-4x4-large: clamp(0.24, 0.28, 0.32);
+  --font-scale-4x4-mega: clamp(0.18, 0.22, 0.26);
   
-  --font-scale-5x5-base: 0.25;
-  --font-scale-5x5-large: 0.20;
-  --font-scale-5x5-mega: 0.16;
+  --font-scale-5x5-base: clamp(0.22, 0.25, 0.28);
+  --font-scale-5x5-large: clamp(0.18, 0.20, 0.22);
+  --font-scale-5x5-mega: clamp(0.14, 0.16, 0.18);
   
   /* Current font scales (set by JavaScript) */
   --font-scale-base: var(--font-scale-4x4-base);
   --font-scale-large: var(--font-scale-4x4-large);
   --font-scale-mega: var(--font-scale-4x4-mega);
   
-  /* Color Variables */
+  /* Enhanced Color System with Better Contrast */
   --primary-color: #1a1a1a;
   --secondary-color: #f2f2f2;
   --highlight-color: #ffcc00;
   --highlight-color-rgb: 255, 204, 0;
+  --highlight-hover: hsl(calc(45 + var(--hue-value, 0)), 90%, 65%);
+  --text-primary: hsl(30, 25%, 90%);
+  --text-secondary: hsl(30, 20%, 75%);
+  --text-muted: hsl(30, 15%, 60%);
   
-  /* Button Colors */
+  /* Enhanced Button Colors */
   --button-background: rgba(0, 16, 71, 0.4);
-  --button-hover-background: rgba(255, 255, 255, 0.1);
+  --button-hover-background: rgba(255, 255, 255, 0.15);
+  --button-active-background: rgba(255, 255, 255, 0.25);
   --reset-button-background: #ff7f50;
   --reset-button-hover-background: #ff4500;
   
-  /* Layout Variables */
-  --overlay-dark: rgba(0, 16, 71, 0.8);
-  --transition-duration: 0.3s;
-  --hue-transition-duration: 0.5s;
-  --tile-border-radius: 10px;
+  /* Advanced Layout Variables */
+  --overlay-dark: rgba(0, 12, 48, 0.85);
+  --overlay-light: rgba(255, 255, 255, 0.15);
+  --transition-fast: 0.15s;
+  --transition-medium: 0.3s;
+  --transition-slow: 0.6s;
+  --transition-duration: var(--transition-medium);
+  --hue-transition-duration: var(--transition-slow);
+  --tile-border-radius: clamp(6px, 1.5vmin, 14px);
+  --button-border-radius: clamp(8px, 2vmin, 16px);
   --hue-value: 0;
-  --mobile-button-size: 44px;
-  --mobile-gap: 8px;
-  --desktop-gap: 15px;
   
-  /* Safe Area Insets for notched devices */
-  --safe-area-inset-top: env(safe-area-inset-top, 0);
-  --safe-area-inset-bottom: env(safe-area-inset-bottom, 0);
-  --safe-area-inset-left: env(safe-area-inset-left, 0);
-  --safe-area-inset-right: env(safe-area-inset-right, 0);
+  /* Enhanced Touch Target Sizing */
+  --touch-target-min: 44px; /* WCAG AA minimum */
+  --touch-target-comfortable: 48px; /* Comfortable size */
+  --mobile-button-size: var(--touch-target-comfortable);
+  --mobile-gap: clamp(6px, 1.5vmin, 12px);
+  --desktop-gap: clamp(12px, 2vmin, 20px);
+  
+  /* Advanced Safe Area System */
+  --safe-area-inset-top: max(env(safe-area-inset-top, 0px), 0px);
+  --safe-area-inset-bottom: max(env(safe-area-inset-bottom, 0px), 0px);
+  --safe-area-inset-left: max(env(safe-area-inset-left, 0px), 0px);
+  --safe-area-inset-right: max(env(safe-area-inset-right, 0px), 0px);
+  
+  /* Additional safe area padding for better UX */
+  --safe-padding-top: max(var(--safe-area-inset-top), 8px);
+  --safe-padding-bottom: max(var(--safe-area-inset-bottom), 8px);
+  --safe-padding-left: max(var(--safe-area-inset-left), 8px);
+  --safe-padding-right: max(var(--safe-area-inset-right), 8px);
   
   /* Tile Colors with better contrast and visual progression */
   --tile-2-bg: hsl(calc(180 + var(--hue-value)), 50%, 95%);
@@ -159,22 +189,37 @@ body.light-mode .tile[data-value="4"] {
   border: 1px solid rgba(119, 110, 101, 0.4);
 }
 
-/* Base Body Styles */
+/* Enhanced Base Body Styles with Advanced Safe Area Support */
 body {
-  font-family: 'Inter', 'Segoe UI', 'Roboto', Arial, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Inter', 'Segoe UI', 'Roboto', Arial, sans-serif;
   background: linear-gradient(135deg, var(--primary-color) 0%, #2a2a2a 100%);
   color: var(--secondary-color);
   margin: 0;
   padding: 0;
+  
+  /* Advanced Viewport Height Support */
   min-height: 100vh;
   min-height: 100dvh; /* Dynamic viewport height for modern browsers */
+  min-height: 100svh; /* Small viewport height for mobile browsers */
+  height: 100vh;
+  height: 100dvh;
+  
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: flex-start;
+  
+  /* Enhanced Safe Area Support */
+  padding-top: var(--safe-padding-top);
+  padding-bottom: var(--safe-padding-bottom);
+  padding-left: var(--safe-padding-left);
+  padding-right: var(--safe-padding-right);
+  
+  /* Prevent overflow and bouncing */
   overflow-x: hidden;
-  /* Prevent bounce scrolling on iOS */
   overscroll-behavior: none;
+  
+  /* Enhanced Performance and UX */
   transition: background var(--transition-duration), color var(--transition-duration);
   box-sizing: border-box;
   touch-action: manipulation;
@@ -182,27 +227,39 @@ body {
   user-select: none;
   -webkit-user-select: none;
   -moz-user-select: none;
-  /* Better mobile support */
   -webkit-touch-callout: none;
   -webkit-text-size-adjust: none;
   text-size-adjust: none;
-  /* Improved scrolling behavior */
   scroll-behavior: smooth;
+  
+  /* Better font rendering */
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  
+  /* CSS containment for better performance */
+  contain: layout style paint;
 }
 
-/* Safe area padding for modern iOS devices and notched Android devices */
+/* Enhanced Safe Area Support with Environment Variables */
 @supports (padding-top: env(safe-area-inset-top)) {
   body {
-    padding-top: max(10px, var(--safe-area-inset-top));
-    padding-bottom: max(10px, var(--safe-area-inset-bottom));
-    padding-left: var(--safe-area-inset-left, 0);
-    padding-right: var(--safe-area-inset-right, 0);
+    padding-top: max(var(--safe-area-inset-top), 12px);
+    padding-bottom: max(var(--safe-area-inset-bottom), 12px);
+    padding-left: max(var(--safe-area-inset-left), 8px);
+    padding-right: max(var(--safe-area-inset-right), 8px);
   }
   
   /* Ensure controls don't get hidden behind notches */
   #controls-container {
-    padding-left: max(10px, var(--safe-area-inset-left, 0));
-    padding-right: max(10px, var(--safe-area-inset-right, 0));
+    padding-left: max(var(--safe-area-inset-left), 8px);
+    padding-right: max(var(--safe-area-inset-right), 8px);
+  }
+  
+  /* Additional safe area support for game board */
+  #board-container {
+    margin-left: max(var(--safe-area-inset-left), 0);
+    margin-right: max(var(--safe-area-inset-right), 0);
   }
 }
 
@@ -469,7 +526,7 @@ main {
   margin-top: 5px;
 }
 
-/* Board Container - Main Game Area */
+/* Enhanced Board Container with Advanced Touch Handling and Safe Areas */
 #board-container {
   display: grid;
   grid-template-columns: repeat(var(--size), 1fr);
@@ -477,38 +534,69 @@ main {
   gap: var(--gap);
   width: var(--board-max-size);
   height: var(--board-max-size);
-  max-width: 100vw;
-  max-height: 100vh;
+  max-width: calc(100vw - 2 * max(var(--safe-area-inset-left), var(--safe-area-inset-right)));
+  max-height: calc(100vh - 2 * max(var(--safe-area-inset-top), var(--safe-area-inset-bottom)));
   aspect-ratio: 1 / 1;
   background: var(--board-bg);
-  backdrop-filter: blur(10px);
+  backdrop-filter: blur(15px);
+  -webkit-backdrop-filter: blur(15px);
   border-radius: var(--tile-border-radius);
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
   position: relative;
   padding: var(--gap);
   box-sizing: border-box;
+  
+  /* Enhanced Touch Handling */
   touch-action: none;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  margin: 0 auto;
-  overflow: visible;
-  /* Mobile touch optimizations */
+  -webkit-touch-callout: none;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
-  -webkit-touch-callout: none;
-  /* Improve scrolling performance */
-  will-change: transform;
-  /* Better touch response */
+  
+  /* Border and Visual Enhancements */
+  border: 1px solid rgba(255, 255, 255, 0.15);
+  margin: 0 auto;
+  overflow: visible;
+  
+  /* Performance Optimizations */
+  will-change: transform, box-shadow;
+  contain: layout style paint;
   cursor: pointer;
-  /* Ensure proper centering */
+  
+  /* Centering */
   justify-self: center;
   align-self: center;
+  
+  /* Enhanced Transitions */
+  transition: 
+    transform var(--transition-fast) ease,
+    box-shadow var(--transition-fast) ease,
+    border-color var(--transition-fast) ease;
 }
 
 #board-container:focus {
-  outline: 2px solid var(--highlight-color);
-  outline-offset: 2px;
+  outline: 3px solid var(--highlight-color);
+  outline-offset: 3px;
+  border-color: var(--highlight-color);
+}
+
+#board-container:active {
+  transform: scale(0.98);
+  box-shadow: 
+    0 4px 16px rgba(0, 0, 0, 0.3),
+    0 1px 4px rgba(0, 0, 0, 0.2);
+}
+
+/* Safe Area Adjustments for Board Container */
+@supports (padding: max(0px, env(safe-area-inset-left))) {
+  #board-container {
+    margin-left: max(8px, env(safe-area-inset-left, 0px));
+    margin-right: max(8px, env(safe-area-inset-right, 0px));
+  }
 }
 
 /* Grid Cell Backgrounds */
@@ -718,6 +806,29 @@ main {
   }
 }
 
+@keyframes shake {
+  0%, 100% {
+    transform: translateX(0);
+  }
+  10%, 30%, 50%, 70%, 90% {
+    transform: translateX(-4px);
+  }
+  20%, 40%, 60%, 80% {
+    transform: translateX(4px);
+  }
+}
+
+@keyframes pulse {
+  0%, 100% {
+    transform: scale(1);
+    opacity: 1;
+  }
+  50% {
+    transform: scale(1.05);
+    opacity: 0.8;
+  }
+}
+
 /* Game Over Overlay */
 #game-over {
   position: absolute;
@@ -902,20 +1013,54 @@ footer .container {
   }
 }
 
-/* Mobile phones - Enhanced responsive breakpoints */
-@media (max-width: 480px) {
+/* ============================================
+   ENHANCED MOBILE RESPONSIVE SYSTEM
+   ============================================ */
+
+/* Ultra-small screens (iPhone SE, old Android phones) */
+@media (max-width: 375px), (max-height: 667px) and (orientation: portrait) {
+  :root {
+    /* Ultra-compact board sizes */
+    --base-board-size-3x3: min(min(88vw, 88svw), min(58vh, 58svh), 280px);
+    --base-board-size-4x4: min(min(90vw, 90svw), min(60vh, 60svh), 300px);
+    --base-board-size-5x5: min(min(92vw, 92svw), min(62vh, 62svh), 320px);
+    
+    /* Ultra-tight gaps */
+    --gap-base: clamp(0.5px, 0.6vmin, 4px);
+    --mobile-button-size: 40px;
+    --touch-target-comfortable: 42px;
+  }
+  
+  header h1 {
+    font-size: clamp(1.2rem, 4vw, 1.5rem);
+    margin-bottom: 4px;
+  }
+  
+  button {
+    padding: 6px 8px;
+    font-size: 11px;
+    min-width: 40px;
+    min-height: 40px;
+  }
+  
+  #score-container {
+    font-size: 0.75rem;
+    padding: 4px;
+    gap: 4px;
+  }
+}
+
+/* Small mobile phones in portrait */
+@media (max-width: 480px) and (orientation: portrait) {
   :root {
     /* Mobile-optimized board sizes with better scaling */
-    --base-board-size-3x3: min(92vw, 50vh, 300px);
-    --base-board-size-4x4: min(95vw, 55vh, 340px);
-    --base-board-size-5x5: min(98vw, 60vh, 380px);
+    --base-board-size-3x3: min(min(90vw, 90svw), min(62vh, 62svh), 320px);
+    --base-board-size-4x4: min(min(92vw, 92svw), min(65vh, 65svh), 340px);
+    --base-board-size-5x5: min(min(95vw, 95svw), min(68vh, 68svh), 360px);
     
     /* Mobile-optimized gaps with tighter spacing */
     --gap-base: clamp(1px, 0.8vmin, 5px);
-    --gap-3x3: calc(var(--gap-base) * 1.8);
-    --gap-4x4: calc(var(--gap-base) * 1.0);
-    --gap-5x5: calc(var(--gap-base) * 0.5);
-    --mobile-button-size: 42px;
+    --mobile-button-size: 44px;
   }
   
   /* Better mobile viewport handling */
@@ -923,9 +1068,7 @@ footer .container {
     min-height: 100vh;
     min-height: 100dvh; /* Support for new dynamic viewport units */
     min-height: 100svh; /* Small viewport height for mobile browsers */
-    /* Prevent horizontal scrolling */
     overflow-x: hidden;
-    /* Better mobile font rendering */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }
@@ -936,7 +1079,7 @@ footer .container {
   }
   
   header h1 {
-    font-size: clamp(1.2rem, 4.5vw, 1.6rem);
+    font-size: clamp(1.3rem, 4.5vw, 1.7rem);
     margin-bottom: 6px;
   }
   
@@ -951,19 +1094,18 @@ footer .container {
   }
   
   .controls {
-    gap: 3px;
-    margin-bottom: 6px;
+    gap: 4px;
+    margin-bottom: 8px;
     flex-wrap: wrap;
     justify-content: center;
     max-width: 100%;
   }
   
   button {
-    padding: 6px 8px;
+    padding: 8px 10px;
     font-size: 12px;
     min-width: var(--mobile-button-size);
     min-height: var(--mobile-button-size);
-    /* Better touch response */
     touch-action: manipulation;
   }
 
@@ -972,68 +1114,89 @@ footer .container {
     padding: 8px;
     gap: 12px;
   }
-
+  
   #score-container ul {
     gap: 8px;
   }
 
   /* Mobile-specific board adjustments */
   #board-container {
-    /* Ensure board fits in mobile viewport */
-    max-width: min(98vw, 65vh);
-    max-height: min(98vw, 65vh);
+    max-width: min(98vw, 75vh);
+    max-height: min(98vw, 75vh);
   }
 }
 
-/* Mobile Landscape - Better optimization for landscape mode */
-@media (max-width: 768px) and (orientation: landscape) {
+/* Mobile Landscape - Enhanced optimization */
+@media (max-width: 768px) and (orientation: landscape) and (max-height: 500px) {
   :root {
-    /* Landscape-optimized board sizes */
-    --base-board-size-3x3: min(55vw, 85vh, 350px);
-    --base-board-size-4x4: min(60vw, 90vh, 400px);
-    --base-board-size-5x5: min(65vw, 95vh, 450px);
+    /* Landscape-optimized board sizes - use height more effectively */
+    --base-board-size-3x3: min(min(55vh, 55svh), min(75vw, 75svw), 350px);
+    --base-board-size-4x4: min(min(65vh, 65svh), min(80vw, 80svw), 400px);
+    --base-board-size-5x5: min(min(70vh, 70svh), min(85vw, 85svw), 450px);
+    
+    --gap-base: clamp(1px, 0.8vmin, 6px);
+  }
+  
+  body {
+    justify-content: center;
+    padding-top: max(var(--safe-area-inset-top), 4px);
+    padding-bottom: max(var(--safe-area-inset-bottom), 4px);
   }
   
   main {
-    justify-content: flex-start;
+    flex-direction: row;
+    align-items: center;
     padding: 4px;
+    gap: 12px;
+    justify-content: center;
   }
   
   header {
     padding: 4px 8px;
+    order: 1;
+    flex: 0 0 auto;
   }
   
   header h1 {
-    font-size: 1.4rem;
-    margin-bottom: 4px;
+    font-size: clamp(1rem, 3vw, 1.3rem);
+    margin-bottom: 2px;
+  }
+  
+  .game-section {
+    order: 2;
+    flex: 0 0 auto;
   }
   
   #score-container {
+    order: 3;
+    flex: 0 0 auto;
+    writing-mode: vertical-lr;
+    font-size: 0.75rem;
     padding: 6px;
-    font-size: 0.8rem;
   }
   
-  #board-container {
-    max-width: min(70vw, 95vh);
-    max-height: min(70vw, 95vh);
+  #score-container ul {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
   }
 }
 
-/* Tablet - Medium screens */
-@media (min-width: 481px) and (max-width: 768px) {
+/* Tablet portrait */
+@media (min-width: 481px) and (max-width: 768px) and (orientation: portrait) {
   :root {
     /* Tablet-optimized board sizes */
-    --base-board-size-3x3: min(80vw, 70vh, 450px);
-    --base-board-size-4x4: min(80vw, 75vh, 500px);
-    --base-board-size-5x5: min(85vw, 80vh, 550px);
+    --base-board-size-3x3: min(min(75vw, 75svw), min(65vh, 65svh), 450px);
+    --base-board-size-4x4: min(min(80vw, 80svw), min(70vh, 70svh), 500px);
+    --base-board-size-5x5: min(min(85vw, 85svw), min(75vh, 75svh), 550px);
   }
 
   header h1 {
-    font-size: clamp(1.6rem, 4vw, 2.2rem);
+    font-size: clamp(1.8rem, 4vw, 2.2rem);
   }
 
   button {
-    padding: 10px 16px;
+    padding: 12px 16px;
     font-size: 14px;
     min-width: 48px;
     min-height: 48px;
@@ -1045,16 +1208,15 @@ footer .container {
   }
 }
 
-/* Desktop - Large screens */
-@media (min-width: 769px) {
+/* Tablet landscape and small desktops */
+@media (min-width: 769px) and (max-width: 1024px) {
   :root {
-    /* Desktop-optimized board sizes with more space */
-    --base-board-size-3x3: min(60vw, 60vh, 480px);
-    --base-board-size-4x4: min(65vw, 65vh, 550px);
-    --base-board-size-5x5: min(70vw, 70vh, 600px);
+    /* Desktop-optimized board sizes */
+    --base-board-size-3x3: min(min(65vw, 65svw), min(75vh, 75svh), 480px);
+    --base-board-size-4x4: min(min(70vw, 70svw), min(80vh, 80svh), 550px);
+    --base-board-size-5x5: min(min(75vw, 75svw), min(85vh, 85svh), 600px);
     
-    /* Desktop gaps for better visual hierarchy */
-    --gap-base: clamp(8px, 1.2vmin, 16px);
+    --gap-base: clamp(8px, 1.2vmin, 14px);
   }
 
   main {
@@ -1067,15 +1229,15 @@ footer .container {
   }
 
   header h1 {
-    font-size: clamp(2rem, 3vw, 2.8rem);
+    font-size: clamp(2rem, 3vw, 2.6rem);
     margin-bottom: 15px;
   }
 
   button {
-    padding: 12px 20px;
+    padding: 14px 20px;
     font-size: 15px;
-    min-width: 50px;
-    min-height: 50px;
+    min-width: 52px;
+    min-height: 52px;
     transition: all 0.2s ease;
   }
 
@@ -1092,6 +1254,44 @@ footer .container {
 
   #score-container ul {
     gap: 15px;
+  }
+}
+
+/* Large desktops */
+@media (min-width: 1025px) {
+  :root {
+    /* Large desktop optimizations */
+    --base-board-size-3x3: min(min(50vw, 50svw), min(70vh, 70svh), 520px);
+    --base-board-size-4x4: min(min(55vw, 55svw), min(75vh, 75svh), 580px);
+    --base-board-size-5x5: min(min(60vw, 60svw), min(80vh, 80svh), 640px);
+    
+    --gap-base: clamp(10px, 1.5vmin, 16px);
+  }
+  
+  body {
+    padding: 20px;
+  }
+  
+  header {
+    padding: 20px 0;
+  }
+  
+  main {
+    padding: 20px;
+    gap: 25px;
+  }
+  
+  button {
+    padding: 16px 24px;
+    font-size: 16px;
+    min-width: 56px;
+    min-height: 56px;
+  }
+  
+  #score-container {
+    font-size: 1.2rem;
+    padding: 18px;
+    gap: 25px;
   }
 }
 
