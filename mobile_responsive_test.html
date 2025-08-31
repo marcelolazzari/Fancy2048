@@ -1,0 +1,273 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover, interactive-widget=resizes-content">
+  
+  <!-- Enhanced PWA mobile support -->
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Fancy2048">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="theme-color" content="#1a1a1a">
+  
+  <!-- Prevent zoom on form focus (iOS) -->
+  <meta name="format-detection" content="telephone=no">
+  
+  <title>Fancy2048 - Enhanced Mobile Responsive Test</title>
+  <link rel="stylesheet" href="styles/unified_styles_fixed.css">
+  <link rel="stylesheet" href="styles/mobile_responsive_enhanced.css">
+  
+  <style>
+    .test-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: rgba(0, 0, 0, 0.9);
+      color: white;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      z-index: 10000;
+      padding: 20px;
+      text-align: center;
+      transition: opacity 0.3s ease;
+    }
+    
+    .test-overlay.hidden {
+      opacity: 0;
+      pointer-events: none;
+    }
+    
+    .info-panel {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 12px;
+      padding: 20px;
+      margin: 10px;
+      backdrop-filter: blur(10px);
+      border: 1px solid rgba(255, 255, 255, 0.2);
+    }
+    
+    .info-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 10px;
+      margin-top: 20px;
+    }
+    
+    .info-item {
+      background: rgba(255, 255, 255, 0.05);
+      padding: 8px 12px;
+      border-radius: 8px;
+      font-size: 12px;
+      font-family: monospace;
+    }
+    
+    .start-btn {
+      background: linear-gradient(45deg, #ffcc00, #e6b800);
+      color: #1a1a1a;
+      border: none;
+      padding: 15px 30px;
+      border-radius: 12px;
+      font-size: 16px;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 20px;
+      transition: all 0.2s ease;
+    }
+    
+    .start-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(255, 204, 0, 0.3);
+    }
+    
+    .test-info {
+      position: fixed;
+      top: env(safe-area-inset-top, 0);
+      right: env(safe-area-inset-right, 0);
+      background: rgba(0, 0, 0, 0.8);
+      color: white;
+      padding: 10px;
+      font-size: 10px;
+      font-family: monospace;
+      border-radius: 0 0 0 12px;
+      z-index: 9999;
+      max-width: 150px;
+      backdrop-filter: blur(10px);
+    }
+    
+    .orientation-indicator {
+      position: fixed;
+      bottom: env(safe-area-inset-bottom, 0);
+      left: env(safe-area-inset-left, 0);
+      background: rgba(255, 204, 0, 0.9);
+      color: #1a1a1a;
+      padding: 8px 12px;
+      font-size: 11px;
+      font-weight: bold;
+      border-radius: 0 12px 0 0;
+      z-index: 9999;
+    }
+  </style>
+</head>
+<body>
+  <div class="test-overlay" id="testOverlay">
+    <div class="info-panel">
+      <h2>📱 Enhanced Mobile Responsive Test</h2>
+      <p>This test demonstrates the comprehensive mobile optimizations for Fancy2048:</p>
+      
+      <div class="info-grid" id="deviceInfo">
+        <!-- Device info will be populated by JavaScript -->
+      </div>
+      
+      <h3>🎯 Mobile Enhancements:</h3>
+      <ul style="text-align: left; max-width: 400px;">
+        <li>✅ Dynamic viewport height support (100dvh/100svh)</li>
+        <li>✅ Safe area insets for notched devices</li>
+        <li>✅ Perfect aspect ratio maintenance</li>
+        <li>✅ Touch-optimized controls (44px+ targets)</li>
+        <li>✅ Responsive font scaling with clamp()</li>
+        <li>✅ Landscape orientation support</li>
+        <li>✅ Hardware acceleration</li>
+        <li>✅ Reduced motion support</li>
+        <li>✅ Foldable device compatibility</li>
+        <li>✅ High-DPI display optimization</li>
+      </ul>
+      
+      <button class="start-btn" onclick="startTest()">Start Game Test</button>
+    </div>
+  </div>
+  
+  <div class="test-info" id="testInfo">
+    <!-- Real-time info will be displayed here -->
+  </div>
+  
+  <div class="orientation-indicator" id="orientationIndicator">
+    Portrait Mode
+  </div>
+
+  <!-- Game iframe -->
+  <iframe src="pages/index.html" 
+          title="Fancy2048 Game with Enhanced Mobile Support" 
+          style="width: 100%; height: 100%; border: none; position: absolute; top: 0; left: 0;">
+  </iframe>
+
+  <script>
+    // Device and viewport information
+    function updateDeviceInfo() {
+      const info = {
+        'Screen Size': `${screen.width} × ${screen.height}px`,
+        'Viewport Size': `${window.innerWidth} × ${window.innerHeight}px`,
+        'Device Pixel Ratio': `${window.devicePixelRatio}x`,
+        'Orientation': `${screen.orientation?.angle || 0}°`,
+        'User Agent': navigator.userAgent.substring(0, 30) + '...',
+        'Safe Area Top': getComputedStyle(document.documentElement).getPropertyValue('--safe-top') || '0px',
+        'Safe Area Bottom': getComputedStyle(document.documentElement).getPropertyValue('--safe-bottom') || '0px',
+        'Touch Points': navigator.maxTouchPoints || 0,
+        'Connection': navigator.connection?.effectiveType || 'unknown'
+      };
+      
+      const container = document.getElementById('deviceInfo');
+      container.innerHTML = Object.entries(info)
+        .map(([key, value]) => `<div class="info-item"><strong>${key}:</strong><br>${value}</div>`)
+        .join('');
+    }
+    
+    // Real-time info updates
+    function updateTestInfo() {
+      const testInfo = document.getElementById('testInfo');
+      const vw = window.innerWidth;
+      const vh = window.innerHeight;
+      const orientation = vw > vh ? 'Landscape' : 'Portrait';
+      
+      testInfo.innerHTML = `
+        ${vw} × ${vh}px<br>
+        ${orientation}<br>
+        DPR: ${window.devicePixelRatio}x<br>
+        ${new Date().toLocaleTimeString()}
+      `;
+      
+      // Update orientation indicator
+      const indicator = document.getElementById('orientationIndicator');
+      indicator.textContent = `${orientation} Mode`;
+      indicator.style.background = orientation === 'Portrait' ? 
+        'rgba(76, 175, 80, 0.9)' : 'rgba(255, 152, 0, 0.9)';
+    }
+    
+    // Test safe area support
+    function testSafeAreas() {
+      const root = document.documentElement;
+      const safeTop = getComputedStyle(root).getPropertyValue('--safe-top');
+      const safeBottom = getComputedStyle(root).getPropertyValue('--safe-bottom');
+      
+      console.log('Safe Areas:', { top: safeTop, bottom: safeBottom });
+      
+      if (safeTop !== '0px' || safeBottom !== '0px') {
+        console.log('✅ Safe areas detected - notched device support active');
+      }
+    }
+    
+    // Performance monitoring
+    function monitorPerformance() {
+      if ('performance' in window) {
+        const paintMetrics = performance.getEntriesByType('paint');
+        paintMetrics.forEach(metric => {
+          console.log(`${metric.name}: ${metric.startTime.toFixed(2)}ms`);
+        });
+      }
+    }
+    
+    // Start the test
+    function startTest() {
+      const overlay = document.getElementById('testOverlay');
+      overlay.classList.add('hidden');
+      
+      // Test various features
+      testSafeAreas();
+      monitorPerformance();
+      
+      // Start real-time updates
+      setInterval(updateTestInfo, 1000);
+      
+      console.log('📱 Enhanced mobile responsive test started');
+      console.log('🎮 Game loaded with mobile optimizations');
+    }
+    
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      updateDeviceInfo();
+      updateTestInfo();
+      
+      // Update on resize/orientation change
+      window.addEventListener('resize', () => {
+        setTimeout(() => {
+          updateDeviceInfo();
+          updateTestInfo();
+        }, 100);
+      });
+      
+      // Orientation change handler
+      window.addEventListener('orientationchange', () => {
+        setTimeout(() => {
+          updateDeviceInfo();
+          updateTestInfo();
+        }, 500);
+      });
+      
+      // Visual viewport API support (iOS Safari)
+      if (window.visualViewport) {
+        window.visualViewport.addEventListener('resize', updateTestInfo);
+      }
+    });
+    
+    // Debug console logging
+    console.log('🚀 Fancy2048 Enhanced Mobile Test Initialized');
+    console.log('📏 Viewport:', window.innerWidth, 'x', window.innerHeight);
+    console.log('📱 Device:', navigator.userAgent);
+    console.log('🔧 Safe Area Support:', 'env()' in CSS.supports ? 'Yes' : 'No');
+  </script>
+</body>
+</html>
