@@ -85,7 +85,12 @@ class Game {
     
     // Initialize enhanced AI
     this.enhancedAI = null;
-    this.initializeEnhancedAI();
+    try {
+      this.initializeEnhancedAI();
+    } catch (error) {
+      console.error('❌ Failed to initialize AI in constructor:', error);
+      this.enhancedAI = null;
+    }
     
     // AI performance settings
     this.aiDifficulty = localStorage.getItem('aiDifficulty') || 'normal';
@@ -2837,19 +2842,26 @@ class Game {
   getBestMove() {
     // Use enhanced AI if available, otherwise fall back to basic AI
     if (this.enhancedAI) {
-      // Adjust AI difficulty dynamically
-      this.adjustAIDifficulty();
-      
-      const startTime = performance.now();
-      const move = this.enhancedAI.getBestMove();
-      const endTime = performance.now();
-      
-      // Log performance for debugging
-      if (window.debugAI) {
-        console.log(`Enhanced AI move: ${move} (${(endTime - startTime).toFixed(2)}ms)`);
+      try {
+        // Adjust AI difficulty dynamically
+        this.adjustAIDifficulty();
+        
+        const startTime = performance.now();
+        const move = this.enhancedAI.getBestMove();
+        const endTime = performance.now();
+        
+        // Log performance for debugging
+        if (window.debugAI) {
+          console.log(`Enhanced AI move: ${move} (${(endTime - startTime).toFixed(2)}ms)`);
+        }
+        
+        return move;
+      } catch (error) {
+        console.error('❌ Enhanced AI failed:', error);
+        console.warn('⚠️ Falling back to basic AI');
+        // Fallback to basic AI
+        return this.getBasicAIMove();
       }
-      
-      return move;
     } else {
       // Fallback to your existing basic AI
       return this.getBasicAIMove();
@@ -2989,15 +3001,23 @@ class Game {
 
   initializeEnhancedAI() {
     // Try to initialize the advanced AI first, fallback to enhanced AI
-    if (window.AdvancedAI2048Solver) {
-      this.advancedAI = new AdvancedAI2048Solver(this);
-      this.enhancedAI = this.advancedAI; // Keep compatibility
-      console.log('✅ Advanced AI Solver initialized with Expectimax algorithm');
-    } else if (window.Enhanced2048AI) {
-      this.enhancedAI = new Enhanced2048AI(this);
-      console.log('✅ Enhanced AI initialized with Minimax algorithm');
-    } else {
-      console.warn('⚠️ No AI solvers loaded, falling back to basic AI');
+    try {
+      if (window.AdvancedAI2048Solver) {
+        this.advancedAI = new window.AdvancedAI2048Solver(this);
+        this.enhancedAI = this.advancedAI; // Keep compatibility
+        console.log('✅ Advanced AI Solver initialized with Expectimax algorithm');
+      } else if (window.Enhanced2048AI) {
+        this.enhancedAI = new window.Enhanced2048AI(this);
+        console.log('✅ Enhanced AI initialized with Minimax algorithm');
+      } else {
+        console.warn('⚠️ No AI solvers loaded, falling back to basic AI');
+        return;
+      }
+    } catch (error) {
+      console.error('❌ Failed to initialize AI:', error);
+      console.warn('⚠️ Falling back to basic AI');
+      this.enhancedAI = null;
+      this.advancedAI = null;
       return;
     }
       
@@ -3006,7 +3026,11 @@ class Game {
     this.aiDifficulty = savedDifficulty;
     
     // Adjust AI difficulty based on board size and performance
-    this.adjustAIDifficulty();
+    try {
+      this.adjustAIDifficulty();
+    } catch (error) {
+      console.error('❌ Failed to adjust AI difficulty:', error);
+    }
     
     // Update button text to match loaded difficulty
     const aiDifficultyButton = document.getElementById('ai-difficulty-button');
@@ -3027,7 +3051,7 @@ class Game {
     let weights;
     
     // Check if we're using the Advanced AI or Enhanced AI
-    const isAdvancedAI = this.advancedAI instanceof AdvancedAI2048Solver;
+    const isAdvancedAI = (this.advancedAI && window.AdvancedAI2048Solver && this.advancedAI instanceof window.AdvancedAI2048Solver);
 
     switch (this.aiDifficulty) {
       case 'easy':
