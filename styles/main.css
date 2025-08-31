@@ -477,8 +477,8 @@ main {
   gap: var(--gap);
   width: var(--board-max-size);
   height: var(--board-max-size);
-  max-width: var(--board-max-size);
-  max-height: var(--board-max-size);
+  max-width: 100vw;
+  max-height: 100vh;
   aspect-ratio: 1 / 1;
   background: var(--board-bg);
   backdrop-filter: blur(10px);
@@ -490,7 +490,7 @@ main {
   touch-action: none;
   border: 1px solid rgba(255, 255, 255, 0.1);
   margin: 0 auto;
-  overflow: hidden;
+  overflow: visible;
   /* Mobile touch optimizations */
   -webkit-user-select: none;
   -moz-user-select: none;
@@ -501,6 +501,9 @@ main {
   will-change: transform;
   /* Better touch response */
   cursor: pointer;
+  /* Ensure proper centering */
+  justify-self: center;
+  align-self: center;
 }
 
 #board-container:focus {

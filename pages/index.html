@@ -24,6 +24,7 @@
       --board-bg: #333;
       --tile-bg: #666;
     }
+    /* Remove problematic inline styles - use main.css responsive system instead */
     body {
       font-family: Arial, sans-serif;
       background: #1a1a1a;
@@ -31,33 +32,42 @@
       margin: 0;
       padding: 20px;
     }
+    
+    /* Let the responsive CSS system handle board sizing */
     #board-container {
-      display: grid !important;
-      grid-gap: 10px !important;
       margin: 20px auto !important;
-      background: #333 !important;
-      padding: 20px !important;
-      border-radius: 10px !important;
-      aspect-ratio: 1 !important;
-      max-width: min(90vw, 90vh, 500px) !important;
-      grid-template-columns: repeat(4, 1fr) !important;
-      grid-template-rows: repeat(4, 1fr) !important;
     }
-    .tile {
-      background: #666 !important;
-      color: white !important;
-      display: flex !important;
-      align-items: center !important;
-      justify-content: center !important;
-      font-weight: bold !important;
-      border-radius: 5px !important;
-      font-size: 1.5rem !important;
-      min-height: 60px !important;
+    
+    /* Basic button styling */
+    button { 
+      background: #ffcc00; 
+      color: #000; 
+      border: none; 
+      padding: 10px 15px; 
+      margin: 5px; 
+      border-radius: 5px; 
+      cursor: pointer; 
     }
-    button { background: #ffcc00; color: #000; border: none; padding: 10px 15px; margin: 5px; border-radius: 5px; cursor: pointer; }
-    #score-container { text-align: center; margin: 20px; }
-    #score-container ul { list-style: none; padding: 0; display: flex; justify-content: center; gap: 20px; }
-    header { text-align: center; padding: 20px; }
+    
+    /* Score container styling */
+    #score-container { 
+      text-align: center; 
+      margin: 20px; 
+    }
+    
+    #score-container ul { 
+      list-style: none; 
+      padding: 0; 
+      display: flex; 
+      justify-content: center; 
+      gap: 20px; 
+    }
+    
+    /* Header styling */
+    header { 
+      text-align: center; 
+      padding: 20px; 
+    }
     header h1 { color: #ffcc00; margin: 0; }
   </style>
   </head>

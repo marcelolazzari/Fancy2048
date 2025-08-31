@@ -2066,12 +2066,16 @@ class Game {
   }
 
   updateResponsiveVariables() {
+    console.log('Updating responsive variables...');
+    
     // Get current viewport dimensions
     const vw = window.innerWidth;
     const vh = window.innerHeight;
     const vmin = Math.min(vw, vh);
     const isMobile = this.isMobileDevice();
     const isPortrait = vh > vw;
+    
+    console.log(`Viewport: ${vw}x${vh}, Mobile: ${isMobile}, Portrait: ${isPortrait}`);
     
     // Calculate optimal board size and gap based on viewport and grid size
     let maxBoardSize, gapMultiplier;
@@ -2082,47 +2086,52 @@ class Game {
         gapMultiplier = 1.6;
         if (isMobile) {
           maxBoardSize = isPortrait ? 
-            Math.min(vw * 0.92, vh * 0.50, 320) :
-            Math.min(vw * 0.55, vh * 0.75, 350);
+            Math.min(vw * 0.90, vh * 0.45, 300) :
+            Math.min(vw * 0.50, vh * 0.70, 320);
         } else {
-          maxBoardSize = Math.min(vw * 0.45, vh * 0.55, 400);
+          maxBoardSize = Math.min(vw * 0.40, vh * 0.50, 350);
         }
         break;
       case 4:
         gapMultiplier = 1.0;
         if (isMobile) {
           maxBoardSize = isPortrait ? 
-            Math.min(vw * 0.95, vh * 0.55, 360) :
-            Math.min(vw * 0.60, vh * 0.80, 380);
+            Math.min(vw * 0.92, vh * 0.50, 340) :
+            Math.min(vw * 0.55, vh * 0.75, 360);
         } else {
-          maxBoardSize = Math.min(vw * 0.50, vh * 0.60, 480);
+          maxBoardSize = Math.min(vw * 0.45, vh * 0.55, 420);
         }
         break;
       case 5:
         gapMultiplier = 0.6;
         if (isMobile) {
           maxBoardSize = isPortrait ? 
-            Math.min(vw * 0.98, vh * 0.60, 400) :
-            Math.min(vw * 0.65, vh * 0.85, 420);
+            Math.min(vw * 0.95, vh * 0.55, 380) :
+            Math.min(vw * 0.60, vh * 0.80, 400);
         } else {
-          maxBoardSize = Math.min(vw * 0.55, vh * 0.65, 550);
+          maxBoardSize = Math.min(vw * 0.50, vh * 0.60, 480);
         }
         break;
     }
     
     // Calculate gap size with improved scaling
     const baseGap = isMobile ? 
-      Math.max(2, Math.min(8, vmin * 0.012)) :
-      Math.max(6, Math.min(14, vmin * 0.018));
-    const gap = baseGap * gapMultiplier;
+      Math.max(2, Math.min(8, vmin * 0.010)) :
+      Math.max(4, Math.min(12, vmin * 0.015));
+    const gap = Math.round(baseGap * gapMultiplier);
     
     // Calculate tile size for perfect fit
-    const tileSize = (maxBoardSize - gap * (this.size + 1)) / this.size;
+    const availableSize = maxBoardSize - (gap * 2); // Account for padding
+    const tileSize = Math.floor((availableSize - gap * (this.size - 1)) / this.size);
     
     // Ensure minimum tile size for usability
-    const minTileSize = isMobile ? 35 : 50;
-    const adjustedTileSize = Math.max(minTileSize, tileSize);
-    const adjustedBoardSize = adjustedTileSize * this.size + gap * (this.size + 1);
+    const minTileSize = isMobile ? 30 : 40;
+    let adjustedTileSize = Math.max(minTileSize, tileSize);
+    
+    // Recalculate board size to ensure perfect fit
+    const adjustedBoardSize = (adjustedTileSize * this.size) + (gap * (this.size + 1));
+    
+    console.log(`Grid ${this.size}x${this.size}: BoardSize=${adjustedBoardSize}, TileSize=${adjustedTileSize}, Gap=${gap}`);
     
     // Update CSS variables
     document.documentElement.style.setProperty('--board-max-size', `${adjustedBoardSize}px`);
@@ -2130,39 +2139,45 @@ class Game {
     document.documentElement.style.setProperty('--tile-size', `${adjustedTileSize}px`);
     
     // Adjust tile border radius based on tile size
-    const borderRadius = Math.max(4, Math.min(12, adjustedTileSize * 0.08));
+    const borderRadius = Math.max(3, Math.min(10, Math.floor(adjustedTileSize * 0.08)));
     document.documentElement.style.setProperty('--tile-border-radius', `${borderRadius}px`);
     
     // Update font scale variables based on tile size
     this.updateFontScales(adjustedTileSize);
+    
+    console.log('✅ Responsive variables updated');
   }
 
   updateFontScales(tileSize) {
+    console.log(`Updating font scales for tile size: ${tileSize}px`);
+    
     // Calculate font scales based on actual tile size and grid size for better readability
     let baseFontScale, largeFontScale, megaFontScale;
     
     // Grid-specific font scaling with better proportions
     switch (this.size) {
       case 3:
-        baseFontScale = Math.max(0.25, Math.min(0.50, tileSize / 90));
+        baseFontScale = Math.max(0.20, Math.min(0.45, tileSize / 80));
         largeFontScale = baseFontScale * 0.75;
         megaFontScale = baseFontScale * 0.60;
         break;
       case 4:
-        baseFontScale = Math.max(0.20, Math.min(0.45, tileSize / 100));
+        baseFontScale = Math.max(0.18, Math.min(0.40, tileSize / 90));
         largeFontScale = baseFontScale * 0.80;
         megaFontScale = baseFontScale * 0.65;
         break;
       case 5:
-        baseFontScale = Math.max(0.15, Math.min(0.35, tileSize / 120));
+        baseFontScale = Math.max(0.15, Math.min(0.35, tileSize / 100));
         largeFontScale = baseFontScale * 0.85;
         megaFontScale = baseFontScale * 0.70;
         break;
       default:
-        baseFontScale = Math.max(0.20, Math.min(0.45, tileSize / 100));
+        baseFontScale = Math.max(0.18, Math.min(0.40, tileSize / 90));
         largeFontScale = baseFontScale * 0.80;
         megaFontScale = baseFontScale * 0.65;
     }
+    
+    console.log(`Font scales - Base: ${baseFontScale}, Large: ${largeFontScale}, Mega: ${megaFontScale}`);
     
     // Apply calculated font scales
     document.documentElement.style.setProperty('--font-scale-base', baseFontScale);
