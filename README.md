@@ -7,15 +7,16 @@ Fancy2048 is a modern, feature-rich implementation of the classic 2048 puzzle ga
 ## ✨ Features
 
 ### 🎯 Game Modes
-- **Multiple Board Sizes**: Play on 3×3, 4×4, or 5×5 grids
+- **Multiple Board Sizes**: Play on 4×4, 5×5, 7×7, or 9×9 grids
 - **Continue After 2048**: Keep playing after reaching 2048 to achieve higher tiles
 - **Undo System**: Undo up to 10 moves with full game state restoration
 
 ### 🤖 AI Integration
-- **Advanced AI Solver**: State-of-the-art AI using Expectimax algorithm
+- **Advanced AI Solver**: State-of-the-art AI using Expectimax algorithm with automatic learning
 - **Auto Play**: Watch the AI solve the game automatically
 - **Speed Control**: Adjustable AI speed (1×, 1.5×, 2×, 4×, 8×)
 - **Difficulty Levels**: Choose from Easy, Normal, Hard, or Expert AI
+- **Automatic Learning**: AI automatically learns from each game to improve performance
 - **Human vs AI Stats**: Track and compare performance
 
 ### 🎨 Visual & Accessibility
@@ -33,7 +34,7 @@ Fancy2048 is a modern, feature-rich implementation of the classic 2048 puzzle ga
 
 ### 📱 Mobile Experience
 - **Touch Gestures**: Swipe to move tiles
-- **Auto-pause/Resume**: Smart game state management
+- **Enhanced Game State Persistence**: Automatic game saving and restoration
 - **Viewport Optimization**: Perfect fit on all screen sizes
 - **Offline Play**: Works without internet connection
 

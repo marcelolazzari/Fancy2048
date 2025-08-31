@@ -83,20 +83,27 @@ class Game {
     this.updateUI();
     this.startTimer();
     
-    // Initialize enhanced AI
+    // Initialize enhanced AI with automatic learning
     this.enhancedAI = null;
+    this.aiLearningSystem = null;
     try {
       this.initializeEnhancedAI();
+      // Initialize AI Learning System automatically
+      if (typeof AILearningSystem !== 'undefined') {
+        this.aiLearningSystem = new AILearningSystem();
+        console.log('🧠 AI Learning System initialized automatically');
+      }
     } catch (error) {
       console.error('❌ Failed to initialize AI in constructor:', error);
       this.enhancedAI = null;
+      this.aiLearningSystem = null;
     }
     
     // AI performance settings
     this.aiDifficulty = localStorage.getItem('aiDifficulty') || 'normal';
     this.adaptiveDepth = true;
     
-    // Auto-save for mobile devices
+    // Enhanced game state persistence (improved mobile handling)
     this.startAutoSave();
     this.restoreGameStateIfNeeded();
     
@@ -160,7 +167,7 @@ class Game {
     window.addEventListener('message', (event) => {
       if (event.data.type === 'changeGridSize') {
         const newSize = event.data.size;
-        if ([3, 4, 5].includes(newSize) && newSize !== this.size) {
+        if ([4, 5, 7, 9].includes(newSize) && newSize !== this.size) {
           console.log(`🔄 Changing grid size from ${this.size}x${this.size} to ${newSize}x${newSize}`);
           this.size = newSize;
           this.reset();
@@ -196,63 +203,22 @@ class Game {
       this.adjustViewportForMobile();
     }
 
-    // Handle visibility changes to pause/resume timer and game
-    document.addEventListener('visibilitychange', () => {
-      if (document.hidden) {
-        // Page is now hidden (tab switched, minimized, app backgrounded)
-        this.handlePageHidden();
-      } else {
-        // Page is now visible again
-        this.handlePageVisible();
-      }
-    });
-
-    // Handle beforeunload to save game state when user is about to leave
+    // Enhanced state persistence - save game state when user is about to leave
     window.addEventListener('beforeunload', () => {
       this.saveCurrentGameState();
       this.stopAutoSave(); // Stop auto-save interval
-      if (!this.isPaused && this.gameState === 'playing') {
-        this.pauseGame(false); // Auto-pause without user flag
-      }
     });
 
     // Mobile-specific events for better lifecycle management
     if (this.isMobileDevice()) {
       window.addEventListener('pagehide', () => {
         this.saveCurrentGameState();
-        this.handlePageHidden();
       });
       
       window.addEventListener('pageshow', (event) => {
         if (event.persisted) {
-          // Page was restored from cache
-          this.handlePageVisible();
-        }
-      });
-      
-      // Handle app focus events with debouncing to avoid rapid state changes
-      let focusTimeout;
-      window.addEventListener('focus', () => {
-        clearTimeout(focusTimeout);
-        focusTimeout = setTimeout(() => this.handlePageVisible(), 100);
-      });
-      
-      window.addEventListener('blur', () => {
-        clearTimeout(focusTimeout);
-        this.handlePageHidden();
-      });
-    } else {
-      // Desktop focus/blur handling
-      window.addEventListener('blur', () => {
-        if (!this.isPaused && this.gameState === 'playing') {
-          this.pauseGame(false); // Auto-pause
-        }
-      });
-
-      window.addEventListener('focus', () => {
-        // Only resume if it was auto-paused (not paused by user)
-        if (this.isPaused && !this.wasPausedByUser && this.gameState === 'playing') {
-          this.resumeGame();
+          // Page was restored from cache, attempt to restore game state
+          this.restoreGameStateIfNeeded();
         }
       });
     }
@@ -1468,6 +1434,22 @@ class Game {
           this.showScorePopup(this.scoreDelta);
         }
         
+        // Automatically record move for AI learning (if learning system is available)
+        if (this.aiLearningSystem && this.gameStateStack.length >= 2) {
+          try {
+            const previousState = this.gameStateStack[this.gameStateStack.length - 2];
+            const currentState = this.board.flat();
+            this.aiLearningSystem.recordMove(
+              previousState.board.flat(),
+              direction,
+              currentState,
+              this.scoreDelta
+            );
+          } catch (error) {
+            console.warn('⚠️ Failed to record move for AI learning:', error);
+          }
+        }
+        
         // Update UI first, then add new tile after animation
         this.updateUI();
         
@@ -1526,7 +1508,7 @@ class Game {
   // AI Learning Integration Methods
 
   /**
-   * Record game completion for AI learning
+   * Record game completion for automatic AI learning
    */
   recordGameCompletion(won) {
     try {
@@ -1540,48 +1522,26 @@ class Game {
         }
       }
 
-      // Record with Advanced AI if available
-      if (this.advancedAI && this.advancedAI.recordGameCompletion) {
-        this.advancedAI.recordGameCompletion(this.score, maxTile, won);
+      // Automatically record with AI Learning System
+      if (this.aiLearningSystem) {
+        this.aiLearningSystem.recordGameEnd(this.score, maxTile, won, this.moves);
         
         if (window.debugAI) {
-          console.log(`🎓 AI Learning: Game completed - Score: ${this.score}, Max Tile: ${maxTile}, Won: ${won}`);
-        }
-      }
-
-      // Record with Enhanced AI if available (fallback)
-      if (!this.advancedAI && this.enhancedAI && this.enhancedAI.getLearningSystem) {
-        const learningSystem = this.enhancedAI.getLearningSystem();
-        if (learningSystem) {
-          learningSystem.recordGameEnd(this.score, maxTile, won, this.moves);
-          
-          if (window.debugAI) {
-            console.log(`🎓 Enhanced AI Learning: Game completed - Score: ${this.score}, Max Tile: ${maxTile}, Won: ${won}`);
-          }
+          console.log(`🧠 AI Learning: Automatically recorded game completion - Score: ${this.score}, Max Tile: ${maxTile}, Won: ${won}`);
         }
       }
     } catch (error) {
-      console.warn('⚠️ Failed to record game completion for learning:', error);
+      console.warn('⚠️ Failed to record game completion for automatic learning:', error);
     }
   }
 
   /**
-   * Get AI learning statistics
+   * Get AI learning statistics (automatic system)
    */
   getAILearningStats() {
     try {
-      if (this.advancedAI && this.advancedAI.getLearningSystem) {
-        const learningSystem = this.advancedAI.getLearningSystem();
-        if (learningSystem) {
-          return learningSystem.getLearningStats();
-        }
-      }
-      
-      if (this.enhancedAI && this.enhancedAI.getLearningSystem) {
-        const learningSystem = this.enhancedAI.getLearningSystem();
-        if (learningSystem) {
-          return learningSystem.getLearningStats();
-        }
+      if (this.aiLearningSystem) {
+        return this.aiLearningSystem.getLearningStats();
       }
       
       return null;
@@ -3186,8 +3146,8 @@ class Game {
   }
 
   changeBoardSize() {
-    // Cycle through board sizes (3x3, 4x4, 5x5)
-    const sizes = [3, 4, 5];
+    // Cycle through board sizes (4x4, 5x5, 7x7, 9x9)
+    const sizes = [4, 5, 7, 9];
     const currentIndex = sizes.indexOf(this.size);
     const nextIndex = (currentIndex + 1) % sizes.length;
     this.size = sizes[nextIndex];
@@ -4089,9 +4049,6 @@ function initializeFancy2048() {
         detail: { game: window.game, attempts: initAttempts }
       }));
       
-      // Initialize AI Learning Panel
-      setupAILearningPanel();
-      
       // Optional: Remove any loading indicators
       const loadingIndicators = document.querySelectorAll('.loading-indicator, .init-status');
       loadingIndicators.forEach(indicator => {
@@ -4365,28 +4322,6 @@ window.aiDebugTools = {
     }
   }
 };
-
-// AI Learning Panel Setup and Management
-function setupAILearningPanel() {
-  console.log('🎓 Setting up AI Learning Panel...');
-  
-  // Setup AI Learning Button
-  const aiLearningButton = document.getElementById('ai-learning-button');
-  if (aiLearningButton) {
-    aiLearningButton.addEventListener('click', () => {
-      const panel = document.getElementById('ai-learning-panel');
-      if (panel) {
-        panel.classList.remove('hidden');
-        updateAILearningStats();
-      }
-    });
-  }
-  
-  // Setup Learning Controls
-  setupLearningControls();
-  
-  console.log('✅ AI Learning Panel setup complete');
-}
 
 function setupLearningControls() {
   // Toggle Learning Button
