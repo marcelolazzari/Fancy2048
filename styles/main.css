@@ -1,25 +1,48 @@
 /* Fancy2048 - Fixed Unified Styles */
 
-/* Root CSS Variables */
+/* Root CSS Variables - Enhanced Responsive System */
 :root {
   --size: 4;
   
-  /* Dynamic Board Sizing - Responsive to grid size */
-  --base-board-size: min(85vw, 85vh, 500px);
-  --board-max-size: var(--base-board-size);
+  /* Advanced Viewport-Based Sizing */
+  --viewport-min: min(100vw, 100vh);
+  --viewport-available: min(100vw - 40px, 100vh - 200px); /* Account for UI elements */
   
-  /* Grid-specific gap adjustments for optimal fitting */
-  --gap-multiplier: 1;
-  --gap: calc(var(--gap-multiplier) * clamp(2px, 1.5vmin, 8px));
+  /* Dynamic Board Sizing - Grid-specific optimization */
+  --base-board-size-3x3: min(85vw, 75vh, 400px);
+  --base-board-size-4x4: min(85vw, 80vh, 500px);
+  --base-board-size-5x5: min(90vw, 85vh, 600px);
   
-  /* Calculated tile size based on board and gaps */
+  /* Current board size (set by JavaScript) */
+  --board-max-size: var(--base-board-size-4x4);
+  
+  /* Grid-specific gap optimization for perfect fitting */
+  --gap-base: clamp(2px, 1.5vmin, 12px);
+  --gap-3x3: calc(var(--gap-base) * 1.4);
+  --gap-4x4: calc(var(--gap-base) * 1.0);
+  --gap-5x5: calc(var(--gap-base) * 0.7);
+  --gap: var(--gap-4x4); /* Default, updated by JS */
+  
+  /* Calculated tile size with perfect aspect ratio */
   --tile-size: calc((var(--board-max-size) - var(--gap) * (var(--size) + 1)) / var(--size));
-  --game-size: var(--board-max-size);
   
-  /* Font scaling based on actual tile size */
-  --font-scale-base: 0.35;
-  --font-scale-large: 0.28;
-  --font-scale-mega: 0.22;
+  /* Font scaling optimized for each grid size */
+  --font-scale-3x3-base: 0.42;
+  --font-scale-3x3-large: 0.32; 
+  --font-scale-3x3-mega: 0.25;
+  
+  --font-scale-4x4-base: 0.35;
+  --font-scale-4x4-large: 0.28;
+  --font-scale-4x4-mega: 0.22;
+  
+  --font-scale-5x5-base: 0.28;
+  --font-scale-5x5-large: 0.22;
+  --font-scale-5x5-mega: 0.18;
+  
+  /* Current font scales (set by JavaScript) */
+  --font-scale-base: var(--font-scale-4x4-base);
+  --font-scale-large: var(--font-scale-4x4-large);
+  --font-scale-mega: var(--font-scale-4x4-mega);
   
   /* Color Variables */
   --primary-color: #1a1a1a;
@@ -81,6 +104,31 @@
   /* Mobile touch optimization */
   --touch-target-size: 44px; /* Minimum recommended touch target */
   --mobile-spacing: clamp(4px, 1vw, 12px);
+}
+
+/* Grid-specific responsive adjustments */
+.board-size-3 {
+  --board-max-size: var(--base-board-size-3x3);
+  --gap: var(--gap-3x3);
+  --font-scale-base: var(--font-scale-3x3-base);
+  --font-scale-large: var(--font-scale-3x3-large);
+  --font-scale-mega: var(--font-scale-3x3-mega);
+}
+
+.board-size-4 {
+  --board-max-size: var(--base-board-size-4x4);
+  --gap: var(--gap-4x4);
+  --font-scale-base: var(--font-scale-4x4-base);
+  --font-scale-large: var(--font-scale-4x4-large);
+  --font-scale-mega: var(--font-scale-4x4-mega);
+}
+
+.board-size-5 {
+  --board-max-size: var(--base-board-size-5x5);
+  --gap: var(--gap-5x5);
+  --font-scale-base: var(--font-scale-5x5-base);
+  --font-scale-large: var(--font-scale-5x5-large);
+  --font-scale-mega: var(--font-scale-5x5-mega);
 }
 
 /* Light mode variables */
@@ -851,11 +899,16 @@ footer .container {
   }
 }
 
-/* Mobile phones - Primary responsive breakpoint */
+/* Mobile phones - Enhanced responsive breakpoints */
 @media (max-width: 480px) {
   :root {
-    --board-max-size: min(95vw, 85vh, 340px);
-    --gap: clamp(1px, 0.8vmin, 4px);
+    /* Mobile-optimized board sizes */
+    --base-board-size-3x3: min(95vw, 70vh, 300px);
+    --base-board-size-4x4: min(95vw, 75vh, 340px);
+    --base-board-size-5x5: min(98vw, 80vh, 380px);
+    
+    /* Mobile-optimized gaps */
+    --gap-base: clamp(1px, 1vmin, 6px);
     --mobile-button-size: 42px;
   }
   
@@ -871,57 +924,245 @@ footer .container {
     -moz-osx-font-smoothing: grayscale;
   }
   
-  /* Mobile responsive adjustments - use dynamic sizing */
+  /* Mobile responsive adjustments */
   header {
-    padding: 8px 10px;
+    padding: 6px 8px;
   }
   
   header h1 {
-    font-size: clamp(1.4rem, 5vw, 1.8rem);
-    margin-bottom: 8px;
+    font-size: clamp(1.2rem, 4.5vw, 1.6rem);
+    margin-bottom: 6px;
   }
   
   main {
-    padding: 8px;
+    padding: 6px;
     flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
   }
   
   .controls {
-    gap: 4px;
-    margin-bottom: 8px;
+    gap: 3px;
+    margin-bottom: 6px;
     flex-wrap: wrap;
     justify-content: center;
+    max-width: 100%;
   }
   
   button {
-    padding: 8px 10px;
-    font-size: 13px;
+    padding: 6px 8px;
+    font-size: 12px;
     min-width: var(--mobile-button-size);
     min-height: var(--mobile-button-size);
-    /* Enhanced touch feedback */
-    -webkit-tap-highlight-color: rgba(255, 255, 255, 0.2);
+    /* Better touch response */
     touch-action: manipulation;
   }
-  
+
   #score-container {
-    margin-bottom: 10px;
+    font-size: 0.85rem;
     padding: 8px;
+    gap: 12px;
   }
-  
+
   #score-container ul {
-    gap: 6px;
-    grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+    gap: 8px;
+  }
+
+  /* Mobile-specific board adjustments */
+  #board-container {
+    /* Ensure board fits in mobile viewport */
+    max-width: min(95vw, 95vh);
+    max-height: min(95vw, 95vh);
+  }
+}
+
+/* Tablet - Medium screens */
+@media (min-width: 481px) and (max-width: 768px) {
+  :root {
+    /* Tablet-optimized board sizes */
+    --base-board-size-3x3: min(80vw, 70vh, 450px);
+    --base-board-size-4x4: min(80vw, 75vh, 500px);
+    --base-board-size-5x5: min(85vw, 80vh, 550px);
+  }
+
+  header h1 {
+    font-size: clamp(1.6rem, 4vw, 2.2rem);
+  }
+
+  button {
+    padding: 10px 16px;
+    font-size: 14px;
+    min-width: 48px;
+    min-height: 48px;
+  }
+
+  #score-container {
+    font-size: 1rem;
+    padding: 12px;
+  }
+}
+
+/* Desktop - Large screens */
+@media (min-width: 769px) {
+  :root {
+    /* Desktop-optimized board sizes with more space */
+    --base-board-size-3x3: min(60vw, 60vh, 480px);
+    --base-board-size-4x4: min(65vw, 65vh, 550px);
+    --base-board-size-5x5: min(70vw, 70vh, 600px);
+    
+    /* Desktop gaps for better visual hierarchy */
+    --gap-base: clamp(8px, 1.2vmin, 16px);
+  }
+
+  main {
+    padding: 20px;
+    gap: 20px;
+  }
+
+  header {
+    padding: 15px 20px;
+  }
+
+  header h1 {
+    font-size: clamp(2rem, 3vw, 2.8rem);
+    margin-bottom: 15px;
+  }
+
+  button {
+    padding: 12px 20px;
+    font-size: 15px;
+    min-width: 50px;
+    min-height: 50px;
+    transition: all 0.2s ease;
+  }
+
+  button:hover {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  }
+
+  #score-container {
+    font-size: 1.1rem;
+    padding: 15px;
+    gap: 20px;
+  }
+
+  #score-container ul {
+    gap: 15px;
+  }
+}
+
+/* Ultra-wide desktop screens */
+@media (min-width: 1200px) {
+  :root {
+    /* Larger board sizes for big screens */
+    --base-board-size-3x3: min(45vw, 55vh, 520px);
+    --base-board-size-4x4: min(50vw, 60vh, 580px);
+    --base-board-size-5x5: min(55vw, 65vh, 640px);
+  }
+}
+
+/* Landscape orientation optimizations */
+@media (orientation: landscape) {
+  /* Mobile landscape */
+  @media (max-width: 768px) {
+    :root {
+      /* Optimize for landscape mobile - use height more than width */
+      --base-board-size-3x3: min(60vh, 85vw, 350px);
+      --base-board-size-4x4: min(70vh, 85vw, 400px);
+      --base-board-size-5x5: min(75vh, 90vw, 450px);
+    }
+    
+    main {
+      flex-direction: row;
+      align-items: flex-start;
+      padding: 8px;
+      gap: 15px;
+    }
+    
+    header {
+      flex: 0 0 auto;
+      padding: 8px;
+    }
+    
+    header h1 {
+      font-size: clamp(1rem, 3vw, 1.4rem);
+      margin-bottom: 4px;
+    }
+    
+    .controls {
+      flex-direction: column;
+      gap: 4px;
+      margin: 0;
+    }
+    
+    #score-container {
+      writing-mode: horizontal-tb;
+      font-size: 0.8rem;
+      padding: 6px;
+    }
+    
+    #score-container ul {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+  }
+}
+
+/* Portrait orientation optimizations */
+@media (orientation: portrait) {
+  /* Ensure good use of vertical space in portrait */
+  body {
+    display: flex;
+    flex-direction: column;
   }
   
-  #score-container li {
-    font-size: 0.9rem;
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+  }
+}
+
+/* High pixel density screens */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  /* Crisp rendering on retina displays */
+  .tile {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
   }
   
-  #score-container span {
-    font-size: 1.1em;
+  #board-container {
+    border-width: 0.5px;
+  }
+}
+
+/* Reduced motion preferences */
+@media (prefers-reduced-motion: reduce) {
+  .tile {
+    transition: none;
+    animation: none;
   }
   
-  /* Mobile tiles use dynamic font sizing from variables */
+  #board-container {
+    transition: none;
+  }
+  
+  @keyframes appear {
+    from { opacity: 1; transform: scale(1); }
+    to { opacity: 1; transform: scale(1); }
+  }
+  
+  @keyframes pop {
+    from { transform: scale(1); }
+    to { transform: scale(1); }
+  }
 }
 
 /* Additional ultra-small screen optimizations */

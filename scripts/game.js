@@ -133,44 +133,21 @@ class Game {
     document.body.className = document.body.className.replace(/board-size-\d+/g, '');
     document.body.classList.add(`board-size-${this.size}`);
     
-    // Set dynamic board sizing based on grid size - let CSS handle the specifics
-    let gapMultiplier, fontScaleBase, fontScaleLarge, fontScaleMega;
+    // Initialize responsive variables
+    this.updateResponsiveVariables();
     
-    if (this.size === 3) {
-      gapMultiplier = 1.5;
-      fontScaleBase = 0.5;
-      fontScaleLarge = 0.4;
-      fontScaleMega = 0.32;
-    } else if (this.size === 4) {
-      gapMultiplier = 1;
-      fontScaleBase = 0.35;
-      fontScaleLarge = 0.28;
-      fontScaleMega = 0.22;
-    } else if (this.size === 5) {
-      gapMultiplier = 0.8;
-      fontScaleBase = 0.3;
-      fontScaleLarge = 0.24;
-      fontScaleMega = 0.18;
-    }
-    
-    // Apply dynamic sizing variables (CSS classes will handle board-max-size)
-    document.documentElement.style.setProperty('--gap-multiplier', gapMultiplier);
-    document.documentElement.style.setProperty('--font-scale-base', fontScaleBase);
-    document.documentElement.style.setProperty('--font-scale-large', fontScaleLarge);
-    document.documentElement.style.setProperty('--font-scale-mega', fontScaleMega);
-    
-    // Create grid cells
+    // Create grid cells for the board
     for (let i = 0; i < this.size; i++) {
       for (let j = 0; j < this.size; j++) {
-        const cell = document.createElement('div');
-        cell.className = 'grid-cell';
-        cell.dataset.row = i;
-        cell.dataset.col = j;
-        boardContainer.appendChild(cell);
+        const gridCell = document.createElement('div');
+        gridCell.className = 'grid-cell';
+        gridCell.setAttribute('data-row', i);
+        gridCell.setAttribute('data-col', j);
+        boardContainer.appendChild(gridCell);
       }
     }
     
-    console.log(`✅ Board container setup for ${this.size}x${this.size} grid - Dynamic sizing applied`);
+    console.log(`✅ Board container setup for ${this.size}x${this.size} grid - Responsive sizing applied`);
   }
 
   setupMessageHandler() {
@@ -277,26 +254,77 @@ class Game {
   }
 
   initializeResizeObserver() {
-    // Initialize ResizeObserver for better responsive handling
+    // Enhanced responsive handling with viewport and orientation detection
+    let resizeTimeout;
+    let lastWidth = window.innerWidth;
+    let lastHeight = window.innerHeight;
+    let lastOrientation = window.innerHeight > window.innerWidth ? 'portrait' : 'landscape';
+    
+    // Unified resize handler
+    const handleResize = () => {
+      const currentWidth = window.innerWidth;
+      const currentHeight = window.innerHeight;
+      const currentOrientation = currentHeight > currentWidth ? 'portrait' : 'landscape';
+      
+      // Check for significant changes
+      const widthChange = Math.abs(currentWidth - lastWidth) > 50;
+      const heightChange = Math.abs(currentHeight - lastHeight) > 50;
+      const orientationChange = currentOrientation !== lastOrientation;
+      
+      if (widthChange || heightChange || orientationChange) {
+        clearTimeout(resizeTimeout);
+        resizeTimeout = setTimeout(() => {
+          console.log(`📱 Viewport change detected: ${currentWidth}×${currentHeight} (${currentOrientation})`);
+          
+          // Update responsive variables first
+          this.updateResponsiveVariables();
+          
+          // Then refresh layout
+          this.refreshLayout();
+          
+          // Update stored values
+          lastWidth = currentWidth;
+          lastHeight = currentHeight;
+          lastOrientation = currentOrientation;
+        }, orientationChange ? 300 : 150); // Longer delay for orientation changes
+      }
+    };
+    
+    // Modern ResizeObserver for element-specific changes
     if (typeof ResizeObserver !== 'undefined') {
       this.resizeObserver = new ResizeObserver(this.debounce((entries) => {
         for (const entry of entries) {
           if (entry.target.id === 'board-container') {
-            this.updateTileFontSizes();
-            this.refreshLayout();
+            // Only update font sizes if the container actually resized
+            const rect = entry.contentRect;
+            if (rect.width > 0 && rect.height > 0) {
+              setTimeout(() => this.updateTileFontSizes(), 50);
+            }
           }
         }
       }, 100));
 
-      // Observe the board container
+      // Observe both body and board container
       const boardContainer = document.getElementById('board-container');
       if (boardContainer) {
         this.resizeObserver.observe(boardContainer);
-        console.log('✅ ResizeObserver initialized for board container');
+        this.resizeObserver.observe(document.body);
+        console.log('✅ Enhanced ResizeObserver initialized');
       }
-    } else {
-      console.warn('⚠️ ResizeObserver not supported, using fallback resize handling');
     }
+    
+    // Window resize events for viewport changes
+    window.addEventListener('resize', handleResize);
+    window.addEventListener('orientationchange', () => {
+      // Give time for the orientation change to complete
+      setTimeout(handleResize, 100);
+      setTimeout(handleResize, 500); // Double-check after animations
+    });
+    
+    // Initial setup
+    handleResize();
+    
+    console.log('✅ Enhanced responsive system initialized');
   }
 
   // Enhanced page visibility handlers
@@ -1081,68 +1109,34 @@ class Game {
   // New method to adjust font size based on tile value and size
   adjustTileFontSize(tileElement) {
     const value = parseInt(tileElement.getAttribute('data-value'));
-    const numDigits = value.toString().length;
     
-    // Get actual tile dimensions for more accurate scaling
-    const rect = tileElement.getBoundingClientRect();
-    const tileSize = Math.min(rect.width, rect.height);
+    // Let CSS handle font sizing using our responsive variables
+    // Remove any inline font-size styles to allow CSS to take over
+    tileElement.style.fontSize = '';
     
-    if (tileSize === 0) {
-      // Fallback to CSS-calculated size if element not yet rendered
-      const computedSize = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--tile-size'));
-      const actualTileSize = computedSize || Math.min(window.innerWidth, window.innerHeight) / (this.size + 1);
-      this.setFontSizeForTile(tileElement, actualTileSize, numDigits, value);
+    // Apply appropriate CSS class for font scaling
+    if (value >= 1024) {
+      // Use CSS variable --font-scale-large for 4-digit numbers
+      tileElement.style.fontSize = `calc(var(--tile-size) * var(--font-scale-large))`;
+    } else if (value >= 4096) {
+      // Use CSS variable --font-scale-mega for 5+ digit numbers
+      tileElement.style.fontSize = `calc(var(--tile-size) * var(--font-scale-mega))`;
     } else {
-      this.setFontSizeForTile(tileElement, tileSize, numDigits, value);
+      // Use CSS variable --font-scale-base for 1-3 digit numbers
+      tileElement.style.fontSize = `calc(var(--tile-size) * var(--font-scale-base))`;
     }
   }
 
-  setFontSizeForTile(tileElement, tileSize, numDigits, value) {
-    // Enhanced font size calculation with better progression
-    let fontSizePercent;
+  // Enhanced updateTileFontSizes that respects viewport changes
+  updateTileFontSizes() {
+    // First update the responsive variables to get current scaling
+    this.updateResponsiveVariables();
     
-    if (numDigits === 1) {
-      fontSizePercent = 0.65; // Larger for single digits
-    } else if (numDigits === 2) {
-      fontSizePercent = 0.5;  // Good size for double digits
-    } else if (numDigits === 3) {
-      fontSizePercent = 0.38; // Smaller for triple digits
-    } else if (numDigits === 4) {
-      fontSizePercent = 0.32; // Even smaller for 4 digits
-    } else {
-      fontSizePercent = 0.28; // Minimum for 5+ digits
-    }
-    
-    // Apply responsive scaling based on device type
-    const scaleFactor = this.isMobileDevice() ? 0.9 : 1.0;
-    fontSizePercent *= scaleFactor;
-    
-    // Calculate final font size with constraints
-    const baseFontSize = tileSize * fontSizePercent;
-    const minFontSize = this.isMobileDevice() ? 10 : 12;
-    const maxFontSize = tileSize * 0.7;
-    
-    const fontSize = Math.max(minFontSize, Math.min(baseFontSize, maxFontSize));
-    tileElement.style.fontSize = `${fontSize}px`;
-    
-    // Adjust line height for better centering
-    tileElement.style.lineHeight = '1';
-    
-    // Dynamic padding based on font size
-    const paddingPercent = Math.max(5, Math.min(15, 10 + numDigits));
-    tileElement.style.padding = `${paddingPercent}%`;
-    
-    // Add font weight adjustment for better readability
-    if (numDigits >= 4) {
-      tileElement.style.fontWeight = '700';
-    } else {
-      tileElement.style.fontWeight = '600';
-    }
-    
-    // Add text shadow for better contrast on light backgrounds
-    if (value >= 8) {
-      tileElement.style.textShadow = '0 1px 3px rgba(0,0,0,0.3)';
-    }
+    // Then update all tile font sizes
+    const tiles = document.querySelectorAll('.tile');
+    tiles.forEach(tile => {
+      this.adjustTileFontSize(tile);
+    });
   }
 
   isMobileDevice() {
@@ -1836,24 +1830,6 @@ class Game {
     }, 1000);
   }
 
-  refreshLayout() {
-    // Update CSS variable for responsive layout
-    document.documentElement.style.setProperty('--size', this.size);
-    
-    // Add board size class to body for CSS targeting
-    document.body.className = document.body.className.replace(/board-size-\d+/g, '');
-    document.body.classList.add(`board-size-${this.size}`);
-    
-    // Recalculate board container dimensions
-    this.setupBoardContainer();
-    
-    // Clear and redraw the board
-    this.updateUI();
-    
-    // Make sure all tiles have proper font sizing
-    this.updateTileFontSizes();
-  }
-
   // Event handlers
   handleKeyPress(event) {
     // Handle pause/resume with space key regardless of game state
@@ -2072,17 +2048,8 @@ class Game {
     document.body.className = document.body.className.replace(/board-size-\d+/g, '');
     document.body.classList.add(`board-size-${this.size}`);
     
-    // Calculate optimal gap based on viewport and grid size
-    const vmin = Math.min(window.innerWidth, window.innerHeight);
-    const gapMultiplier = this.size === 3 ? 1.5 : (this.size === 5 ? 0.8 : 1);
-    const baseGap = Math.max(6, Math.min(15, vmin * 0.02));
-    const gap = baseGap * gapMultiplier;
-    
-    document.documentElement.style.setProperty('--gap', `${gap}px`);
-    
-    // Adjust tile border radius based on gap size
-    const borderRadius = Math.max(6, Math.min(12, gap * 0.8));
-    document.documentElement.style.setProperty('--tile-border-radius', `${borderRadius}px`);
+    // Enhanced responsive calculations
+    this.updateResponsiveVariables();
     
     // Update mobile-specific measurements
     if (this.isMobileDevice()) {
@@ -2096,6 +2063,88 @@ class Game {
     
     // Ensure proper font sizing after layout change
     setTimeout(() => this.updateTileFontSizes(), 100);
+  }
+
+  updateResponsiveVariables() {
+    // Get current viewport dimensions
+    const vw = window.innerWidth;
+    const vh = window.innerHeight;
+    const vmin = Math.min(vw, vh);
+    
+    // Calculate optimal gap based on viewport and grid size
+    let gapMultiplier = 1;
+    let maxBoardSize;
+    
+    // Grid-specific optimizations
+    switch (this.size) {
+      case 3:
+        gapMultiplier = 1.4;
+        maxBoardSize = this.isMobileDevice() ? 
+          Math.min(vw * 0.95, vh * 0.70, 300) :
+          Math.min(vw * 0.60, vh * 0.60, 480);
+        break;
+      case 4:
+        gapMultiplier = 1.0;
+        maxBoardSize = this.isMobileDevice() ? 
+          Math.min(vw * 0.95, vh * 0.75, 340) :
+          Math.min(vw * 0.65, vh * 0.65, 550);
+        break;
+      case 5:
+        gapMultiplier = 0.7;
+        maxBoardSize = this.isMobileDevice() ? 
+          Math.min(vw * 0.98, vh * 0.80, 380) :
+          Math.min(vw * 0.70, vh * 0.70, 600);
+        break;
+    }
+    
+    // Calculate gap size
+    const baseGap = this.isMobileDevice() ? 
+      Math.max(1, Math.min(6, vmin * 0.015)) :
+      Math.max(8, Math.min(16, vmin * 0.02));
+    const gap = baseGap * gapMultiplier;
+    
+    // Calculate tile size for perfect fit
+    const tileSize = (maxBoardSize - gap * (this.size + 1)) / this.size;
+    
+    // Update CSS variables
+    document.documentElement.style.setProperty('--board-max-size', `${maxBoardSize}px`);
+    document.documentElement.style.setProperty('--gap', `${gap}px`);
+    document.documentElement.style.setProperty('--tile-size', `${tileSize}px`);
+    
+    // Adjust tile border radius based on tile size
+    const borderRadius = Math.max(4, Math.min(12, tileSize * 0.1));
+    document.documentElement.style.setProperty('--tile-border-radius', `${borderRadius}px`);
+    
+    // Update font scale variables based on tile size
+    this.updateFontScales(tileSize);
+  }
+
+  updateFontScales(tileSize) {
+    // Calculate font scales based on actual tile size for better readability
+    const baseFontScale = Math.max(0.2, Math.min(0.5, tileSize / 100));
+    const largeFontScale = baseFontScale * 0.8;
+    const megaFontScale = baseFontScale * 0.65;
+    
+    // Grid-specific font adjustments
+    let sizeMultiplier = 1;
+    switch (this.size) {
+      case 3:
+        sizeMultiplier = 1.2; // Larger font for 3x3
+        break;
+      case 4:
+        sizeMultiplier = 1.0; // Standard for 4x4
+        break;
+      case 5:
+        sizeMultiplier = 0.85; // Smaller font for 5x5
+        break;
+    }
+    
+    document.documentElement.style.setProperty('--font-scale-base', 
+      baseFontScale * sizeMultiplier);
+    document.documentElement.style.setProperty('--font-scale-large', 
+      largeFontScale * sizeMultiplier);
+    document.documentElement.style.setProperty('--font-scale-mega', 
+      megaFontScale * sizeMultiplier);
   }
 
   applyMobileOptimizations() {

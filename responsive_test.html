@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Fancy2048 - Responsive Test</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <style>
+        body {
+            margin: 0;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #f2f2f2;
+        }
+        
+        .test-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+        }
+        
+        .grid-demo {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+            justify-content: center;
+            align-items: flex-start;
+        }
+        
+        .demo-game {
+            flex: 0 0 auto;
+        }
+        
+        .demo-frame {
+            width: 350px;
+            height: 500px;
+            border: 2px solid #333;
+            border-radius: 10px;
+            margin: 10px;
+            overflow: hidden;
+        }
+        
+        .demo-frame.mobile {
+            width: 280px;
+            height: 500px;
+        }
+        
+        .demo-frame.tablet {
+            width: 400px;
+            height: 600px;
+        }
+        
+        .demo-frame.desktop {
+            width: 500px;
+            height: 700px;
+        }
+        
+        .info-box {
+            background: rgba(76, 175, 80, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .warning-box {
+            background: rgba(255, 152, 0, 0.2);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        
+        .controls {
+            text-align: center;
+            margin: 20px 0;
+        }
+        
+        .controls button {
+            background: #ffcc00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        .controls button:hover {
+            background: #ffd700;
+        }
+        
+        .viewport-info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(0, 0, 0, 0.8);
+            color: white;
+            padding: 10px;
+            border-radius: 5px;
+            font-size: 12px;
+            font-family: monospace;
+            z-index: 1000;
+        }
+        
+        iframe {
+            width: 100%;
+            height: 100%;
+            border: none;
+        }
+        
+        @media (max-width: 768px) {
+            .demo-frame {
+                width: 100%;
+                height: 400px;
+                margin: 10px 0;
+            }
+            
+            .grid-demo {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="viewport-info" id="viewport-info">
+        Loading...
+    </div>
+    
+    <div class="test-container">
+        <header>
+            <h1>🎮 Fancy2048 - Enhanced Responsive System Test</h1>
+            <p>Testing the improved viewport responsiveness for all grid sizes (3×3, 4×4, 5×5) across different devices.</p>
+        </header>
+        
+        <div class="test-section">
+            <h2>📱 Device Responsiveness Overview</h2>
+            <div class="info-box">
+                <h3>✅ Enhanced Features Implemented</h3>
+                <ul>
+                    <li><strong>Grid-Specific Sizing</strong>: Each grid size (3×3, 4×4, 5×5) has optimized dimensions</li>
+                    <li><strong>Advanced Viewport Detection</strong>: Uses viewport units and device-specific calculations</li>
+                    <li><strong>Orientation Support</strong>: Optimized layouts for both portrait and landscape</li>
+                    <li><strong>Progressive Font Scaling</strong>: Font sizes scale perfectly with tile sizes</li>
+                    <li><strong>Touch-Optimized</strong>: Enhanced touch targets and gestures</li>
+                    <li><strong>Breakpoint System</strong>: Mobile (≤480px), Tablet (481-768px), Desktop (≥769px)</li>
+                </ul>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎯 Grid Size Comparison</h2>
+            <div class="controls">
+                <button onclick="changeTestSize(3)">Test 3×3 Grid</button>
+                <button onclick="changeTestSize(4)">Test 4×4 Grid</button>
+                <button onclick="changeTestSize(5)">Test 5×5 Grid</button>
+                <button onclick="toggleTheme()">Toggle Theme</button>
+            </div>
+            
+            <div class="warning-box">
+                <h3>🔍 Test Instructions</h3>
+                <p>1. Try resizing your browser window to see responsive behavior</p>
+                <p>2. Test on different devices (mobile, tablet, desktop)</p>
+                <p>3. Rotate your device to test landscape/portrait orientations</p>
+                <p>4. Switch between grid sizes to see optimized layouts</p>
+                <p>5. Check that tiles always fit perfectly within the viewport</p>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🖥️ Live Game Test</h2>
+            <div class="grid-demo">
+                <div class="demo-game">
+                    <h3>Current Device View</h3>
+                    <div class="demo-frame" id="main-demo">
+                        <iframe src="pages/index.html" title="Fancy2048 Responsive Game"></iframe>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📊 Responsive Metrics</h2>
+            <div id="metrics" class="info-box">
+                <div id="current-metrics">Loading metrics...</div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎨 CSS Grid Variables</h2>
+            <div id="css-variables" class="info-box">
+                <div id="current-variables">Loading variables...</div>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        let currentGridSize = 4;
+        
+        function updateViewportInfo() {
+            const info = document.getElementById('viewport-info');
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            const ratio = window.devicePixelRatio || 1;
+            const orientation = height > width ? 'Portrait' : 'Landscape';
+            
+            info.innerHTML = `
+                ${width} × ${height}px<br>
+                ${orientation}<br>
+                ${ratio}x DPR<br>
+                Grid: ${currentGridSize}×${currentGridSize}
+            `;
+        }
+        
+        function updateMetrics() {
+            const metrics = document.getElementById('current-metrics');
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            
+            let deviceType = 'Desktop';
+            if (width <= 480) deviceType = 'Mobile';
+            else if (width <= 768) deviceType = 'Tablet';
+            
+            metrics.innerHTML = `
+                <strong>Device Type:</strong> ${deviceType}<br>
+                <strong>Viewport:</strong> ${width}×${height}px<br>
+                <strong>Orientation:</strong> ${height > width ? 'Portrait' : 'Landscape'}<br>
+                <strong>Touch Device:</strong> ${'ontouchstart' in window ? 'Yes' : 'No'}<br>
+                <strong>High DPI:</strong> ${window.devicePixelRatio > 1 ? 'Yes' : 'No'}<br>
+                <strong>Current Grid:</strong> ${currentGridSize}×${currentGridSize}
+            `;
+        }
+        
+        function updateCSSVariables() {
+            const variables = document.getElementById('current-variables');
+            const styles = getComputedStyle(document.documentElement);
+            
+            variables.innerHTML = `
+                <strong>--board-max-size:</strong> ${styles.getPropertyValue('--base-board-size-' + currentGridSize + 'x' + currentGridSize)}<br>
+                <strong>--gap:</strong> ${styles.getPropertyValue('--gap-' + currentGridSize + 'x' + currentGridSize)}<br>
+                <strong>--font-scale-base:</strong> ${styles.getPropertyValue('--font-scale-' + currentGridSize + 'x' + currentGridSize + '-base')}<br>
+                <strong>--tile-size:</strong> ${styles.getPropertyValue('--tile-size')}<br>
+                <strong>--mobile-button-size:</strong> ${styles.getPropertyValue('--mobile-button-size')}
+            `;
+        }
+        
+        function changeTestSize(size) {
+            currentGridSize = size;
+            const iframe = document.querySelector('#main-demo iframe');
+            if (iframe && iframe.contentWindow) {
+                iframe.contentWindow.postMessage({
+                    type: 'changeGridSize',
+                    size: size
+                }, '*');
+            }
+            updateAll();
+        }
+        
+        function toggleTheme() {
+            const iframe = document.querySelector('#main-demo iframe');
+            if (iframe && iframe.contentWindow) {
+                iframe.contentWindow.postMessage({
+                    type: 'toggleTheme'
+                }, '*');
+            }
+        }
+        
+        function updateAll() {
+            updateViewportInfo();
+            updateMetrics();
+            updateCSSVariables();
+        }
+        
+        // Update on resize and orientation change
+        window.addEventListener('resize', updateAll);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(updateAll, 500);
+        });
+        
+        // Initial update
+        updateAll();
+        setInterval(updateAll, 2000); // Update every 2 seconds
+    </script>
+</body>
+</html>
