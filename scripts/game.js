@@ -1168,43 +1168,163 @@ class Game {
 
   // Game mechanics
   canMove(direction) {
-    // Check if any tile can move in the given direction
-    for (let i = 0; i < this.size; i++) {
-      for (let j = 0; j < this.size; j++) {
-        if (this.board[i][j] !== 0) {
-          let rowDelta = 0;
-          let colDelta = 0;
-          
-          switch (direction) {
-            case 'up':
-              rowDelta = -1;
-              break;
-            case 'down':
-              rowDelta = 1;
-              break;
-            case 'left':
-              colDelta = -1;
-              break;
-            case 'right':
-              colDelta = 1;
-              break;
-          }
-          
-          const newRow = i + rowDelta;
-          const newCol = j + colDelta;
-          
-          if (newRow >= 0 && newRow < this.size && newCol >= 0 && newCol < this.size) {
-            // Can move to empty cell
-            if (this.board[newRow][newCol] === 0) return true;
-            
-            // Can merge with same value
-            if (this.board[newRow][newCol] === this.board[i][j]) return true;
+    // Simulate the move to check if anything would change
+    const originalBoard = this.board.map(row => [...row]);
+    
+    let hasMove = false;
+    
+    switch (direction) {
+      case 'up':
+        hasMove = this.simulateMoveUp();
+        break;
+      case 'down':
+        hasMove = this.simulateMoveDown();
+        break;
+      case 'left':
+        hasMove = this.simulateMoveLeft();
+        break;
+      case 'right':
+        hasMove = this.simulateMoveRight();
+        break;
+    }
+    
+    // Restore original board
+    this.board = originalBoard;
+    
+    return hasMove;
+  }
+  
+  // Simulate moves to check if they're possible
+  simulateMoveUp() {
+    let moved = false;
+    for (let col = 0; col < this.size; col++) {
+      const column = [];
+      // Extract non-zero values from column
+      for (let row = 0; row < this.size; row++) {
+        if (this.board[row][col] !== 0) {
+          column.push(this.board[row][col]);
+        }
+      }
+      
+      // Check if merge is possible
+      const originalLength = column.length;
+      for (let i = 0; i < column.length - 1; i++) {
+        if (column[i] === column[i + 1]) {
+          moved = true;
+          return moved; // Early exit if we find any possible move
+        }
+      }
+      
+      // Check if tiles can slide (empty spaces exist)
+      if (originalLength < this.size) {
+        for (let row = 0; row < originalLength; row++) {
+          if (this.board[row][col] === 0) {
+            moved = true;
+            return moved; // Early exit if we find any possible move
           }
         }
       }
     }
-    
-    return false;
+    return moved;
+  }
+  
+  simulateMoveDown() {
+    let moved = false;
+    for (let col = 0; col < this.size; col++) {
+      const column = [];
+      // Extract non-zero values from column (from bottom)
+      for (let row = this.size - 1; row >= 0; row--) {
+        if (this.board[row][col] !== 0) {
+          column.push(this.board[row][col]);
+        }
+      }
+      
+      // Check if merge is possible
+      const originalLength = column.length;
+      for (let i = 0; i < column.length - 1; i++) {
+        if (column[i] === column[i + 1]) {
+          moved = true;
+          return moved; // Early exit if we find any possible move
+        }
+      }
+      
+      // Check if tiles can slide (empty spaces exist)
+      if (originalLength < this.size) {
+        for (let row = this.size - 1; row >= this.size - originalLength; row--) {
+          if (this.board[row][col] === 0) {
+            moved = true;
+            return moved; // Early exit if we find any possible move
+          }
+        }
+      }
+    }
+    return moved;
+  }
+  
+  simulateMoveLeft() {
+    let moved = false;
+    for (let row = 0; row < this.size; row++) {
+      const rowData = [];
+      // Extract non-zero values from row
+      for (let col = 0; col < this.size; col++) {
+        if (this.board[row][col] !== 0) {
+          rowData.push(this.board[row][col]);
+        }
+      }
+      
+      // Check if merge is possible
+      const originalLength = rowData.length;
+      for (let i = 0; i < rowData.length - 1; i++) {
+        if (rowData[i] === rowData[i + 1]) {
+          moved = true;
+          return moved; // Early exit if we find any possible move
+        }
+      }
+      
+      // Check if tiles can slide (empty spaces exist)
+      if (originalLength < this.size) {
+        for (let col = 0; col < originalLength; col++) {
+          if (this.board[row][col] === 0) {
+            moved = true;
+            return moved; // Early exit if we find any possible move
+          }
+        }
+      }
+    }
+    return moved;
+  }
+  
+  simulateMoveRight() {
+    let moved = false;
+    for (let row = 0; row < this.size; row++) {
+      const rowData = [];
+      // Extract non-zero values from row (from right)
+      for (let col = this.size - 1; col >= 0; col--) {
+        if (this.board[row][col] !== 0) {
+          rowData.push(this.board[row][col]);
+        }
+      }
+      
+      // Check if merge is possible
+      const originalLength = rowData.length;
+      for (let i = 0; i < rowData.length - 1; i++) {
+        if (rowData[i] === rowData[i + 1]) {
+          moved = true;
+          return moved; // Early exit if we find any possible move
+        }
+      }
+      
+      // Check if tiles can slide (empty spaces exist)
+      if (originalLength < this.size) {
+        for (let col = this.size - 1; col >= this.size - originalLength; col--) {
+          if (this.board[row][col] === 0) {
+            moved = true;
+            return moved; // Early exit if we find any possible move
+          }
+        }
+      }
+    }
+    return moved;
   }
 
   move(direction) {
@@ -1471,6 +1591,11 @@ class Game {
   }
 
   checkGameState() {
+    // Skip game state check if game is already over or won
+    if (this.gameState === 'over' || this.gameState === 'won') {
+      return;
+    }
+    
     // Check if 2048 tile exists (win condition) - but only show once
     let has2048 = false;
     for (let i = 0; i < this.size; i++) {
@@ -1492,31 +1617,52 @@ class Game {
     
     // Check if board is full
     let isFull = true;
+    let emptyCount = 0;
     for (let i = 0; i < this.size; i++) {
       for (let j = 0; j < this.size; j++) {
         if (this.board[i][j] === 0) {
           isFull = false;
-          break;
+          emptyCount++;
         }
       }
-      if (!isFull) break;
     }
     
-    // If board is full, check if any moves are possible
-    if (isFull) {
-      const canMoveAny = 
-        this.canMove('up') || 
-        this.canMove('down') || 
-        this.canMove('left') || 
-        this.canMove('right');
-      
-      if (!canMoveAny) {
-        this.gameState = 'over';
-        if (this.isAutoPlaying) {
-          this.stopAutoPlay();
-        }
-        this.showGameOver();
+    // If board is not full, game can continue
+    if (!isFull) {
+      return;
+    }
+    
+    // Board is full - check if any moves are possible
+    console.log('🔍 Board is full, checking for valid moves...');
+    
+    const canMoveUp = this.canMove('up');
+    const canMoveDown = this.canMove('down');
+    const canMoveLeft = this.canMove('left');
+    const canMoveRight = this.canMove('right');
+    
+    const canMoveAny = canMoveUp || canMoveDown || canMoveLeft || canMoveRight;
+    
+    // Debug logging for AI mode
+    if (this.isAutoPlaying) {
+      console.log('🤖 AI Move Check:', {
+        up: canMoveUp,
+        down: canMoveDown,
+        left: canMoveLeft,
+        right: canMoveRight,
+        any: canMoveAny,
+        board: this.board.map(row => [...row])
+      });
+    }
+    
+    if (!canMoveAny) {
+      console.log('💀 No valid moves detected - Game Over');
+      this.gameState = 'over';
+      if (this.isAutoPlaying) {
+        this.stopAutoPlay();
       }
+      this.showGameOver();
+    } else {
+      console.log('✅ Valid moves available, game continues');
     }
   }
 
@@ -2719,20 +2865,72 @@ class Game {
     this.isAutoPlayedGame = true; // Track that AI was used in this game
     
     const makeMove = () => {
-      if (!this.isAutoPlaying || this.gameState === 'over' || this.isPaused) {
+      // Check stopping conditions
+      if (!this.isAutoPlaying) {
+        console.log('🤖 Autoplay stopped: isAutoPlaying = false');
         this.stopAutoPlay();
         return;
       }
+      
+      if (this.gameState === 'over') {
+        console.log('🤖 Autoplay stopped: game state = over');
+        this.stopAutoPlay();
+        return;
+      }
+      
+      if (this.isPaused) {
+        console.log('🤖 Autoplay paused: game is paused');
+        // Don't stop autoplay, just skip this turn
+        return;
+      }
 
-      const move = this.getBestMove();
-      if (move && this.canMove(move)) {
+      try {
+        const move = this.getBestMove();
+        
+        if (!move) {
+          console.log('🤖 AI could not determine a move');
+          // Double-check if any moves are actually possible
+          const hasValidMoves = this.canMove('up') || this.canMove('down') || 
+                              this.canMove('left') || this.canMove('right');
+          
+          if (!hasValidMoves) {
+            console.log('🤖 Confirmed: No valid moves available');
+            this.stopAutoPlay();
+          } else {
+            console.log('⚠️ AI failed to find move, but moves are available. Retrying...');
+            // Try again on next interval rather than stopping immediately
+          }
+          return;
+        }
+        
+        if (!this.canMove(move)) {
+          console.log(`🤖 AI suggested invalid move: ${move}`);
+          // Double-check if any moves are actually possible
+          const hasValidMoves = this.canMove('up') || this.canMove('down') || 
+                              this.canMove('left') || this.canMove('right');
+          
+          if (!hasValidMoves) {
+            console.log('🤖 Confirmed: No valid moves available');
+            this.stopAutoPlay();
+          } else {
+            console.log('⚠️ AI suggested bad move, but other moves available. Retrying...');
+          }
+          return;
+        }
+        
+        // Execute the move
         this.move(move);
         this.autoPlayMoves++;
         
         // Update UI
         this.updateAutoPlayButton();
-      } else {
-        // No valid moves, stop autoplay
+        
+        if (window.debugAI) {
+          console.log(`🤖 AI made move: ${move} (total moves: ${this.autoPlayMoves})`);
+        }
+        
+      } catch (error) {
+        console.error('🤖 Error in AI autoplay:', error);
         this.stopAutoPlay();
       }
     };
@@ -3408,6 +3606,68 @@ window.debugGame = {
     } else {
       console.log('❌ Game not initialized yet');
     }
+  },
+
+  // Debug board state and move validation
+  debugBoardState: () => {
+    if (!window.game) {
+      console.log('❌ Game not initialized yet');
+      return;
+    }
+    
+    const game = window.game;
+    console.log('🔍 Board State Debug:');
+    console.log('Board:', game.board.map(row => [...row]));
+    console.log('Game State:', game.gameState);
+    console.log('Is Auto Playing:', game.isAutoPlaying);
+    console.log('Is Paused:', game.isPaused);
+    
+    // Check empty cells
+    let emptyCount = 0;
+    for (let i = 0; i < game.size; i++) {
+      for (let j = 0; j < game.size; j++) {
+        if (game.board[i][j] === 0) emptyCount++;
+      }
+    }
+    console.log('Empty Cells:', emptyCount);
+    
+    // Test all move directions
+    const moves = {
+      up: game.canMove('up'),
+      down: game.canMove('down'),
+      left: game.canMove('left'),
+      right: game.canMove('right')
+    };
+    console.log('Valid Moves:', moves);
+    console.log('Any Valid Move:', Object.values(moves).some(v => v));
+    
+    // Check if board appears full vs actually full
+    const appearsFull = emptyCount === 0;
+    const actuallyBlocked = !Object.values(moves).some(v => v);
+    
+    console.log('Appears Full:', appearsFull);
+    console.log('Actually Blocked:', actuallyBlocked);
+    
+    if (appearsFull && !actuallyBlocked) {
+      console.log('⚠️ Board is full but moves are still possible!');
+    } else if (!appearsFull && actuallyBlocked) {
+      console.log('⚠️ Board has empty spaces but no moves detected!');
+    } else if (appearsFull && actuallyBlocked) {
+      console.log('💀 Board is legitimately game over');
+    } else {
+      console.log('✅ Board state is normal');
+    }
+  },
+
+  // Force test game over detection
+  testGameOverDetection: () => {
+    if (!window.game) {
+      console.log('❌ Game not initialized yet');
+      return;
+    }
+    
+    console.log('🧪 Testing game over detection...');
+    window.game.checkGameState();
   }
 };
 
