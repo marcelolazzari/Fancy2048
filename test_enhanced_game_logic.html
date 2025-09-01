@@ -1,0 +1,469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced 2048 Game Logic Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #f2f2f2;
+        }
+        
+        .test-section {
+            background: #2a2a2a;
+            margin: 20px 0;
+            padding: 20px;
+            border-radius: 8px;
+        }
+        
+        .test-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            max-width: 300px;
+            margin: 10px 0;
+            background: #333;
+            padding: 10px;
+            border-radius: 8px;
+        }
+        
+        .test-tile {
+            background: #555;
+            color: white;
+            padding: 20px;
+            text-align: center;
+            font-weight: bold;
+            border-radius: 4px;
+            min-height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .test-tile:empty::after {
+            content: "0";
+            opacity: 0.3;
+        }
+        
+        .test-results {
+            background: #003300;
+            color: #00ff00;
+            padding: 10px;
+            border-radius: 4px;
+            margin: 10px 0;
+            font-family: monospace;
+        }
+        
+        .error {
+            background: #330000;
+            color: #ff6666;
+        }
+        
+        .success {
+            background: #003300;
+            color: #66ff66;
+        }
+        
+        button {
+            background: #ffcc00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        
+        button:hover {
+            background: #ffd633;
+        }
+        
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .stat-box {
+            background: #333;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 2em;
+            font-weight: bold;
+            color: #ffcc00;
+        }
+        
+        .ai-controls {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎮 Enhanced 2048 Game Logic Test</h1>
+    <p>Testing the improved game core, AI system, and game over detection.</p>
+
+    <div class="test-section">
+        <h2>🎯 Game Core Test</h2>
+        <div id="game-board" class="test-board"></div>
+        
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-value" id="score">0</div>
+                <div>Score</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="moves">0</div>
+                <div>Moves</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="highest-tile">0</div>
+                <div>Highest Tile</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="empty-cells">16</div>
+                <div>Empty Cells</div>
+            </div>
+        </div>
+        
+        <div>
+            <button onclick="testMove('up')">⬆️ Up</button>
+            <button onclick="testMove('down')">⬇️ Down</button>
+            <button onclick="testMove('left')">⬅️ Left</button>
+            <button onclick="testMove('right')">➡️ Right</button>
+            <button onclick="resetGame()">🔄 Reset</button>
+            <button onclick="addTestTiles()">➕ Add Test Tiles</button>
+        </div>
+        
+        <div id="move-results" class="test-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🤖 AI Test</h2>
+        <div class="ai-controls">
+            <button onclick="makeAIMove()">🧠 AI Move</button>
+            <button onclick="toggleAutoAI()">🔄 Auto AI</button>
+            <button onclick="setAIDifficulty('easy')">😊 Easy</button>
+            <button onclick="setAIDifficulty('medium')">😐 Medium</button>
+            <button onclick="setAIDifficulty('hard')">😤 Hard</button>
+            <button onclick="setAIDifficulty('expert')">🤯 Expert</button>
+        </div>
+        
+        <div id="ai-results" class="test-results"></div>
+        
+        <div class="stats">
+            <div class="stat-box">
+                <div class="stat-value" id="ai-difficulty">Expert</div>
+                <div>Difficulty</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="ai-moves-evaluated">0</div>
+                <div>Moves Evaluated</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="ai-time">0ms</div>
+                <div>Last Move Time</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="test-section">
+        <h2>💀 Game Over Detection Test</h2>
+        <div>
+            <button onclick="testGameOverScenario()">🧪 Test Game Over</button>
+            <button onclick="testWinScenario()">🎉 Test Win</button>
+            <button onclick="checkGameState()">🔍 Check State</button>
+        </div>
+        <div id="game-state-results" class="test-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Performance Test</h2>
+        <div>
+            <button onclick="runPerformanceTest()">🚀 Run Performance Test</button>
+            <button onclick="runLogicTest()">🧮 Test Game Logic</button>
+        </div>
+        <div id="performance-results" class="test-results"></div>
+    </div>
+
+    <script src="../scripts/game_core.js"></script>
+    <script src="../scripts/enhanced_ai_core.js"></script>
+    <script src="../scripts/game_over_manager.js"></script>
+
+    <script>
+        // Initialize enhanced game components
+        let gameCore = new Game2048Core();
+        let enhancedAI = new Enhanced2048AI(gameCore);
+        let gameOverManager = new GameOverManager(gameCore);
+        let autoAIInterval = null;
+        
+        // Initialize game
+        gameCore.reset();
+        
+        // Setup game over callbacks
+        gameOverManager.setOnGameOver((data) => {
+            console.log('🎮 Game Over Event:', data);
+            document.getElementById('game-state-results').innerHTML = 
+                `<div class="error">Game Over! Score: ${data.score}, Moves: ${data.moves}</div>`;
+        });
+        
+        gameOverManager.setOnWin((data) => {
+            console.log('🎉 Win Event:', data);
+            document.getElementById('game-state-results').innerHTML = 
+                `<div class="success">You Won! Score: ${data.score}, Moves: ${data.moves}</div>`;
+        });
+        
+        gameOverManager.initialize();
+
+        function updateDisplay() {
+            // Update board display
+            const boardElement = document.getElementById('game-board');
+            boardElement.innerHTML = '';
+            
+            for (let row = 0; row < 4; row++) {
+                for (let col = 0; col < 4; col++) {
+                    const tile = document.createElement('div');
+                    tile.className = 'test-tile';
+                    const value = gameCore.board[row][col];
+                    if (value > 0) {
+                        tile.textContent = value;
+                        tile.style.background = `hsl(${Math.log2(value) * 15}, 70%, 50%)`;
+                    }
+                    boardElement.appendChild(tile);
+                }
+            }
+            
+            // Update stats
+            const stats = gameCore.getStats();
+            document.getElementById('score').textContent = stats.score.toLocaleString();
+            document.getElementById('moves').textContent = stats.moves.toLocaleString();
+            document.getElementById('highest-tile').textContent = stats.highestTile;
+            document.getElementById('empty-cells').textContent = stats.emptyCells;
+        }
+
+        function testMove(direction) {
+            const result = gameCore.makeMove(direction);
+            
+            const resultElement = document.getElementById('move-results');
+            if (result.moved) {
+                gameCore.addRandomTile();
+                resultElement.innerHTML = `<div class="success">✅ Move ${direction}: Success! Score gained: ${result.scoreGained}</div>`;
+            } else {
+                resultElement.innerHTML = `<div class="error">❌ Move ${direction}: No movement possible</div>`;
+            }
+            
+            updateDisplay();
+            updateGameState();
+        }
+
+        function resetGame() {
+            gameCore.reset();
+            updateDisplay();
+            document.getElementById('move-results').innerHTML = '<div class="success">🔄 Game reset</div>';
+            document.getElementById('game-state-results').innerHTML = '';
+        }
+
+        function addTestTiles() {
+            // Add some test tiles for testing
+            gameCore.board[0][0] = 2;
+            gameCore.board[0][1] = 4;
+            gameCore.board[1][0] = 8;
+            gameCore.board[1][1] = 16;
+            gameCore.board[2][0] = 32;
+            gameCore.board[2][1] = 64;
+            updateDisplay();
+        }
+
+        function makeAIMove() {
+            const startTime = performance.now();
+            const bestMove = enhancedAI.getBestMove();
+            
+            if (bestMove) {
+                testMove(bestMove);
+                
+                const aiStats = enhancedAI.getPerformanceStats();
+                document.getElementById('ai-results').innerHTML = 
+                    `<div class="success">🤖 AI Move: ${bestMove} (${aiStats.movesEvaluated} moves evaluated in ${aiStats.lastMoveTime.toFixed(2)}ms)</div>`;
+                
+                // Update AI stats display
+                document.getElementById('ai-difficulty').textContent = aiStats.difficulty;
+                document.getElementById('ai-moves-evaluated').textContent = aiStats.movesEvaluated.toLocaleString();
+                document.getElementById('ai-time').textContent = aiStats.lastMoveTime.toFixed(2) + 'ms';
+            } else {
+                document.getElementById('ai-results').innerHTML = 
+                    `<div class="error">🤖 AI: No valid moves available</div>`;
+            }
+        }
+
+        function toggleAutoAI() {
+            if (autoAIInterval) {
+                clearInterval(autoAIInterval);
+                autoAIInterval = null;
+                document.getElementById('ai-results').innerHTML = 
+                    '<div class="success">⏹️ Auto AI stopped</div>';
+            } else {
+                autoAIInterval = setInterval(() => {
+                    if (!gameCore.isGameOver()) {
+                        makeAIMove();
+                    } else {
+                        clearInterval(autoAIInterval);
+                        autoAIInterval = null;
+                    }
+                }, 500);
+                document.getElementById('ai-results').innerHTML = 
+                    '<div class="success">▶️ Auto AI started</div>';
+            }
+        }
+
+        function setAIDifficulty(difficulty) {
+            enhancedAI.setDifficulty(difficulty);
+            document.getElementById('ai-difficulty').textContent = difficulty;
+            document.getElementById('ai-results').innerHTML = 
+                `<div class="success">🎯 AI difficulty set to: ${difficulty}</div>`;
+        }
+
+        function testGameOverScenario() {
+            // Create a game over scenario
+            gameCore.board = [
+                [2, 4, 2, 4],
+                [4, 2, 4, 2],
+                [2, 4, 2, 4],
+                [4, 2, 4, 2]
+            ];
+            updateDisplay();
+            checkGameState();
+        }
+
+        function testWinScenario() {
+            // Create a win scenario
+            gameCore.board[0][0] = 2048;
+            gameCore.board[0][1] = 2;
+            updateDisplay();
+            checkGameState();
+        }
+
+        function checkGameState() {
+            const state = gameOverManager.checkGameState();
+            let message = '';
+            
+            if (state.isGameOver) {
+                message = `<div class="error">💀 Game Over: ${state.reason}</div>`;
+            } else if (state.hasWon) {
+                message = `<div class="success">🎉 You Won: ${state.reason}</div>`;
+            } else {
+                message = `<div class="success">🎮 Game continues: ${gameCore.hasValidMoves() ? 'Valid moves available' : 'Check moves'}</div>`;
+            }
+            
+            document.getElementById('game-state-results').innerHTML = message;
+        }
+
+        function updateGameState() {
+            gameCore.updateGameState();
+        }
+
+        function runPerformanceTest() {
+            const iterations = 1000;
+            const startTime = performance.now();
+            
+            let totalMoves = 0;
+            let gamesPlayed = 0;
+            
+            for (let i = 0; i < iterations; i++) {
+                gameCore.reset();
+                let moves = 0;
+                
+                while (!gameCore.isGameOver() && moves < 1000) {
+                    const directions = ['up', 'down', 'left', 'right'];
+                    const randomDirection = directions[Math.floor(Math.random() * 4)];
+                    const result = gameCore.makeMove(randomDirection);
+                    
+                    if (result.moved) {
+                        gameCore.addRandomTile();
+                        moves++;
+                    }
+                }
+                
+                totalMoves += moves;
+                gamesPlayed++;
+            }
+            
+            const endTime = performance.now();
+            const totalTime = endTime - startTime;
+            
+            document.getElementById('performance-results').innerHTML = `
+                <div class="success">
+                    📊 Performance Test Results:<br>
+                    • ${iterations} games simulated<br>
+                    • Average moves per game: ${(totalMoves / gamesPlayed).toFixed(1)}<br>
+                    • Total time: ${totalTime.toFixed(2)}ms<br>
+                    • Average time per game: ${(totalTime / gamesPlayed).toFixed(2)}ms<br>
+                    • Games per second: ${(gamesPlayed / (totalTime / 1000)).toFixed(1)}
+                </div>
+            `;
+        }
+
+        function runLogicTest() {
+            const testCases = [
+                {
+                    name: "Basic merge left",
+                    board: [[2, 2, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
+                    direction: "left",
+                    expectedBoard: [[4, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+                },
+                {
+                    name: "No double merge",
+                    board: [[2, 2, 4, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
+                    direction: "left",
+                    expectedBoard: [[4, 4, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+                },
+                {
+                    name: "Multiple merges",
+                    board: [[2, 2, 2, 2], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]],
+                    direction: "left",
+                    expectedBoard: [[4, 4, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0], [0, 0, 0, 0]]
+                }
+            ];
+            
+            let passed = 0;
+            let results = '<div class="success">🧮 Logic Test Results:</div>';
+            
+            for (const test of testCases) {
+                gameCore.board = test.board.map(row => [...row]);
+                const result = gameCore.makeMove(test.direction);
+                
+                const boardMatches = JSON.stringify(gameCore.board) === JSON.stringify(test.expectedBoard);
+                if (boardMatches) {
+                    passed++;
+                    results += `<div class="success">✅ ${test.name}: PASSED</div>`;
+                } else {
+                    results += `<div class="error">❌ ${test.name}: FAILED<br>Expected: ${JSON.stringify(test.expectedBoard)}<br>Got: ${JSON.stringify(gameCore.board)}</div>`;
+                }
+            }
+            
+            results += `<div class="success">📊 Summary: ${passed}/${testCases.length} tests passed</div>`;
+            document.getElementById('performance-results').innerHTML = results;
+        }
+
+        // Initial display update
+        updateDisplay();
+        
+        console.log('🎮 Enhanced 2048 Test Page Loaded');
+        console.log('Game Core:', gameCore);
+        console.log('Enhanced AI:', enhancedAI);
+        console.log('Game Over Manager:', gameOverManager);
+    </script>
+</body>
+</html>

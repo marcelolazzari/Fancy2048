@@ -316,11 +316,35 @@
       // Load scripts sequentially with fallback support
       async function loadAllScripts() {
         try {
+          // Load enhanced core components first
+          await loadScript('../scripts/game_core.js', '/Fancy2048/scripts/game_core.js', 'game_core.js');
+          await loadScript('../scripts/enhanced_ai_core.js', '/Fancy2048/scripts/enhanced_ai_core.js', 'enhanced_ai_core.js');
+          await loadScript('../scripts/game_over_manager.js', '/Fancy2048/scripts/game_over_manager.js', 'game_over_manager.js');
+          
+          // Load original components
           await loadScript('../scripts/ai_learning_system.js', '/Fancy2048/scripts/ai_learning_system.js', 'ai_learning_system.js');
           await loadScript('../scripts/advanced_ai_solver.js', '/Fancy2048/scripts/advanced_ai_solver.js', 'advanced_ai_solver.js');
           await loadScript('../scripts/enhanced_ai.js', '/Fancy2048/scripts/enhanced_ai.js', 'enhanced_ai.js');
+          
+          // Load original game engine
           await loadScript('../scripts/game.js', '/Fancy2048/scripts/game.js', 'game.js');
-          console.log('✅ All scripts loaded successfully');
+          
+          // Load enhanced integration layer
+          await loadScript('../scripts/enhanced_game_integration.js', '/Fancy2048/scripts/enhanced_game_integration.js', 'enhanced_game_integration.js');
+          
+          console.log('✅ All enhanced scripts loaded successfully');
+          
+          // Initialize enhanced game after all scripts are loaded
+          if (typeof EnhancedGame !== 'undefined') {
+            console.log('🚀 Initializing Enhanced Game...');
+            window.game = new EnhancedGame(4);
+            console.log('✅ Enhanced Game initialized successfully');
+          } else {
+            console.warn('⚠️ EnhancedGame not available, using original Game');
+            if (typeof Game !== 'undefined') {
+              window.game = new Game(4);
+            }
+          }
         } catch (error) {
           console.error('❌ Script loading failed:', error);
           // Show user-friendly error
@@ -329,6 +353,7 @@
               <div>
                 <h2>🚨 Game Loading Error</h2>
                 <p>Failed to load game scripts. Please refresh the page.</p>
+                <p style="font-size: 0.9em; opacity: 0.8;">Error: ${error.message}</p>
                 <button onclick="location.reload()" style="padding: 10px 20px; background: #ff6b6b; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px;">Refresh Page</button>
               </div>
             </div>
