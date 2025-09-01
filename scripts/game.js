@@ -1,29 +1,14 @@
 class Game {
   constructor(size = 4) {
-    console.log(`🎮 Initializing Fancy2048 Game (${size}×${size})`);
-    
-    // Safely initialize unified managers with fallbacks
-    this.dataManager = this.initializeDataManager();
-    this.uiManager = this.initializeUIManager();
-    
-    // Subscribe to UI changes if UI manager is available
-    if (this.uiManager && typeof this.uiManager.subscribe === 'function') {
-      this.uiManager.subscribe((event) => {
-        this.handleUIEvent(event);
-      });
-    }
-    
-    // Load settings and data from unified data manager
-    const settings = this.dataManager.getSettings();
-    const savedGame = this.dataManager.loadGameState();
+    console.log(`Initializing game with size: ${size}x${size}`);
     
     // Core game properties
     this.size = size;
-    this.board = savedGame?.board || this.createEmptyBoard();
-    this.score = savedGame?.score || 0;
-    this.bestScore = this.dataManager.getData('bestScore', 0);
-    this.moves = savedGame?.moves || 0;
-    this.startTime = savedGame?.time || null;
+    this.board = this.createEmptyBoard();
+    this.score = 0;
+    this.bestScore = +localStorage.getItem('bestScore') || 0;
+    this.moves = 0;
+    this.startTime = null;
 
     // Game states
     this.gameState = 'playing';
@@ -38,67 +23,39 @@ class Game {
     this.lastMoveDirection = null;
     this.lastMerged = [];
     
-    // Game history for undo - optimized based on device
+    // Game history for undo
     this.gameStateStack = [];
-    this.maxUndoSteps = this.isMobileDevice() ? 5 : 10;
+    this.maxUndoSteps = 10;
     
-    // Visual settings from unified settings
-    this.isLightMode = settings.theme === 'light';
-    this.hueValue = settings.hueValue || 0;
+    // Visual settings
+    this.isLightMode = localStorage.getItem('isLightMode') === 'true';
+    this.hueValue = parseInt(localStorage.getItem('hueValue')) || 0;
     
     // Touch handling with performance optimization
     this.touchStartX = null;
     this.touchStartY = null;
     this.touchMoved = false;
     this.touchStartTime = null;
-    this.lastTouchTime = 0;
-    this.touchThrottleDelay = 50;
+    this.lastTouchTime = 0; // Throttle touch events
+    this.touchThrottleDelay = 50; // ms
     
     // Timer
     this.timerInterval = null;
     
-    // Stats managed by unified data manager
-    this.maxStoredStats = 500;
+    // Stats with memory management
+    this.stats = JSON.parse(localStorage.getItem('gameStats')) || [];
+    this.maxStoredStats = 500; // Prevent memory bloat
     
     // Performance optimization
     this.debounceTimeout = null;
-    this.resizeTimeout = null;
+    this.resizeTimeout = null; // For resize throttling
     
-    // Mobile state management
+    // Mobile state management with enhanced lifecycle
     this.lastSavedState = null;
     this.autoSaveInterval = null;
     this.pageVisibilityTimeout = null;
-    this.backgroundTime = 0;
+    this.backgroundTime = 0; // Track time in background
     this.isInBackground = false;
-
-    // Enhanced device detection (avoid overriding isMobileDevice() method)
-    this.deviceInfo = {
-      isMobile: this.isMobileDevice(),
-      isTablet: false,
-      isDesktop: !this.isMobileDevice()
-    };
-    
-    // Game features from settings
-    this.animationSpeed = settings.animationsEnabled ? 1 : 0;
-    this.soundEnabled = settings.soundEnabled;
-    this.vibrationEnabled = settings.vibrationEnabled;
-    
-    // AI Integration with unified data
-    this.aiLearningSystem = new AILearningSystem();
-    this.enhancedAI = null;
-    this.isAIPlaying = false;
-    this.aiSpeed = 1000;
-    this.aiDifficulty = settings.aiDifficulty || 'normal';
-    this.gameMode = savedGame?.gameMode || 'human';
-    
-    // Performance tracking
-    this.performanceMetrics = {
-      moveStartTime: 0,
-      totalMoveTime: 0,
-      moveCount: 0,
-      averageMoveTime: 0,
-      slowMoves: 0
-    };
 
     // Autoplay properties with improved performance
     this.isAutoPlaying = false;
@@ -839,7 +796,7 @@ class Game {
   updateBestScore() {
     if (this.score > this.bestScore) {
       this.bestScore = this.score;
-      this.dataManager.setData('bestScore', this.bestScore);
+      localStorage.setItem('bestScore', this.bestScore);
     }
   }
 
@@ -1581,39 +1538,62 @@ class Game {
   // Enhanced UI update with smoother animations
 
 
-  updateScoreDisplay() {
-    try {
-      const formattedTime = this.formatTime(Math.floor((Date.now() - (this.startTime || Date.now())) / 1000));
-      if (this.uiManager && typeof this.uiManager.updateAllStats === 'function') {
-        this.uiManager.updateAllStats({
-          score: this.score,
-          bestScore: this.bestScore,
-          moves: this.moves,
-          time: formattedTime
-        });
-      } else if (this.uiManager) {
-        this.uiManager.updateScore?.(this.score);
-        this.uiManager.updateBestScore?.(this.bestScore);
-        this.uiManager.updateMoves?.(this.moves);
-        this.uiManager.updateTime?.(formattedTime);
-        this.uiManager.updateTimer?.(formattedTime);
-      } else {
-        const scoreElement = document.getElementById('score');
-        const bestScoreElement = document.getElementById('best-score');
-        const movesElement = document.getElementById('moves');
-        const timeElement = document.getElementById('time');
-        if (scoreElement) scoreElement.textContent = this.score;
-        if (bestScoreElement) bestScoreElement.textContent = Math.max(this.bestScore, this.score);
-        if (movesElement) movesElement.textContent = this.moves;
-        if (timeElement) timeElement.textContent = formattedTime;
+    updateScoreDisplay() {
+    // Update desktop score container
+    const scoreElement = document.getElementById('score');
+    const bestScoreElement = document.getElementById('best-score');
+    const movesElement = document.getElementById('moves');
+    
+    // Update mobile score container
+    const mobileScoreElement = document.getElementById('mobile-score');
+    const mobileBestScoreElement = document.getElementById('mobile-best-score');
+    const mobileMovesElement = document.getElementById('mobile-moves');
+    
+    if (scoreElement) {
+      // Animate score changes
+      const oldScore = parseInt(scoreElement.textContent) || 0;
+      if (oldScore !== this.score) {
+        this.animateNumberChange(scoreElement, oldScore, this.score);
       }
-
-      if (this.score > this.bestScore) {
-        this.bestScore = this.score;
-        this.dataManager.setData('bestScore', this.bestScore);
+    }
+    
+    if (mobileScoreElement) {
+      const oldMobileScore = parseInt(mobileScoreElement.textContent) || 0;
+      if (oldMobileScore !== this.score) {
+        this.animateNumberChange(mobileScoreElement, oldMobileScore, this.score);
       }
-    } catch (err) {
-      console.warn('updateScoreDisplay failed gracefully:', err);
+    }
+    
+    if (bestScoreElement) {
+      const oldBestScore = parseInt(bestScoreElement.textContent) || 0;
+      if (oldBestScore !== this.bestScore) {
+        this.animateNumberChange(bestScoreElement, oldBestScore, this.bestScore);
+        // Add highlight effect for new best score
+        bestScoreElement.style.color = `hsl(${this.hueValue}, 80%, 60%)`;
+        setTimeout(() => {
+          bestScoreElement.style.color = '';
+        }, 1000);
+      }
+    }
+    
+    if (mobileBestScoreElement) {
+      const oldMobileBestScore = parseInt(mobileBestScoreElement.textContent) || 0;
+      if (oldMobileBestScore !== this.bestScore) {
+        this.animateNumberChange(mobileBestScoreElement, oldMobileBestScore, this.bestScore);
+        // Add highlight effect for new best score
+        mobileBestScoreElement.style.color = `hsl(${this.hueValue}, 80%, 60%)`;
+        setTimeout(() => {
+          mobileBestScoreElement.style.color = '';
+        }, 1000);
+      }
+    }
+    
+    if (movesElement) {
+      movesElement.textContent = this.moves;
+    }
+    
+    if (mobileMovesElement) {
+      mobileMovesElement.textContent = this.moves;
     }
   }
 
