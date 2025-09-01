@@ -80,133 +80,58 @@
       <div class="container">
         <h1 class="game-title" tabindex="0">Fancy 2048</h1>
         
-        <!-- Mobile hamburger button -->
-        <button type="button" id="mobile-menu-toggle" class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="mobile-controls-menu">
-          <span class="hamburger-line"></span>
-          <span class="hamburger-line"></span>
-          <span class="hamburger-line"></span>
-        </button>
-        
-        <!-- Mobile overlay menu -->
-        <div id="mobile-controls-menu" class="mobile-controls-menu" aria-hidden="true">
-          <div class="mobile-menu-header">
-            <h2>Game Controls</h2>
-            <button type="button" id="mobile-menu-close" class="mobile-menu-close" aria-label="Close menu">
-              <i class="fas fa-times" aria-hidden="true"></i>
-            </button>
-          </div>
-          <div class="mobile-menu-content">
-            <div class="mobile-menu-section">
-              <h3>Game Actions</h3>
-              <div class="mobile-button-group">
-                <button type="button" id="mobile-pause-button" class="mobile-menu-button" aria-label="Pause Game">
-                  <i class="fas fa-pause" aria-hidden="true"></i>
-                  <span>Pause</span>
-                </button>
-                <button type="button" id="mobile-back-button" class="mobile-menu-button" aria-label="Undo Move">
-                  <i class="fas fa-undo" aria-hidden="true"></i>
-                  <span>Undo</span>
-                </button>
-                <button type="button" id="mobile-reset-button" class="mobile-menu-button" aria-label="Reset Game">
-                  <i class="fas fa-redo" aria-hidden="true"></i>
-                  <span>Reset</span>
-                </button>
-              </div>
-            </div>
-            
-            <div class="mobile-menu-section">
-              <h3>Game Settings</h3>
-              <div class="mobile-button-group">
-                <button type="button" id="mobile-board-size-button" class="mobile-menu-button" aria-label="Change Board Size">
-                  <i class="fas fa-th" aria-hidden="true"></i>
-                  <span>Board Size</span>
-                </button>
-                <button type="button" id="mobile-theme-toggle-button" class="mobile-menu-button" aria-label="Toggle Theme">
-                  <i class="fas fa-adjust" aria-hidden="true"></i>
-                  <span>Theme</span>
-                </button>
-                <button type="button" id="mobile-changeColor-button" class="mobile-menu-button" aria-label="Change Color">
-                  <i class="fas fa-palette" aria-hidden="true"></i>
-                  <span>Colors</span>
-                </button>
-              </div>
-            </div>
-            
-            <div class="mobile-menu-section">
-              <h3>AI Controls</h3>
-              <div class="mobile-button-group">
-                <button type="button" id="mobile-autoplay-button" class="mobile-menu-button" aria-label="Auto Play">
-                  <i class="fas fa-play" aria-hidden="true"></i>
-                  <span>Auto Play</span>
-                </button>
-                <button type="button" id="mobile-speed-button" class="mobile-menu-button" aria-label="Autoplay Speed">
-                  <i class="fas fa-tachometer-alt" aria-hidden="true"></i>
-                  <span class="speed-text">Speed: 1x</span>
-                </button>
-                <button type="button" id="mobile-ai-difficulty-button" class="mobile-menu-button" aria-label="Change AI Difficulty">
-                  <i class="fas fa-brain" aria-hidden="true"></i>
-                  <span class="button-text">AI: Normal</span>
-                </button>
-              </div>
-            </div>
-            
-            <div class="mobile-menu-section">
-              <h3>Statistics</h3>
-              <div class="mobile-button-group">
-                <button type="button" id="mobile-leaderboard-button" class="mobile-menu-button" aria-label="View Statistics" onclick="window.location.href='leaderboard.html'">
-                  <i class="fas fa-chart-line" aria-hidden="true"></i>
-                  <span>Statistics</span>
-                </button>
-                <button type="button" id="mobile-export-stats-button" class="mobile-menu-button" aria-label="Export Statistics">
-                  <i class="fas fa-download" aria-hidden="true"></i>
-                  <span>Export</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-        
-        <!-- Desktop navigation (hidden on mobile) -->
-        <nav aria-label="Game controls" class="desktop-nav">
+        <!-- Navigation for all screen sizes -->
+        <nav aria-label="Game controls" class="main-nav">
           <ul id="controls-container" class="controls" role="menubar">
             <li role="none">
               <button type="button" id="changeColor-button" aria-label="Change Color" tabindex="0" role="menuitem" data-tooltip="Change game colors">
                 <i class="fas fa-palette" aria-hidden="true"></i>
+                <span class="button-label">Colors</span>
               </button>
             </li>
             <li role="none">
               <button type="button" id="leaderboard-button" aria-label="View Statistics" onclick="window.location.href='leaderboard.html'" tabindex="0" role="menuitem" data-tooltip="View statistics and leaderboard">
                 <i class="fas fa-chart-line" aria-hidden="true"></i>
+                <span class="button-label">Stats</span>
               </button>
             </li>
             <li role="none">
               <button type="button" id="export-stats-button" aria-label="Export Statistics" tabindex="0" role="menuitem" data-tooltip="Export game statistics to JSON">
                 <i class="fas fa-download" aria-hidden="true"></i>
+                <span class="button-label">Export</span>
               </button>
             </li>
             <li role="none">
               <button type="button" id="back-button" aria-label="Undo Move" tabindex="0" role="menuitem" data-tooltip="Undo last move">
                 <i class="fas fa-undo" aria-hidden="true"></i>
+                <span class="button-label">Undo</span>
               </button>
             </li>
             <li role="none">
               <button type="button" id="pause-button" aria-label="Pause Game" tabindex="0" role="menuitem" data-tooltip="Pause/Resume game">
                 <i class="fas fa-pause" aria-hidden="true"></i>
+                <span class="button-label">Pause</span>
               </button>
             </li>
             <li role="none">
               <button type="button" id="board-size-button" aria-label="Change Board Size" tabindex="0" role="menuitem" data-tooltip="Change board size">
                 <i class="fas fa-th" aria-hidden="true"></i>
+                <span class="button-label">Size</span>
               </button>
             </li>
+          </ul>
+          
+          <ul class="controls secondary-controls" role="menubar">
             <li role="none">
               <button type="button" id="theme-toggle-button" aria-label="Toggle Theme" tabindex="0" role="menuitem" data-tooltip="Toggle light/dark theme">
                 <i class="fas fa-adjust" aria-hidden="true"></i>
+                <span class="button-label">Theme</span>
               </button>
             </li>
             <li role="none">
               <button type="button" id="autoplay-button" aria-label="Auto Play" tabindex="0" role="menuitem" data-tooltip="Start/Stop auto play">
                 <i class="fas fa-play" aria-hidden="true"></i>
+                <span class="button-label">Auto</span>
               </button>
             </li>
             <li role="none">
@@ -217,6 +142,7 @@
             <li role="none">
               <button type="button" id="reset-button" aria-label="Reset Game" tabindex="0" role="menuitem" data-tooltip="Start a new game">
                 <i class="fas fa-redo" aria-hidden="true"></i>
+                <span class="button-label">Reset</span>
               </button>
             </li>
             <li role="none">
@@ -233,12 +159,37 @@
     <!-- Main content section -->
     <main id="main-content">
       <div class="overlay" aria-hidden="true"></div>
+      
+      <!-- Mobile score display above board -->
+      <aside id="mobile-score-container" class="mobile-score-container" aria-labelledby="mobile-score-title">
+        <h2 id="mobile-score-title" class="visually-hidden">Score Information</h2>
+        <div class="mobile-score-grid">
+          <div class="score-item">
+            <span class="score-label">Score</span>
+            <span id="mobile-score" class="score-value">0</span>
+          </div>
+          <div class="score-item">
+            <span class="score-label">Best</span>
+            <span id="mobile-best-score" class="score-value">0</span>
+          </div>
+          <div class="score-item">
+            <span class="score-label">Moves</span>
+            <span id="mobile-moves" class="score-value">0</span>
+          </div>
+          <div class="score-item">
+            <span class="score-label">Time</span>
+            <span id="mobile-time" class="score-value">00:00</span>
+          </div>
+        </div>
+      </aside>
+      
       <section class="game-section">
-  <div id="board-container" class="board-container" role="grid" aria-label="Game Board" tabindex="0"></div>
-  <div id="game-over" class="hidden" role="alert" aria-live="assertive">Game Over!</div>
+        <div id="board-container" class="board-container" role="grid" aria-label="Game Board" tabindex="0"></div>
+        <div id="game-over" class="hidden" role="alert" aria-live="assertive">Game Over!</div>
       </section>
 
-      <aside id="score-container" aria-labelledby="score-title">
+      <!-- Desktop score display beside board -->
+      <aside id="score-container" class="desktop-score-container" aria-labelledby="score-title">
         <h2 id="score-title" class="visually-hidden">Score Information</h2>
         <ul>
           <li>Score: <span id="score">0</span></li>

@@ -535,163 +535,22 @@ class Game {
   }
 
   setupMobileMenu() {
-    // Setup mobile hamburger menu functionality
-    const mobileToggle = document.getElementById('mobile-menu-toggle');
-    const mobileMenu = document.getElementById('mobile-controls-menu');
-    const mobileClose = document.getElementById('mobile-menu-close');
-
-    if (mobileToggle && mobileMenu && mobileClose) {
-      // Open mobile menu
-      const openMenu = () => {
-        mobileMenu.classList.add('active');
-        mobileToggle.classList.add('active');
-        mobileToggle.setAttribute('aria-expanded', 'true');
-        mobileMenu.setAttribute('aria-hidden', 'false');
-        document.body.style.overflow = 'hidden'; // Prevent background scrolling
-      };
-
-      // Close mobile menu
-      const closeMenu = () => {
-        mobileMenu.classList.remove('active');
-        mobileToggle.classList.remove('active');
-        mobileToggle.setAttribute('aria-expanded', 'false');
-        mobileMenu.setAttribute('aria-hidden', 'true');
-        document.body.style.overflow = ''; // Restore scrolling
-      };
-
-      // Event listeners
-      mobileToggle.addEventListener('click', () => {
-        if (mobileMenu.classList.contains('active')) {
-          closeMenu();
-        } else {
-          openMenu();
-        }
-      });
-
-      mobileClose.addEventListener('click', closeMenu);
-
-      // Close menu when clicking outside
-      mobileMenu.addEventListener('click', (e) => {
-        if (e.target === mobileMenu) {
-          closeMenu();
-        }
-      });
-
-      // Close menu on escape key
-      document.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape' && mobileMenu.classList.contains('active')) {
-          closeMenu();
-        }
-      });
-
-      // Setup mobile button duplicates to mirror desktop functionality
-      this.setupMobileButtonDuplicates();
-    }
+    // Mobile hamburger menu has been removed
+    // All buttons are now directly accessible on all screen sizes
+    console.log('✅ Mobile hamburger menu removed - buttons are now always visible');
   }
 
+  // Mobile menu functions no longer needed - keeping stubs for compatibility
   setupMobileButtonDuplicates() {
-    // Map mobile buttons to their desktop counterparts
-    const buttonMappings = [
-      { mobile: 'mobile-pause-button', desktop: 'pause-button' },
-      { mobile: 'mobile-back-button', desktop: 'back-button' },
-      { mobile: 'mobile-reset-button', desktop: 'reset-button' },
-      { mobile: 'mobile-board-size-button', desktop: 'board-size-button' },
-      { mobile: 'mobile-theme-toggle-button', desktop: 'theme-toggle-button' },
-      { mobile: 'mobile-changeColor-button', desktop: 'changeColor-button' },
-      { mobile: 'mobile-autoplay-button', desktop: 'autoplay-button' },
-      { mobile: 'mobile-speed-button', desktop: 'speed-button' },
-      { mobile: 'mobile-ai-difficulty-button', desktop: 'ai-difficulty-button' },
-      { mobile: 'mobile-leaderboard-button', desktop: 'leaderboard-button' },
-      { mobile: 'mobile-export-stats-button', desktop: 'export-stats-button' }
-    ];
-
-    buttonMappings.forEach(({ mobile, desktop }) => {
-      const mobileBtn = document.getElementById(mobile);
-      const desktopBtn = document.getElementById(desktop);
-      
-      if (mobileBtn && desktopBtn) {
-        mobileBtn.addEventListener('click', () => {
-          // Close menu first
-          const mobileMenu = document.getElementById('mobile-controls-menu');
-          if (mobileMenu) {
-            mobileMenu.classList.remove('active');
-            document.getElementById('mobile-menu-toggle').classList.remove('active');
-            document.body.style.overflow = '';
-          }
-          
-          // Trigger desktop button functionality
-          desktopBtn.click();
-          
-          // Update mobile button state to match desktop
-          this.syncMobileButtonState(mobile, desktop);
-        });
-      }
-    });
-
-    // Initial sync of button states
-    this.syncAllMobileButtonStates();
+    console.log('✅ Mobile button duplicates no longer needed');
   }
 
   syncMobileButtonState(mobileId, desktopId) {
-    const mobileBtn = document.getElementById(mobileId);
-    const desktopBtn = document.getElementById(desktopId);
-    
-    if (mobileBtn && desktopBtn) {
-      // Sync text content for speed and AI difficulty buttons
-      if (mobileId === 'mobile-speed-button') {
-        const speedText = desktopBtn.querySelector('.speed-text');
-        const mobileSpeedText = mobileBtn.querySelector('.speed-text');
-        if (speedText && mobileSpeedText) {
-          mobileSpeedText.textContent = `Speed: ${speedText.textContent}`;
-        }
-      }
-      
-      if (mobileId === 'mobile-ai-difficulty-button') {
-        const buttonText = desktopBtn.querySelector('.button-text');
-        const mobileButtonText = mobileBtn.querySelector('.button-text');
-        if (buttonText && mobileButtonText) {
-          mobileButtonText.textContent = `AI: ${buttonText.textContent}`;
-        }
-      }
-      
-      // Sync pause button state
-      if (mobileId === 'mobile-pause-button') {
-        const desktopIcon = desktopBtn.querySelector('i');
-        const mobileIcon = mobileBtn.querySelector('i');
-        const mobileSpan = mobileBtn.querySelector('span');
-        
-        if (desktopIcon && mobileIcon && mobileSpan) {
-          mobileIcon.className = desktopIcon.className;
-          mobileSpan.textContent = this.isPaused ? 'Resume' : 'Pause';
-        }
-      }
-      
-      // Sync autoplay button state
-      if (mobileId === 'mobile-autoplay-button') {
-        const desktopIcon = desktopBtn.querySelector('i');
-        const mobileIcon = mobileBtn.querySelector('i');
-        const mobileSpan = mobileBtn.querySelector('span');
-        
-        if (desktopIcon && mobileIcon && mobileSpan) {
-          mobileIcon.className = desktopIcon.className;
-          mobileSpan.textContent = this.isAutoPlaying ? 'Stop AI' : 'Auto Play';
-        }
-      }
-    }
+    // No longer needed
   }
 
   syncAllMobileButtonStates() {
-    // Initial sync for all dynamic buttons
-    const dynamicButtons = [
-      { mobile: 'mobile-speed-button', desktop: 'speed-button' },
-      { mobile: 'mobile-ai-difficulty-button', desktop: 'ai-difficulty-button' },
-      { mobile: 'mobile-pause-button', desktop: 'pause-button' },
-      { mobile: 'mobile-autoplay-button', desktop: 'autoplay-button' }
-    ];
-
-    dynamicButtons.forEach(({ mobile, desktop }) => {
-      this.syncMobileButtonState(mobile, desktop);
-    });
+    // No longer needed
   }
 
   // Mouse event handlers for desktop drag support (optional enhancement)
@@ -924,15 +783,23 @@ class Game {
     this.startTime = new Date();
     this.pausedTime = 0; // Reset paused time
     const timeElement = document.getElementById('time');
+    const mobileTimeElement = document.getElementById('mobile-time');
     
     this.timerInterval = setInterval(() => {
-      if (!this.isPaused && timeElement && this.gameState === 'playing') {
+      if (!this.isPaused && (timeElement || mobileTimeElement) && this.gameState === 'playing') {
         const currentTime = new Date();
         const totalElapsed = Math.floor((currentTime - this.startTime) / 1000);
         const actualGameTime = totalElapsed - this.pausedTime; // Subtract paused time
         const minutes = Math.floor(actualGameTime / 60).toString().padStart(2, '0');
         const seconds = (actualGameTime % 60).toString().padStart(2, '0');
-        timeElement.textContent = `${minutes}:${seconds}`;
+        const timeString = `${minutes}:${seconds}`;
+        
+        if (timeElement) {
+          timeElement.textContent = timeString;
+        }
+        if (mobileTimeElement) {
+          mobileTimeElement.textContent = timeString;
+        }
       }
     }, 1000);
   }
@@ -1485,15 +1352,28 @@ class Game {
 
 
   updateScoreDisplay() {
+    // Update desktop score container
     const scoreElement = document.getElementById('score');
     const bestScoreElement = document.getElementById('best-score');
     const movesElement = document.getElementById('moves');
+    
+    // Update mobile score container
+    const mobileScoreElement = document.getElementById('mobile-score');
+    const mobileBestScoreElement = document.getElementById('mobile-best-score');
+    const mobileMovesElement = document.getElementById('mobile-moves');
     
     if (scoreElement) {
       // Animate score changes
       const oldScore = parseInt(scoreElement.textContent) || 0;
       if (oldScore !== this.score) {
         this.animateNumberChange(scoreElement, oldScore, this.score);
+      }
+    }
+    
+    if (mobileScoreElement) {
+      const oldMobileScore = parseInt(mobileScoreElement.textContent) || 0;
+      if (oldMobileScore !== this.score) {
+        this.animateNumberChange(mobileScoreElement, oldMobileScore, this.score);
       }
     }
     
@@ -1509,8 +1389,24 @@ class Game {
       }
     }
     
+    if (mobileBestScoreElement) {
+      const oldMobileBestScore = parseInt(mobileBestScoreElement.textContent) || 0;
+      if (oldMobileBestScore !== this.bestScore) {
+        this.animateNumberChange(mobileBestScoreElement, oldMobileBestScore, this.bestScore);
+        // Add highlight effect for new best score
+        mobileBestScoreElement.style.color = `hsl(${this.hueValue}, 80%, 60%)`;
+        setTimeout(() => {
+          mobileBestScoreElement.style.color = '';
+        }, 1000);
+      }
+    }
+    
     if (movesElement) {
       movesElement.textContent = this.moves;
+    }
+    
+    if (mobileMovesElement) {
+      mobileMovesElement.textContent = this.moves;
     }
   }
 
