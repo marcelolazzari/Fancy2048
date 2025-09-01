@@ -1,10 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Initialize unified data manager if not already available
-  if (!window.dataManager) {
-    window.dataManager = new UnifiedDataManager();
-  }
-  const dataManager = window.dataManager;
-  
   // Accessibility: focus main heading on load
   const mainHeading = document.querySelector('h1');
   if (mainHeading) mainHeading.setAttribute('tabindex', '0');
@@ -22,7 +16,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function loadAndDisplayStats() {
     let stats = [];
     try {
-      stats = dataManager.getData('gameStats', []);
+      stats = JSON.parse(localStorage.getItem('gameStats')) ||  [];
     } catch (e) {
       console.error('Error reading gameStats from data manager:', e);
       stats = [];
@@ -171,7 +165,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function exportStatsCSV() {
     let stats = [];
     try {
-      stats = dataManager.getData('gameStats', []);
+      stats = JSON.parse(localStorage.getItem('gameStats')) ||  [];
     } catch (e) {
       alert('No game statistics to export!');
       return;
@@ -198,7 +192,7 @@ document.addEventListener('DOMContentLoaded', () => {
   function exportStatsJSON() {
     let stats = [];
     try {
-      stats = dataManager.getData('gameStats', []);
+      stats = JSON.parse(localStorage.getItem('gameStats')) ||  [];
     } catch (e) {
       alert('No game statistics to export!');
       return;
@@ -294,7 +288,7 @@ document.addEventListener('DOMContentLoaded', () => {
   safeAddEventListener('save-json-button', 'click', exportStatsJSON);
   safeAddEventListener('reset-data-button', 'click', () => {
     if (confirm('Are you sure you want to reset all game statistics? This action cannot be undone.')) {
-      dataManager.removeData('gameStats');
+      localStorage.removeItem('gameStats');
       loadAndDisplayStats();
     }
   });

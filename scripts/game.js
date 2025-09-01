@@ -105,7 +105,7 @@ class Game {
       this.initializeEnhancedSystems();
       
       // AI performance settings
-      this.aiDifficulty = this.dataManager.getData('aiDifficulty', 'normal');
+      this.aiDifficulty = JSON.parse(localStorage.getItem('aiDifficulty')) ||  'normal';
       this.adaptiveDepth = true;
       
       // Enhanced game state persistence (improved mobile handling)
@@ -191,116 +191,6 @@ class Game {
     }
   }
 
-  initializeDataManager() {
-    try {
-      // Try to use global unified manager first
-      if (window.unifiedDataManager && typeof window.unifiedDataManager.getData === 'function') {
-        console.log('📊 Using global unified data manager');
-        return window.unifiedDataManager;
-      }
-      
-      // Try to create new UnifiedDataManager if class is available
-      if (typeof UnifiedDataManager !== 'undefined') {
-        console.log('📊 Creating new unified data manager');
-        const manager = new UnifiedDataManager();
-        window.unifiedDataManager = manager;
-        return manager;
-      }
-      
-      console.warn('⚠️ UnifiedDataManager not available, using fallback');
-      // Fallback data manager with minimal functionality
-      return {
-        getData: (key, defaultValue) => {
-          try {
-            const data = localStorage.getItem(key);
-            return data ? JSON.parse(data) : defaultValue;
-          } catch (error) {
-            console.error('Failed to get data:', error);
-            return defaultValue;
-          }
-        },
-        setData: (key, value) => {
-          try {
-            localStorage.setItem(key, JSON.stringify(value));
-          } catch (error) {
-            console.error('Failed to set data:', error);
-          }
-        },
-        getSettings: () => ({
-          theme: 'dark',
-          hueValue: 0,
-          aiDifficulty: 'normal',
-          animationsEnabled: true,
-          soundEnabled: true,
-          vibrationEnabled: true
-        }),
-        loadGameState: () => null,
-        saveGameState: () => {},
-        addGameStat: () => {},
-        getGameStats: () => []
-      };
-    } catch (error) {
-      console.error('❌ Failed to initialize data manager:', error);
-      // Return minimal fallback
-      return {
-        getData: () => null,
-        setData: () => {},
-        getSettings: () => ({}),
-        loadGameState: () => null,
-        saveGameState: () => {},
-        addGameStat: () => {},
-        getGameStats: () => []
-      };
-    }
-  }
-
-  initializeUIManager() {
-    try {
-      // Try to use global unified UI manager first
-      if (window.unifiedUIManager && typeof window.unifiedUIManager.updateScore === 'function') {
-        console.log('🎨 Using global unified UI manager');
-        return window.unifiedUIManager;
-      }
-      
-      // Try to create new UnifiedUIManager if class is available
-      if (typeof UnifiedUIManager !== 'undefined') {
-        console.log('🎨 Creating new unified UI manager');
-        const manager = new UnifiedUIManager();
-        window.unifiedUIManager = manager;
-        return manager;
-      }
-      
-      console.warn('⚠️ UnifiedUIManager not available, using fallback');
-      // Fallback UI manager with minimal functionality and API parity
-      return {
-        updateScore: (score) => this.updateScoreElementsSafely('score', score),
-        updateBestScore: (score) => this.updateScoreElementsSafely('best-score', score),
-        updateMoves: (moves) => this.updateScoreElementsSafely('moves', moves),
-        updateTimer: (time) => this.updateScoreElementsSafely('time', time),
-        updateTime: (time) => this.updateScoreElementsSafely('time', time),
-        updateAllStats: ({ score, bestScore, moves, time }) => {
-          if (score !== undefined) this.updateScoreElementsSafely('score', score);
-          if (bestScore !== undefined) this.updateScoreElementsSafely('best-score', bestScore);
-          if (moves !== undefined) this.updateScoreElementsSafely('moves', moves);
-          if (time !== undefined) this.updateScoreElementsSafely('time', time);
-        },
-        subscribe: () => {},
-        showMessage: (message) => console.log('Game message:', message)
-      };
-    } catch (error) {
-      console.error('❌ Failed to initialize UI manager:', error);
-      // Return minimal fallback
-      return {
-        updateScore: () => {},
-        updateBestScore: () => {},
-        updateMoves: () => {},
-        updateTimer: () => {},
-        updateTime: () => {},
-        updateAllStats: () => {},
-        subscribe: () => {},
-        showMessage: () => {}
-      };
-    }
   }
 
   updateScoreElementsSafely(elementId, value) {
@@ -661,7 +551,7 @@ class Game {
       // Initialize button text on startup
       const buttonText = aiDifficultyButton.querySelector('.button-text');
       if (buttonText) {
-        const savedDifficulty = this.dataManager.getData('aiDifficulty', 'normal');
+        const savedDifficulty = JSON.parse(localStorage.getItem('aiDifficulty')) ||  'normal';
         this.aiDifficulty = savedDifficulty;
         const capitalizedDifficulty = this.aiDifficulty.charAt(0).toUpperCase() + this.aiDifficulty.slice(1);
         buttonText.textContent = capitalizedDifficulty;
@@ -808,7 +698,7 @@ class Game {
     try {
       let stats = [];
       try {
-        stats = this.dataManager.getData('gameStats', []);
+        stats = JSON.parse(localStorage.getItem('gameStats')) ||  [];
       } catch (e) {
         this.showNotification('No game statistics to export!', 'error');
         return;
@@ -925,9 +815,9 @@ class Game {
       };
       
       // Use unified data manager for statistics
-      const currentStats = this.dataManager.getData('gameStats', []);
+      const currentStats = JSON.parse(localStorage.getItem('gameStats')) ||  [];
       currentStats.push(stat);
-      this.dataManager.setData('gameStats', currentStats);
+      localStorage.setItem('gameStats', JSON.stringify( currentStats));
       this.stats = currentStats;
     }
   }
@@ -958,11 +848,20 @@ class Game {
       if (!this.isPaused && this.gameState === 'playing') {
         const currentTime = new Date();
         const totalElapsed = Math.floor((currentTime - this.startTime) / 1000);
-        const actualGameTime = totalElapsed - this.pausedTime;
-        const timeString = this.formatTime(actualGameTime);
+        const actualGameTime = totalElapsed - this.pausedTime; // Subtract paused time
+        const minutes = Math.floor(actualGameTime / 60).toString().padStart(2, '0');
+        const seconds = (actualGameTime % 60).toString().padStart(2, '0');
+        const timeString = `${minutes}:${seconds}`;
         
-        // Update through unified UI manager
-        this.uiManager.updateTime(timeString);
+        const timeElement = document.getElementById('time');
+        const mobileTimeElement = document.getElementById('mobile-time');
+        
+        if (timeElement) {
+          timeElement.textContent = timeString;
+        }
+        if (mobileTimeElement) {
+          mobileTimeElement.textContent = timeString;
+        }
       }
     }, 1000);
   }
@@ -1003,7 +902,7 @@ class Game {
     this.hidePauseOverlay();
     
     // Clear saved mobile state
-    this.dataManager.removeData('currentGameState');
+    localStorage.removeItem('currentGameState');
     
     // Reset game state
     this.board = this.createEmptyBoard();
@@ -1600,43 +1499,6 @@ class Game {
   /**
    * Handle UI events from unified UI manager
    */
-  handleUIEvent(event) {
-    const { event: eventType, value, oldValue } = event;
-    
-    switch (eventType) {
-      case 'score':
-        // Handle score change animations or effects
-        break;
-      case 'bestScore':
-        // Handle new best score effects (sound disabled)
-        break;
-      case 'layout':
-        // Handle layout changes (mobile/desktop)
-        this.handleLayoutChange(value === 'desktop');
-        break;
-      case 'orientation':
-        // Handle orientation changes
-        this.handleOrientationChange();
-        break;
-      case 'resize':
-        // Handle window resize
-        this.handleResize(value);
-        break;
-    }
-  }
-
-  /**
-   * Handle layout changes between mobile and desktop
-   */
-  handleLayoutChange(isDesktop) {
-    // Update board sizing if needed
-    this.refreshLayout();
-    
-    // Adjust AI speed for device
-    if (!isDesktop && this.isAIPlaying) {
-      this.aiSpeed = Math.max(this.aiSpeed, 800); // Slower on mobile
-    }
-  }
 
   /**
    * Handle device orientation changes
@@ -2223,7 +2085,7 @@ class Game {
       };
       
       try {
-        this.dataManager.setData('currentGameState', gameState);
+        localStorage.setItem('currentGameState', JSON.stringify( gameState));
         console.log('📱 Game state saved for mobile resume');
       } catch (e) {
         console.warn('Failed to save game state:', e);
@@ -2263,11 +2125,11 @@ class Game {
         }
         
         // Clear old saved state
-        this.dataManager.removeData('currentGameState');
+        localStorage.removeItem('currentGameState');
       }
     } catch (e) {
       console.warn('Failed to restore game state:', e);
-      this.dataManager.removeData('currentGameState');
+      localStorage.removeItem('currentGameState');
     }
   }
 
@@ -2856,7 +2718,7 @@ class Game {
   performDataCleanup() {
     try {
       // Clean up game statistics (keep recent + high scores)
-      const stats = this.dataManager.getData('gameStats', []);
+      const stats = JSON.parse(localStorage.getItem('gameStats')) ||  [];
       if (stats.length > this.maxStoredStats) {
         const sortedStats = stats.sort((a, b) => parseInt(b.score) - parseInt(a.score));
         const topScores = sortedStats.slice(0, Math.floor(this.maxStoredStats * 0.3));
@@ -2864,7 +2726,7 @@ class Game {
         const cleanedStats = [...topScores, ...recentGames.filter(game => 
           !topScores.some(top => top.date === game.date)
         )];
-        this.dataManager.setData('gameStats', cleanedStats);
+        localStorage.setItem('gameStats', JSON.stringify( cleanedStats));
         console.log(`🧹 Cleaned stats: ${stats.length} → ${cleanedStats.length}`);
       }
       
@@ -3292,7 +3154,7 @@ class Game {
 
   toggleTheme() {
     this.isLightMode = !this.isLightMode;
-    this.dataManager.setData('isLightMode', this.isLightMode);
+    localStorage.setItem('isLightMode', JSON.stringify( this.isLightMode));
     this.applyTheme();
     // Update tile colors for the new theme
     this.updateTileColors();
@@ -3480,7 +3342,7 @@ class Game {
     this.hueValue = (this.hueValue + 30) % 360;
     
     // Save to unified data manager
-    this.dataManager.setData('hueValue', this.hueValue);
+    localStorage.setItem('hueValue', JSON.stringify( this.hueValue));
     
     // Animate the hue transition
     this.animateHueTransition(oldHue, this.hueValue);
@@ -4251,7 +4113,7 @@ class Game {
     this.aiDifficulty = difficulties[nextIndex];
     
     // Save preference to unified data manager
-    this.dataManager.setData('aiDifficulty', this.aiDifficulty);
+    localStorage.setItem('aiDifficulty', JSON.stringify( this.aiDifficulty));
     
     // Update AI settings immediately if AI is available
     this.adjustAIDifficulty();
@@ -4445,7 +4307,7 @@ class Game {
     }
       
     // Load saved difficulty preference
-    const savedDifficulty = this.dataManager.getData('aiDifficulty', 'normal');
+    const savedDifficulty = JSON.parse(localStorage.getItem('aiDifficulty')) ||  'normal';
     this.aiDifficulty = savedDifficulty;
     
     // Adjust AI difficulty based on board size and performance

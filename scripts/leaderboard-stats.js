@@ -1,8 +1,4 @@
 document.addEventListener('DOMContentLoaded', () => {
-  // Initialize unified data manager
-  const dataManager = new UnifiedDataManager();
-  window.dataManager = dataManager;
-  
   // Tab switching functionality
   const tabs = document.querySelectorAll('.tab');
   const tabContents = document.querySelectorAll('.tab-content');
@@ -30,7 +26,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   document.getElementById('clear-leaderboard').addEventListener('click', () => {
     if (confirm('Are you sure you want to clear the leaderboard? This action cannot be undone.')) {
-      dataManager.removeData('leaderboard');
+      localStorage.removeItem('leaderboard');
       loadLeaderboard();
     }
   });
@@ -44,14 +40,14 @@ document.addEventListener('DOMContentLoaded', () => {
   
   document.getElementById('clear-stats-button').addEventListener('click', () => {
     if (confirm('Are you sure you want to clear all statistics? This action cannot be undone.')) {
-      dataManager.removeData('gameStats');
+      localStorage.removeItem('gameStats');
       loadStats();
     }
   });
   
   // Loading functions
   function loadLeaderboard() {
-    const leaderboard = dataManager.getData('leaderboard', []);
+    const leaderboard = JSON.parse(localStorage.getItem('leaderboard')) ||  [];
     const leaderboardTable = document.getElementById('leaderboardTable').querySelector('tbody');
     
     // Clear the table first
@@ -87,7 +83,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function loadStats() {
-    const stats = dataManager.getData('gameStats', []);
+    const stats = JSON.parse(localStorage.getItem('gameStats')) ||  [];
     const uniqueStats = Array.from(new Set(stats.map(stat => JSON.stringify(stat)))).map(stat => JSON.parse(stat));
     const statsTableBody = document.getElementById('statsTable').querySelector('tbody');
     
@@ -119,7 +115,7 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Export functions
   function exportLeaderboardCSV() {
-    const leaderboard = dataManager.getData('leaderboard', []);
+    const leaderboard = JSON.parse(localStorage.getItem('leaderboard')) ||  [];
     if (leaderboard.length === 0) {
       alert('No leaderboard entries to export!');
       return;
@@ -137,7 +133,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
   
   function exportStatsCSV() {
-    const stats = dataManager.getData('gameStats', []);
+    const stats = JSON.parse(localStorage.getItem('gameStats')) ||  [];
     const uniqueStats = Array.from(new Set(stats.map(stat => JSON.stringify(stat)))).map(stat => JSON.parse(stat));
     
     if (uniqueStats.length === 0) {

@@ -4,13 +4,12 @@
  */
 
 class Game2048Core {
-  constructor(dataManager = null) {
+  constructor() {
     // Core game state
     this.board = [];
     this.size = 4;
     this.score = 0;
-    this.dataManager = dataManager || (window.dataManager || new UnifiedDataManager());
-    this.bestScore = parseInt(this.dataManager.getData('bestScore', '0'));
+    this.bestScore = parseInt(localStorage.getItem('bestScore') || '0');
     this.moves = 0;
     this.gameState = 'playing'; // 'playing', 'won', 'won-continue', 'over'
     
@@ -385,12 +384,12 @@ class Game2048Core {
   }
   
   /**
-   * Save best score using unified data manager
+   * Save best score to localStorage
    */
   saveBestScore() {
     if (this.score > this.bestScore) {
       this.bestScore = this.score;
-      this.dataManager.setData('bestScore', this.bestScore.toString());
+      localStorage.setItem('bestScore', this.bestScore.toString());
     }
   }
 }
