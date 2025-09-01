@@ -191,24 +191,6 @@ class Game {
     }
   }
 
-  }
-
-  updateScoreElementsSafely(elementId, value) {
-    try {
-      const element = document.getElementById(elementId);
-      if (element) {
-        element.textContent = value;
-      }
-      // Also try to update mobile versions
-      const mobileElement = document.getElementById(`mobile-${elementId}`);
-      if (mobileElement) {
-        mobileElement.textContent = value;
-      }
-    } catch (error) {
-      console.error(`Failed to update element ${elementId}:`, error);
-    }
-  }
-
   initializeUI() {
     console.log('Setting up UI...');
     
