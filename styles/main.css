@@ -1504,17 +1504,22 @@ footer .container {
   }
 }
 
-/* Small mobile phones in portrait */
+/* Small mobile phones in portrait - ENHANCED VERTICAL LAYOUT */
 @media (max-width: 480px) and (orientation: portrait) {
   :root {
-    /* Mobile-optimized board sizes with better scaling */
-    --base-board-size-3x3: min(min(90vw, 90svw), min(62vh, 62svh), 320px);
-    --base-board-size-4x4: min(min(92vw, 92svw), min(65vh, 65svh), 340px);
-    --base-board-size-5x5: min(min(95vw, 95svw), min(68vh, 68svh), 360px);
+    /* Mobile-optimized board sizes with dynamic viewport-aware scaling */
+    --base-board-size-3x3: min(min(90vw, 90svw), min(calc(100dvh - 180px), calc(100svh - 180px)), 320px);
+    --base-board-size-4x4: min(min(92vw, 92svw), min(calc(100dvh - 180px), calc(100svh - 180px)), 340px);
+    --base-board-size-5x5: min(min(95vw, 95svw), min(calc(100dvh - 180px), calc(100svh - 180px)), 360px);
     
     /* Mobile-optimized gaps with tighter spacing */
     --gap-base: clamp(1px, 0.8vmin, 5px);
     --mobile-button-size: 44px;
+    
+    /* Dynamic viewport-aware layout variables */
+    --mobile-header-height: clamp(50px, 12vh, 70px);
+    --mobile-score-height: clamp(50px, 10vh, 60px);
+    --mobile-padding: clamp(6px, 2vw, 12px);
     
     /* Enhanced Mobile Font Scaling for Maximum Readability */
     --font-scale-4x4-base: clamp(0.65, 0.75, 0.85);
@@ -1533,32 +1538,36 @@ footer .container {
   /* Better mobile viewport handling with proper vertical layout */
   body {
     min-height: 100vh;
-    min-height: 100dvh; /* Support for new dynamic viewport units */
+    min-height: 100dvh; /* Dynamic viewport height */
     min-height: 100svh; /* Small viewport height for mobile browsers */
     height: 100vh;
     height: 100dvh;
     overflow-x: hidden;
+    overflow-y: hidden; /* Prevent scroll bounce */
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
     display: flex;
     flex-direction: column;
-    padding-top: max(env(safe-area-inset-top), 8px);
-    padding-left: max(env(safe-area-inset-left), 0px);
-    padding-right: max(env(safe-area-inset-right), 0px);
-    padding-bottom: max(env(safe-area-inset-bottom), 8px);
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
   }
   
-  /* Mobile header - optimized height for vertical layout */
+  /* Mobile header - dynamic height for optimal space usage */
   header {
-    height: 70px;
-    min-height: 70px;
-    padding: 8px 12px;
+    height: var(--mobile-header-height);
+    min-height: var(--mobile-header-height);
+    padding: var(--mobile-padding);
     display: flex;
     align-items: center;
     flex-shrink: 0;
     border-bottom: 1px solid rgba(255, 204, 0, 0.2);
-    background: rgba(26, 26, 26, 0.95);
-    backdrop-filter: blur(10px);
+    background: rgba(26, 26, 26, 0.98);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    z-index: 10;
   }
   
   header .container {
@@ -1570,11 +1579,12 @@ footer .container {
   }
   
   header h1 {
-    font-size: clamp(1.2rem, 4vw, 1.5rem);
+    font-size: clamp(1.1rem, 4.5vw, 1.4rem);
     margin: 0;
     flex: 1;
     color: var(--highlight-color);
     font-weight: 700;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   }
   
   /* Main content area - optimized for vertical arrangement */
@@ -1582,38 +1592,40 @@ footer .container {
     flex: 1;
     display: flex;
     flex-direction: column;
-    align-items: center;
+    align-items: stretch;
     justify-content: flex-start;
-    padding: 12px 8px 8px 8px;
-    gap: 12px;
-    min-height: 0; /* Allow flexbox to work properly */
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
+    padding: var(--mobile-padding);
+    gap: var(--mobile-padding);
+    min-height: 0;
+    overflow: hidden;
+    height: calc(100dvh - var(--mobile-header-height) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px));
   }
   
-  /* Score container - stable height for predictable layout */
+  /* Score container - compact and efficient */
   #score-container {
     width: 100%;
-    max-width: min(95vw, 400px);
-    height: 60px;
-    min-height: 60px;
-    font-size: 0.85rem;
-    padding: 8px 12px;
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 204, 0, 0.3);
-    border-radius: 12px;
+    height: var(--mobile-score-height);
+    min-height: var(--mobile-score-height);
+    max-height: var(--mobile-score-height);
+    font-size: clamp(0.75rem, 2vw, 0.9rem);
+    padding: var(--mobile-padding);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 204, 0, 0.35);
+    border-radius: clamp(8px, 2vw, 12px);
     display: flex;
     align-items: center;
     justify-content: center;
     flex-shrink: 0;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    margin-bottom: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.25);
+    backdrop-filter: blur(8px);
+    margin: 0;
+    overflow: hidden;
   }
   
   #score-container ul {
     display: flex;
     flex-wrap: wrap;
-    gap: 8px;
+    gap: clamp(4px, 1vw, 8px);
     justify-content: center;
     align-items: center;
     margin: 0;
@@ -1625,80 +1637,114 @@ footer .container {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 0.8rem;
-    color: rgba(255, 255, 255, 0.8);
-    min-width: 60px;
+    font-size: clamp(0.7rem, 1.8vw, 0.85rem);
+    color: rgba(255, 255, 255, 0.85);
+    min-width: clamp(50px, 15vw, 70px);
+    line-height: 1.1;
   }
   
   #score-container span {
-    font-size: 1.1em;
+    font-size: clamp(0.9em, 2vw, 1.2em);
     font-weight: 700;
     color: var(--highlight-color);
-    margin-top: 2px;
+    margin-top: 1px;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
   }
 
-  /* Game section - flexible but constrained for mobile */
+  /* Game section - maximizes available space efficiently */
   .game-section {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     width: 100%;
-    min-height: 280px; /* Ensure playable size */
-    max-height: calc(100vh - 200px); /* Leave room for header and score */
+    min-height: 0;
+    overflow: hidden;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+    backdrop-filter: none;
   }
 
-  /* Mobile-optimized board sizing for better accessibility */
+  /* Mobile-optimized board sizing with dynamic viewport awareness */
   #board-container {
-    width: min(88vw, calc(100vh - 220px), 400px);
-    height: min(88vw, calc(100vh - 220px), 400px);
-    max-width: min(88vw, calc(100vh - 220px), 400px);
-    max-height: min(88vw, calc(100vh - 220px), 400px);
+    width: min(
+      calc(100vw - 2 * var(--mobile-padding)), 
+      calc(100dvh - var(--mobile-header-height) - var(--mobile-score-height) - 4 * var(--mobile-padding) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)),
+      380px
+    );
+    height: min(
+      calc(100vw - 2 * var(--mobile-padding)), 
+      calc(100dvh - var(--mobile-header-height) - var(--mobile-score-height) - 4 * var(--mobile-padding) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)),
+      380px
+    );
+    max-width: min(
+      calc(100vw - 2 * var(--mobile-padding)), 
+      calc(100dvh - var(--mobile-header-height) - var(--mobile-score-height) - 4 * var(--mobile-padding) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)),
+      380px
+    );
+    max-height: min(
+      calc(100vw - 2 * var(--mobile-padding)), 
+      calc(100dvh - var(--mobile-header-height) - var(--mobile-score-height) - 4 * var(--mobile-padding) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)),
+      380px
+    );
     margin: 0;
     flex-shrink: 0;
+    border-radius: clamp(12px, 3vw, 16px);
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
   }
 }
 
-/* Mobile Landscape - Enhanced vertical layout optimization */
+/* Mobile Landscape - ENHANCED HORIZONTAL LAYOUT for small screens */
 @media (max-width: 768px) and (orientation: landscape) and (max-height: 500px) {
   :root {
-    /* Landscape-optimized board sizes - use height more effectively */
-    --base-board-size-3x3: min(min(75vh, 75svh), min(65vw, 65svw), 320px);
-    --base-board-size-4x4: min(min(80vh, 80svh), min(70vw, 70svw), 350px);
-    --base-board-size-5x5: min(min(85vh, 85svh), min(75vw, 75svw), 380px);
+    /* Landscape-optimized board sizes - prioritize height usage */
+    --base-board-size-3x3: min(min(70vh, 70svh), min(60vw, 60svw), 300px);
+    --base-board-size-4x4: min(min(75vh, 75svh), min(65vw, 65svw), 330px);
+    --base-board-size-5x5: min(min(80vh, 80svh), min(70vw, 70svw), 360px);
     
-    --gap-base: clamp(1px, 0.8vmin, 5px);
+    --gap-base: clamp(1px, 0.8vmin, 4px);
     
-    /* Landscape-specific layout variables */
-    --landscape-header-width: 200px;
-    --landscape-score-height: 80px;
+    /* Landscape-specific layout variables - compact for small height */
+    --landscape-sidebar-width: clamp(160px, 25vw, 220px);
+    --landscape-header-height: clamp(40px, 8vh, 60px);
+    --landscape-padding: clamp(4px, 1vh, 8px);
   }
   
-  /* Landscape body - horizontal layout */
+  /* Landscape body - horizontal layout for space efficiency */
   body {
     display: flex;
     flex-direction: row;
     height: 100vh;
     height: 100dvh;
     overflow: hidden;
-    padding: max(env(safe-area-inset-top), 4px) max(env(safe-area-inset-right), 4px) max(env(safe-area-inset-bottom), 4px) max(env(safe-area-inset-left), 4px);
+    padding: max(env(safe-area-inset-top), var(--landscape-padding)) max(env(safe-area-inset-right), var(--landscape-padding)) max(env(safe-area-inset-bottom), var(--landscape-padding)) max(env(safe-area-inset-left), var(--landscape-padding));
+    position: fixed;
+    width: 100%;
+    top: 0;
+    left: 0;
   }
   
-  /* Landscape header - side panel */
+  /* Landscape header - sidebar layout */
   header {
-    width: var(--landscape-header-width);
-    min-width: var(--landscape-header-width);
+    width: var(--landscape-sidebar-width);
+    min-width: var(--landscape-sidebar-width);
     height: 100%;
-    padding: 8px;
+    padding: var(--landscape-padding);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    background: rgba(26, 26, 26, 0.95);
+    background: rgba(26, 26, 26, 0.98);
     border-right: 1px solid rgba(255, 204, 0, 0.3);
     backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
     flex-shrink: 0;
-    gap: 8px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    gap: var(--landscape-padding);
   }
   
   header .container {
@@ -1706,25 +1752,59 @@ footer .container {
     flex-direction: column;
     align-items: center;
     width: 100%;
-    gap: 8px;
+    gap: var(--landscape-padding);
   }
   
   header h1 {
-    font-size: clamp(1rem, 2.5vw, 1.2rem);
+    font-size: clamp(0.9rem, 3vw, 1.2rem);
     margin: 0;
-    writing-mode: horizontal-tb;
     text-align: center;
     color: var(--highlight-color);
     font-weight: 700;
+    line-height: 1.2;
   }
   
-  /* Score container in header for landscape */
+  /* Controls in header for landscape */
+  .controls {
+    display: flex;
+    flex-direction: column;
+    gap: clamp(3px, 1vh, 6px);
+    align-items: center;
+    width: 100%;
+  }
+  
+  .controls button {
+    width: 100%;
+    max-width: calc(var(--landscape-sidebar-width) - 2 * var(--landscape-padding));
+    padding: clamp(4px, 1vh, 8px) clamp(6px, 1.5vw, 12px);
+    font-size: clamp(0.7rem, 2vw, 0.85rem);
+    min-height: clamp(32px, 6vh, 40px);
+    border-radius: 6px;
+    font-weight: 600;
+    text-align: center;
+  }
+  
+  /* Main content - game area and score container */
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: var(--landscape-padding);
+    gap: var(--landscape-padding);
+    min-height: 0;
+    overflow: hidden;
+    height: 100%;
+  }
+  
+  /* Score container - compact horizontal layout */
   #score-container {
     width: 100%;
     height: auto;
-    min-height: var(--landscape-score-height);
-    font-size: 0.7rem;
-    padding: 6px;
+    max-width: none;
+    font-size: clamp(0.65rem, 2vw, 0.8rem);
+    padding: var(--landscape-padding);
     background: rgba(255, 255, 255, 0.05);
     border: 1px solid rgba(255, 204, 0, 0.3);
     border-radius: 8px;
@@ -1733,13 +1813,16 @@ footer .container {
     justify-content: center;
     flex-shrink: 0;
     margin: 0;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25);
   }
   
   #score-container ul {
     display: flex;
-    flex-direction: column;
-    gap: 4px;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: clamp(6px, 2vw, 12px);
     align-items: center;
+    justify-content: center;
     margin: 0;
     padding: 0;
     width: 100%;
@@ -1747,60 +1830,79 @@ footer .container {
   
   #score-container li {
     display: flex;
-    justify-content: space-between;
+    flex-direction: column;
     align-items: center;
-    font-size: 0.7rem;
-    color: rgba(255, 255, 255, 0.8);
-    width: 100%;
-    min-height: 16px;
+    font-size: clamp(0.6rem, 2vw, 0.75rem);
+    color: rgba(255, 255, 255, 0.85);
+    min-width: clamp(40px, 12vw, 60px);
+    text-align: center;
   }
   
   #score-container span {
-    font-size: 0.8em;
+    font-size: clamp(0.8em, 2.2vw, 1em);
     font-weight: 700;
     color: var(--highlight-color);
+    margin-top: 2px;
   }
   
-  /* Main content - game area only */
-  main {
-    flex: 1;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 8px;
-    min-height: 0;
-    overflow: hidden;
-  }
-  
-  /* Game section - centered */
+  /* Game section - maximizes remaining vertical space */
   .game-section {
     flex: 1;
     display: flex;
     align-items: center;
     justify-content: center;
     width: 100%;
-    height: 100%;
+    min-height: 0;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+    backdrop-filter: none;
   }
   
-  /* Landscape board sizing */
+  /* Landscape board sizing - optimal for available space */
   #board-container {
-    width: min(80vh, 75vw, 350px);
-    height: min(80vh, 75vw, 350px);
-    max-width: min(80vh, 75vw, 350px);
-    max-height: min(80vh, 75vw, 350px);
+    width: min(
+      calc(100vw - var(--landscape-sidebar-width) - 3 * var(--landscape-padding)),
+      calc(100vh - 3 * var(--landscape-padding) - 50px), /* Account for score container height */
+      350px
+    );
+    height: min(
+      calc(100vw - var(--landscape-sidebar-width) - 3 * var(--landscape-padding)),
+      calc(100vh - 3 * var(--landscape-padding) - 50px), /* Account for score container height */
+      350px
+    );
+    max-width: min(
+      calc(100vw - var(--landscape-sidebar-width) - 3 * var(--landscape-padding)),
+      calc(100vh - 3 * var(--landscape-padding) - 50px), /* Account for score container height */
+      350px
+    );
+    max-height: min(
+      calc(100vw - var(--landscape-sidebar-width) - 3 * var(--landscape-padding)),
+      calc(100vh - 3 * var(--landscape-padding) - 50px), /* Account for score container height */
+      350px
+    );
     margin: 0;
     flex-shrink: 0;
+    border-radius: 12px;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
   }
 }
 
-/* Tablet portrait */
+/* Tablet portrait - ENHANCED VERTICAL LAYOUT */
 @media (min-width: 481px) and (max-width: 768px) and (orientation: portrait) {
   :root {
-    /* Tablet-optimized board sizes */
-    --base-board-size-3x3: min(min(75vw, 75svw), min(65vh, 65svh), 450px);
-    --base-board-size-4x4: min(min(80vw, 80svw), min(70vh, 70svh), 500px);
-    --base-board-size-5x5: min(min(85vw, 85svw), min(75vh, 75svh), 550px);
+    /* Tablet-optimized board sizes with better scaling */
+    --base-board-size-3x3: min(min(70vw, 70svw), min(60vh, 60svh), 420px);
+    --base-board-size-4x4: min(min(75vw, 75svw), min(65vh, 65svh), 470px);
+    --base-board-size-5x5: min(min(80vw, 80svw), min(70vh, 70svh), 520px);
+    
+    /* Enhanced spacing for tablet interactions */
+    --gap-base: clamp(6px, 1.2vmin, 12px);
+    --tablet-padding: clamp(16px, 3vw, 24px);
+    --tablet-header-height: clamp(70px, 10vh, 90px);
+    --tablet-score-height: clamp(70px, 8vh, 85px);
     
     /* Enhanced Font Scaling for Tablets */
     --font-scale-4x4-base: clamp(0.55, 0.65, 0.75);
@@ -1811,33 +1913,196 @@ footer .container {
     --font-scale-5x5-large: clamp(0.34, 0.39, 0.43);
     --font-scale-5x5-mega: clamp(0.27, 0.32, 0.35);
   }
+  
+  /* Tablet body - optimized vertical layout */
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: env(safe-area-inset-top, 0px) env(safe-area-inset-right, 0px) env(safe-area-inset-bottom, 0px) env(safe-area-inset-left, 0px);
+  }
+  
+  /* Tablet header - spacious and touch-friendly */
+  header {
+    height: var(--tablet-header-height);
+    min-height: var(--tablet-header-height);
+    padding: var(--tablet-padding);
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    background: rgba(26, 26, 26, 0.96);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 2px solid rgba(255, 204, 0, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+  
+  header .container {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: none;
+  }
 
   header h1 {
-    font-size: clamp(1.8rem, 4vw, 2.2rem);
+    font-size: clamp(1.6rem, 4vw, 2rem);
+    margin: 0;
+    color: var(--highlight-color);
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Tablet controls - better touch targets */
+  .controls {
+    display: flex;
+    gap: clamp(8px, 2vw, 16px);
+    align-items: center;
+    flex-wrap: wrap;
   }
 
   button {
-    padding: 12px 16px;
-    font-size: 14px;
-    min-width: 48px;
-    min-height: 48px;
+    padding: clamp(12px, 2.5vw, 18px) clamp(16px, 3vw, 24px);
+    font-size: clamp(13px, 2vw, 16px);
+    min-width: clamp(48px, 10vw, 60px);
+    min-height: clamp(48px, 10vw, 60px);
+    border-radius: 10px;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    border: 2px solid rgba(255, 204, 0, 0.3);
   }
 
+  button:hover, button:active {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 12px rgba(255, 204, 0, 0.25);
+    border-color: var(--highlight-color);
+  }
+  
+  /* Main content - efficient vertical space usage */
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: var(--tablet-padding);
+    gap: var(--tablet-padding);
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  /* Tablet score container - prominent but efficient */
   #score-container {
-    font-size: 1rem;
-    padding: 12px;
+    width: 100%;
+    max-width: min(90vw, 500px);
+    height: var(--tablet-score-height);
+    min-height: var(--tablet-score-height);
+    font-size: clamp(1rem, 2.5vw, 1.2rem);
+    padding: var(--tablet-padding);
+    background: rgba(255, 255, 255, 0.07);
+    border: 2px solid rgba(255, 204, 0, 0.35);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    margin: 0;
+  }
+  
+  #score-container ul {
+    display: flex;
+    gap: clamp(16px, 4vw, 24px);
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  
+  #score-container li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: clamp(0.9rem, 2.2vw, 1.1rem);
+    color: rgba(255, 255, 255, 0.9);
+    min-width: clamp(70px, 15vw, 90px);
+    font-weight: 500;
+  }
+
+  #score-container span {
+    font-size: clamp(1.2em, 3vw, 1.4em);
+    font-weight: 800;
+    color: var(--highlight-color);
+    margin-top: 4px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Game section - maximizes remaining space */
+  .game-section {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 0;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+  
+  /* Tablet board sizing - optimal for portrait orientation */
+  #board-container {
+    width: min(
+      calc(100vw - 2 * var(--tablet-padding)),
+      calc(100vh - var(--tablet-header-height) - var(--tablet-score-height) - 3 * var(--tablet-padding) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)),
+      480px
+    );
+    height: min(
+      calc(100vw - 2 * var(--tablet-padding)),
+      calc(100vh - var(--tablet-header-height) - var(--tablet-score-height) - 3 * var(--tablet-padding) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)),
+      480px
+    );
+    max-width: min(
+      calc(100vw - 2 * var(--tablet-padding)),
+      calc(100vh - var(--tablet-header-height) - var(--tablet-score-height) - 3 * var(--tablet-padding) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)),
+      480px
+    );
+    max-height: min(
+      calc(100vw - 2 * var(--tablet-padding)),
+      calc(100vh - var(--tablet-header-height) - var(--tablet-score-height) - 3 * var(--tablet-padding) - env(safe-area-inset-top, 0px) - env(safe-area-inset-bottom, 0px)),
+      480px
+    );
+    margin: 0;
+    flex-shrink: 0;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.4);
+    border-radius: 16px;
   }
 }
 
-/* Tablet landscape and small desktops */
+/* Tablet landscape and small desktops - ENHANCED LAYOUT TRANSITION */
 @media (min-width: 769px) and (max-width: 1024px) {
   :root {
-    /* Desktop-optimized board sizes */
-    --base-board-size-3x3: min(min(65vw, 65svw), min(75vh, 75svh), 480px);
-    --base-board-size-4x4: min(min(70vw, 70svw), min(80vh, 80svh), 550px);
-    --base-board-size-5x5: min(min(75vw, 75svw), min(85vh, 85svh), 600px);
+    /* Small desktop-optimized board sizes with better proportions */
+    --base-board-size-3x3: min(min(55vw, 55svw), min(70vh, 70svh), 450px);
+    --base-board-size-4x4: min(min(60vw, 60svw), min(75vh, 75svh), 520px);
+    --base-board-size-5x5: min(min(65vw, 65svw), min(80vh, 80svh), 580px);
     
     --gap-base: clamp(8px, 1.2vmin, 14px);
+    
+    /* Small desktop layout variables */
+    --small-desktop-padding: clamp(20px, 3vw, 30px);
+    --small-desktop-header-height: clamp(80px, 8vh, 100px);
+    --small-desktop-gap: clamp(16px, 2vh, 24px);
     
     /* Enhanced Font Scaling for Small Desktop/Tablet Landscape */
     --font-scale-4x4-base: clamp(0.58, 0.68, 0.78);
@@ -1852,52 +2117,197 @@ footer .container {
     --font-scale-7x7-large: clamp(0.26, 0.28, 0.32);
     --font-scale-7x7-mega: clamp(0.22, 0.26, 0.28);
   }
-
-  main {
-    padding: 20px;
-    gap: 20px;
+  
+  /* Small desktop body - vertical layout with better proportions */
+  body {
+    min-height: 100vh;
+    min-height: 100dvh;
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
   }
-
+  
+  /* Small desktop header - balanced height and spacing */
   header {
-    padding: 15px 20px;
+    height: var(--small-desktop-header-height);
+    min-height: var(--small-desktop-header-height);
+    padding: var(--small-desktop-padding);
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    background: rgba(26, 26, 26, 0.96);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border-bottom: 2px solid rgba(255, 204, 0, 0.3);
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  }
+  
+  header .container {
+    width: 100%;
+    max-width: 900px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
   }
 
   header h1 {
-    font-size: clamp(2rem, 3vw, 2.6rem);
-    margin-bottom: 15px;
+    font-size: clamp(1.8rem, 3.5vw, 2.4rem);
+    margin: 0;
+    color: var(--highlight-color);
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Small desktop navigation - improved interaction */
+  .desktop-nav {
+    display: block;
+  }
+  
+  .controls {
+    display: flex;
+    gap: clamp(10px, 2vw, 16px);
+    align-items: center;
+    flex-wrap: wrap;
   }
 
   button {
-    padding: 14px 20px;
-    font-size: 15px;
-    min-width: 52px;
-    min-height: 52px;
-    transition: all 0.2s ease;
+    padding: clamp(14px, 2vw, 18px) clamp(18px, 2.5vw, 24px);
+    font-size: clamp(14px, 1.5vw, 16px);
+    min-width: clamp(52px, 8vw, 64px);
+    min-height: clamp(52px, 8vw, 64px);
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    border: 2px solid rgba(255, 204, 0, 0.3);
   }
 
   button:hover {
     transform: translateY(-1px);
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    box-shadow: 0 4px 12px rgba(255, 204, 0, 0.25);
+    border-color: var(--highlight-color);
+  }
+  
+  /* Main content - efficient vertical arrangement */
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: var(--small-desktop-padding);
+    gap: var(--small-desktop-gap);
+    min-height: 0;
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
+    overflow: hidden;
   }
 
+  /* Small desktop score container - prominent display */
   #score-container {
-    font-size: 1.1rem;
-    padding: 15px;
-    gap: 20px;
+    width: 100%;
+    max-width: 700px;
+    height: auto;
+    min-height: clamp(65px, 8vh, 80px);
+    font-size: clamp(1rem, 1.8vw, 1.3rem);
+    padding: clamp(16px, 2.5vw, 20px);
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 204, 0, 0.4);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 14px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    margin: 0;
   }
 
   #score-container ul {
-    gap: 15px;
+    display: flex;
+    gap: clamp(20px, 4vw, 32px);
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  
+  #score-container li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: clamp(0.9rem, 1.5vw, 1.1rem);
+    color: rgba(255, 255, 255, 0.9);
+    min-width: clamp(80px, 12vw, 110px);
+    font-weight: 500;
+  }
+
+  #score-container span {
+    font-size: clamp(1.3em, 2vw, 1.5em);
+    font-weight: 800;
+    color: var(--highlight-color);
+    margin-top: 4px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+  
+  /* Game section - optimal board positioning */
+  .game-section {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 350px;
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+    backdrop-filter: none;
+  }
+
+  /* Small desktop board sizing - balanced for screen size */
+  #board-container {
+    width: min(
+      calc(100vw - 2 * var(--small-desktop-padding)),
+      calc(100vh - var(--small-desktop-header-height) - var(--small-desktop-gap) * 3 - 85px), /* Account for score container */
+      520px
+    );
+    height: min(
+      calc(100vw - 2 * var(--small-desktop-padding)),
+      calc(100vh - var(--small-desktop-header-height) - var(--small-desktop-gap) * 3 - 85px), /* Account for score container */
+      520px
+    );
+    max-width: min(
+      calc(100vw - 2 * var(--small-desktop-padding)),
+      calc(100vh - var(--small-desktop-header-height) - var(--small-desktop-gap) * 3 - 85px), /* Account for score container */
+      520px
+    );
+    max-height: min(
+      calc(100vw - 2 * var(--small-desktop-padding)),
+      calc(100vh - var(--small-desktop-header-height) - var(--small-desktop-gap) * 3 - 85px), /* Account for score container */
+      520px
+    );
+    margin: 0;
+    flex-shrink: 0;
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.4);
+    border-radius: 16px;
   }
 }
 
-/* Large desktops - Enhanced vertical layout */
+/* Large desktops - ENHANCED DESKTOP LAYOUT WITH OPTIMAL SPACE USAGE */
 @media (min-width: 1025px) {
   :root {
-    /* Large desktop optimizations */
-    --base-board-size-3x3: min(min(50vw, 50svw), min(70vh, 70svh), 520px);
-    --base-board-size-4x4: min(min(55vw, 55svw), min(75vh, 75svh), 580px);
-    --base-board-size-5x5: min(min(60vw, 60svw), min(80vh, 80svh), 640px);
+    /* Desktop-optimized board sizes with better aspect ratio handling */
+    --base-board-size-3x3: min(min(45vw, 45svw), min(65vh, 65svh), 500px);
+    --base-board-size-4x4: min(min(50vw, 50svw), min(70vh, 70svh), 560px);
+    --base-board-size-5x5: min(min(55vw, 55svw), min(75vh, 75svh), 620px);
     
     --gap-base: clamp(10px, 1.5vmin, 16px);
     
@@ -1922,12 +2332,14 @@ footer .container {
     --font-scale-9x9-large: clamp(0.32, 0.35, 0.39);
     --font-scale-9x9-mega: clamp(0.28, 0.32, 0.35);
     
-    /* Desktop-specific layout variables */
-    --desktop-header-height: 120px;
-    --desktop-score-height: 80px;
+    /* Desktop-specific layout variables for optimal space usage */
+    --desktop-header-height: clamp(80px, 8vh, 100px);
+    --desktop-score-width: clamp(280px, 25vw, 350px);
+    --desktop-content-gap: clamp(20px, 3vw, 40px);
+    --desktop-padding: clamp(20px, 3vw, 40px);
   }
   
-  /* Desktop body - proper vertical structure */
+  /* Desktop body - enhanced horizontal layout capability */
   body {
     min-height: 100vh;
     min-height: 100dvh;
@@ -1935,58 +2347,60 @@ footer .container {
     height: 100dvh;
     display: flex;
     flex-direction: column;
-    overflow-x: hidden;
-    overflow-y: auto;
+    overflow: hidden;
+    position: relative;
   }
   
-  /* Desktop header - consistent height */
+  /* Desktop header - streamlined and efficient */
   header {
     height: var(--desktop-header-height);
     min-height: var(--desktop-header-height);
-    padding: 20px 30px;
+    padding: var(--desktop-padding);
     display: flex;
     align-items: center;
     flex-shrink: 0;
-    background: rgba(26, 26, 26, 0.95);
+    background: rgba(26, 26, 26, 0.96);
     backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
     border-bottom: 2px solid rgba(255, 204, 0, 0.3);
     box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+    z-index: 10;
   }
   
   header .container {
     width: 100%;
-    max-width: 1200px;
-    margin: 0 auto;
+    max-width: none;
+    margin: 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
   }
 
   header h1 {
-    font-size: clamp(2.2rem, 3.5vw, 3rem);
+    font-size: clamp(1.8rem, 3vw, 2.5rem);
     margin: 0;
     color: var(--highlight-color);
     font-weight: 700;
     text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   }
   
-  /* Desktop navigation - improved spacing */
+  /* Desktop navigation - enhanced spacing and interaction */
   .desktop-nav {
     display: block;
   }
   
   .controls {
     display: flex;
-    gap: 12px;
+    gap: clamp(8px, 1.5vw, 16px);
     align-items: center;
     flex-wrap: wrap;
   }
 
   button {
-    padding: 16px 22px;
-    font-size: 16px;
-    min-width: 56px;
-    min-height: 56px;
+    padding: clamp(12px, 1.5vw, 18px) clamp(16px, 2vw, 24px);
+    font-size: clamp(14px, 1.2vw, 16px);
+    min-width: clamp(48px, 6vw, 60px);
+    min-height: clamp(48px, 6vw, 60px);
     border-radius: 12px;
     transition: all 0.3s ease;
     font-weight: 600;
@@ -1999,71 +2413,83 @@ footer .container {
     border-color: var(--highlight-color);
   }
   
-  /* Main content - optimized vertical arrangement */
+  /* Main content - HORIZONTAL LAYOUT for better desktop space utilization */
   main {
     flex: 1;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    padding: 20px 30px;
-    gap: 20px;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: center;
+    padding: var(--desktop-padding);
+    gap: var(--desktop-content-gap);
     min-height: 0;
-    max-width: 1200px;
+    overflow: hidden;
+    max-width: 1400px;
     margin: 0 auto;
     width: 100%;
+    box-sizing: border-box;
   }
 
-  /* Desktop score container - enhanced visibility */
+  /* Desktop score container - SIDEBAR layout for efficient space usage */
   #score-container {
-    width: 100%;
-    max-width: 800px;
-    height: var(--desktop-score-height);
-    min-height: var(--desktop-score-height);
-    font-size: 1.2rem;
-    padding: 20px 25px;
+    width: var(--desktop-score-width);
+    min-width: var(--desktop-score-width);
+    max-width: var(--desktop-score-width);
+    height: auto;
+    font-size: clamp(1rem, 1.1vw, 1.2rem);
+    padding: clamp(16px, 2vw, 24px);
     background: rgba(255, 255, 255, 0.08);
     border: 2px solid rgba(255, 204, 0, 0.4);
     border-radius: 16px;
     display: flex;
-    align-items: center;
-    justify-content: center;
+    flex-direction: column;
+    justify-content: flex-start;
     flex-shrink: 0;
     box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
-    backdrop-filter: blur(10px);
-    margin-bottom: 15px;
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    margin: 0;
+    order: 2;
+    align-self: flex-start;
+    position: sticky;
+    top: 0;
   }
 
   #score-container ul {
     display: flex;
-    gap: 40px;
-    justify-content: center;
-    align-items: center;
+    flex-direction: column;
+    gap: clamp(16px, 2vh, 24px);
+    justify-content: flex-start;
+    align-items: stretch;
     margin: 0;
     padding: 0;
     width: 100%;
-    flex-wrap: wrap;
+    flex-wrap: nowrap;
   }
   
   #score-container li {
     display: flex;
     flex-direction: column;
     align-items: center;
-    font-size: 1rem;
+    text-align: center;
+    font-size: clamp(0.9rem, 1vw, 1.1rem);
     color: rgba(255, 255, 255, 0.9);
-    min-width: 100px;
     font-weight: 500;
+    padding: clamp(8px, 1vh, 12px);
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border: 1px solid rgba(255, 204, 0, 0.2);
   }
 
   #score-container span {
-    font-size: 1.4em;
+    font-size: clamp(1.2em, 1.3vw, 1.5em);
     font-weight: 800;
     color: var(--highlight-color);
     margin-top: 4px;
     text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   }
 
-  /* Game section - centered and spacious */
+  /* Game section - MAIN AREA with optimal board positioning */
   .game-section {
     flex: 1;
     display: flex;
@@ -2071,15 +2497,38 @@ footer .container {
     justify-content: center;
     width: 100%;
     min-height: 400px;
-    max-height: calc(100vh - 280px);
+    background: none;
+    border: none;
+    padding: 0;
+    margin: 0;
+    box-shadow: none;
+    backdrop-filter: none;
+    order: 1;
+    max-width: calc(100vw - var(--desktop-score-width) - 3 * var(--desktop-padding) - var(--desktop-content-gap));
   }
 
-  /* Desktop board container - optimal sizing */
+  /* Desktop board container - OPTIMIZED sizing for horizontal layout */
   #board-container {
-    width: min(70vw, calc(100vh - 280px), 600px);
-    height: min(70vw, calc(100vh - 280px), 600px);
-    max-width: min(70vw, calc(100vh - 280px), 600px);
-    max-height: min(70vw, calc(100vh - 280px), 600px);
+    width: min(
+      calc(100vw - var(--desktop-score-width) - 4 * var(--desktop-padding) - var(--desktop-content-gap)),
+      calc(100vh - var(--desktop-header-height) - 2 * var(--desktop-padding)),
+      600px
+    );
+    height: min(
+      calc(100vw - var(--desktop-score-width) - 4 * var(--desktop-padding) - var(--desktop-content-gap)),
+      calc(100vh - var(--desktop-header-height) - 2 * var(--desktop-padding)),
+      600px
+    );
+    max-width: min(
+      calc(100vw - var(--desktop-score-width) - 4 * var(--desktop-padding) - var(--desktop-content-gap)),
+      calc(100vh - var(--desktop-header-height) - 2 * var(--desktop-padding)),
+      600px
+    );
+    max-height: min(
+      calc(100vw - var(--desktop-score-width) - 4 * var(--desktop-padding) - var(--desktop-content-gap)),
+      calc(100vh - var(--desktop-header-height) - 2 * var(--desktop-padding)),
+      600px
+    );
     margin: 0;
     flex-shrink: 0;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);

@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Responsive Layout Test - Fancy 2048</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <style>
+        /* Test overlay for layout debugging */
+        .layout-info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 204, 0, 0.9);
+            color: #000;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-family: monospace;
+            font-size: 12px;
+            z-index: 1000;
+            pointer-events: none;
+            max-width: 200px;
+        }
+        
+        /* Highlight layout sections for testing */
+        .test-mode header {
+            outline: 2px dashed rgba(255, 0, 0, 0.5);
+        }
+        
+        .test-mode main {
+            outline: 2px dashed rgba(0, 255, 0, 0.5);
+        }
+        
+        .test-mode #score-container {
+            outline: 2px dashed rgba(0, 0, 255, 0.5);
+        }
+        
+        .test-mode .game-section {
+            outline: 2px dashed rgba(255, 255, 0, 0.5);
+        }
+        
+        .test-mode #board-container {
+            outline: 2px dashed rgba(255, 0, 255, 0.5);
+        }
+        
+        /* Toggle button */
+        .test-toggle {
+            position: fixed;
+            bottom: 10px;
+            right: 10px;
+            z-index: 1001;
+            background: rgba(255, 204, 0, 0.9);
+            color: #000;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 12px;
+            cursor: pointer;
+        }
+    </style>
+</head>
+<body class="test-mode">
+    <div class="layout-info" id="layoutInfo">
+        <div>Screen: <span id="screenSize"></span></div>
+        <div>Viewport: <span id="viewportSize"></span></div>
+        <div>Orientation: <span id="orientation"></span></div>
+        <div>Layout: <span id="layoutType"></span></div>
+    </div>
+    
+    <button class="test-toggle" onclick="toggleTestMode()">Toggle Test Mode</button>
+    
+    <header>
+        <div class="container">
+            <h1>Fancy 2048</h1>
+            <nav class="controls desktop-nav">
+                <button onclick="newGame()" aria-label="New Game">
+                    <i class="fas fa-play" aria-hidden="true"></i> New Game
+                </button>
+                <button onclick="undoMove()" aria-label="Undo Move">
+                    <i class="fas fa-undo" aria-hidden="true"></i> Undo
+                </button>
+                <button onclick="showSettings()" aria-label="Settings">
+                    <i class="fas fa-cog" aria-hidden="true"></i> Settings
+                </button>
+                <button onclick="window.location.href='leaderboard.html'" aria-label="Leaderboard">
+                    <i class="fas fa-trophy" aria-hidden="true"></i> Leaderboard
+                </button>
+            </nav>
+        </div>
+    </header>
+    
+    <main>
+        <aside id="score-container">
+            <ul>
+                <li>Score<span>1024</span></li>
+                <li>Best<span>4096</span></li>
+                <li>Moves<span>152</span></li>
+                <li>Time<span>5:42</span></li>
+            </ul>
+        </aside>
+        
+        <section class="game-section">
+            <div id="board-container" style="--size: 4;">
+                <!-- Test tiles for layout validation -->
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+                <div class="grid-cell"></div>
+            </div>
+        </section>
+    </main>
+    
+    <script>
+        // Layout detection and info display
+        function updateLayoutInfo() {
+            const screenWidth = window.screen.width;
+            const screenHeight = window.screen.height;
+            const viewportWidth = window.innerWidth;
+            const viewportHeight = window.innerHeight;
+            const orientation = window.innerHeight > window.innerWidth ? 'Portrait' : 'Landscape';
+            
+            let layoutType = 'Unknown';
+            if (viewportWidth <= 480 && orientation === 'Portrait') {
+                layoutType = 'Mobile Portrait';
+            } else if (viewportWidth <= 768 && orientation === 'Landscape' && viewportHeight <= 500) {
+                layoutType = 'Mobile Landscape';
+            } else if (viewportWidth >= 481 && viewportWidth <= 768 && orientation === 'Portrait') {
+                layoutType = 'Tablet Portrait';
+            } else if (viewportWidth >= 769 && viewportWidth <= 1024) {
+                layoutType = 'Small Desktop/Tablet Landscape';
+            } else if (viewportWidth >= 1025) {
+                layoutType = 'Large Desktop';
+            }
+            
+            document.getElementById('screenSize').textContent = `${screenWidth}×${screenHeight}`;
+            document.getElementById('viewportSize').textContent = `${viewportWidth}×${viewportHeight}`;
+            document.getElementById('orientation').textContent = orientation;
+            document.getElementById('layoutType').textContent = layoutType;
+        }
+        
+        function toggleTestMode() {
+            document.body.classList.toggle('test-mode');
+        }
+        
+        // Update info on load and resize
+        updateLayoutInfo();
+        window.addEventListener('resize', updateLayoutInfo);
+        window.addEventListener('orientationchange', () => {
+            setTimeout(updateLayoutInfo, 100);
+        });
+        
+        // Mock game functions
+        function newGame() { console.log('New Game'); }
+        function undoMove() { console.log('Undo Move'); }
+        function showSettings() { console.log('Settings'); }
+    </script>
+</body>
+</html>
