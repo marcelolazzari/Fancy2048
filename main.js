@@ -1,4 +1,2548 @@
-class Game {
+/**
+ * AI Learning System for 2048
+ * Stores game history and learns from successful strategies
+ */
+class AILearningSystem {
+  constructor() {
+    this.storageKey = 'fancy2048_ai_learning_data';
+    this.maxStoredGames = 1000; // Limit storage size
+    this.learningData = this.loadLearningData();
+    this.currentGameMoves = [];
+    this.patternWeights = new Map();
+    this.moveSuccessRates = new Map();
+    this.positionStrategies = new Map();
+    
+    // Initialize learning parameters
+    this.learningRate = 0.1;
+    this.explorationRate = 0.15;
+    this.decayRate = 0.995;
+    
+    console.log('🧠 AI Learning System initialized with', this.learningData.games.length, 'historical games');
+  }
+
+  /**
+   * Load existing learning data from localStorage
+   */
+  loadLearningData() {
+    try {
+      const stored = localStorage.getItem(this.storageKey);
+      if (stored) {
+        const data = JSON.parse(stored);
+        return {
+          version: data.version || '1.0.0',
+          created: data.created || new Date().toISOString(),
+          lastUpdated: data.lastUpdated || new Date().toISOString(),
+          games: data.games || [],
+          patterns: data.patterns || {},
+          moveStats: data.moveStats || {},
+          positionWeights: data.positionWeights || {},
+          performance: data.performance || {
+            totalGames: 0,
+            averageScore: 0,
+            maxTileAchieved: 0,
+            winRate: 0
+          }
+        };
+      }
+    } catch (error) {
+      console.warn('⚠️ Error loading AI learning data:', error);
+    }
+
+    // Return default structure
+    return {
+      version: '1.0.0',
+      created: new Date().toISOString(),
+      lastUpdated: new Date().toISOString(),
+      games: [],
+      patterns: {},
+      moveStats: {},
+      positionWeights: {},
+      performance: {
+        totalGames: 0,
+        averageScore: 0,
+        maxTileAchieved: 0,
+        winRate: 0
+      }
+    };
+  }
+
+  /**
+   * Save learning data to localStorage
+   */
+  saveLearningData() {
+    try {
+      this.learningData.lastUpdated = new Date().toISOString();
+      localStorage.setItem(this.storageKey, JSON.stringify(this.learningData));
+      console.log('💾 AI learning data saved successfully');
+    } catch (error) {
+      console.error('❌ Error saving AI learning data:', error);
+    }
+  }
+
+  /**
+   * Record a move during the current game
+   */
+  recordMove(boardState, move, resultState, scoreGained) {
+    const moveData = {
+      timestamp: Date.now(),
+      boardHash: this.hashBoardState(boardState),
+      move: move,
+      boardState: [...boardState],
+      resultState: [...resultState],
+      scoreGained: scoreGained,
+      emptyCells: this.countEmptyCells(boardState),
+      maxTile: Math.max(...boardState),
+      boardFillRatio: this.getBoardFillRatio(boardState)
+    };
+
+    this.currentGameMoves.push(moveData);
+  }
+
+  /**
+   * Record the end of a game and analyze performance
+   */
+  recordGameEnd(finalScore, maxTile, won, totalMoves) {
+    const gameData = {
+      id: this.generateGameId(),
+      timestamp: new Date().toISOString(),
+      finalScore: finalScore,
+      maxTile: maxTile,
+      won: won,
+      totalMoves: totalMoves,
+      moves: [...this.currentGameMoves],
+      duration: this.currentGameMoves.length > 0 ? 
+        this.currentGameMoves[this.currentGameMoves.length - 1].timestamp - this.currentGameMoves[0].timestamp : 0,
+      efficiency: totalMoves > 0 ? finalScore / totalMoves : 0
+    };
+
+    // Add game to learning data
+    this.learningData.games.push(gameData);
+    
+    // Maintain storage limit
+    if (this.learningData.games.length > this.maxStoredGames) {
+      // Remove oldest games, but keep some high-scoring ones
+      this.learningData.games.sort((a, b) => b.finalScore - a.finalScore);
+      const topGames = this.learningData.games.slice(0, Math.floor(this.maxStoredGames * 0.3));
+      const recentGames = this.learningData.games.slice(-Math.floor(this.maxStoredGames * 0.7));
+      this.learningData.games = [...topGames, ...recentGames];
+    }
+
+    // Update performance statistics
+    this.updatePerformanceStats();
+    
+    // Learn from this game
+    this.learnFromGame(gameData);
+    
+    // Save the updated data
+    this.saveLearningData();
+    
+    // Reset for next game
+    this.currentGameMoves = [];
+
+    console.log(`🎮 Game recorded: Score ${finalScore}, Max Tile ${maxTile}, ${won ? 'Won' : 'Lost'}`);
+  }
+
+  /**
+   * Learn patterns and strategies from completed games
+   */
+  learnFromGame(gameData) {
+    // Learn from successful moves
+    gameData.moves.forEach((move, index) => {
+      const pattern = this.extractPattern(move.boardState);
+      const success = this.evaluateMoveSuccess(move, gameData.moves[index + 1]);
+      
+      // Update pattern weights
+      this.updatePatternWeight(pattern, move.move, success);
+      
+      // Update move success rates
+      this.updateMoveSuccessRate(move.boardHash, move.move, success);
+      
+      // Update position strategies
+      this.updatePositionStrategy(move.boardState, move.move, success);
+    });
+
+    // Learn from game outcome
+    this.updateGameOutcomeWeights(gameData);
+  }
+
+  /**
+   * Extract board pattern for learning
+   */
+  extractPattern(boardState) {
+    const size = Math.sqrt(boardState.length);
+    const pattern = {
+      corners: [],
+      edges: [],
+      center: [],
+      maxTilePosition: -1,
+      emptyCount: 0,
+      tileDensity: this.calculateTileDensity(boardState)
+    };
+
+    // Extract corner positions
+    pattern.corners = [
+      boardState[0], // top-left
+      boardState[size - 1], // top-right
+      boardState[size * (size - 1)], // bottom-left
+      boardState[size * size - 1] // bottom-right
+    ];
+
+    // Find max tile position
+    const maxValue = Math.max(...boardState);
+    pattern.maxTilePosition = boardState.indexOf(maxValue);
+
+    // Count empty cells
+    pattern.emptyCount = boardState.filter(cell => cell === 0).length;
+
+    return pattern;
+  }
+
+  /**
+   * Evaluate if a move was successful
+   */
+  evaluateMoveSuccess(currentMove, nextMove) {
+    if (!nextMove) return { score: 0, factors: {} };
+
+    const factors = {
+      scoreGain: nextMove.scoreGained > 0 ? 1 : 0,
+      emptyCellsIncreased: nextMove.emptyCells > currentMove.emptyCells ? 1 : 0,
+      maxTileImproved: nextMove.maxTile > currentMove.maxTile ? 2 : 0,
+      boardFillImproved: nextMove.boardFillRatio < currentMove.boardFillRatio ? 1 : 0
+    };
+
+    const successScore = Object.values(factors).reduce((sum, val) => sum + val, 0);
+    return { score: successScore, factors };
+  }
+
+  /**
+   * Update pattern weight based on success
+   */
+  updatePatternWeight(pattern, move, success) {
+    const patternKey = this.hashPattern(pattern);
+    const moveKey = `${patternKey}_${move}`;
+    
+    if (!this.learningData.patterns[moveKey]) {
+      this.learningData.patterns[moveKey] = {
+        pattern: pattern,
+        move: move,
+        successCount: 0,
+        totalCount: 0,
+        averageSuccess: 0,
+        weight: 1.0
+      };
+    }
+
+    const data = this.learningData.patterns[moveKey];
+    data.totalCount++;
+    data.successCount += success.score;
+    data.averageSuccess = data.successCount / data.totalCount;
+    
+    // Update weight using learning rate
+    const targetWeight = 0.5 + (data.averageSuccess * 0.5);
+    data.weight += this.learningRate * (targetWeight - data.weight);
+  }
+
+  /**
+   * Update move success rate for specific board positions
+   */
+  updateMoveSuccessRate(boardHash, move, success) {
+    const key = `${boardHash}_${move}`;
+    
+    if (!this.learningData.moveStats[key]) {
+      this.learningData.moveStats[key] = {
+        move: move,
+        attempts: 0,
+        successSum: 0,
+        averageSuccess: 0,
+        confidence: 0
+      };
+    }
+
+    const data = this.learningData.moveStats[key];
+    data.attempts++;
+    data.successSum += success.score;
+    data.averageSuccess = data.successSum / data.attempts;
+    data.confidence = Math.min(1.0, data.attempts / 10); // Confidence increases with attempts
+  }
+
+  /**
+   * Update position-based strategy weights
+   */
+  updatePositionStrategy(boardState, move, success) {
+    const maxTilePos = boardState.indexOf(Math.max(...boardState));
+    const emptyCount = boardState.filter(cell => cell === 0).length;
+    const strategyKey = `pos_${maxTilePos}_empty_${emptyCount}_move_${move}`;
+    
+    if (!this.learningData.positionWeights[strategyKey]) {
+      this.learningData.positionWeights[strategyKey] = {
+        position: maxTilePos,
+        emptyCount: emptyCount,
+        move: move,
+        weight: 1.0,
+        samples: 0
+      };
+    }
+
+    const data = this.learningData.positionWeights[strategyKey];
+    data.samples++;
+    
+    // Adjust weight based on success
+    const adjustment = this.learningRate * (success.score - 2); // 2 is average success
+    data.weight = Math.max(0.1, Math.min(3.0, data.weight + adjustment));
+  }
+
+  /**
+   * Get AI recommendation based on learned patterns
+   */
+  getLearnedMoveRecommendation(boardState, possibleMoves) {
+    const recommendations = possibleMoves.map(move => {
+      let score = 1.0; // Base score
+      let confidence = 0.1;
+
+      // Pattern-based recommendation
+      const pattern = this.extractPattern(boardState);
+      const patternKey = `${this.hashPattern(pattern)}_${move}`;
+      
+      if (this.learningData.patterns[patternKey]) {
+        const patternData = this.learningData.patterns[patternKey];
+        score *= patternData.weight;
+        confidence += patternData.averageSuccess * 0.3;
+      }
+
+      // Move statistics recommendation
+      const boardHash = this.hashBoardState(boardState);
+      const moveKey = `${boardHash}_${move}`;
+      
+      if (this.learningData.moveStats[moveKey]) {
+        const moveData = this.learningData.moveStats[moveKey];
+        score *= (1 + moveData.averageSuccess * 0.5);
+        confidence += moveData.confidence * 0.4;
+      }
+
+      // Position strategy recommendation
+      const maxTilePos = boardState.indexOf(Math.max(...boardState));
+      const emptyCount = boardState.filter(cell => cell === 0).length;
+      const strategyKey = `pos_${maxTilePos}_empty_${emptyCount}_move_${move}`;
+      
+      if (this.learningData.positionWeights[strategyKey]) {
+        const posData = this.learningData.positionWeights[strategyKey];
+        score *= posData.weight;
+        confidence += Math.min(1.0, posData.samples / 20) * 0.3;
+      }
+
+      return {
+        move: move,
+        score: score,
+        confidence: Math.min(1.0, confidence),
+        recommendation: score > 1.2 ? 'highly_recommended' : 
+                      score > 0.8 ? 'recommended' : 'neutral'
+      };
+    });
+
+    // Sort by score
+    recommendations.sort((a, b) => b.score - a.score);
+    
+    return recommendations;
+  }
+
+  /**
+   * Get learning statistics for display
+   */
+  getLearningStats() {
+    return {
+      totalGames: this.learningData.games.length,
+      performance: this.learningData.performance,
+      patternsLearned: Object.keys(this.learningData.patterns).length,
+      moveStatsCollected: Object.keys(this.learningData.moveStats).length,
+      positionStrategies: Object.keys(this.learningData.positionWeights).length,
+      averageGameLength: this.calculateAverageGameLength(),
+      topStrategies: this.getTopStrategies(),
+      recentImprovement: this.calculateRecentImprovement()
+    };
+  }
+
+  // Helper methods
+  hashBoardState(boardState) {
+    return boardState.map(cell => cell.toString(36)).join('');
+  }
+
+  hashPattern(pattern) {
+    return JSON.stringify({
+      corners: pattern.corners,
+      maxPos: pattern.maxTilePosition,
+      empty: pattern.emptyCount
+    });
+  }
+
+  countEmptyCells(boardState) {
+    return boardState.filter(cell => cell === 0).length;
+  }
+
+  getBoardFillRatio(boardState) {
+    const nonEmptyCells = boardState.filter(cell => cell > 0).length;
+    return nonEmptyCells / boardState.length;
+  }
+
+  calculateTileDensity(boardState) {
+    const nonZeroCells = boardState.filter(cell => cell > 0);
+    if (nonZeroCells.length === 0) return 0;
+    
+    const sum = nonZeroCells.reduce((acc, val) => acc + Math.log2(val), 0);
+    return sum / nonZeroCells.length;
+  }
+
+  generateGameId() {
+    return Date.now().toString(36) + Math.random().toString(36).substr(2, 5);
+  }
+
+  updatePerformanceStats() {
+    const games = this.learningData.games;
+    if (games.length === 0) return;
+
+    const recent = games.slice(-50); // Last 50 games
+    
+    this.learningData.performance = {
+      totalGames: games.length,
+      averageScore: games.reduce((sum, g) => sum + g.finalScore, 0) / games.length,
+      recentAverageScore: recent.reduce((sum, g) => sum + g.finalScore, 0) / recent.length,
+      maxTileAchieved: Math.max(...games.map(g => g.maxTile)),
+      winRate: games.filter(g => g.won).length / games.length,
+      recentWinRate: recent.filter(g => g.won).length / recent.length,
+      averageGameLength: games.reduce((sum, g) => sum + g.totalMoves, 0) / games.length,
+      bestGame: games.reduce((best, current) => 
+        current.finalScore > best.finalScore ? current : best, games[0])
+    };
+  }
+
+  calculateAverageGameLength() {
+    const games = this.learningData.games;
+    if (games.length === 0) return 0;
+    return games.reduce((sum, g) => sum + g.totalMoves, 0) / games.length;
+  }
+
+  getTopStrategies() {
+    const strategies = Object.values(this.learningData.patterns)
+      .sort((a, b) => b.weight - a.weight)
+      .slice(0, 5);
+    
+    return strategies.map(s => ({
+      move: s.move,
+      weight: s.weight,
+      success: s.averageSuccess,
+      samples: s.totalCount
+    }));
+  }
+
+  calculateRecentImprovement() {
+    const games = this.learningData.games;
+    if (games.length < 20) return 0;
+
+    const oldGames = games.slice(-40, -20);
+    const newGames = games.slice(-20);
+
+    const oldAvg = oldGames.reduce((sum, g) => sum + g.finalScore, 0) / oldGames.length;
+    const newAvg = newGames.reduce((sum, g) => sum + g.finalScore, 0) / newGames.length;
+
+    return ((newAvg - oldAvg) / oldAvg) * 100;
+  }
+
+  updateGameOutcomeWeights(gameData) {
+    // Additional learning from overall game success
+    const gameSuccess = gameData.won ? 3 : (gameData.finalScore > 10000 ? 2 : 1);
+    
+    // Boost weights for moves that led to successful games
+    gameData.moves.forEach((move, index) => {
+      if (index < gameData.moves.length * 0.8) { // Focus on early/mid game moves
+        const pattern = this.extractPattern(move.boardState);
+        const patternKey = `${this.hashPattern(pattern)}_${move.move}`;
+        
+        if (this.learningData.patterns[patternKey]) {
+          this.learningData.patterns[patternKey].weight *= (1 + gameSuccess * 0.05);
+          this.learningData.patterns[patternKey].weight = Math.min(3.0, this.learningData.patterns[patternKey].weight);
+        }
+      }
+    });
+  }
+
+  /**
+   * Export learning data for backup
+   */
+  exportLearningData() {
+    const exportData = {
+      ...this.learningData,
+      exportDate: new Date().toISOString(),
+      exportVersion: '1.0.0'
+    };
+    
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `2048_ai_learning_${new Date().toISOString().split('T')[0]}.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+    
+    console.log('📁 Learning data exported successfully');
+  }
+
+  /**
+   * Import learning data from backup
+   */
+  async importLearningData(file) {
+    return new Promise((resolve, reject) => {
+      const reader = new FileReader();
+      reader.onload = (e) => {
+        try {
+          const importedData = JSON.parse(e.target.result);
+          
+          // Validate and merge data
+          if (importedData.version && importedData.games) {
+            this.learningData = {
+              ...this.learningData,
+              ...importedData,
+              lastUpdated: new Date().toISOString()
+            };
+            
+            this.saveLearningData();
+            console.log('📥 Learning data imported successfully');
+            resolve(this.learningData);
+          } else {
+            reject(new Error('Invalid learning data format'));
+          }
+        } catch (error) {
+          reject(error);
+        }
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  /**
+   * Clear all learning data (reset)
+   */
+  clearLearningData() {
+    localStorage.removeItem(this.storageKey);
+    this.learningData = this.loadLearningData();
+    console.log('🔄 Learning data cleared');
+  }
+}
+
+// Export for use in other modules
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = AILearningSystem;
+}/**
+ * Advanced AI Solver for Fancy2048 
+ * Based on Michael Kim's implementation with Expectimax and optimized heuristics
+ * Uses 64-bit board encoding for performance and advanced evaluation functions
+ */
+
+class AdvancedAI2048Solver {
+  constructor(game) {
+    this.game = game;
+    this.transpositionTable = new Map();
+    this.cacheHits = 0;
+    this.totalLookups = 0;
+    
+    // Initialize learning system with error handling
+    try {
+      if (window.AILearningSystem) {
+        this.learningSystem = new window.AILearningSystem();
+        this.isLearningEnabled = true;
+        console.log('✅ AI Learning System integrated with Advanced AI');
+      } else {
+        console.warn('⚠️ AI Learning System not available, using basic AI mode');
+        this.learningSystem = null;
+        this.isLearningEnabled = false;
+      }
+    } catch (error) {
+      console.error('❌ Failed to initialize AI Learning System:', error);
+      this.learningSystem = null;
+      this.isLearningEnabled = false;
+    }
+    
+    this.currentGameMoves = [];
+    
+    // Enhanced heuristic weights optimized for better performance
+    this.weights = {
+      openness: 2.7,        // Increased weight for empty cells
+      smoothness: 8.0,      // Higher weight for tile smoothness
+      monotonicity: 12.0,   // Much higher weight for monotonicity
+      maxTileCorner: 3.0,   // Increased corner preference
+      merging: 4.0,         // New: weight for merge potential
+      positioning: 2.0      // New: weight for tile positioning strategy
+    };
+    
+    // Performance optimization settings
+    this.maxCacheSize = 50000;
+    this.cleanupThreshold = 40000;
+    
+    // Enhanced monotonicity patterns for better evaluation
+    this.monotonicityPatterns = this.generateMonotonicityPatterns();
+    
+    // Position scoring matrix for strategic tile placement
+    this.positionWeights = this.generatePositionWeights(game.size);
+    
+    // Precomputed lookup tables for performance
+    this.initializeLookupTables();
+
+    // Learning integration with error handling
+    try {
+      this.adaptWeightsFromLearning();
+    } catch (error) {
+      console.error('❌ Failed to adapt weights from learning:', error);
+      // Continue without learning adaptation
+    }
+  }
+
+  /**
+   * Generate enhanced monotonicity patterns for better evaluation
+   */
+  generateMonotonicityPatterns() {
+    return {
+      // Corner strategies - prioritize corners for max tile
+      topLeft: { row: [1, 1, 1, 1], col: [1, 1, 1, 1] },
+      topRight: { row: [1, 1, 1, 1], col: [-1, -1, -1, -1] },
+      bottomLeft: { row: [-1, -1, -1, -1], col: [1, 1, 1, 1] },
+      bottomRight: { row: [-1, -1, -1, -1], col: [-1, -1, -1, -1] }
+    };
+  }
+
+  /**
+   * Generate position weight matrix for strategic evaluation
+   */
+  generatePositionWeights(size) {
+    const weights = [];
+    for (let row = 0; row < size; row++) {
+      weights[row] = [];
+      for (let col = 0; col < size; col++) {
+        // Higher weights for corners and edges
+        const edgeBonus = (row === 0 || row === size - 1 || col === 0 || col === size - 1) ? 1.5 : 1.0;
+        const cornerBonus = ((row === 0 || row === size - 1) && (col === 0 || col === size - 1)) ? 2.0 : 1.0;
+        weights[row][col] = edgeBonus * cornerBonus;
+      }
+    }
+    return weights;
+  }
+
+  /**
+   * Initialize precomputed lookup tables for fast move simulation
+   */
+  initializeLookupTables() {
+    this.leftSlideTable = new Array(65536);
+    this.rightSlideTable = new Array(65536);
+    this.heuristicTable = new Array(65536);
+    
+    // Precompute all possible row movements and heuristics
+    for (let row = 0; row < 65536; row++) {
+      const tiles = this.unpackRow(row);
+      
+      // Calculate left slide
+      const leftResult = this.slideRowLeft(tiles);
+      this.leftSlideTable[row] = this.packRow(leftResult.tiles);
+      
+      // Calculate right slide
+      const rightResult = this.slideRowRight(tiles);
+      this.rightSlideTable[row] = this.packRow(rightResult.tiles);
+      
+      // Calculate heuristic for this row
+      this.heuristicTable[row] = this.calculateRowHeuristic(tiles);
+    }
+  }
+
+  /**
+   * Enhanced AI decision method with adaptive depth, move ordering, and learning integration
+   */
+  getBestMove() {
+    const startTime = performance.now();
+    
+    // Convert board to optimized representation
+    const boardState = this.encodeBoardState(this.game.board);
+    
+    // Get adaptive search depth based on game state
+    const searchDepth = this.getAdaptiveSearchDepth(boardState);
+    
+    // Find best move using enhanced Expectimax algorithm
+    let bestMove = null;
+    let bestScore = -Infinity;
+    const moveScores = {};
+    const moveAnalysis = {};
+    
+    // Evaluate moves in strategic order (corners first, then edges)
+    const directions = this.getMoveOrderByStrategy(boardState);
+    
+    // Get learning-based recommendations if available
+    let learningRecommendations = null;
+    if (this.isLearningEnabled && this.learningSystem) {
+      const validMoves = directions.filter(dir => 
+        this.simulateMove(boardState, dir) !== boardState
+      );
+      
+      if (validMoves.length > 0) {
+        learningRecommendations = this.learningSystem.getLearnedMoveRecommendation(
+          this.decodeBoardStateToArray(boardState), 
+          validMoves
+        );
+      }
+    }
+    
+    for (const direction of directions) {
+      const nextState = this.simulateMove(boardState, direction);
+      
+      if (nextState !== boardState) { // Move is valid
+        // Quick evaluation for move ordering
+        const quickScore = this.evaluateBoard(nextState);
+        
+        // Deep evaluation with expectimax
+        const deepScore = this.expectimax(nextState, searchDepth, false, 1.0);
+        
+        // Learning-based score adjustment
+        let learningBonus = 0;
+        if (learningRecommendations) {
+          const recommendation = learningRecommendations.find(r => r.move === direction);
+          if (recommendation) {
+            learningBonus = (recommendation.score - 1.0) * 1000 * recommendation.confidence;
+          }
+        }
+        
+        // Combined score with quick, deep evaluation, and learning bonus
+        const combinedScore = deepScore + (quickScore * 0.1) + learningBonus;
+        
+        moveScores[direction] = combinedScore;
+        moveAnalysis[direction] = {
+          quick: quickScore,
+          deep: deepScore,
+          learningBonus: learningBonus,
+          combined: combinedScore
+        };
+        
+        if (combinedScore > bestScore) {
+          bestScore = combinedScore;
+          bestMove = direction;
+        }
+      }
+    }
+    
+    const executionTime = performance.now() - startTime;
+    
+    // Record move for learning (if enabled)
+    if (this.isLearningEnabled && bestMove && this.learningSystem) {
+      const currentBoard = this.decodeBoardStateToArray(boardState);
+      const nextBoard = this.decodeBoardStateToArray(this.simulateMove(boardState, bestMove));
+      const scoreGained = this.calculateScoreGain(currentBoard, nextBoard);
+      
+      this.learningSystem.recordMove(currentBoard, bestMove, nextBoard, scoreGained);
+    }
+    
+    // Periodic cache cleanup for memory management
+    if (this.transpositionTable.size > this.maxCacheSize) {
+      this.cleanupTranspositionTable();
+    }
+    
+    // Debug logging for development
+    if (window.debugAI) {
+      console.log(`🤖 Advanced AI Analysis (${executionTime.toFixed(1)}ms):`, {
+        depth: searchDepth,
+        bestMove,
+        scores: moveScores,
+        analysis: moveAnalysis,
+        learningActive: this.isLearningEnabled,
+        learningRecommendations: learningRecommendations,
+        cacheHitRate: (this.cacheHits / Math.max(this.totalLookups, 1) * 100).toFixed(1) + '%'
+      });
+    }
+    
+    // Enhanced fallback logic - ensure we return a valid move
+    if (!bestMove) {
+      // Find any valid move as fallback
+      for (const direction of directions) {
+        const nextState = this.simulateMove(boardState, direction);
+        if (nextState !== boardState) {
+          console.warn(`⚠️ AI using fallback move: ${direction}`);
+          return direction;
+        }
+      }
+      console.warn('⚠️ No valid moves found by Advanced AI');
+      return null; // No moves available
+    }
+    
+    return bestMove;
+  }
+
+  /**
+   * Expectimax algorithm - handles randomness better than pure minimax
+   */
+  expectimax(boardState, depth, isPlayerTurn, probability = 1.0) {
+    this.totalLookups++;
+    
+    // Base cases
+    if (depth === 0 || probability < 0.001) {
+      return this.evaluateBoard(boardState);
+    }
+    
+    // Check transposition table
+    const tableKey = `${boardState}_${depth}_${isPlayerTurn}`;
+    if (this.transpositionTable.has(tableKey)) {
+      this.cacheHits++;
+      return this.transpositionTable.get(tableKey).score;
+    }
+    
+    let result;
+    
+    if (isPlayerTurn) {
+      // Player turn - maximize expected value over all possible moves
+      result = this.maximizePlayerTurn(boardState, depth, probability);
+    } else {
+      // Computer turn - calculate expected value of random tile placement
+      result = this.expectRandomTiles(boardState, depth, probability);
+    }
+    
+    // Store in transposition table
+    this.transpositionTable.set(tableKey, { 
+      score: result, 
+      depth: depth,
+      timestamp: Date.now()
+    });
+    
+    // Cleanup old entries periodically
+    if (this.transpositionTable.size > 100000) {
+      this.cleanupTranspositionTable();
+    }
+    
+    return result;
+  }
+
+  /**
+   * Maximize player turn - try all possible moves
+   */
+  maximizePlayerTurn(boardState, depth, probability) {
+    let maxScore = -Infinity;
+    const directions = ['up', 'down', 'left', 'right'];
+    let hasValidMove = false;
+    
+    for (const direction of directions) {
+      const nextState = this.simulateMove(boardState, direction);
+      
+      if (nextState !== boardState) {
+        hasValidMove = true;
+        const score = this.expectimax(nextState, depth - 1, false, probability);
+        maxScore = Math.max(maxScore, score);
+      }
+    }
+    
+    return hasValidMove ? maxScore : this.evaluateBoard(boardState);
+  }
+
+  /**
+   * Expected value calculation for random tile placement
+   */
+  expectRandomTiles(boardState, depth, probability) {
+    const emptyCells = this.getEmptyCells(boardState);
+    
+    if (emptyCells.length === 0) {
+      return this.evaluateBoard(boardState);
+    }
+    
+    let expectedValue = 0;
+    const numEmpty = emptyCells.length;
+    
+    // Limit cells considered for performance
+    const cellsToConsider = numEmpty > 6 ? 
+      this.selectBestEmptyCells(boardState, emptyCells, 6) : 
+      emptyCells;
+    
+    for (const cellIndex of cellsToConsider) {
+      // Place tile with value 2 (90% probability)
+      const state2 = this.placeTile(boardState, cellIndex, 1); // log2(2) = 1
+      const prob2 = 0.9 * probability / cellsToConsider.length;
+      expectedValue += prob2 * this.expectimax(state2, depth - 1, true, prob2);
+      
+      // Place tile with value 4 (10% probability)
+      const state4 = this.placeTile(boardState, cellIndex, 2); // log2(4) = 2
+      const prob4 = 0.1 * probability / cellsToConsider.length;
+      expectedValue += prob4 * this.expectimax(state4, depth - 1, true, prob4);
+    }
+    
+    return expectedValue;
+  }
+
+  /**
+   * Board encoding for efficient storage and computation
+   */
+  encodeBoardState(board) {
+    let state = 0n;
+    const size = board.length;
+    
+    for (let i = 0; i < size * size; i++) {
+      const row = Math.floor(i / size);
+      const col = i % size;
+      const value = board[row][col];
+      
+      // Convert value to log representation (0 for empty, log2(value) for tiles)
+      let logValue = 0;
+      if (value > 0) {
+        logValue = Math.log2(value);
+      }
+      
+      // Pack into 4 bits per tile
+      state = state | (BigInt(logValue) << (BigInt(i) * 4n));
+    }
+    
+    return state;
+  }
+
+  /**
+   * Decode board state back to 2D array
+   */
+  decodeBoardState(state) {
+    const size = this.game.size;
+    const board = [];
+    
+    for (let row = 0; row < size; row++) {
+      board[row] = [];
+      for (let col = 0; col < size; col++) {
+        const index = row * size + col;
+        const logValue = Number((state >> (BigInt(index) * 4n)) & 0xFn);
+        board[row][col] = logValue === 0 ? 0 : Math.pow(2, logValue);
+      }
+    }
+    
+    return board;
+  }
+
+  /**
+   * Simulate a move in the given direction
+   */
+  simulateMove(boardState, direction) {
+    const size = this.game.size;
+    let newState = boardState;
+    
+    if (size === 4) {
+      // Optimized 4x4 simulation using lookup tables
+      switch (direction) {
+        case 'left':
+          newState = this.simulateMoveLeft4x4(boardState);
+          break;
+        case 'right':
+          newState = this.simulateMoveRight4x4(boardState);
+          break;
+        case 'up':
+          newState = this.simulateMoveUp4x4(boardState);
+          break;
+        case 'down':
+          newState = this.simulateMoveDown4x4(boardState);
+          break;
+      }
+    } else {
+      // General case for other board sizes
+      const board = this.decodeBoardState(boardState);
+      const result = this.simulateGeneralMove(board, direction);
+      newState = this.encodeBoardState(result.board);
+    }
+    
+    return newState;
+  }
+
+  /**
+   * Optimized left move for 4x4 board using lookup tables
+   */
+  simulateMoveLeft4x4(boardState) {
+    let newState = 0n;
+    
+    for (let row = 0; row < 4; row++) {
+      // Extract row (16 bits)
+      const rowBits = Number((boardState >> (BigInt(row) * 16n)) & 0xFFFFn);
+      
+      // Use lookup table for slide
+      const newRowBits = this.leftSlideTable[rowBits];
+      
+      // Pack back into state
+      newState = newState | (BigInt(newRowBits) << (BigInt(row) * 16n));
+    }
+    
+    return newState;
+  }
+
+  /**
+   * Optimized right move for 4x4 board using lookup tables
+   */
+  simulateMoveRight4x4(boardState) {
+    let newState = 0n;
+    
+    for (let row = 0; row < 4; row++) {
+      const rowBits = Number((boardState >> (BigInt(row) * 16n)) & 0xFFFFn);
+      const newRowBits = this.rightSlideTable[rowBits];
+      newState = newState | (BigInt(newRowBits) << (BigInt(row) * 16n));
+    }
+    
+    return newState;
+  }
+
+  /**
+   * Optimized up move for 4x4 board
+   */
+  simulateMoveUp4x4(boardState) {
+    // Transpose, slide left, transpose back
+    const transposed = this.transpose4x4(boardState);
+    const moved = this.simulateMoveLeft4x4(transposed);
+    return this.transpose4x4(moved);
+  }
+
+  /**
+   * Optimized down move for 4x4 board
+   */
+  simulateMoveDown4x4(boardState) {
+    // Transpose, slide right, transpose back
+    const transposed = this.transpose4x4(boardState);
+    const moved = this.simulateMoveRight4x4(transposed);
+    return this.transpose4x4(moved);
+  }
+
+  /**
+   * Transpose 4x4 board state for efficient up/down moves
+   */
+  transpose4x4(boardState) {
+    let result = 0n;
+    
+    for (let row = 0; row < 4; row++) {
+      for (let col = 0; col < 4; col++) {
+        const srcIndex = row * 4 + col;
+        const dstIndex = col * 4 + row;
+        
+        const tile = (boardState >> (BigInt(srcIndex) * 4n)) & 0xFn;
+        result = result | (tile << (BigInt(dstIndex) * 4n));
+      }
+    }
+    
+    return result;
+  }
+
+  /**
+   * General move simulation for non-4x4 boards
+   */
+  simulateGeneralMove(board, direction) {
+    const size = board.length;
+    const newBoard = board.map(row => [...row]);
+    let moved = false;
+    let score = 0;
+    
+    // Implementation similar to your existing move logic
+    // but adapted for the AI simulation context
+    
+    switch (direction) {
+      case 'left':
+        ({ moved, score } = this.simulateGeneralMoveLeft(newBoard));
+        break;
+      case 'right':
+        ({ moved, score } = this.simulateGeneralMoveRight(newBoard));
+        break;
+      case 'up':
+        ({ moved, score } = this.simulateGeneralMoveUp(newBoard));
+        break;
+      case 'down':
+        ({ moved, score } = this.simulateGeneralMoveDown(newBoard));
+        break;
+    }
+    
+    return { board: newBoard, moved, score };
+  }
+
+  /**
+   * Pack 4 tile values into a 16-bit row representation
+   */
+  packRow(tiles) {
+    return tiles[0] | (tiles[1] << 4) | (tiles[2] << 8) | (tiles[3] << 12);
+  }
+
+  /**
+   * Unpack 16-bit row into 4 tile values
+   */
+  unpackRow(row) {
+    return [
+      row & 0xF,
+      (row >> 4) & 0xF,
+      (row >> 8) & 0xF,
+      (row >> 12) & 0xF
+    ];
+  }
+
+  /**
+   * Slide a row of tiles left with merging
+   */
+  slideRowLeft(tiles) {
+    const result = [...tiles];
+    let score = 0;
+    let writeIndex = 0;
+    let lastMerged = false;
+    
+    for (let i = 0; i < 4; i++) {
+      if (result[i] !== 0) {
+        if (writeIndex > 0 && 
+            result[writeIndex - 1] === result[i] && 
+            !lastMerged) {
+          // Merge tiles
+          result[writeIndex - 1]++;
+          score += Math.pow(2, result[writeIndex - 1]);
+          result[i] = 0;
+          lastMerged = true;
+        } else {
+          // Move tile
+          if (i !== writeIndex) {
+            result[writeIndex] = result[i];
+            result[i] = 0;
+          }
+          writeIndex++;
+          lastMerged = false;
+        }
+      }
+    }
+    
+    return { tiles: result, score };
+  }
+
+  /**
+   * Slide a row of tiles right with merging
+   */
+  slideRowRight(tiles) {
+    const reversed = [...tiles].reverse();
+    const result = this.slideRowLeft(reversed);
+    return { 
+      tiles: result.tiles.reverse(), 
+      score: result.score 
+    };
+  }
+
+  /**
+   * Calculate heuristic value for a single row
+   */
+  calculateRowHeuristic(tiles) {
+    let heuristic = 0;
+    
+    // Count empty cells (openness)
+    let emptyCells = 0;
+    for (const tile of tiles) {
+      if (tile === 0) emptyCells++;
+    }
+    heuristic += this.weights.openness * emptyCells;
+    
+    // Calculate smoothness
+    let smoothness = 0;
+    for (let i = 0; i < 3; i++) {
+      if (tiles[i] !== 0 && tiles[i + 1] !== 0) {
+        smoothness -= Math.abs(tiles[i] - tiles[i + 1]);
+      }
+    }
+    heuristic += this.weights.smoothness * smoothness;
+    
+    // Calculate monotonicity
+    let leftMono = 0, rightMono = 0;
+    for (let i = 0; i < 3; i++) {
+      if (tiles[i] > tiles[i + 1]) {
+        leftMono += tiles[i + 1] - tiles[i];
+      } else {
+        rightMono += tiles[i] - tiles[i + 1];
+      }
+    }
+    heuristic += this.weights.monotonicity * Math.max(leftMono, rightMono);
+    
+    // Max tile bonus
+    const maxTile = Math.max(...tiles);
+    heuristic += this.weights.maxTileCorner * maxTile;
+    
+    return heuristic;
+  }
+
+  /**
+   * Evaluate board state using precomputed heuristics
+   */
+  evaluateBoard(boardState) {
+    let score = 0;
+    
+    if (this.game.size === 4) {
+      // Optimized evaluation for 4x4 boards
+      for (let row = 0; row < 4; row++) {
+        const rowBits = Number((boardState >> (BigInt(row) * 16n)) & 0xFFFFn);
+        score += this.heuristicTable[rowBits];
+      }
+      
+      // Add column heuristics
+      const transposed = this.transpose4x4(boardState);
+      for (let row = 0; row < 4; row++) {
+        const rowBits = Number((transposed >> (BigInt(row) * 16n)) & 0xFFFFn);
+        score += this.heuristicTable[rowBits];
+      }
+    } else {
+      // General evaluation for other board sizes
+      const board = this.decodeBoardState(boardState);
+      score = this.evaluateGeneralBoard(board);
+    }
+    
+    return score;
+  }
+
+  /**
+   * General board evaluation for non-4x4 boards
+   */
+  evaluateGeneralBoard(board) {
+    const size = board.length;
+    let score = 0;
+    
+    // Empty cells bonus
+    let emptyCells = 0;
+    for (let row = 0; row < size; row++) {
+      for (let col = 0; col < size; col++) {
+        if (board[row][col] === 0) emptyCells++;
+      }
+    }
+    score += this.weights.openness * emptyCells;
+    
+    // Smoothness and monotonicity
+    score += this.weights.smoothness * this.calculateGeneralSmoothness(board);
+    score += this.weights.monotonicity * this.calculateGeneralMonotonicity(board);
+    
+    // Max tile corner bonus
+    const maxTile = this.getMaxTile(board);
+    if (this.isMaxTileInCorner(board, maxTile)) {
+      score += this.weights.maxTileCorner * Math.log2(maxTile);
+    }
+    
+    return score;
+  }
+
+  /**
+   * Get empty cell positions from board state
+   */
+  getEmptyCells(boardState) {
+    const emptyCells = [];
+    const size = this.game.size;
+    
+    for (let i = 0; i < size * size; i++) {
+      const tile = Number((boardState >> (BigInt(i) * 4n)) & 0xFn);
+      if (tile === 0) {
+        emptyCells.push(i);
+      }
+    }
+    
+    return emptyCells;
+  }
+
+  /**
+   * Select best empty cells for tile placement consideration
+   */
+  selectBestEmptyCells(boardState, emptyCells, maxCells) {
+    // For now, just return first maxCells empty cells
+    // Could be enhanced with position-based scoring
+    return emptyCells.slice(0, maxCells);
+  }
+
+  /**
+   * Place a tile at the specified position
+   */
+  placeTile(boardState, cellIndex, logValue) {
+    const mask = ~(0xFn << (BigInt(cellIndex) * 4n));
+    const newState = boardState & BigInt(mask);
+    return newState | (BigInt(logValue) << (BigInt(cellIndex) * 4n));
+  }
+
+  /**
+   * Get adaptive search depth based on game state
+   */
+  getSearchDepth(boardState) {
+    const emptyCells = this.getEmptyCells(boardState);
+    const maxTileLog = this.getMaxTileLog(boardState);
+    
+    // Increase depth as game progresses
+    if (maxTileLog < 11) { // Before 2048 tile
+      return 3;
+    } else if (maxTileLog < 12) { // Before 4096 tile
+      return 4;
+    } else {
+      // After 4096, adjust depth based on empty cells
+      if (emptyCells.length > 4) return 4;
+      if (emptyCells.length > 3) return 5;
+      return 6;
+    }
+  }
+
+  /**
+   * Get maximum tile log value from board state
+   */
+  getMaxTileLog(boardState) {
+    let maxLog = 0;
+    const size = this.game.size;
+    
+    for (let i = 0; i < size * size; i++) {
+      const tile = Number((boardState >> (BigInt(i) * 4n)) & 0xFn);
+      maxLog = Math.max(maxLog, tile);
+    }
+    
+    return maxLog;
+  }
+
+  /**
+   * Get maximum tile value from regular board
+   */
+  getMaxTile(board) {
+    let maxTile = 0;
+    for (const row of board) {
+      for (const tile of row) {
+        maxTile = Math.max(maxTile, tile);
+      }
+    }
+    return maxTile;
+  }
+
+  /**
+   * Check if max tile is in corner
+   */
+  isMaxTileInCorner(board, maxTile) {
+    const size = board.length;
+    const corners = [
+      [0, 0], [0, size - 1], [size - 1, 0], [size - 1, size - 1]
+    ];
+    
+    return corners.some(([row, col]) => board[row][col] === maxTile);
+  }
+
+  /**
+   * Calculate smoothness for general board
+   */
+  calculateGeneralSmoothness(board) {
+    const size = board.length;
+    let smoothness = 0;
+    
+    for (let row = 0; row < size; row++) {
+      for (let col = 0; col < size; col++) {
+        if (board[row][col] !== 0) {
+          const logValue = Math.log2(board[row][col]);
+          
+          // Check right neighbor
+          if (col < size - 1 && board[row][col + 1] !== 0) {
+            smoothness -= Math.abs(logValue - Math.log2(board[row][col + 1]));
+          }
+          
+          // Check down neighbor
+          if (row < size - 1 && board[row + 1][col] !== 0) {
+            smoothness -= Math.abs(logValue - Math.log2(board[row + 1][col]));
+          }
+        }
+      }
+    }
+    
+    return smoothness;
+  }
+
+  /**
+   * Calculate monotonicity for general board
+   */
+  calculateGeneralMonotonicity(board) {
+    const size = board.length;
+    let totalMono = 0;
+    
+    // Horizontal monotonicity
+    for (let row = 0; row < size; row++) {
+      let leftMono = 0, rightMono = 0;
+      for (let col = 1; col < size; col++) {
+        const prev = board[row][col - 1] || 1;
+        const curr = board[row][col] || 1;
+        const diff = Math.log2(curr) - Math.log2(prev);
+        
+        if (diff > 0) leftMono += diff;
+        else rightMono -= diff;
+      }
+      totalMono += Math.max(leftMono, rightMono);
+    }
+    
+    // Vertical monotonicity  
+    for (let col = 0; col < size; col++) {
+      let upMono = 0, downMono = 0;
+      for (let row = 1; row < size; row++) {
+        const prev = board[row - 1][col] || 1;
+        const curr = board[row][col] || 1;
+        const diff = Math.log2(curr) - Math.log2(prev);
+        
+        if (diff > 0) upMono += diff;
+        else downMono -= diff;
+      }
+      totalMono += Math.max(upMono, downMono);
+    }
+    
+    return totalMono;
+  }
+
+  /**
+   * General move simulation methods (simplified versions)
+   */
+  simulateGeneralMoveLeft(board) {
+    const size = board.length;
+    let moved = false;
+    let score = 0;
+    
+    for (let row = 0; row < size; row++) {
+      const rowResult = this.slideRowLeft(board[row].map(v => v === 0 ? 0 : Math.log2(v)));
+      
+      for (let col = 0; col < size; col++) {
+        const newValue = rowResult.tiles[col] === 0 ? 0 : Math.pow(2, rowResult.tiles[col]);
+        if (board[row][col] !== newValue) {
+          moved = true;
+        }
+        board[row][col] = newValue;
+      }
+      score += rowResult.score;
+    }
+    
+    return { moved, score };
+  }
+
+  simulateGeneralMoveRight(board) {
+    const size = board.length;
+    let moved = false;
+    let score = 0;
+    
+    for (let row = 0; row < size; row++) {
+      const rowResult = this.slideRowRight(board[row].map(v => v === 0 ? 0 : Math.log2(v)));
+      
+      for (let col = 0; col < size; col++) {
+        const newValue = rowResult.tiles[col] === 0 ? 0 : Math.pow(2, rowResult.tiles[col]);
+        if (board[row][col] !== newValue) {
+          moved = true;
+        }
+        board[row][col] = newValue;
+      }
+      score += rowResult.score;
+    }
+    
+    return { moved, score };
+  }
+
+  simulateGeneralMoveUp(board) {
+    const size = board.length;
+    let moved = false;
+    let score = 0;
+    
+    for (let col = 0; col < size; col++) {
+      const column = [];
+      for (let row = 0; row < size; row++) {
+        column.push(board[row][col] === 0 ? 0 : Math.log2(board[row][col]));
+      }
+      
+      const colResult = this.slideRowLeft(column);
+      
+      for (let row = 0; row < size; row++) {
+        const newValue = colResult.tiles[row] === 0 ? 0 : Math.pow(2, colResult.tiles[row]);
+        if (board[row][col] !== newValue) {
+          moved = true;
+        }
+        board[row][col] = newValue;
+      }
+      score += colResult.score;
+    }
+    
+    return { moved, score };
+  }
+
+  simulateGeneralMoveDown(board) {
+    const size = board.length;
+    let moved = false;
+    let score = 0;
+    
+    for (let col = 0; col < size; col++) {
+      const column = [];
+      for (let row = 0; row < size; row++) {
+        column.push(board[row][col] === 0 ? 0 : Math.log2(board[row][col]));
+      }
+      
+      const colResult = this.slideRowRight(column);
+      
+      for (let row = 0; row < size; row++) {
+        const newValue = colResult.tiles[row] === 0 ? 0 : Math.pow(2, colResult.tiles[row]);
+        if (board[row][col] !== newValue) {
+          moved = true;
+        }
+        board[row][col] = newValue;
+      }
+      score += colResult.score;
+    }
+    
+    return { moved, score };
+  }
+
+  /**
+   * Get strategic move order based on current board state
+   */
+  getMoveOrderByStrategy(boardState) {
+    const directions = ['up', 'down', 'left', 'right'];
+    const board = this.decodeBoardState(boardState);
+    const maxTile = this.getMaxTile(board);
+    
+    // Find where the max tile is located
+    let maxTilePosition = null;
+    for (let row = 0; row < this.game.size; row++) {
+      for (let col = 0; col < this.game.size; col++) {
+        if (board[row][col] === maxTile) {
+          maxTilePosition = { row, col };
+          break;
+        }
+      }
+      if (maxTilePosition) break;
+    }
+    
+    // Order moves to maintain max tile in corner
+    if (maxTilePosition) {
+      const { row, col } = maxTilePosition;
+      const isTopRow = row === 0;
+      const isBottomRow = row === this.game.size - 1;
+      const isLeftCol = col === 0;
+      const isRightCol = col === this.game.size - 1;
+      
+      // Prioritize moves that keep max tile in corner
+      if (isTopRow && isLeftCol) {
+        return ['left', 'up', 'right', 'down'];
+      } else if (isTopRow && isRightCol) {
+        return ['right', 'up', 'left', 'down'];
+      } else if (isBottomRow && isLeftCol) {
+        return ['left', 'down', 'right', 'up'];
+      } else if (isBottomRow && isRightCol) {
+        return ['right', 'down', 'left', 'up'];
+      }
+    }
+    
+    // Default strategic order
+    return ['up', 'left', 'right', 'down'];
+  }
+
+  /**
+   * Get adaptive search depth based on game complexity
+   */
+  getAdaptiveSearchDepth(boardState) {
+    const emptyCells = this.getEmptyCells(boardState);
+    const maxTileLog = this.getMaxTileLog(boardState);
+    const boardSize = this.game.size * this.game.size;
+    const fillRatio = (boardSize - emptyCells.length) / boardSize;
+    
+    // Base depth increases with game progression
+    let baseDepth = 3;
+    
+    // Increase depth based on max tile achieved
+    if (maxTileLog >= 11) baseDepth = 4; // 2048 tile
+    if (maxTileLog >= 12) baseDepth = 5; // 4096 tile
+    if (maxTileLog >= 13) baseDepth = 6; // 8192 tile
+    
+    // Increase depth as board fills up (critical decisions)
+    if (fillRatio > 0.8) baseDepth += 1;
+    if (fillRatio > 0.9) baseDepth += 1;
+    
+    // Decrease depth if performance is critical (many empty cells)
+    if (emptyCells.length > 8) baseDepth = Math.max(3, baseDepth - 1);
+    
+    // Cap depth based on board size to maintain performance
+    const maxDepth = this.game.size === 3 ? 6 : this.game.size === 4 ? 8 : 6;
+    
+    return Math.min(baseDepth, maxDepth);
+  }
+
+  /**
+   * Clean up old transposition table entries
+   */
+  cleanupTranspositionTable() {
+    const cutoffTime = Date.now() - 30000; // 30 seconds ago
+    const keysToDelete = [];
+    
+    for (const [key, value] of this.transpositionTable.entries()) {
+      if (value.timestamp < cutoffTime) {
+        keysToDelete.push(key);
+      }
+    }
+    
+    keysToDelete.forEach(key => this.transpositionTable.delete(key));
+    
+    if (window.debugAI) {
+      console.log(`🧹 Cleaned ${keysToDelete.length} old cache entries`);
+    }
+  }
+
+  /**
+   * Decode board state to 2D array
+   */
+  decodeBoardState(boardState) {
+    const board = [];
+    for (let row = 0; row < this.game.size; row++) {
+      board[row] = [];
+      for (let col = 0; col < this.game.size; col++) {
+        board[row][col] = boardState[row * this.game.size + col];
+      }
+    }
+    return board;
+  }
+
+  /**
+   * Get maximum tile value on the board
+   */
+  getMaxTile(board) {
+    let max = 0;
+    for (let row = 0; row < this.game.size; row++) {
+      for (let col = 0; col < this.game.size; col++) {
+        if (board[row][col] > max) {
+          max = board[row][col];
+        }
+      }
+    }
+    return max;
+  }
+
+  /**
+   * Get maximum tile value log2 on the board state
+   */
+  getMaxTileLog(boardState) {
+    let max = 0;
+    for (let i = 0; i < boardState.length; i++) {
+      if (boardState[i] > max) {
+        max = boardState[i];
+      }
+    }
+    return max === 0 ? 0 : Math.log2(max);
+  }
+
+  /**
+   * Check monotonicity patterns in the board
+   */
+  checkMonotonicityPatterns(board) {
+    const size = this.game.size;
+    
+    // Check for snake patterns (zigzag)
+    const patterns = {
+      snakeDown: true,
+      snakeRight: true,
+      cornerTopLeft: true,
+      cornerTopRight: true,
+      cornerBottomLeft: true,
+      cornerBottomRight: true
+    };
+    
+    // Snake down pattern (columns decreasing left to right, rows increasing top to bottom)
+    for (let col = 0; col < size - 1; col++) {
+      for (let row = 0; row < size - 1; row++) {
+        if (board[row][col] < board[row][col + 1] || board[row][col] < board[row + 1][col]) {
+          patterns.snakeDown = false;
+          break;
+        }
+      }
+    }
+    
+    // Check corner patterns
+    const corners = [
+      { pattern: 'cornerTopLeft', row: 0, col: 0 },
+      { pattern: 'cornerTopRight', row: 0, col: size - 1 },
+      { pattern: 'cornerBottomLeft', row: size - 1, col: 0 },
+      { pattern: 'cornerBottomRight', row: size - 1, col: size - 1 }
+    ];
+    
+    corners.forEach(({ pattern, row, col }) => {
+      const cornerValue = board[row][col];
+      let isCornerMax = true;
+      
+      // Check if corner has the maximum or near-maximum value
+      for (let r = 0; r < size; r++) {
+        for (let c = 0; c < size; c++) {
+          if (board[r][c] > cornerValue * 2) {
+            isCornerMax = false;
+            break;
+          }
+        }
+        if (!isCornerMax) break;
+      }
+      
+      patterns[pattern] = isCornerMax;
+    });
+    
+    return patterns;
+  }
+
+  /**
+   * Calculate position-based tile weights
+   */
+  getPositionWeights(board) {
+    const size = this.game.size;
+    const weights = [];
+    
+    // Create weight matrix favoring corners and edges
+    for (let row = 0; row < size; row++) {
+      weights[row] = [];
+      for (let col = 0; col < size; col++) {
+        let weight = 1;
+        
+        // Corner bonus
+        if ((row === 0 || row === size - 1) && (col === 0 || col === size - 1)) {
+          weight += 3;
+        }
+        // Edge bonus
+        else if (row === 0 || row === size - 1 || col === 0 || col === size - 1) {
+          weight += 1;
+        }
+        
+        // Distance from corners (penalty for center)
+        const distanceFromCorner = Math.min(
+          Math.min(row, size - 1 - row) + Math.min(col, size - 1 - col),
+          Math.min(row, size - 1 - row) + Math.min(col, size - 1 - col)
+        );
+        
+        weight -= distanceFromCorner * 0.5;
+        
+        weights[row][col] = Math.max(0.1, weight);
+      }
+    }
+    
+    return weights;
+  }
+
+  /**
+   * Calculate strategic board evaluation
+   */
+  calculateStrategicEvaluation(board) {
+    const patterns = this.checkMonotonicityPatterns(board);
+    const positionWeights = this.getPositionWeights(board);
+    const size = this.game.size;
+    
+    let strategicScore = 0;
+    
+    // Monotonicity bonus
+    if (patterns.snakeDown) strategicScore += 1000;
+    if (patterns.snakeRight) strategicScore += 500;
+    
+    // Corner strategy bonus
+    Object.keys(patterns).forEach(pattern => {
+      if (pattern.startsWith('corner') && patterns[pattern]) {
+        strategicScore += 2000;
+      }
+    });
+    
+    // Position-weighted tile values
+    for (let row = 0; row < size; row++) {
+      for (let col = 0; col < size; col++) {
+        if (board[row][col] > 0) {
+          strategicScore += board[row][col] * positionWeights[row][col];
+        }
+      }
+    }
+    
+    return strategicScore;
+  }
+
+  /**
+   * Get performance statistics
+   */
+  getStats() {
+    const baseStats = {
+      cacheHits: this.cacheHits,
+      totalLookups: this.totalLookups,
+      cacheHitRate: this.totalLookups > 0 ? (this.cacheHits / this.totalLookups) : 0,
+      transpositionTableSize: this.transpositionTable.size,
+      weights: { ...this.weights }
+    };
+
+    // Add learning statistics if available
+    if (this.isLearningEnabled && this.learningSystem) {
+      const learningStats = this.learningSystem.getLearningStats();
+      return {
+        ...baseStats,
+        learning: learningStats
+      };
+    }
+
+    return baseStats;
+  }
+
+  /**
+   * Adjust heuristic weights
+   */
+  adjustWeights(newWeights) {
+    this.weights = { ...this.weights, ...newWeights };
+    
+    // Recalculate heuristic table if weights changed
+    for (let row = 0; row < 65536; row++) {
+      const tiles = this.unpackRow(row);
+      this.heuristicTable[row] = this.calculateRowHeuristic(tiles);
+    }
+  }
+
+  /**
+   * Clear caches and reset statistics
+   */
+  reset() {
+    this.transpositionTable.clear();
+    this.cacheHits = 0;
+    this.totalLookups = 0;
+    
+    if (this.isLearningEnabled && this.learningSystem) {
+      this.currentGameMoves = [];
+    }
+  }
+
+  // Learning Integration Methods
+
+  /**
+   * Adapt AI weights based on learning data
+   */
+  adaptWeightsFromLearning() {
+    if (!this.isLearningEnabled || !this.learningSystem) return;
+    
+    const learningStats = this.learningSystem.getLearningStats();
+    const performance = learningStats.performance;
+    
+    if (learningStats.totalGames > 10) {
+      // Adjust weights based on recent performance
+      const recentImprovement = learningStats.recentImprovement || 0;
+      
+      if (recentImprovement > 5) {
+        // Recent performance is good, slightly increase exploration
+        this.weights.openness *= 1.05;
+        this.weights.merging *= 1.02;
+      } else if (recentImprovement < -5) {
+        // Recent performance is poor, focus more on proven strategies
+        this.weights.monotonicity *= 1.05;
+        this.weights.maxTileCorner *= 1.03;
+      }
+      
+      // Ensure weights stay within reasonable bounds
+      Object.keys(this.weights).forEach(key => {
+        this.weights[key] = Math.max(0.5, Math.min(20.0, this.weights[key]));
+      });
+      
+      if (window.debugAI) {
+        console.log('🎯 AI weights adapted based on learning data:', this.weights);
+      }
+    }
+  }
+
+  /**
+   * Record game completion for learning
+   */
+  recordGameCompletion(finalScore, maxTile, won) {
+    if (!this.isLearningEnabled || !this.learningSystem) return;
+    
+    const totalMoves = this.currentGameMoves.length;
+    this.learningSystem.recordGameEnd(finalScore, maxTile, won, totalMoves);
+    
+    // Adapt weights after each game
+    this.adaptWeightsFromLearning();
+    
+    if (window.debugAI) {
+      console.log(`🎓 Game learning recorded: Score ${finalScore}, Max ${maxTile}, ${won ? 'Won' : 'Lost'}`);
+    }
+  }
+
+  /**
+   * Enable/disable learning system
+   */
+  setLearningEnabled(enabled) {
+    this.isLearningEnabled = enabled;
+    
+    if (window.debugAI) {
+      console.log(`🧠 AI Learning ${enabled ? 'enabled' : 'disabled'}`);
+    }
+  }
+
+  /**
+   * Get learning system reference for external access
+   */
+  getLearningSystem() {
+    return this.learningSystem;
+  }
+
+  /**
+   * Helper method to decode board state to array
+   */
+  decodeBoardStateToArray(boardState) {
+    const board = [];
+    for (let i = 0; i < 16; i++) {
+      board[i] = this.extractTileValue(boardState, i);
+    }
+    return board;
+  }
+
+  /**
+   * Calculate score gained from a move
+   */
+  calculateScoreGain(beforeBoard, afterBoard) {
+    // Simple estimation based on tiles merged
+    let scoreGain = 0;
+    const size = Math.sqrt(beforeBoard.length);
+    
+    for (let i = 0; i < beforeBoard.length; i++) {
+      if (afterBoard[i] > beforeBoard[i] && beforeBoard[i] > 0) {
+        // Tile was merged
+        scoreGain += afterBoard[i];
+      }
+    }
+    
+    return scoreGain;
+  }
+
+  /**
+   * Extract tile value from encoded board state at position
+   */
+  extractTileValue(boardState, position) {
+    const shift = position * 4;
+    const mask = 0xF;
+    const tileCode = (boardState >> shift) & mask;
+    return tileCode === 0 ? 0 : Math.pow(2, tileCode);
+  }
+}
+
+// Export for use in other files
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = AdvancedAI2048Solver;
+}
+
+// Make available globally
+window.AdvancedAI2048Solver = AdvancedAI2048Solver;
+/**
+ * Enhanced AI for Fancy2048 using Minimax with Alpha-Beta Pruning
+ * This AI can consistently reach 2048, 4096, and often 8192 or higher
+ */
+
+class Enhanced2048AI {
+  constructor(game) {
+    this.game = game;
+    this.maxDepth = 4; // Adjust based on performance (3-6 recommended)
+    this.cacheHits = 0;
+    this.cacheSize = 0;
+    this.evaluationCache = new Map();
+    
+    // Tuned weights for optimal performance
+    this.weights = {
+      emptyCells: 270,
+      smoothness: 100,
+      monotonicity: 1000,
+      maxTileCorner: 200,
+      merging: 500,
+      positionScores: 150
+    };
+
+    // Precomputed position scores (higher values for corners/edges)
+    this.positionWeights = this.generatePositionWeights();
+  }
+
+  // Main method called by the game
+  getBestMove() {
+    const startTime = performance.now();
+    
+    // Clear cache periodically to prevent memory issues
+    if (this.evaluationCache.size > 10000) {
+      this.evaluationCache.clear();
+      this.cacheSize = 0;
+    }
+
+    const directions = ['up', 'down', 'left', 'right'];
+    let bestMove = null;
+    let bestScore = -Infinity;
+    let moveEvaluations = [];
+
+    for (const direction of directions) {
+      if (this.game.canMove(direction)) {
+        const moveResult = this.simulatePlayerMove(direction, this.game.board);
+        
+        if (moveResult.moved) {
+          const score = this.minimax(
+            moveResult.board, 
+            moveResult.score,
+            this.maxDepth - 1, 
+            -Infinity, 
+            Infinity, 
+            false
+          );
+          
+          moveEvaluations.push({
+            direction,
+            score,
+            improvement: moveResult.score
+          });
+          
+          if (score > bestScore) {
+            bestScore = score;
+            bestMove = direction;
+          }
+        }
+      }
+    }
+
+    const executionTime = performance.now() - startTime;
+    
+    // Debug logging (can be disabled in production)
+    if (window.debugAI) {
+      console.log(`AI Decision in ${executionTime.toFixed(2)}ms:`);
+      console.log('Move evaluations:', moveEvaluations);
+      console.log(`Cache hits: ${this.cacheHits}/${this.cacheSize}`);
+    }
+
+    return bestMove || directions[Math.floor(Math.random() * directions.length)];
+  }
+
+  // Minimax algorithm with Alpha-Beta pruning
+  minimax(board, currentScore, depth, alpha, beta, isMaximizing) {
+    if (depth === 0 || this.isGameOver(board)) {
+      return this.evaluateBoard(board, currentScore);
+    }
+
+    // Try to use cached evaluation
+    const boardKey = this.getBoardKey(board);
+    const cacheKey = `${boardKey}_${depth}_${isMaximizing}`;
+    
+    if (this.evaluationCache.has(cacheKey)) {
+      this.cacheHits++;
+      return this.evaluationCache.get(cacheKey);
+    }
+
+    let result;
+
+    if (isMaximizing) {
+      // Player's turn - try all possible moves
+      result = this.maximizePlayer(board, currentScore, depth, alpha, beta);
+    } else {
+      // Computer's turn - place random tiles
+      result = this.minimizeComputer(board, currentScore, depth, alpha, beta);
+    }
+
+    // Cache the result
+    this.evaluationCache.set(cacheKey, result);
+    this.cacheSize++;
+
+    return result;
+  }
+
+  maximizePlayer(board, currentScore, depth, alpha, beta) {
+    let maxScore = -Infinity;
+    const directions = ['up', 'down', 'left', 'right'];
+    let hasValidMove = false;
+
+    for (const direction of directions) {
+      const moveResult = this.simulatePlayerMove(direction, board);
+      
+      if (moveResult.moved) {
+        hasValidMove = true;
+        const score = this.minimax(
+          moveResult.board, 
+          currentScore + moveResult.score,
+          depth - 1, 
+          alpha, 
+          beta, 
+          false
+        );
+        
+        maxScore = Math.max(maxScore, score);
+        alpha = Math.max(alpha, score);
+        
+        if (beta <= alpha) break; // Alpha-Beta pruning
+      }
+    }
+
+    return hasValidMove ? maxScore : this.evaluateBoard(board, currentScore);
+  }
+
+  minimizeComputer(board, currentScore, depth, alpha, beta) {
+    const emptyCells = this.getEmptyCells(board);
+    
+    if (emptyCells.length === 0) {
+      return this.evaluateBoard(board, currentScore);
+    }
+
+    let minScore = Infinity;
+    
+    // Limit the number of empty cells we consider for performance
+    const cellsToConsider = emptyCells.length > 6 ? 
+      this.selectBestEmptyCells(board, emptyCells, 6) : 
+      emptyCells;
+
+    for (const cell of cellsToConsider) {
+      // 90% chance of 2, 10% chance of 4
+      const expectedScore = 
+        0.9 * this.evaluateTilePlacement(board, cell, 2, currentScore, depth, alpha, beta) +
+        0.1 * this.evaluateTilePlacement(board, cell, 4, currentScore, depth, alpha, beta);
+      
+      minScore = Math.min(minScore, expectedScore);
+      beta = Math.min(beta, expectedScore);
+      
+      if (beta <= alpha) break; // Alpha-Beta pruning
+    }
+
+    return minScore;
+  }
+
+  evaluateTilePlacement(board, cell, value, currentScore, depth, alpha, beta) {
+    const newBoard = this.cloneBoard(board);
+    newBoard[cell.row][cell.col] = value;
+    
+    return this.minimax(newBoard, currentScore, depth - 1, alpha, beta, true);
+  }
+
+  // Comprehensive board evaluation function
+  evaluateBoard(board, currentScore = 0) {
+    if (this.isGameOver(board)) {
+      return -Infinity; // Game over is very bad
+    }
+
+    const emptyCellsScore = this.weights.emptyCells * this.countEmptyCells(board);
+    const smoothnessScore = this.weights.smoothness * this.calculateSmoothness(board);
+    const monotonicityScore = this.weights.monotonicity * this.calculateMonotonicity(board);
+    const cornerScore = this.weights.maxTileCorner * this.calculateCornerScore(board);
+    const mergingScore = this.weights.merging * this.calculateMergingPotential(board);
+    const positionScore = this.weights.positionScores * this.calculatePositionScore(board);
+
+    return currentScore + 
+           emptyCellsScore + 
+           smoothnessScore + 
+           monotonicityScore + 
+           cornerScore + 
+           mergingScore + 
+           positionScore;
+  }
+
+  // Enhanced smoothness calculation
+  calculateSmoothness(board) {
+    const size = board.length;
+    let smoothness = 0;
+
+    for (let row = 0; row < size; row++) {
+      for (let col = 0; col < size; col++) {
+        const currentValue = board[row][col];
+        if (currentValue !== 0) {
+          const logValue = Math.log2(currentValue);
+          
+          // Check right neighbor
+          if (col < size - 1) {
+            const rightValue = board[row][col + 1];
+            if (rightValue !== 0) {
+              smoothness -= Math.abs(logValue - Math.log2(rightValue));
+            }
+          }
+          
+          // Check bottom neighbor
+          if (row < size - 1) {
+            const bottomValue = board[row + 1][col];
+            if (bottomValue !== 0) {
+              smoothness -= Math.abs(logValue - Math.log2(bottomValue));
+            }
+          }
+        }
+      }
+    }
+
+    return smoothness;
+  }
+
+  // Enhanced monotonicity calculation
+  calculateMonotonicity(board) {
+    const size = board.length;
+    let totalMono = 0;
+
+    // Horizontal monotonicity
+    for (let row = 0; row < size; row++) {
+      let inc = 0, dec = 0;
+      for (let col = 1; col < size; col++) {
+        const prev = board[row][col - 1] || 1;
+        const curr = board[row][col] || 1;
+        const prevLog = Math.log2(prev);
+        const currLog = Math.log2(curr);
+        
+        if (currLog > prevLog) {
+          inc += currLog - prevLog;
+        } else if (currLog < prevLog) {
+          dec += prevLog - currLog;
+        }
+      }
+      totalMono += Math.max(inc, dec);
+    }
+
+    // Vertical monotonicity
+    for (let col = 0; col < size; col++) {
+      let inc = 0, dec = 0;
+      for (let row = 1; row < size; row++) {
+        const prev = board[row - 1][col] || 1;
+        const curr = board[row][col] || 1;
+        const prevLog = Math.log2(prev);
+        const currLog = Math.log2(curr);
+        
+        if (currLog > prevLog) {
+          inc += currLog - prevLog;
+        } else if (currLog < prevLog) {
+          dec += prevLog - currLog;
+        }
+      }
+      totalMono += Math.max(inc, dec);
+    }
+
+    return totalMono;
+  }
+
+  // Calculate corner bonus for keeping max tile in corner
+  calculateCornerScore(board) {
+    const size = board.length;
+    const maxTile = this.getMaxTile(board);
+    let cornerScore = 0;
+
+    // Check all four corners
+    const corners = [
+      [0, 0], [0, size - 1], [size - 1, 0], [size - 1, size - 1]
+    ];
+
+    for (const [row, col] of corners) {
+      if (board[row][col] === maxTile) {
+        cornerScore += Math.log2(maxTile) * 10;
+        break; // Only reward one corner
+      }
+    }
+
+    return cornerScore;
+  }
+
+  // Calculate merging potential
+  calculateMergingPotential(board) {
+    const size = board.length;
+    let mergingScore = 0;
+
+    for (let row = 0; row < size; row++) {
+      for (let col = 0; col < size; col++) {
+        const current = board[row][col];
+        if (current !== 0) {
+          // Check adjacent cells for potential merges
+          const neighbors = [
+            [row - 1, col], [row + 1, col], [row, col - 1], [row, col + 1]
+          ];
+          
+          for (const [r, c] of neighbors) {
+            if (r >= 0 && r < size && c >= 0 && c < size) {
+              const neighbor = board[r][c];
+              if (neighbor === current) {
+                mergingScore += Math.log2(current) * 2;
+              }
+            }
+          }
+        }
+      }
+    }
+
+    return mergingScore;
+  }
+
+  // Calculate position-based scoring
+  calculatePositionScore(board) {
+    const size = board.length;
+    let positionScore = 0;
+
+    for (let row = 0; row < size; row++) {
+      for (let col = 0; col < size; col++) {
+        const value = board[row][col];
+        if (value !== 0) {
+          positionScore += Math.log2(value) * this.positionWeights[row][col];
+        }
+      }
+    }
+
+    return positionScore;
+  }
+
+  // Generate position weight matrix (higher values for corners and edges)
+  generatePositionWeights() {
+    const size = this.game.size;
+    const weights = [];
+    
+    for (let row = 0; row < size; row++) {
+      weights[row] = [];
+      for (let col = 0; col < size; col++) {
+        // Distance from corner (0,0)
+        const distanceFromCorner = Math.min(row, col);
+        // Prefer corners and edges
+        weights[row][col] = size - distanceFromCorner;
+      }
+    }
+    
+    return weights;
+  }
+
+  // Utility methods
+  simulatePlayerMove(direction, board) {
+    const clonedBoard = this.cloneBoard(board);
+    const originalBoard = this.cloneBoard(board);
+    let moved = false;
+    let score = 0;
+
+    // Simulate the move (you'll need to adapt this to your game's move logic)
+    switch (direction) {
+      case 'up':
+        ({ moved, score } = this.simulateMoveUp(clonedBoard));
+        break;
+      case 'down':
+        ({ moved, score } = this.simulateMoveDown(clonedBoard));
+        break;
+      case 'left':
+        ({ moved, score } = this.simulateMoveLeft(clonedBoard));
+        break;
+      case 'right':
+        ({ moved, score } = this.simulateMoveRight(clonedBoard));
+        break;
+    }
+
+    return {
+      board: clonedBoard,
+      moved: moved,
+      score: score
+    };
+  }
+
+  // Move simulation methods (adapt these to match your game's logic exactly)
+  simulateMoveLeft(board) {
+    const size = board.length;
+    let moved = false;
+    let score = 0;
+    const merged = [];
+
+    for (let row = 0; row < size; row++) {
+      merged[row] = new Array(size).fill(false);
+      
+      // Move tiles left
+      for (let col = 1; col < size; col++) {
+        if (board[row][col] !== 0) {
+          let newCol = col;
+          
+          // Find the leftmost position
+          while (newCol > 0 && board[row][newCol - 1] === 0) {
+            newCol--;
+          }
+          
+          // Check for merge
+          if (newCol > 0 && 
+              board[row][newCol - 1] === board[row][col] && 
+              !merged[row][newCol - 1]) {
+            board[row][newCol - 1] *= 2;
+            score += board[row][newCol - 1];
+            board[row][col] = 0;
+            merged[row][newCol - 1] = true;
+            moved = true;
+          } else if (newCol !== col) {
+            board[row][newCol] = board[row][col];
+            board[row][col] = 0;
+            moved = true;
+          }
+        }
+      }
+    }
+
+    return { moved, score };
+  }
+
+  simulateMoveRight(board) {
+    const size = board.length;
+    let moved = false;
+    let score = 0;
+    const merged = [];
+
+    for (let row = 0; row < size; row++) {
+      merged[row] = new Array(size).fill(false);
+      
+      for (let col = size - 2; col >= 0; col--) {
+        if (board[row][col] !== 0) {
+          let newCol = col;
+          
+          while (newCol < size - 1 && board[row][newCol + 1] === 0) {
+            newCol++;
+          }
+          
+          if (newCol < size - 1 && 
+              board[row][newCol + 1] === board[row][col] && 
+              !merged[row][newCol + 1]) {
+            board[row][newCol + 1] *= 2;
+            score += board[row][newCol + 1];
+            board[row][col] = 0;
+            merged[row][newCol + 1] = true;
+            moved = true;
+          } else if (newCol !== col) {
+            board[row][newCol] = board[row][col];
+            board[row][col] = 0;
+            moved = true;
+          }
+        }
+      }
+    }
+
+    return { moved, score };
+  }
+
+  simulateMoveUp(board) {
+    const size = board.length;
+    let moved = false;
+    let score = 0;
+    const merged = [];
+
+    for (let col = 0; col < size; col++) {
+      merged[col] = new Array(size).fill(false);
+      
+      for (let row = 1; row < size; row++) {
+        if (board[row][col] !== 0) {
+          let newRow = row;
+          
+          while (newRow > 0 && board[newRow - 1][col] === 0) {
+            newRow--;
+          }
+          
+          if (newRow > 0 && 
+              board[newRow - 1][col] === board[row][col] && 
+              !merged[col][newRow - 1]) {
+            board[newRow - 1][col] *= 2;
+            score += board[newRow - 1][col];
+            board[row][col] = 0;
+            merged[col][newRow - 1] = true;
+            moved = true;
+          } else if (newRow !== row) {
+            board[newRow][col] = board[row][col];
+            board[row][col] = 0;
+            moved = true;
+          }
+        }
+      }
+    }
+
+    return { moved, score };
+  }
+
+  simulateMoveDown(board) {
+    const size = board.length;
+    let moved = false;
+    let score = 0;
+    const merged = [];
+
+    for (let col = 0; col < size; col++) {
+      merged[col] = new Array(size).fill(false);
+      
+      for (let row = size - 2; row >= 0; row--) {
+        if (board[row][col] !== 0) {
+          let newRow = row;
+          
+          while (newRow < size - 1 && board[newRow + 1][col] === 0) {
+            newRow++;
+          }
+          
+          if (newRow < size - 1 && 
+              board[newRow + 1][col] === board[row][col] && 
+              !merged[col][newRow + 1]) {
+            board[newRow + 1][col] *= 2;
+            score += board[newRow + 1][col];
+            board[row][col] = 0;
+            merged[col][newRow + 1] = true;
+            moved = true;
+          } else if (newRow !== row) {
+            board[newRow][col] = board[row][col];
+            board[row][col] = 0;
+            moved = true;
+          }
+        }
+      }
+    }
+
+    return { moved, score };
+  }
+
+  // Helper methods
+  cloneBoard(board) {
+    return board.map(row => row.slice());
+  }
+
+  getEmptyCells(board) {
+    const emptyCells = [];
+    for (let row = 0; row < board.length; row++) {
+      for (let col = 0; col < board[row].length; col++) {
+        if (board[row][col] === 0) {
+          emptyCells.push({ row, col });
+        }
+      }
+    }
+    return emptyCells;
+  }
+
+  selectBestEmptyCells(board, emptyCells, maxCells) {
+    // Select empty cells that are most likely to be useful
+    // Prioritize corners and edges
+    return emptyCells
+      .map(cell => ({
+        ...cell,
+        priority: this.positionWeights[cell.row][cell.col]
+      }))
+      .sort((a, b) => b.priority - a.priority)
+      .slice(0, maxCells);
+  }
+
+  countEmptyCells(board) {
+    return this.getEmptyCells(board).length;
+  }
+
+  getMaxTile(board) {
+    let maxTile = 0;
+    for (let row = 0; row < board.length; row++) {
+      for (let col = 0; col < board[row].length; col++) {
+        maxTile = Math.max(maxTile, board[row][col]);
+      }
+    }
+    return maxTile;
+  }
+
+  isGameOver(board) {
+    // Check if there are empty cells
+    if (this.countEmptyCells(board) > 0) {
+      return false;
+    }
+
+    // Check if any moves are possible
+    const size = board.length;
+    for (let row = 0; row < size; row++) {
+      for (let col = 0; col < size; col++) {
+        const current = board[row][col];
+        
+        // Check right neighbor
+        if (col < size - 1 && board[row][col + 1] === current) {
+          return false;
+        }
+        
+        // Check bottom neighbor
+        if (row < size - 1 && board[row + 1][col] === current) {
+          return false;
+        }
+      }
+    }
+
+    return true;
+  }
+
+  getBoardKey(board) {
+    return board.map(row => row.join(',')).join(';');
+  }
+
+  // Performance tuning methods
+  setDepth(depth) {
+    this.maxDepth = Math.max(2, Math.min(6, depth));
+  }
+
+  adjustWeights(newWeights) {
+    this.weights = { ...this.weights, ...newWeights };
+  }
+
+  getStats() {
+    return {
+      cacheHits: this.cacheHits,
+      cacheSize: this.cacheSize,
+      maxDepth: this.maxDepth,
+      weights: { ...this.weights }
+    };
+  }
+}
+
+// Export for use in other files
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = Enhanced2048AI;
+}
+
+// Enable AI debugging in console
+window.Enhanced2048AI = Enhanced2048AI;class Game {
   constructor(size = 4) {
     console.log(`Initializing game with size: ${size}x${size}`);
     
