@@ -628,9 +628,13 @@ main {
   }
 }
 
-/* Mobile Score Container - Shown above board on mobile */
-.mobile-score-container {
-  display: block;
+/* ===========================================
+   UNIFIED SCORE CONTAINER SYSTEM
+   Responsive score display that works on all devices
+   =========================================== */
+
+/* Unified Score Container - Responsive for all devices */
+.score-container {
   width: 100%;
   max-width: min(520px, 90vw);
   margin: 0 auto 20px auto;
@@ -640,27 +644,58 @@ main {
   backdrop-filter: blur(10px);
   border: 1px solid rgba(255, 204, 0, 0.2);
   box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+  box-sizing: border-box;
 }
 
+/* Desktop Layout (>768px) - Beside board */
 @media (min-width: 769px) {
-  .mobile-score-container {
-    display: none;
+  .score-container {
+    display: block;
+    width: 250px;
+    margin: 0 0 0 30px;
+    background: linear-gradient(135deg, rgba(255, 204, 0, 0.1) 0%, rgba(0, 0, 0, 0.4) 100%);
+    border-radius: 20px;
+    padding: 25px;
+    align-self: flex-start;
+    position: sticky;
+    top: 120px;
   }
 }
 
-.mobile-score-grid {
+/* Large Desktop (>1024px) - Enhanced styling */
+@media (min-width: 1025px) {
+  .score-container {
+    width: 280px;
+    padding: 30px;
+    border-radius: 25px;
+  }
+}
+
+/* Score Grid Layout */
+.score-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   gap: 10px;
 }
 
+/* Mobile Portrait - 2x2 grid */
 @media (max-width: 480px) {
-  .mobile-score-grid {
+  .score-grid {
     grid-template-columns: repeat(2, 1fr);
     gap: 15px;
   }
 }
 
+/* Desktop - Vertical stack */
+@media (min-width: 769px) {
+  .score-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+}
+
+/* Score Item Styling */
 .score-item {
   display: flex;
   flex-direction: column;
@@ -670,8 +705,29 @@ main {
   background: rgba(255, 255, 255, 0.05);
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.1);
+  transition: all 0.3s ease;
 }
 
+/* Desktop score item styling */
+@media (min-width: 769px) {
+  .score-item {
+    flex-direction: row;
+    justify-content: space-between;
+    padding: 12px 16px;
+    background: rgba(255, 255, 255, 0.08);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 0;
+    border-left: none;
+    border-right: none;
+    border-top: none;
+  }
+
+  .score-item:last-child {
+    border-bottom: none;
+  }
+}
+
+/* Score Labels */
 .score-label {
   font-size: 0.8em;
   color: var(--highlight-color);
@@ -681,6 +737,16 @@ main {
   letter-spacing: 0.5px;
 }
 
+@media (min-width: 769px) {
+  .score-label {
+    font-size: 1.1em;
+    margin-bottom: 0;
+    font-weight: 500;
+    color: #ffffff;
+  }
+}
+
+/* Score Values */
 .score-value {
   font-size: 1.1em;
   color: #ffffff;
@@ -688,51 +754,68 @@ main {
   min-height: 1.5em;
   display: flex;
   align-items: center;
-}
-
-/* Desktop Score Container - Hidden on mobile */
-.desktop-score-container {
-  display: none;
+  transition: all 0.3s ease;
 }
 
 @media (min-width: 769px) {
-  .desktop-score-container {
-    display: block;
-    width: 250px;
-    margin-left: 30px;
-    background: linear-gradient(135deg, rgba(255, 204, 0, 0.1) 0%, rgba(0, 0, 0, 0.4) 100%);
-    border-radius: 20px;
-    padding: 25px;
-    backdrop-filter: blur(10px);
-    border: 1px solid rgba(255, 204, 0, 0.2);
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
-    align-self: flex-start;
-    position: sticky;
-    top: 120px;
-  }
-  
-  .desktop-score-container ul {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-  }
-  
-  .desktop-score-container li {
-    padding: 12px 0;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-    font-size: 1.1em;
-    color: #ffffff;
-    font-weight: 500;
-  }
-  
-  .desktop-score-container li:last-child {
-    border-bottom: none;
-  }
-  
-  .desktop-score-container span {
+  .score-value {
+    font-size: 1.4em;
     color: var(--highlight-color);
-    font-weight: 700;
+    font-weight: 800;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   }
+}
+
+/* New best score animation */
+.score-value.new-best-score {
+  animation: newBestScore 1.5s ease-out;
+}
+
+@keyframes newBestScore {
+  0% { transform: scale(1); }
+  50% { 
+    transform: scale(1.2); 
+    text-shadow: 0 0 15px currentColor;
+  }
+  100% { transform: scale(1); }
+}
+
+/* Game message styling */
+.game-message {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  background: rgba(0, 0, 0, 0.9);
+  color: white;
+  padding: 30px;
+  border-radius: 15px;
+  text-align: center;
+  z-index: 1000;
+  border: 2px solid var(--highlight-color);
+  backdrop-filter: blur(10px);
+}
+
+.win-message {
+  background: linear-gradient(135deg, rgba(255, 204, 0, 0.9), rgba(255, 215, 0, 0.9));
+  color: #000;
+}
+
+.game-action-btn {
+  margin: 10px 5px 0;
+  padding: 12px 20px;
+  background: var(--highlight-color);
+  color: var(--primary-color);
+  border: none;
+  border-radius: 8px;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+}
+
+.game-action-btn:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
 }
 
 /* Game Section - Enhanced */

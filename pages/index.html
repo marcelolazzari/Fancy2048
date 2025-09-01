@@ -160,44 +160,39 @@
     <main id="main-content">
       <div class="overlay" aria-hidden="true"></div>
       
-      <!-- Mobile score display above board -->
-      <aside id="mobile-score-container" class="mobile-score-container" aria-labelledby="mobile-score-title">
-        <h2 id="mobile-score-title" class="visually-hidden">Score Information</h2>
-        <div class="mobile-score-grid">
+      <!-- Unified score display - responsive for mobile/desktop -->
+      <aside id="score-container" class="score-container" aria-labelledby="score-title">
+        <h2 id="score-title" class="visually-hidden">Game Statistics</h2>
+        <div class="score-grid">
           <div class="score-item">
             <span class="score-label">Score</span>
-            <span id="mobile-score" class="score-value">0</span>
+            <span id="score" class="score-value">0</span>
           </div>
           <div class="score-item">
             <span class="score-label">Best</span>
-            <span id="mobile-best-score" class="score-value">0</span>
+            <span id="best-score" class="score-value">0</span>
           </div>
           <div class="score-item">
             <span class="score-label">Moves</span>
-            <span id="mobile-moves" class="score-value">0</span>
+            <span id="moves" class="score-value">0</span>
           </div>
           <div class="score-item">
             <span class="score-label">Time</span>
-            <span id="mobile-time" class="score-value">00:00</span>
+            <span id="time" class="score-value">00:00</span>
           </div>
         </div>
       </aside>
       
       <section class="game-section">
         <div id="board-container" class="board-container" role="grid" aria-label="Game Board" tabindex="0"></div>
-        <div id="game-over" class="hidden" role="alert" aria-live="assertive">Game Over!</div>
+        <div id="game-over" class="hidden game-message" role="alert" aria-live="assertive">Game Over!</div>
+        <div id="win-message" class="hidden game-message win-message" role="alert" aria-live="assertive">
+          <h3>You Win!</h3>
+          <p>Congratulations! You reached 2048!</p>
+          <button id="continue-button" class="game-action-btn">Continue Playing</button>
+          <button id="new-game-button" class="game-action-btn">New Game</button>
+        </div>
       </section>
-
-      <!-- Desktop score display beside board -->
-      <aside id="score-container" class="desktop-score-container" aria-labelledby="score-title">
-        <h2 id="score-title" class="visually-hidden">Score Information</h2>
-        <ul>
-          <li>Score: <span id="score">0</span></li>
-          <li>Best: <span id="best-score">0</span></li>
-          <li>Moves: <span id="moves">0</span></li>
-          <li>Time: <span id="time">00:00</span></li>
-        </ul>
-      </aside>
     </main>
 
     <!-- Footer section -->
@@ -218,102 +213,47 @@
         boardContainer: !!document.getElementById('board-container'),
         scoreContainer: !!document.getElementById('score-container'),
         score: !!document.getElementById('score'),
-        bestScore: !!document.getElementById('best-score')
       });
       
-      // Global error handler
-      window.addEventListener('error', (event) => {
-        console.error('🚨 Global error:', event.error);
-        console.error('File:', event.filename, 'Line:', event.lineno, 'Column:', event.colno);
+      // Global error handler for script loading
+      window.addEventListener('error', (e) => {
+        console.error('Script loading error:', e.filename, e.lineno, e.message);
       });
-      
-      // Unhandled promise rejection handler
-      window.addEventListener('unhandledrejection', (event) => {
-        console.error('🚨 Unhandled promise rejection:', event.reason);
-      });
-      
-      // Function to load script with fallback paths
-      function loadScript(primarySrc, fallbackSrc, name) {
-        return new Promise((resolve, reject) => {
-          const script = document.createElement('script');
-          script.src = primarySrc;
-          script.onerror = () => {
-            console.warn(`⚠️ Failed to load ${name} from ${primarySrc}, trying fallback...`);
-            if (fallbackSrc) {
-              const fallbackScript = document.createElement('script');
-              fallbackScript.src = fallbackSrc;
-              fallbackScript.onload = () => {
-                console.log(`✅ Loaded ${name} from fallback: ${fallbackSrc}`);
-                resolve();
-              };
-              fallbackScript.onerror = () => {
-                console.error(`❌ Failed to load ${name} from both paths`);
-                reject(new Error(`Failed to load ${name}`));
-              };
-              document.head.appendChild(fallbackScript);
-            } else {
-              console.error(`❌ Failed to load ${name}`);
-              reject(new Error(`Failed to load ${name}`));
-            }
-          };
-          script.onload = () => {
-            console.log(`✅ Loaded ${name} from: ${primarySrc}`);
-            resolve();
-          };
-          document.head.appendChild(script);
-        });
-      }
-      
-      // Load scripts sequentially with fallback support
-      async function loadAllScripts() {
-        try {
-          // Load enhanced core components first
-          await loadScript('../scripts/game_core.js', '/Fancy2048/scripts/game_core.js', 'game_core.js');
-          await loadScript('../scripts/enhanced_ai_core.js', '/Fancy2048/scripts/enhanced_ai_core.js', 'enhanced_ai_core.js');
-          await loadScript('../scripts/game_over_manager.js', '/Fancy2048/scripts/game_over_manager.js', 'game_over_manager.js');
-          
-          // Load original components
-          await loadScript('../scripts/ai_learning_system.js', '/Fancy2048/scripts/ai_learning_system.js', 'ai_learning_system.js');
-          await loadScript('../scripts/advanced_ai_solver.js', '/Fancy2048/scripts/advanced_ai_solver.js', 'advanced_ai_solver.js');
-          await loadScript('../scripts/enhanced_ai.js', '/Fancy2048/scripts/enhanced_ai.js', 'enhanced_ai.js');
-          
-          // Load original game engine
-          await loadScript('../scripts/game.js', '/Fancy2048/scripts/game.js', 'game.js');
-          
-          // Load enhanced integration layer
-          await loadScript('../scripts/enhanced_game_integration.js', '/Fancy2048/scripts/enhanced_game_integration.js', 'enhanced_game_integration.js');
-          
-          console.log('✅ All enhanced scripts loaded successfully');
-          
-          // Initialize enhanced game after all scripts are loaded
-          if (typeof EnhancedGame !== 'undefined') {
-            console.log('🚀 Initializing Enhanced Game...');
-            window.game = new EnhancedGame(4);
-            console.log('✅ Enhanced Game initialized successfully');
-          } else {
-            console.warn('⚠️ EnhancedGame not available, using original Game');
-            if (typeof Game !== 'undefined') {
-              window.game = new Game(4);
-            }
-          }
-        } catch (error) {
-          console.error('❌ Script loading failed:', error);
-          // Show user-friendly error
-          document.body.innerHTML += `
-            <div style="position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.9); color: #ff6b6b; display: flex; align-items: center; justify-content: center; z-index: 10000; text-align: center; font-family: Arial;">
-              <div>
-                <h2>🚨 Game Loading Error</h2>
-                <p>Failed to load game scripts. Please refresh the page.</p>
-                <p style="font-size: 0.9em; opacity: 0.8;">Error: ${error.message}</p>
-                <button onclick="location.reload()" style="padding: 10px 20px; background: #ff6b6b; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 20px;">Refresh Page</button>
-              </div>
-            </div>
-          `;
+    </script>
+    
+    <!-- Load Unified Managers First -->
+    <script src="../scripts/unified_data_manager.js" onerror="console.error('Failed to load unified_data_manager.js')"></script>
+    <script src="../scripts/unified_ui_manager.js" onerror="console.error('Failed to load unified_ui_manager.js')"></script>
+    
+    <!-- Load AI and Game Logic -->
+    <script src="../scripts/ai_learning_system.js" onerror="console.error('Failed to load ai_learning_system.js')"></script>
+    <script src="../scripts/enhanced_ai.js" onerror="console.error('Failed to load enhanced_ai.js')"></script>
+    <script src="../scripts/advanced_ai_solver.js" onerror="console.error('Failed to load advanced_ai_solver.js')"></script>
+    <script src="../scripts/enhanced_ai_core.js" onerror="console.error('Failed to load enhanced_ai_core.js')"></script>
+    <script src="../scripts/game_core.js" onerror="console.error('Failed to load game_core.js')"></script>
+    <script src="../scripts/game_over_manager.js" onerror="console.error('Failed to load game_over_manager.js')"></script>
+    <script src="../scripts/enhanced_game_integration.js" onerror="console.error('Failed to load enhanced_game_integration.js')"></script>
+    
+    <!-- Load Main Game Last -->
+    <script src="../scripts/game.js" onerror="console.error('Failed to load game.js')"></script>
+    
+    <script>
+      // Post-initialization debugging
+      setTimeout(() => {
+        console.log('🎮 Script loading completed. Available systems:');
+        console.log('- UnifiedDataManager:', !!window.UnifiedDataManager);
+        console.log('- UnifiedUIManager:', !!window.UnifiedUIManager);
+        console.log('- AILearningSystem:', !!window.AILearningSystem);
+        console.log('- Enhanced2048AI:', !!window.Enhanced2048AI);
+        console.log('- Game2048Core:', !!window.Game2048Core);
+        console.log('- Game:', !!window.Game);
+        
+        // Initialize game if not already done
+        if (typeof initializeFancy2048 === 'function' && !window.gameInstance) {
+          console.log('🚀 Initializing game...');
+          initializeFancy2048();
         }
-      }
-      
-      // Start loading scripts
-      loadAllScripts();
+      }, 100);
     </script>
   </body>
 </html>

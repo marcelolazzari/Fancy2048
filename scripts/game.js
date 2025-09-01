@@ -1,14 +1,27 @@
 class Game {
   constructor(size = 4) {
-    console.log(`Initializing game with size: ${size}x${size}`);
+    console.log(`🎮 Initializing Fancy2048 Game (${size}×${size})`);
+    
+    // Initialize unified managers first
+    this.dataManager = window.unifiedDataManager || new UnifiedDataManager();
+    this.uiManager = window.unifiedUIManager || new UnifiedUIManager();
+    
+    // Subscribe to UI changes
+    this.uiManager.subscribe((event) => {
+      this.handleUIEvent(event);
+    });
+    
+    // Load settings and data from unified data manager
+    const settings = this.dataManager.getSettings();
+    const savedGame = this.dataManager.loadGameState();
     
     // Core game properties
     this.size = size;
-    this.board = this.createEmptyBoard();
-    this.score = 0;
-    this.bestScore = +localStorage.getItem('bestScore') || 0;
-    this.moves = 0;
-    this.startTime = null;
+    this.board = savedGame?.board || this.createEmptyBoard();
+    this.score = savedGame?.score || 0;
+    this.bestScore = this.dataManager.getData('bestScore', 0);
+    this.moves = savedGame?.moves || 0;
+    this.startTime = savedGame?.time || null;
 
     // Game states
     this.gameState = 'playing';
@@ -23,39 +36,65 @@ class Game {
     this.lastMoveDirection = null;
     this.lastMerged = [];
     
-    // Game history for undo
+    // Game history for undo - optimized based on device
     this.gameStateStack = [];
-    this.maxUndoSteps = 10;
+    this.maxUndoSteps = this.isMobile() ? 5 : 10;
     
-    // Visual settings
-    this.isLightMode = localStorage.getItem('isLightMode') === 'true';
-    this.hueValue = parseInt(localStorage.getItem('hueValue')) || 0;
+    // Visual settings from unified settings
+    this.isLightMode = settings.theme === 'light';
+    this.hueValue = settings.hueValue || 0;
     
     // Touch handling with performance optimization
     this.touchStartX = null;
     this.touchStartY = null;
     this.touchMoved = false;
     this.touchStartTime = null;
-    this.lastTouchTime = 0; // Throttle touch events
-    this.touchThrottleDelay = 50; // ms
+    this.lastTouchTime = 0;
+    this.touchThrottleDelay = 50;
     
     // Timer
     this.timerInterval = null;
     
-    // Stats with memory management
-    this.stats = JSON.parse(localStorage.getItem('gameStats')) || [];
-    this.maxStoredStats = 500; // Prevent memory bloat
+    // Stats managed by unified data manager
+    this.maxStoredStats = 500;
     
     // Performance optimization
     this.debounceTimeout = null;
-    this.resizeTimeout = null; // For resize throttling
+    this.resizeTimeout = null;
     
-    // Mobile state management with enhanced lifecycle
+    // Mobile state management
     this.lastSavedState = null;
     this.autoSaveInterval = null;
     this.pageVisibilityTimeout = null;
-    this.backgroundTime = 0; // Track time in background
+    this.backgroundTime = 0;
     this.isInBackground = false;
+
+    // Enhanced mobile detection
+    this.isMobileDevice = this.detectMobileDevice();
+    this.isTablet = this.detectTablet();
+    this.isDesktop = !this.isMobileDevice && !this.isTablet;
+    
+    // Game features from settings
+    this.animationSpeed = settings.animationsEnabled ? 1 : 0;
+    this.soundEnabled = settings.soundEnabled;
+    this.vibrationEnabled = settings.vibrationEnabled;
+    
+    // AI Integration with unified data
+    this.aiLearningSystem = new AILearningSystem();
+    this.enhancedAI = null;
+    this.isAIPlaying = false;
+    this.aiSpeed = 1000;
+    this.aiDifficulty = settings.aiDifficulty || 'normal';
+    this.gameMode = savedGame?.gameMode || 'human';
+    
+    // Performance tracking
+    this.performanceMetrics = {
+      moveStartTime: 0,
+      totalMoveTime: 0,
+      moveCount: 0,
+      averageMoveTime: 0,
+      slowMoves: 0
+    };
 
     // Autoplay properties with improved performance
     this.isAutoPlaying = false;
@@ -105,7 +144,7 @@ class Game {
       this.initializeEnhancedSystems();
       
       // AI performance settings
-      this.aiDifficulty = localStorage.getItem('aiDifficulty') || 'normal';
+      this.aiDifficulty = this.dataManager.getData('aiDifficulty', 'normal');
       this.adaptiveDepth = true;
       
       // Enhanced game state persistence (improved mobile handling)
@@ -493,7 +532,7 @@ class Game {
       // Initialize button text on startup
       const buttonText = aiDifficultyButton.querySelector('.button-text');
       if (buttonText) {
-        const savedDifficulty = localStorage.getItem('aiDifficulty') || 'normal';
+        const savedDifficulty = this.dataManager.getData('aiDifficulty', 'normal');
         this.aiDifficulty = savedDifficulty;
         const capitalizedDifficulty = this.aiDifficulty.charAt(0).toUpperCase() + this.aiDifficulty.slice(1);
         buttonText.textContent = capitalizedDifficulty;
@@ -628,7 +667,7 @@ class Game {
   updateBestScore() {
     if (this.score > this.bestScore) {
       this.bestScore = this.score;
-      localStorage.setItem('bestScore', this.bestScore);
+      this.dataManager.setData('bestScore', this.bestScore);
     }
   }
 
@@ -640,7 +679,7 @@ class Game {
     try {
       let stats = [];
       try {
-        stats = JSON.parse(localStorage.getItem('gameStats')) || [];
+        stats = this.dataManager.getData('gameStats', []);
       } catch (e) {
         this.showNotification('No game statistics to export!', 'error');
         return;
@@ -756,8 +795,11 @@ class Game {
         playMode: this.getPlayModeString() // Get comprehensive play mode
       };
       
-      this.stats.push(stat);
-      localStorage.setItem('gameStats', JSON.stringify(this.stats));
+      // Use unified data manager for statistics
+      const currentStats = this.dataManager.getData('gameStats', []);
+      currentStats.push(stat);
+      this.dataManager.setData('gameStats', currentStats);
+      this.stats = currentStats;
     }
   }
 
@@ -781,27 +823,28 @@ class Game {
     }
     
     this.startTime = new Date();
-    this.pausedTime = 0; // Reset paused time
-    const timeElement = document.getElementById('time');
-    const mobileTimeElement = document.getElementById('mobile-time');
+    this.pausedTime = 0;
     
     this.timerInterval = setInterval(() => {
-      if (!this.isPaused && (timeElement || mobileTimeElement) && this.gameState === 'playing') {
+      if (!this.isPaused && this.gameState === 'playing') {
         const currentTime = new Date();
         const totalElapsed = Math.floor((currentTime - this.startTime) / 1000);
-        const actualGameTime = totalElapsed - this.pausedTime; // Subtract paused time
-        const minutes = Math.floor(actualGameTime / 60).toString().padStart(2, '0');
-        const seconds = (actualGameTime % 60).toString().padStart(2, '0');
-        const timeString = `${minutes}:${seconds}`;
+        const actualGameTime = totalElapsed - this.pausedTime;
+        const timeString = this.formatTime(actualGameTime);
         
-        if (timeElement) {
-          timeElement.textContent = timeString;
-        }
-        if (mobileTimeElement) {
-          mobileTimeElement.textContent = timeString;
-        }
+        // Update through unified UI manager
+        this.uiManager.updateTime(timeString);
       }
     }, 1000);
+  }
+
+  /**
+   * Format time for display
+   */
+  formatTime(seconds) {
+    const minutes = Math.floor(seconds / 60).toString().padStart(2, '0');
+    const secs = (seconds % 60).toString().padStart(2, '0');
+    return `${minutes}:${secs}`;
   }
 
   // Board manipulation functions with improved grid creation
@@ -831,7 +874,7 @@ class Game {
     this.hidePauseOverlay();
     
     // Clear saved mobile state
-    localStorage.removeItem('currentGameState');
+    this.dataManager.removeData('currentGameState');
     
     // Reset game state
     this.board = this.createEmptyBoard();
@@ -1352,61 +1395,62 @@ class Game {
 
 
   updateScoreDisplay() {
-    // Update desktop score container
-    const scoreElement = document.getElementById('score');
-    const bestScoreElement = document.getElementById('best-score');
-    const movesElement = document.getElementById('moves');
+    // Use unified UI manager for consistent score updates
+    this.uiManager.updateAllStats({
+      score: this.score,
+      bestScore: this.bestScore,
+      moves: this.moves,
+      time: this.formatTime(Math.floor((Date.now() - (this.startTime || Date.now())) / 1000))
+    });
     
-    // Update mobile score container
-    const mobileScoreElement = document.getElementById('mobile-score');
-    const mobileBestScoreElement = document.getElementById('mobile-best-score');
-    const mobileMovesElement = document.getElementById('mobile-moves');
-    
-    if (scoreElement) {
-      // Animate score changes
-      const oldScore = parseInt(scoreElement.textContent) || 0;
-      if (oldScore !== this.score) {
-        this.animateNumberChange(scoreElement, oldScore, this.score);
-      }
+    // Update best score in data manager if needed
+    if (this.score > this.bestScore) {
+      this.bestScore = this.score;
+      this.dataManager.setData('bestScore', this.bestScore);
     }
+  }
+
+  /**
+   * Handle UI events from unified UI manager
+   */
+  handleUIEvent(event) {
+    const { event: eventType, value, oldValue } = event;
     
-    if (mobileScoreElement) {
-      const oldMobileScore = parseInt(mobileScoreElement.textContent) || 0;
-      if (oldMobileScore !== this.score) {
-        this.animateNumberChange(mobileScoreElement, oldMobileScore, this.score);
-      }
+    switch (eventType) {
+      case 'score':
+        // Handle score change animations or effects
+        break;
+      case 'bestScore':
+        // Handle new best score effects
+        if (value > oldValue && this.soundEnabled) {
+          this.playSound('achievement');
+        }
+        break;
+      case 'layout':
+        // Handle layout changes (mobile/desktop)
+        this.handleLayoutChange(value === 'desktop');
+        break;
+      case 'orientation':
+        // Handle orientation changes
+        this.handleOrientationChange();
+        break;
+      case 'resize':
+        // Handle window resize
+        this.handleResize(value);
+        break;
     }
+  }
+
+  /**
+   * Handle layout changes between mobile and desktop
+   */
+  handleLayoutChange(isDesktop) {
+    // Update board sizing if needed
+    this.refreshLayout();
     
-    if (bestScoreElement) {
-      const oldBestScore = parseInt(bestScoreElement.textContent) || 0;
-      if (oldBestScore !== this.bestScore) {
-        this.animateNumberChange(bestScoreElement, oldBestScore, this.bestScore);
-        // Add highlight effect for new best score
-        bestScoreElement.style.color = `hsl(${this.hueValue}, 80%, 60%)`;
-        setTimeout(() => {
-          bestScoreElement.style.color = '';
-        }, 1000);
-      }
-    }
-    
-    if (mobileBestScoreElement) {
-      const oldMobileBestScore = parseInt(mobileBestScoreElement.textContent) || 0;
-      if (oldMobileBestScore !== this.bestScore) {
-        this.animateNumberChange(mobileBestScoreElement, oldMobileBestScore, this.bestScore);
-        // Add highlight effect for new best score
-        mobileBestScoreElement.style.color = `hsl(${this.hueValue}, 80%, 60%)`;
-        setTimeout(() => {
-          mobileBestScoreElement.style.color = '';
-        }, 1000);
-      }
-    }
-    
-    if (movesElement) {
-      movesElement.textContent = this.moves;
-    }
-    
-    if (mobileMovesElement) {
-      mobileMovesElement.textContent = this.moves;
+    // Adjust AI speed for device
+    if (!isDesktop && this.isAIPlaying) {
+      this.aiSpeed = Math.max(this.aiSpeed, 800); // Slower on mobile
     }
   }
 
@@ -1970,7 +2014,7 @@ class Game {
       };
       
       try {
-        localStorage.setItem('currentGameState', JSON.stringify(gameState));
+        this.dataManager.setData('currentGameState', gameState);
         console.log('📱 Game state saved for mobile resume');
       } catch (e) {
         console.warn('Failed to save game state:', e);
@@ -1980,9 +2024,8 @@ class Game {
 
   restoreGameStateIfNeeded() {
     try {
-      const savedState = localStorage.getItem('currentGameState');
-      if (savedState) {
-        const gameState = JSON.parse(savedState);
+      const gameState = this.dataManager.getData('currentGameState');
+      if (gameState) {
         
         // Only restore if the saved state is recent (within 24 hours)
         const timeDiff = Date.now() - gameState.timestamp;
@@ -2011,11 +2054,11 @@ class Game {
         }
         
         // Clear old saved state
-        localStorage.removeItem('currentGameState');
+        this.dataManager.removeData('currentGameState');
       }
     } catch (e) {
       console.warn('Failed to restore game state:', e);
-      localStorage.removeItem('currentGameState');
+      this.dataManager.removeData('currentGameState');
     }
   }
 
@@ -2604,7 +2647,7 @@ class Game {
   performDataCleanup() {
     try {
       // Clean up game statistics (keep recent + high scores)
-      const stats = JSON.parse(localStorage.getItem('gameStats')) || [];
+      const stats = this.dataManager.getData('gameStats', []);
       if (stats.length > this.maxStoredStats) {
         const sortedStats = stats.sort((a, b) => parseInt(b.score) - parseInt(a.score));
         const topScores = sortedStats.slice(0, Math.floor(this.maxStoredStats * 0.3));
@@ -2612,7 +2655,7 @@ class Game {
         const cleanedStats = [...topScores, ...recentGames.filter(game => 
           !topScores.some(top => top.date === game.date)
         )];
-        localStorage.setItem('gameStats', JSON.stringify(cleanedStats));
+        this.dataManager.setData('gameStats', cleanedStats);
         console.log(`🧹 Cleaned stats: ${stats.length} → ${cleanedStats.length}`);
       }
       
@@ -3040,7 +3083,7 @@ class Game {
 
   toggleTheme() {
     this.isLightMode = !this.isLightMode;
-    localStorage.setItem('isLightMode', this.isLightMode);
+    this.dataManager.setData('isLightMode', this.isLightMode);
     this.applyTheme();
     // Update tile colors for the new theme
     this.updateTileColors();
@@ -3227,8 +3270,8 @@ class Game {
     const oldHue = this.hueValue;
     this.hueValue = (this.hueValue + 30) % 360;
     
-    // Save to localStorage
-    localStorage.setItem('hueValue', this.hueValue);
+    // Save to unified data manager
+    this.dataManager.setData('hueValue', this.hueValue);
     
     // Animate the hue transition
     this.animateHueTransition(oldHue, this.hueValue);
@@ -3998,8 +4041,8 @@ class Game {
     const nextIndex = (currentIndex + 1) % difficulties.length;
     this.aiDifficulty = difficulties[nextIndex];
     
-    // Save preference to localStorage
-    localStorage.setItem('aiDifficulty', this.aiDifficulty);
+    // Save preference to unified data manager
+    this.dataManager.setData('aiDifficulty', this.aiDifficulty);
     
     // Update AI settings immediately if AI is available
     this.adjustAIDifficulty();
@@ -4193,7 +4236,7 @@ class Game {
     }
       
     // Load saved difficulty preference
-    const savedDifficulty = localStorage.getItem('aiDifficulty') || 'normal';
+    const savedDifficulty = this.dataManager.getData('aiDifficulty', 'normal');
     this.aiDifficulty = savedDifficulty;
     
     // Adjust AI difficulty based on board size and performance
@@ -4965,8 +5008,14 @@ class GameErrorHandler {
   static recoverFromStorageError() {
     console.log('🔧 Attempting storage recovery...');
     try {
-      localStorage.setItem('test', 'test');
-      localStorage.removeItem('test');
+      // Test basic localStorage functionality
+      if (window.game && window.game.dataManager) {
+        window.game.dataManager.setData('test', 'test');
+        window.game.dataManager.removeData('test');
+      } else {
+        localStorage.setItem('test', 'test');
+        localStorage.removeItem('test');
+      }
       console.log('✅ Storage recovery successful');
     } catch (e) {
       console.warn('⚠️ Storage still unavailable, using memory-only mode');
