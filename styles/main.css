@@ -40,26 +40,26 @@
   /* Dynamic tile size calculation */
   --tile-size: calc((var(--board-max-size) - (var(--size) + 1) * var(--gap)) / var(--size));
   
-  /* Enhanced Font Scaling System with Grid-Specific Optimization - Increased for Accessibility */
-  --font-scale-3x3-base: clamp(0.52, 0.58, 0.65);
-  --font-scale-3x3-large: clamp(0.42, 0.46, 0.50); 
-  --font-scale-3x3-mega: clamp(0.31, 0.36, 0.42);
+  /* Enhanced Font Scaling System with Grid-Specific Optimization - Further Increased for Desktop Accessibility */
+  --font-scale-3x3-base: clamp(0.65, 0.75, 0.85);
+  --font-scale-3x3-large: clamp(0.55, 0.60, 0.65); 
+  --font-scale-3x3-mega: clamp(0.40, 0.47, 0.55);
   
-  --font-scale-4x4-base: clamp(0.39, 0.46, 0.52);
-  --font-scale-4x4-large: clamp(0.31, 0.36, 0.42);
-  --font-scale-4x4-mega: clamp(0.23, 0.29, 0.34);
+  --font-scale-4x4-base: clamp(0.50, 0.60, 0.68);
+  --font-scale-4x4-large: clamp(0.40, 0.47, 0.55);
+  --font-scale-4x4-mega: clamp(0.30, 0.38, 0.44);
   
-  --font-scale-5x5-base: clamp(0.29, 0.33, 0.36);
-  --font-scale-5x5-large: clamp(0.23, 0.26, 0.29);
-  --font-scale-5x5-mega: clamp(0.18, 0.21, 0.23);
+  --font-scale-5x5-base: clamp(0.38, 0.43, 0.47);
+  --font-scale-5x5-large: clamp(0.30, 0.34, 0.38);
+  --font-scale-5x5-mega: clamp(0.23, 0.27, 0.30);
   
-  --font-scale-7x7-base: clamp(0.21, 0.23, 0.26);
-  --font-scale-7x7-large: clamp(0.16, 0.18, 0.21);
-  --font-scale-7x7-mega: clamp(0.13, 0.16, 0.18);
+  --font-scale-7x7-base: clamp(0.27, 0.30, 0.34);
+  --font-scale-7x7-large: clamp(0.21, 0.23, 0.27);
+  --font-scale-7x7-mega: clamp(0.17, 0.21, 0.23);
   
-  --font-scale-9x9-base: clamp(0.16, 0.18, 0.21);
-  --font-scale-9x9-large: clamp(0.13, 0.14, 0.16);
-  --font-scale-9x9-mega: clamp(0.10, 0.12, 0.13);
+  --font-scale-9x9-base: clamp(0.21, 0.23, 0.27);
+  --font-scale-9x9-large: clamp(0.17, 0.18, 0.21);
+  --font-scale-9x9-mega: clamp(0.13, 0.16, 0.17);
   
   /* Current font scales (set by JavaScript) */
   --font-scale-base: var(--font-scale-4x4-base);
@@ -656,7 +656,10 @@ main {
   justify-content: center;
   /* Dynamic font sizing based on actual tile size */
   font-size: calc(var(--tile-size) * var(--font-scale-base));
-  font-weight: bold;
+  font-weight: 800; /* Increased from bold (700) for better accessibility */
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
   /* Remove default color and background - let specific tile rules handle this */
   border-radius: calc(var(--tile-border-radius) - 2px);
   transition: all 0.15s ease-in-out, background var(--hue-transition-duration) ease-in-out, border-color var(--hue-transition-duration) ease-in-out;
@@ -1231,6 +1234,15 @@ footer .container {
     --base-board-size-3x3: min(min(75vw, 75svw), min(65vh, 65svh), 450px);
     --base-board-size-4x4: min(min(80vw, 80svw), min(70vh, 70svh), 500px);
     --base-board-size-5x5: min(min(85vw, 85svw), min(75vh, 75svh), 550px);
+    
+    /* Enhanced Font Scaling for Tablets */
+    --font-scale-4x4-base: clamp(0.55, 0.65, 0.75);
+    --font-scale-4x4-large: clamp(0.45, 0.52, 0.60);
+    --font-scale-4x4-mega: clamp(0.35, 0.43, 0.50);
+    
+    --font-scale-5x5-base: clamp(0.42, 0.48, 0.52);
+    --font-scale-5x5-large: clamp(0.34, 0.39, 0.43);
+    --font-scale-5x5-mega: clamp(0.27, 0.32, 0.35);
   }
 
   header h1 {
@@ -1259,6 +1271,19 @@ footer .container {
     --base-board-size-5x5: min(min(75vw, 75svw), min(85vh, 85svh), 600px);
     
     --gap-base: clamp(8px, 1.2vmin, 14px);
+    
+    /* Enhanced Font Scaling for Small Desktop/Tablet Landscape */
+    --font-scale-4x4-base: clamp(0.58, 0.68, 0.78);
+    --font-scale-4x4-large: clamp(0.48, 0.55, 0.63);
+    --font-scale-4x4-mega: clamp(0.38, 0.46, 0.53);
+    
+    --font-scale-5x5-base: clamp(0.45, 0.50, 0.55);
+    --font-scale-5x5-large: clamp(0.37, 0.42, 0.46);
+    --font-scale-5x5-mega: clamp(0.30, 0.35, 0.38);
+    
+    --font-scale-7x7-base: clamp(0.32, 0.35, 0.39);
+    --font-scale-7x7-large: clamp(0.26, 0.28, 0.32);
+    --font-scale-7x7-mega: clamp(0.22, 0.26, 0.28);
   }
 
   main {
@@ -1308,6 +1333,27 @@ footer .container {
     --base-board-size-5x5: min(min(60vw, 60svw), min(80vh, 80svh), 640px);
     
     --gap-base: clamp(10px, 1.5vmin, 16px);
+    
+    /* Enhanced Font Scaling for Large Desktops */
+    --font-scale-3x3-base: clamp(0.70, 0.80, 0.90);
+    --font-scale-3x3-large: clamp(0.60, 0.65, 0.70);
+    --font-scale-3x3-mega: clamp(0.45, 0.52, 0.60);
+    
+    --font-scale-4x4-base: clamp(0.60, 0.70, 0.80);
+    --font-scale-4x4-large: clamp(0.50, 0.57, 0.65);
+    --font-scale-4x4-mega: clamp(0.40, 0.48, 0.55);
+    
+    --font-scale-5x5-base: clamp(0.48, 0.53, 0.58);
+    --font-scale-5x5-large: clamp(0.40, 0.45, 0.48);
+    --font-scale-5x5-mega: clamp(0.32, 0.38, 0.40);
+    
+    --font-scale-7x7-base: clamp(0.35, 0.38, 0.42);
+    --font-scale-7x7-large: clamp(0.29, 0.31, 0.35);
+    --font-scale-7x7-mega: clamp(0.25, 0.29, 0.31);
+    
+    --font-scale-9x9-base: clamp(0.26, 0.28, 0.32);
+    --font-scale-9x9-large: clamp(0.22, 0.23, 0.26);
+    --font-scale-9x9-mega: clamp(0.18, 0.21, 0.22);
   }
   
   body {
@@ -1344,6 +1390,15 @@ footer .container {
     --base-board-size-3x3: min(45vw, 55vh, 520px);
     --base-board-size-4x4: min(50vw, 60vh, 580px);
     --base-board-size-5x5: min(55vw, 65vh, 640px);
+    
+    /* Enhanced Font Scaling for Ultra-wide Displays */
+    --font-scale-4x4-base: clamp(0.65, 0.75, 0.85);
+    --font-scale-4x4-large: clamp(0.55, 0.62, 0.70);
+    --font-scale-4x4-mega: clamp(0.45, 0.53, 0.60);
+    
+    --font-scale-5x5-base: clamp(0.53, 0.58, 0.63);
+    --font-scale-5x5-large: clamp(0.45, 0.50, 0.53);
+    --font-scale-5x5-mega: clamp(0.37, 0.43, 0.45);
   }
 }
 
@@ -2485,5 +2540,45 @@ footer button:hover {
   header h1 {
     margin: 0;
     flex: 1;
+  }
+}
+
+/* High-DPI display optimizations for Retina and 4K screens */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
+  .tile {
+    /* Enhanced text rendering for high-DPI displays */
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    font-weight: 900; /* Even bolder on high-DPI for crisp text */
+  }
+  
+  /* Slightly increase font scaling on high-DPI for better readability */
+  :root {
+    --font-scale-base: calc(var(--font-scale-base) * 1.05);
+    --font-scale-large: calc(var(--font-scale-large) * 1.05);
+    --font-scale-mega: calc(var(--font-scale-mega) * 1.05);
+  }
+}
+
+/* Very large 4K+ displays */
+@media (min-width: 1920px) {
+  :root {
+    /* Maximum accessibility font scaling for 4K+ displays */
+    --font-scale-4x4-base: clamp(0.70, 0.80, 0.90);
+    --font-scale-4x4-large: clamp(0.60, 0.67, 0.75);
+    --font-scale-4x4-mega: clamp(0.50, 0.58, 0.65);
+    
+    --font-scale-5x5-base: clamp(0.58, 0.63, 0.68);
+    --font-scale-5x5-large: clamp(0.50, 0.55, 0.58);
+    --font-scale-5x5-mega: clamp(0.42, 0.48, 0.50);
+    
+    --font-scale-7x7-base: clamp(0.45, 0.48, 0.52);
+    --font-scale-7x7-large: clamp(0.39, 0.41, 0.45);
+    --font-scale-7x7-mega: clamp(0.35, 0.39, 0.41);
+    
+    --font-scale-9x9-base: clamp(0.36, 0.38, 0.42);
+    --font-scale-9x9-large: clamp(0.32, 0.33, 0.36);
+    --font-scale-9x9-mega: clamp(0.28, 0.31, 0.32);
   }
 }
