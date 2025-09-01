@@ -1,0 +1,489 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔬 AI Game Over Detection - Comprehensive Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #f2f2f2;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+        }
+        button {
+            padding: 12px 20px;
+            margin: 5px;
+            background: #ffcc00;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover {
+            background: #e6b800;
+        }
+        button:disabled {
+            background: #666;
+            color: #999;
+            cursor: not-allowed;
+        }
+        .pass { color: #00ff00; font-weight: bold; }
+        .fail { color: #ff0000; font-weight: bold; }
+        .warning { color: #ffaa00; font-weight: bold; }
+        .info { color: #00aaff; font-weight: bold; }
+        pre {
+            background: rgba(0,0,0,0.3);
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        .game-frame {
+            border: 2px solid #ffcc00;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+        .status-running { background: #00ff00; }
+        .status-stopped { background: #ff0000; }
+        .status-waiting { background: #ffaa00; }
+        .test-results {
+            background: rgba(0,0,0,0.5);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 10px 0;
+        }
+        .console-output {
+            background: #000;
+            color: #0f0;
+            padding: 10px;
+            border-radius: 5px;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            max-height: 500px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+        .step {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255,255,255,0.05);
+            border-left: 4px solid #ffcc00;
+        }
+        .step-complete {
+            border-left-color: #00ff00;
+        }
+        .step-failed {
+            border-left-color: #ff0000;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔬 AI Game Over Detection - Comprehensive Test</h1>
+    
+    <div class="test-section">
+        <h2>📋 Test Overview</h2>
+        <p>This comprehensive test verifies that the AI properly detects game over conditions and stops autoplay when no moves are available. The test includes:</p>
+        <ul>
+            <li><strong class="pass">✅ Pre-move validation</strong> - AI checks for available moves before attempting them</li>
+            <li><strong class="pass">✅ Post-move validation</strong> - Game state is checked after each AI move</li>
+            <li><strong class="pass">✅ Safety checks</strong> - Multiple layers of game over detection</li>
+            <li><strong class="pass">✅ AI autoplay termination</strong> - AI stops cleanly when game is over</li>
+        </ul>
+    </div>
+    
+    <div class="test-section">
+        <h2>🎯 Live AI Game Over Test</h2>
+        <p>This test loads the actual game and monitors AI behavior until game over:</p>
+        <div class="step" id="step1">
+            <span class="status-indicator status-waiting"></span>
+            <strong>Step 1:</strong> Initialize game and enable AI debug mode
+        </div>
+        <div class="step" id="step2">
+            <span class="status-indicator status-waiting"></span>
+            <strong>Step 2:</strong> Start AI autoplay at high speed
+        </div>
+        <div class="step" id="step3">
+            <span class="status-indicator status-waiting"></span>
+            <strong>Step 3:</strong> Monitor AI moves and game state
+        </div>
+        <div class="step" id="step4">
+            <span class="status-indicator status-waiting"></span>
+            <strong>Step 4:</strong> Detect when AI reaches game over condition
+        </div>
+        <div class="step" id="step5">
+            <span class="status-indicator status-waiting"></span>
+            <strong>Step 5:</strong> Verify AI stops autoplay and shows game over
+        </div>
+        
+        <button onclick="runLiveAITest()" id="startTest">🚀 Start Live AI Test</button>
+        <button onclick="stopTest()" id="stopTest" disabled>⛔ Stop Test</button>
+        <button onclick="resetTest()" id="resetTest">🔄 Reset Test</button>
+        
+        <div class="test-results">
+            <h3>Test Status: <span id="testStatus">Ready to start</span></h3>
+            <div id="testProgress"></div>
+        </div>
+        
+        <iframe id="gameFrame" class="game-frame" src="pages/index.html" width="800" height="600" style="display:none;"></iframe>
+    </div>
+    
+    <div class="test-section">
+        <h2>🔍 AI Monitoring</h2>
+        <div class="test-results">
+            <div><strong>AI Status:</strong> <span id="aiStatus">Not started</span></div>
+            <div><strong>Game State:</strong> <span id="gameState">Unknown</span></div>
+            <div><strong>Moves Made:</strong> <span id="moveCount">0</span></div>
+            <div><strong>Score:</strong> <span id="currentScore">0</span></div>
+            <div><strong>Time Running:</strong> <span id="timeRunning">0s</span></div>
+            <div><strong>Moves/Second:</strong> <span id="movesPerSecond">0</span></div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📊 Test Console</h2>
+        <button onclick="clearConsole()">Clear Console</button>
+        <button onclick="showGameFrame()" id="showFrameBtn">Show Game Frame</button>
+        <div id="console-output" class="console-output">Test console ready...</div>
+    </div>
+    
+    <script>
+        let testRunning = false;
+        let testStartTime = 0;
+        let monitoringInterval = null;
+        let gameWindow = null;
+        let testSteps = [];
+        
+        // Console capture
+        let consoleOutput = '';
+        const originalLog = console.log;
+        const originalError = console.error;
+        
+        console.log = function(...args) {
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            consoleOutput += new Date().toLocaleTimeString() + ' [LOG] ' + message + '\\n';
+            updateConsole();
+            originalLog.apply(console, args);
+        };
+        
+        console.error = function(...args) {
+            const message = args.map(arg => 
+                typeof arg === 'object' ? JSON.stringify(arg, null, 2) : String(arg)
+            ).join(' ');
+            consoleOutput += new Date().toLocaleTimeString() + ' [ERROR] ' + message + '\\n';
+            updateConsole();
+            originalError.apply(console, args);
+        };
+        
+        function updateConsole() {
+            const output = document.getElementById('console-output');
+            if (output) {
+                output.textContent = consoleOutput;
+                output.scrollTop = output.scrollHeight;
+            }
+        }
+        
+        function clearConsole() {
+            consoleOutput = '';
+            updateConsole();
+        }
+        
+        function showGameFrame() {
+            const frame = document.getElementById('gameFrame');
+            const btn = document.getElementById('showFrameBtn');
+            if (frame.style.display === 'none') {
+                frame.style.display = 'block';
+                btn.textContent = 'Hide Game Frame';
+            } else {
+                frame.style.display = 'none';
+                btn.textContent = 'Show Game Frame';
+            }
+        }
+        
+        function updateStepStatus(stepNumber, status) {
+            const step = document.getElementById(`step${stepNumber}`);
+            if (step) {
+                const indicator = step.querySelector('.status-indicator');
+                indicator.className = `status-indicator status-${status}`;
+                if (status === 'running') {
+                    step.classList.remove('step-complete', 'step-failed');
+                } else if (status === 'stopped') {
+                    step.classList.add('step-complete');
+                } else if (status === 'failed') {
+                    step.classList.add('step-failed');
+                }
+            }
+        }
+        
+        function updateTestStatus(status) {
+            document.getElementById('testStatus').textContent = status;
+        }
+        
+        function updateAIMonitoring(data) {
+            document.getElementById('aiStatus').textContent = data.aiStatus || 'Unknown';
+            document.getElementById('gameState').textContent = data.gameState || 'Unknown';
+            document.getElementById('moveCount').textContent = data.moveCount || '0';
+            document.getElementById('currentScore').textContent = data.currentScore || '0';
+            
+            if (testStartTime > 0) {
+                const elapsed = (Date.now() - testStartTime) / 1000;
+                document.getElementById('timeRunning').textContent = elapsed.toFixed(1) + 's';
+                
+                const movesPerSec = data.moveCount > 0 ? (data.moveCount / elapsed).toFixed(2) : '0';
+                document.getElementById('movesPerSecond').textContent = movesPerSec;
+            }
+        }
+        
+        async function runLiveAITest() {
+            if (testRunning) return;
+            
+            testRunning = true;
+            testStartTime = Date.now();
+            
+            document.getElementById('startTest').disabled = true;
+            document.getElementById('stopTest').disabled = false;
+            
+            console.log('🚀 Starting Live AI Game Over Detection Test');
+            updateTestStatus('Initializing...');
+            
+            try {
+                // Step 1: Initialize game
+                updateStepStatus(1, 'running');
+                console.log('Step 1: Initializing game and enabling debug mode');
+                
+                const gameFrame = document.getElementById('gameFrame');
+                if (gameFrame.style.display === 'none') {
+                    gameFrame.style.display = 'block';
+                    document.getElementById('showFrameBtn').textContent = 'Hide Game Frame';
+                }
+                
+                // Wait for game to load
+                await waitForGameLoad();
+                updateStepStatus(1, 'stopped');
+                console.log('✅ Step 1 Complete: Game loaded successfully');
+                
+                // Step 2: Start AI autoplay
+                updateStepStatus(2, 'running');
+                console.log('Step 2: Starting AI autoplay at high speed');
+                
+                const game = gameFrame.contentWindow.game;
+                if (!game) {
+                    throw new Error('Game not found in iframe');
+                }
+                
+                // Enable debug mode
+                gameFrame.contentWindow.debugAI = true;
+                
+                // Set AI to max speed for faster testing
+                game.currentSpeedIndex = game.speedMultipliers.length - 1; // MAX speed
+                game.startAutoPlay();
+                
+                updateStepStatus(2, 'stopped');
+                console.log('✅ Step 2 Complete: AI autoplay started at MAX speed');
+                
+                // Step 3: Monitor AI moves
+                updateStepStatus(3, 'running');
+                console.log('Step 3: Monitoring AI moves and game state');
+                updateTestStatus('Monitoring AI gameplay...');
+                
+                // Start monitoring
+                let lastMoveCount = 0;
+                let gameOverDetected = false;
+                
+                monitoringInterval = setInterval(() => {
+                    if (!testRunning) return;
+                    
+                    try {
+                        const game = gameFrame.contentWindow.game;
+                        if (!game) return;
+                        
+                        const currentMoves = game.moves || 0;
+                        const aiStatus = game.isAutoPlaying ? 'Running' : 'Stopped';
+                        const gameState = game.gameState || 'Unknown';
+                        
+                        updateAIMonitoring({
+                            aiStatus: aiStatus,
+                            gameState: gameState,
+                            moveCount: currentMoves,
+                            currentScore: game.score || 0
+                        });
+                        
+                        // Check for game over
+                        if (gameState === 'over' && !gameOverDetected) {
+                            gameOverDetected = true;
+                            console.log('🎯 Game Over Detected!');
+                            
+                            // Step 4: Game over reached
+                            updateStepStatus(3, 'stopped');
+                            updateStepStatus(4, 'running');
+                            console.log('Step 4: AI reached game over condition');
+                            
+                            setTimeout(() => {
+                                // Step 5: Verify AI stopped
+                                updateStepStatus(4, 'stopped');
+                                updateStepStatus(5, 'running');
+                                console.log('Step 5: Verifying AI stopped autoplay');
+                                
+                                const aiStillRunning = game.isAutoPlaying;
+                                if (!aiStillRunning) {
+                                    updateStepStatus(5, 'stopped');
+                                    console.log('✅ Step 5 Complete: AI properly stopped autoplay');
+                                    console.log('🎉 TEST PASSED: AI correctly detected game over and stopped');
+                                    updateTestStatus('✅ TEST PASSED - AI properly handles game over');
+                                } else {
+                                    updateStepStatus(5, 'failed');
+                                    console.log('❌ Step 5 Failed: AI did not stop autoplay');
+                                    console.log('❌ TEST FAILED: AI continues running after game over');
+                                    updateTestStatus('❌ TEST FAILED - AI did not stop properly');
+                                }
+                                
+                                // Stop monitoring
+                                setTimeout(() => stopTest(), 2000);
+                            }, 1000);
+                        }
+                        
+                        // Update progress
+                        if (currentMoves !== lastMoveCount) {
+                            console.log(`AI Move ${currentMoves}: Score ${game.score || 0}, State: ${gameState}`);
+                            lastMoveCount = currentMoves;
+                        }
+                        
+                    } catch (error) {
+                        console.error('Error during monitoring:', error);
+                    }
+                }, 100); // Check every 100ms
+                
+            } catch (error) {
+                console.error('❌ Test failed during initialization:', error);
+                updateTestStatus('❌ TEST FAILED - Initialization error');
+                stopTest();
+            }
+        }
+        
+        function waitForGameLoad() {
+            return new Promise((resolve, reject) => {
+                const gameFrame = document.getElementById('gameFrame');
+                let attempts = 0;
+                const maxAttempts = 50; // 5 seconds
+                
+                const checkLoad = () => {
+                    attempts++;
+                    try {
+                        const game = gameFrame.contentWindow.game;
+                        if (game && game.board) {
+                            resolve();
+                            return;
+                        }
+                    } catch (e) {
+                        // Cross-origin or game not ready yet
+                    }
+                    
+                    if (attempts >= maxAttempts) {
+                        reject(new Error('Game failed to load within timeout'));
+                        return;
+                    }
+                    
+                    setTimeout(checkLoad, 100);
+                };
+                
+                checkLoad();
+            });
+        }
+        
+        function stopTest() {
+            if (!testRunning) return;
+            
+            testRunning = false;
+            
+            if (monitoringInterval) {
+                clearInterval(monitoringInterval);
+                monitoringInterval = null;
+            }
+            
+            // Stop AI if it's still running
+            try {
+                const gameFrame = document.getElementById('gameFrame');
+                const game = gameFrame.contentWindow.game;
+                if (game && game.isAutoPlaying) {
+                    game.stopAutoPlay();
+                    console.log('🛑 Forced AI autoplay stop');
+                }
+            } catch (error) {
+                console.log('Could not stop AI autoplay:', error);
+            }
+            
+            document.getElementById('startTest').disabled = false;
+            document.getElementById('stopTest').disabled = true;
+            
+            console.log('🏁 Test stopped');
+            
+            if (document.getElementById('testStatus').textContent.includes('Ready') || 
+                document.getElementById('testStatus').textContent.includes('Initializing')) {
+                updateTestStatus('Test stopped by user');
+            }
+        }
+        
+        function resetTest() {
+            stopTest();
+            
+            // Reset all step indicators
+            for (let i = 1; i <= 5; i++) {
+                updateStepStatus(i, 'waiting');
+                const step = document.getElementById(`step${i}`);
+                step.classList.remove('step-complete', 'step-failed');
+            }
+            
+            // Reset monitoring displays
+            updateAIMonitoring({
+                aiStatus: 'Not started',
+                gameState: 'Unknown',
+                moveCount: 0,
+                currentScore: 0
+            });
+            
+            document.getElementById('timeRunning').textContent = '0s';
+            document.getElementById('movesPerSecond').textContent = '0';
+            
+            updateTestStatus('Ready to start');
+            
+            // Reset game
+            try {
+                const gameFrame = document.getElementById('gameFrame');
+                gameFrame.contentWindow.location.reload();
+                console.log('🔄 Game reset');
+            } catch (error) {
+                console.log('Could not reset game:', error);
+            }
+            
+            clearConsole();
+            console.log('🔄 Test environment reset - ready for new test');
+        }
+        
+        // Initialize
+        window.addEventListener('load', () => {
+            console.log('🔬 AI Game Over Detection Test Ready');
+            console.log('📋 This test will verify AI properly detects game over conditions');
+            console.log('🎯 Click "Start Live AI Test" to begin comprehensive testing');
+        });
+    </script>
+</body>
+</html>

@@ -1703,6 +1703,7 @@ class Game {
       
       // Stop AI if running
       if (this.isAutoPlaying) {
+        console.log('🤖 Stopping AI autoplay due to game over');
         this.stopAutoPlay();
       }
       
@@ -3089,6 +3090,41 @@ class Game {
         console.log('🤖 Skipping AI move - animation in progress');
         return;
       }
+      
+      // Additional safety check: Verify moves are still possible before attempting AI move
+      const canMoveUp = this.canMove('up');
+      const canMoveDown = this.canMove('down');
+      const canMoveLeft = this.canMove('left');
+      const canMoveRight = this.canMove('right');
+      const hasAnyValidMoves = canMoveUp || canMoveDown || canMoveLeft || canMoveRight;
+      
+      // Also check if board is completely full as an additional condition
+      let emptySpaces = 0;
+      for (let i = 0; i < this.size; i++) {
+        for (let j = 0; j < this.size; j++) {
+          if (this.board[i][j] === 0) emptySpaces++;
+        }
+      }
+      
+      if (!hasAnyValidMoves || (emptySpaces === 0 && !hasAnyValidMoves)) {
+        console.log('🤖 Pre-move check: No valid moves available, triggering game over');
+        console.log('🔍 Game over conditions:', {
+          emptySpaces: emptySpaces,
+          canMove: {
+            up: canMoveUp,
+            down: canMoveDown,
+            left: canMoveLeft,
+            right: canMoveRight
+          },
+          boardFull: emptySpaces === 0
+        });
+        
+        // Set game state to over and stop autoplay
+        this.gameState = 'over';
+        this.stopAutoPlay();
+        this.showGameOver();
+        return;
+      }
 
       try {
         const move = this.getBestMove();
@@ -3141,6 +3177,18 @@ class Game {
           setTimeout(() => {
             if (!this.animationInProgress && this.isAutoPlaying) {
               this.checkGameState();
+              
+              // Additional safety check: If checkGameState didn't catch it, double-check
+              if (this.gameState !== 'over' && this.isAutoPlaying) {
+                const stillHasValidMoves = this.canMove('up') || this.canMove('down') || 
+                                         this.canMove('left') || this.canMove('right');
+                if (!stillHasValidMoves) {
+                  console.log('🤖 Post-move safety check: No moves available, forcing game over');
+                  this.gameState = 'over';
+                  this.stopAutoPlay();
+                  this.showGameOver();
+                }
+              }
             }
           }, 200); // Shorter delay for AI since it doesn't need visual feedback time
         } else {
