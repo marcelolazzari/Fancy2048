@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+    <title>Vertical Layout Test - Fancy 2048</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <style>
+        /* Test-specific styles to highlight layout structure */
+        .layout-test {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: rgba(255, 204, 0, 0.9);
+            color: #000;
+            padding: 8px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            z-index: 9999;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+        
+        .layout-debug {
+            border: 2px dashed rgba(255, 0, 0, 0.3) !important;
+        }
+        
+        .layout-debug header {
+            background: rgba(0, 255, 0, 0.1) !important;
+        }
+        
+        .layout-debug main {
+            background: rgba(0, 0, 255, 0.1) !important;
+        }
+        
+        .layout-debug #score-container {
+            background: rgba(255, 255, 0, 0.2) !important;
+        }
+        
+        .layout-debug #board-container {
+            background: rgba(255, 0, 255, 0.1) !important;
+        }
+    </style>
+    <script>
+        function getScreenInfo() {
+            return {
+                width: window.innerWidth,
+                height: window.innerHeight,
+                orientation: window.innerWidth > window.innerHeight ? 'landscape' : 'portrait',
+                isMobile: window.innerWidth <= 480,
+                isTablet: window.innerWidth > 480 && window.innerWidth <= 768,
+                isDesktop: window.innerWidth > 768
+            };
+        }
+        
+        function updateLayoutTest() {
+            const info = getScreenInfo();
+            const testDiv = document.querySelector('.layout-test');
+            if (testDiv) {
+                testDiv.innerHTML = `
+                    ${info.width}x${info.height}<br>
+                    ${info.orientation}<br>
+                    ${info.isMobile ? 'Mobile' : info.isTablet ? 'Tablet' : 'Desktop'}
+                `;
+            }
+        }
+        
+        window.addEventListener('load', () => {
+            updateLayoutTest();
+            document.body.classList.add('layout-debug');
+        });
+        
+        window.addEventListener('resize', updateLayoutTest);
+    </script>
+</head>
+<body>
+    <div class="layout-test">Loading...</div>
+    
+    <!-- Skip to main content for accessibility -->
+    <a href="#main-content" class="skip-link">Skip to main content</a>
+
+    <!-- Header section -->
+    <header>
+        <div class="container">
+            <h1 class="game-title" tabindex="0">Layout Test - Fancy 2048</h1>
+            
+            <!-- Mobile hamburger button -->
+            <button type="button" id="mobile-menu-toggle" class="mobile-menu-toggle" aria-label="Toggle menu">
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+                <span class="hamburger-line"></span>
+            </button>
+            
+            <!-- Desktop navigation -->
+            <nav aria-label="Game controls" class="desktop-nav">
+                <ul id="controls-container" class="controls" role="menubar">
+                    <li role="none">
+                        <button type="button" aria-label="Test Button" role="menuitem">
+                            Test 1
+                        </button>
+                    </li>
+                    <li role="none">
+                        <button type="button" aria-label="Test Button" role="menuitem">
+                            Test 2
+                        </button>
+                    </li>
+                    <li role="none">
+                        <button type="button" aria-label="Test Button" role="menuitem">
+                            Test 3
+                        </button>
+                    </li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Main content section -->
+    <main id="main-content">
+        <section class="game-section">
+            <div id="board-container" class="board-container" style="background: #333; border-radius: 16px; display: flex; align-items: center; justify-content: center; color: var(--highlight-color); font-size: 2rem; font-weight: 700;">
+                GAME<br>BOARD<br>AREA
+            </div>
+        </section>
+
+        <aside id="score-container" aria-labelledby="score-title">
+            <h2 id="score-title" class="visually-hidden">Score Information</h2>
+            <ul>
+                <li>Score: <span>12,345</span></li>
+                <li>Best: <span>98,765</span></li>
+                <li>Moves: <span>567</span></li>
+                <li>Time: <span>05:23</span></li>
+            </ul>
+        </aside>
+    </main>
+    
+    <!-- Mobile overlay menu -->
+    <div id="mobile-controls-menu" class="mobile-controls-menu">
+        <div class="mobile-menu-header">
+            <h2>Test Menu</h2>
+            <button type="button" id="mobile-menu-close" class="mobile-menu-close">
+                ×
+            </button>
+        </div>
+        <div class="mobile-menu-content">
+            <div class="mobile-menu-section">
+                <h3>Test Section</h3>
+                <div class="mobile-button-group">
+                    <button type="button" class="mobile-menu-button">
+                        <span>Test Button 1</span>
+                    </button>
+                    <button type="button" class="mobile-menu-button">
+                        <span>Test Button 2</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

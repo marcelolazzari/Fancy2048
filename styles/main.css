@@ -1108,122 +1108,272 @@ footer .container {
     --font-scale-7x7-mega: clamp(0.20, 0.24, 0.28);
   }
   
-  /* Better mobile viewport handling */
+  /* Better mobile viewport handling with proper vertical layout */
   body {
     min-height: 100vh;
     min-height: 100dvh; /* Support for new dynamic viewport units */
     min-height: 100svh; /* Small viewport height for mobile browsers */
+    height: 100vh;
+    height: 100dvh;
     overflow-x: hidden;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
+    display: flex;
+    flex-direction: column;
+    padding-top: max(env(safe-area-inset-top), 8px);
+    padding-left: max(env(safe-area-inset-left), 0px);
+    padding-right: max(env(safe-area-inset-right), 0px);
+    padding-bottom: max(env(safe-area-inset-bottom), 8px);
   }
   
-  /* Mobile responsive adjustments */
+  /* Mobile header - optimized height for vertical layout */
   header {
-    padding: 6px 8px;
+    height: 70px;
+    min-height: 70px;
+    padding: 8px 12px;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    border-bottom: 1px solid rgba(255, 204, 0, 0.2);
+    background: rgba(26, 26, 26, 0.95);
+    backdrop-filter: blur(10px);
+  }
+  
+  header .container {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    max-width: none;
   }
   
   header h1 {
-    font-size: clamp(1.3rem, 4.5vw, 1.7rem);
-    margin-bottom: 6px;
+    font-size: clamp(1.2rem, 4vw, 1.5rem);
+    margin: 0;
+    flex: 1;
+    color: var(--highlight-color);
+    font-weight: 700;
   }
   
+  /* Main content area - optimized for vertical arrangement */
   main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 12px 8px 8px 8px;
+    gap: 12px;
+    min-height: 0; /* Allow flexbox to work properly */
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+  
+  /* Score container - stable height for predictable layout */
+  #score-container {
+    width: 100%;
+    max-width: min(95vw, 400px);
+    height: 60px;
+    min-height: 60px;
+    font-size: 0.85rem;
+    padding: 8px 12px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 204, 0, 0.3);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+    margin-bottom: 8px;
+  }
+  
+  #score-container ul {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+  }
+  
+  #score-container li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.8);
+    min-width: 60px;
+  }
+  
+  #score-container span {
+    font-size: 1.1em;
+    font-weight: 700;
+    color: var(--highlight-color);
+    margin-top: 2px;
+  }
+
+  /* Game section - flexible but constrained for mobile */
+  .game-section {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 280px; /* Ensure playable size */
+    max-height: calc(100vh - 200px); /* Leave room for header and score */
+  }
+
+  /* Mobile-optimized board sizing for better accessibility */
+  #board-container {
+    width: min(88vw, calc(100vh - 220px), 400px);
+    height: min(88vw, calc(100vh - 220px), 400px);
+    max-width: min(88vw, calc(100vh - 220px), 400px);
+    max-height: min(88vw, calc(100vh - 220px), 400px);
+    margin: 0;
+    flex-shrink: 0;
+  }
+}
+
+/* Mobile Landscape - Enhanced vertical layout optimization */
+@media (max-width: 768px) and (orientation: landscape) and (max-height: 500px) {
+  :root {
+    /* Landscape-optimized board sizes - use height more effectively */
+    --base-board-size-3x3: min(min(75vh, 75svh), min(65vw, 65svw), 320px);
+    --base-board-size-4x4: min(min(80vh, 80svh), min(70vw, 70svw), 350px);
+    --base-board-size-5x5: min(min(85vh, 85svh), min(75vw, 75svw), 380px);
+    
+    --gap-base: clamp(1px, 0.8vmin, 5px);
+    
+    /* Landscape-specific layout variables */
+    --landscape-header-width: 200px;
+    --landscape-score-height: 80px;
+  }
+  
+  /* Landscape body - horizontal layout */
+  body {
+    display: flex;
+    flex-direction: row;
+    height: 100vh;
+    height: 100dvh;
+    overflow: hidden;
+    padding: max(env(safe-area-inset-top), 4px) max(env(safe-area-inset-right), 4px) max(env(safe-area-inset-bottom), 4px) max(env(safe-area-inset-left), 4px);
+  }
+  
+  /* Landscape header - side panel */
+  header {
+    width: var(--landscape-header-width);
+    min-width: var(--landscape-header-width);
+    height: 100%;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    background: rgba(26, 26, 26, 0.95);
+    border-right: 1px solid rgba(255, 204, 0, 0.3);
+    backdrop-filter: blur(10px);
+    flex-shrink: 0;
+    gap: 8px;
+  }
+  
+  header .container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    width: 100%;
+    gap: 8px;
+  }
+  
+  header h1 {
+    font-size: clamp(1rem, 2.5vw, 1.2rem);
+    margin: 0;
+    writing-mode: horizontal-tb;
+    text-align: center;
+    color: var(--highlight-color);
+    font-weight: 700;
+  }
+  
+  /* Score container in header for landscape */
+  #score-container {
+    width: 100%;
+    height: auto;
+    min-height: var(--landscape-score-height);
+    font-size: 0.7rem;
     padding: 6px;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 204, 0, 0.3);
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    margin: 0;
+  }
+  
+  #score-container ul {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+  }
+  
+  #score-container li {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.7rem;
+    color: rgba(255, 255, 255, 0.8);
+    width: 100%;
+    min-height: 16px;
+  }
+  
+  #score-container span {
+    font-size: 0.8em;
+    font-weight: 700;
+    color: var(--highlight-color);
+  }
+  
+  /* Main content - game area only */
+  main {
     flex: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-  }
-  
-  .controls {
-    gap: 4px;
-    margin-bottom: 8px;
-    flex-wrap: wrap;
-    justify-content: center;
-    max-width: 100%;
-  }
-  
-  button {
-    padding: 8px 10px;
-    font-size: 12px;
-    min-width: var(--mobile-button-size);
-    min-height: var(--mobile-button-size);
-    touch-action: manipulation;
-  }
-
-  #score-container {
-    font-size: 0.85rem;
     padding: 8px;
-    gap: 12px;
+    min-height: 0;
+    overflow: hidden;
   }
   
-  #score-container ul {
-    gap: 8px;
-  }
-
-  /* Mobile-specific board adjustments */
-  #board-container {
-    max-width: min(98vw, 75vh);
-    max-height: min(98vw, 75vh);
-  }
-}
-
-/* Mobile Landscape - Enhanced optimization */
-@media (max-width: 768px) and (orientation: landscape) and (max-height: 500px) {
-  :root {
-    /* Landscape-optimized board sizes - use height more effectively */
-    --base-board-size-3x3: min(min(55vh, 55svh), min(75vw, 75svw), 350px);
-    --base-board-size-4x4: min(min(65vh, 65svh), min(80vw, 80svw), 400px);
-    --base-board-size-5x5: min(min(70vh, 70svh), min(85vw, 85svw), 450px);
-    
-    --gap-base: clamp(1px, 0.8vmin, 6px);
-  }
-  
-  body {
-    justify-content: center;
-    padding-top: max(var(--safe-area-inset-top), 4px);
-    padding-bottom: max(var(--safe-area-inset-bottom), 4px);
-  }
-  
-  main {
-    flex-direction: row;
-    align-items: center;
-    padding: 4px;
-    gap: 12px;
-    justify-content: center;
-  }
-  
-  header {
-    padding: 4px 8px;
-    order: 1;
-    flex: 0 0 auto;
-  }
-  
-  header h1 {
-    font-size: clamp(1rem, 3vw, 1.3rem);
-    margin-bottom: 2px;
-  }
-  
+  /* Game section - centered */
   .game-section {
-    order: 2;
-    flex: 0 0 auto;
-  }
-  
-  #score-container {
-    order: 3;
-    flex: 0 0 auto;
-    writing-mode: vertical-lr;
-    font-size: 0.75rem;
-    padding: 6px;
-  }
-  
-  #score-container ul {
+    flex: 1;
     display: flex;
-    flex-direction: column;
-    gap: 4px;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 100%;
+  }
+  
+  /* Landscape board sizing */
+  #board-container {
+    width: min(80vh, 75vw, 350px);
+    height: min(80vh, 75vw, 350px);
+    max-width: min(80vh, 75vw, 350px);
+    max-height: min(80vh, 75vw, 350px);
+    margin: 0;
+    flex-shrink: 0;
+  }
+  
+  /* Hide mobile hamburger in landscape */
+  .mobile-menu-toggle {
+    display: none !important;
   }
 }
 
@@ -1324,7 +1474,7 @@ footer .container {
   }
 }
 
-/* Large desktops */
+/* Large desktops - Enhanced vertical layout */
 @media (min-width: 1025px) {
   :root {
     /* Large desktop optimizations */
@@ -1334,7 +1484,7 @@ footer .container {
     
     --gap-base: clamp(10px, 1.5vmin, 16px);
     
-    /* Enhanced Font Scaling for Large Desktops */
+    /* Enhanced Font Scaling for Large Desktop */
     --font-scale-3x3-base: clamp(0.70, 0.80, 0.90);
     --font-scale-3x3-large: clamp(0.60, 0.65, 0.70);
     --font-scale-3x3-mega: clamp(0.45, 0.52, 0.60);
@@ -1354,32 +1504,175 @@ footer .container {
     --font-scale-9x9-base: clamp(0.26, 0.28, 0.32);
     --font-scale-9x9-large: clamp(0.22, 0.23, 0.26);
     --font-scale-9x9-mega: clamp(0.18, 0.21, 0.22);
+    
+    /* Desktop-specific layout variables */
+    --desktop-header-height: 120px;
+    --desktop-score-height: 80px;
   }
   
+  /* Desktop body - proper vertical structure */
   body {
-    padding: 20px;
+    min-height: 100vh;
+    min-height: 100dvh;
+    height: 100vh;
+    height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    overflow-x: hidden;
+    overflow-y: auto;
   }
   
+  /* Desktop header - consistent height */
   header {
-    padding: 20px 0;
+    height: var(--desktop-header-height);
+    min-height: var(--desktop-header-height);
+    padding: 20px 30px;
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+    background: rgba(26, 26, 26, 0.95);
+    backdrop-filter: blur(15px);
+    border-bottom: 2px solid rgba(255, 204, 0, 0.3);
+    box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
   }
   
-  main {
-    padding: 20px;
-    gap: 25px;
+  header .container {
+    width: 100%;
+    max-width: 1200px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  header h1 {
+    font-size: clamp(2.2rem, 3.5vw, 3rem);
+    margin: 0;
+    color: var(--highlight-color);
+    font-weight: 700;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
   }
   
+  /* Desktop navigation - improved spacing */
+  .desktop-nav {
+    display: block;
+  }
+  
+  .controls {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
   button {
-    padding: 16px 24px;
+    padding: 16px 22px;
     font-size: 16px;
     min-width: 56px;
     min-height: 56px;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    font-weight: 600;
+    border: 2px solid rgba(255, 204, 0, 0.3);
+  }
+
+  button:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(255, 204, 0, 0.25);
+    border-color: var(--highlight-color);
   }
   
+  /* Main content - optimized vertical arrangement */
+  main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    padding: 20px 30px;
+    gap: 20px;
+    min-height: 0;
+    max-width: 1200px;
+    margin: 0 auto;
+    width: 100%;
+  }
+
+  /* Desktop score container - enhanced visibility */
   #score-container {
+    width: 100%;
+    max-width: 800px;
+    height: var(--desktop-score-height);
+    min-height: var(--desktop-score-height);
     font-size: 1.2rem;
-    padding: 18px;
-    gap: 25px;
+    padding: 20px 25px;
+    background: rgba(255, 255, 255, 0.08);
+    border: 2px solid rgba(255, 204, 0, 0.4);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.3);
+    backdrop-filter: blur(10px);
+    margin-bottom: 15px;
+  }
+
+  #score-container ul {
+    display: flex;
+    gap: 40px;
+    justify-content: center;
+    align-items: center;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+    flex-wrap: wrap;
+  }
+  
+  #score-container li {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    font-size: 1rem;
+    color: rgba(255, 255, 255, 0.9);
+    min-width: 100px;
+    font-weight: 500;
+  }
+
+  #score-container span {
+    font-size: 1.4em;
+    font-weight: 800;
+    color: var(--highlight-color);
+    margin-top: 4px;
+    text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  }
+
+  /* Game section - centered and spacious */
+  .game-section {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-height: 400px;
+    max-height: calc(100vh - 280px);
+  }
+
+  /* Desktop board container - optimal sizing */
+  #board-container {
+    width: min(70vw, calc(100vh - 280px), 600px);
+    height: min(70vw, calc(100vh - 280px), 600px);
+    max-width: min(70vw, calc(100vh - 280px), 600px);
+    max-height: min(70vw, calc(100vh - 280px), 600px);
+    margin: 0;
+    flex-shrink: 0;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+    border-radius: 16px;
+  }
+  
+  /* Hide mobile elements */
+  .mobile-menu-toggle,
+  .mobile-controls-menu {
+    display: none !important;
   }
 }
 
@@ -2292,8 +2585,89 @@ footer button:hover {
 }
 
 /* ============================================
-   Mobile Hamburger Menu System
+   Mobile Menu and Navigation Visibility Controls
    ============================================ */
+
+/* Show mobile hamburger menu on small screens */
+@media (max-width: 480px) {
+  .mobile-menu-toggle {
+    display: flex !important;
+  }
+  
+  .desktop-nav {
+    display: none !important;
+  }
+  
+  /* Ensure all mobile elements are visible and accessible */
+  .mobile-controls-menu {
+    display: block;
+  }
+}
+
+/* Hide mobile menu on desktop, show desktop navigation */
+@media (min-width: 481px) {
+  .mobile-menu-toggle,
+  .mobile-controls-menu {
+    display: none !important;
+  }
+  
+  .desktop-nav {
+    display: block !important;
+  }
+}
+
+/* ============================================
+   Enhanced Accessibility and Visibility Fixes
+   ============================================ */
+
+/* Ensure proper contrast and visibility for all text elements */
+.tile {
+  /* Enhanced text visibility with stronger contrast */
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.7), 
+               0 0 1px rgba(0, 0, 0, 0.8);
+  font-weight: 900;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Improved visibility for score elements */
+#score-container span {
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+  font-weight: 800;
+}
+
+/* Enhanced button visibility and accessibility */
+button {
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+  border: 1px solid rgba(255, 204, 0, 0.4);
+  font-weight: 600;
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+}
+
+button:hover {
+  box-shadow: 0 4px 12px rgba(255, 204, 0, 0.3);
+  border-color: var(--highlight-color);
+}
+
+/* ============================================
+   Safe Area and Modern Device Support  
+   ============================================ */
+
+/* Enhanced safe area support for all modern devices */
+@supports (padding: env(safe-area-inset-top)) {
+  body {
+    padding-top: max(env(safe-area-inset-top), 8px);
+    padding-left: max(env(safe-area-inset-left), 0px);
+    padding-right: max(env(safe-area-inset-right), 0px);
+    padding-bottom: max(env(safe-area-inset-bottom), 8px);
+  }
+  
+  @media (max-width: 480px) {
+    header {
+      padding-top: max(8px, env(safe-area-inset-top) + 8px);
+    }
+  }
+}
 
 /* Mobile hamburger toggle button */
 .mobile-menu-toggle {
