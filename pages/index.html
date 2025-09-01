@@ -79,7 +79,95 @@
     <header>
       <div class="container">
         <h1 class="game-title" tabindex="0">Fancy 2048</h1>
-        <nav aria-label="Game controls">
+        
+        <!-- Mobile hamburger button -->
+        <button type="button" id="mobile-menu-toggle" class="mobile-menu-toggle" aria-label="Toggle menu" aria-expanded="false" aria-controls="mobile-controls-menu">
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+          <span class="hamburger-line"></span>
+        </button>
+        
+        <!-- Mobile overlay menu -->
+        <div id="mobile-controls-menu" class="mobile-controls-menu" aria-hidden="true">
+          <div class="mobile-menu-header">
+            <h2>Game Controls</h2>
+            <button type="button" id="mobile-menu-close" class="mobile-menu-close" aria-label="Close menu">
+              <i class="fas fa-times" aria-hidden="true"></i>
+            </button>
+          </div>
+          <div class="mobile-menu-content">
+            <div class="mobile-menu-section">
+              <h3>Game Actions</h3>
+              <div class="mobile-button-group">
+                <button type="button" id="mobile-pause-button" class="mobile-menu-button" aria-label="Pause Game">
+                  <i class="fas fa-pause" aria-hidden="true"></i>
+                  <span>Pause</span>
+                </button>
+                <button type="button" id="mobile-back-button" class="mobile-menu-button" aria-label="Undo Move">
+                  <i class="fas fa-undo" aria-hidden="true"></i>
+                  <span>Undo</span>
+                </button>
+                <button type="button" id="mobile-reset-button" class="mobile-menu-button" aria-label="Reset Game">
+                  <i class="fas fa-redo" aria-hidden="true"></i>
+                  <span>Reset</span>
+                </button>
+              </div>
+            </div>
+            
+            <div class="mobile-menu-section">
+              <h3>Game Settings</h3>
+              <div class="mobile-button-group">
+                <button type="button" id="mobile-board-size-button" class="mobile-menu-button" aria-label="Change Board Size">
+                  <i class="fas fa-th" aria-hidden="true"></i>
+                  <span>Board Size</span>
+                </button>
+                <button type="button" id="mobile-theme-toggle-button" class="mobile-menu-button" aria-label="Toggle Theme">
+                  <i class="fas fa-adjust" aria-hidden="true"></i>
+                  <span>Theme</span>
+                </button>
+                <button type="button" id="mobile-changeColor-button" class="mobile-menu-button" aria-label="Change Color">
+                  <i class="fas fa-palette" aria-hidden="true"></i>
+                  <span>Colors</span>
+                </button>
+              </div>
+            </div>
+            
+            <div class="mobile-menu-section">
+              <h3>AI Controls</h3>
+              <div class="mobile-button-group">
+                <button type="button" id="mobile-autoplay-button" class="mobile-menu-button" aria-label="Auto Play">
+                  <i class="fas fa-play" aria-hidden="true"></i>
+                  <span>Auto Play</span>
+                </button>
+                <button type="button" id="mobile-speed-button" class="mobile-menu-button" aria-label="Autoplay Speed">
+                  <i class="fas fa-tachometer-alt" aria-hidden="true"></i>
+                  <span class="speed-text">Speed: 1x</span>
+                </button>
+                <button type="button" id="mobile-ai-difficulty-button" class="mobile-menu-button" aria-label="Change AI Difficulty">
+                  <i class="fas fa-brain" aria-hidden="true"></i>
+                  <span class="button-text">AI: Normal</span>
+                </button>
+              </div>
+            </div>
+            
+            <div class="mobile-menu-section">
+              <h3>Statistics</h3>
+              <div class="mobile-button-group">
+                <button type="button" id="mobile-leaderboard-button" class="mobile-menu-button" aria-label="View Statistics" onclick="window.location.href='leaderboard.html'">
+                  <i class="fas fa-chart-line" aria-hidden="true"></i>
+                  <span>Statistics</span>
+                </button>
+                <button type="button" id="mobile-export-stats-button" class="mobile-menu-button" aria-label="Export Statistics">
+                  <i class="fas fa-download" aria-hidden="true"></i>
+                  <span>Export</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+        
+        <!-- Desktop navigation (hidden on mobile) -->
+        <nav aria-label="Game controls" class="desktop-nav">
           <ul id="controls-container" class="controls" role="menubar">
             <li role="none">
               <button type="button" id="changeColor-button" aria-label="Change Color" tabindex="0" role="menuitem" data-tooltip="Change game colors">

@@ -474,6 +474,9 @@ class Game {
         buttonText.textContent = capitalizedDifficulty;
       }
     }
+
+    // Setup mobile hamburger menu
+    this.setupMobileMenu();
   }
 
   setupFocusManagement() {
@@ -504,6 +507,166 @@ class Game {
         boardContainer.style.boxShadow = '';
       });
     }
+  }
+
+  setupMobileMenu() {
+    // Setup mobile hamburger menu functionality
+    const mobileToggle = document.getElementById('mobile-menu-toggle');
+    const mobileMenu = document.getElementById('mobile-controls-menu');
+    const mobileClose = document.getElementById('mobile-menu-close');
+
+    if (mobileToggle && mobileMenu && mobileClose) {
+      // Open mobile menu
+      const openMenu = () => {
+        mobileMenu.classList.add('active');
+        mobileToggle.classList.add('active');
+        mobileToggle.setAttribute('aria-expanded', 'true');
+        mobileMenu.setAttribute('aria-hidden', 'false');
+        document.body.style.overflow = 'hidden'; // Prevent background scrolling
+      };
+
+      // Close mobile menu
+      const closeMenu = () => {
+        mobileMenu.classList.remove('active');
+        mobileToggle.classList.remove('active');
+        mobileToggle.setAttribute('aria-expanded', 'false');
+        mobileMenu.setAttribute('aria-hidden', 'true');
+        document.body.style.overflow = ''; // Restore scrolling
+      };
+
+      // Event listeners
+      mobileToggle.addEventListener('click', () => {
+        if (mobileMenu.classList.contains('active')) {
+          closeMenu();
+        } else {
+          openMenu();
+        }
+      });
+
+      mobileClose.addEventListener('click', closeMenu);
+
+      // Close menu when clicking outside
+      mobileMenu.addEventListener('click', (e) => {
+        if (e.target === mobileMenu) {
+          closeMenu();
+        }
+      });
+
+      // Close menu on escape key
+      document.addEventListener('keydown', (e) => {
+        if (e.key === 'Escape' && mobileMenu.classList.contains('active')) {
+          closeMenu();
+        }
+      });
+
+      // Setup mobile button duplicates to mirror desktop functionality
+      this.setupMobileButtonDuplicates();
+    }
+  }
+
+  setupMobileButtonDuplicates() {
+    // Map mobile buttons to their desktop counterparts
+    const buttonMappings = [
+      { mobile: 'mobile-pause-button', desktop: 'pause-button' },
+      { mobile: 'mobile-back-button', desktop: 'back-button' },
+      { mobile: 'mobile-reset-button', desktop: 'reset-button' },
+      { mobile: 'mobile-board-size-button', desktop: 'board-size-button' },
+      { mobile: 'mobile-theme-toggle-button', desktop: 'theme-toggle-button' },
+      { mobile: 'mobile-changeColor-button', desktop: 'changeColor-button' },
+      { mobile: 'mobile-autoplay-button', desktop: 'autoplay-button' },
+      { mobile: 'mobile-speed-button', desktop: 'speed-button' },
+      { mobile: 'mobile-ai-difficulty-button', desktop: 'ai-difficulty-button' },
+      { mobile: 'mobile-leaderboard-button', desktop: 'leaderboard-button' },
+      { mobile: 'mobile-export-stats-button', desktop: 'export-stats-button' }
+    ];
+
+    buttonMappings.forEach(({ mobile, desktop }) => {
+      const mobileBtn = document.getElementById(mobile);
+      const desktopBtn = document.getElementById(desktop);
+      
+      if (mobileBtn && desktopBtn) {
+        mobileBtn.addEventListener('click', () => {
+          // Close menu first
+          const mobileMenu = document.getElementById('mobile-controls-menu');
+          if (mobileMenu) {
+            mobileMenu.classList.remove('active');
+            document.getElementById('mobile-menu-toggle').classList.remove('active');
+            document.body.style.overflow = '';
+          }
+          
+          // Trigger desktop button functionality
+          desktopBtn.click();
+          
+          // Update mobile button state to match desktop
+          this.syncMobileButtonState(mobile, desktop);
+        });
+      }
+    });
+
+    // Initial sync of button states
+    this.syncAllMobileButtonStates();
+  }
+
+  syncMobileButtonState(mobileId, desktopId) {
+    const mobileBtn = document.getElementById(mobileId);
+    const desktopBtn = document.getElementById(desktopId);
+    
+    if (mobileBtn && desktopBtn) {
+      // Sync text content for speed and AI difficulty buttons
+      if (mobileId === 'mobile-speed-button') {
+        const speedText = desktopBtn.querySelector('.speed-text');
+        const mobileSpeedText = mobileBtn.querySelector('.speed-text');
+        if (speedText && mobileSpeedText) {
+          mobileSpeedText.textContent = `Speed: ${speedText.textContent}`;
+        }
+      }
+      
+      if (mobileId === 'mobile-ai-difficulty-button') {
+        const buttonText = desktopBtn.querySelector('.button-text');
+        const mobileButtonText = mobileBtn.querySelector('.button-text');
+        if (buttonText && mobileButtonText) {
+          mobileButtonText.textContent = `AI: ${buttonText.textContent}`;
+        }
+      }
+      
+      // Sync pause button state
+      if (mobileId === 'mobile-pause-button') {
+        const desktopIcon = desktopBtn.querySelector('i');
+        const mobileIcon = mobileBtn.querySelector('i');
+        const mobileSpan = mobileBtn.querySelector('span');
+        
+        if (desktopIcon && mobileIcon && mobileSpan) {
+          mobileIcon.className = desktopIcon.className;
+          mobileSpan.textContent = this.isPaused ? 'Resume' : 'Pause';
+        }
+      }
+      
+      // Sync autoplay button state
+      if (mobileId === 'mobile-autoplay-button') {
+        const desktopIcon = desktopBtn.querySelector('i');
+        const mobileIcon = mobileBtn.querySelector('i');
+        const mobileSpan = mobileBtn.querySelector('span');
+        
+        if (desktopIcon && mobileIcon && mobileSpan) {
+          mobileIcon.className = desktopIcon.className;
+          mobileSpan.textContent = this.isAutoPlaying ? 'Stop AI' : 'Auto Play';
+        }
+      }
+    }
+  }
+
+  syncAllMobileButtonStates() {
+    // Initial sync for all dynamic buttons
+    const dynamicButtons = [
+      { mobile: 'mobile-speed-button', desktop: 'speed-button' },
+      { mobile: 'mobile-ai-difficulty-button', desktop: 'ai-difficulty-button' },
+      { mobile: 'mobile-pause-button', desktop: 'pause-button' },
+      { mobile: 'mobile-autoplay-button', desktop: 'autoplay-button' }
+    ];
+
+    dynamicButtons.forEach(({ mobile, desktop }) => {
+      this.syncMobileButtonState(mobile, desktop);
+    });
   }
 
   // Mouse event handlers for desktop drag support (optional enhancement)
@@ -2946,6 +3109,9 @@ class Game {
       pauseButton.title = 'Resume Game (Space)';
     }
 
+    // Update mobile pause button
+    this.syncMobileButtonState('mobile-pause-button', 'pause-button');
+
     // Show pause overlay
     this.showPauseOverlay(isUserInitiated);
 
@@ -2983,6 +3149,9 @@ class Game {
       pauseButton.setAttribute('aria-label', 'Pause Game');
       pauseButton.title = 'Pause Game (Space)';
     }
+
+    // Update mobile pause button
+    this.syncMobileButtonState('mobile-pause-button', 'pause-button');
 
     // Hide pause overlay and messages
     this.hidePauseOverlay();
@@ -3221,6 +3390,9 @@ class Game {
       autoplayButton.setAttribute('data-tooltip', 'Start auto play');
       autoplayButton.classList.remove('active');
     }
+
+    // Update mobile autoplay button
+    this.syncMobileButtonState('mobile-autoplay-button', 'autoplay-button');
   }
 
   updateSpeedButton() {
@@ -3243,6 +3415,9 @@ class Game {
     }
     
     speedButton.setAttribute('data-tooltip', tooltipText);
+
+    // Update mobile speed button
+    this.syncMobileButtonState('mobile-speed-button', 'speed-button');
   }
 
   getAutoPlayDelay() {
@@ -3629,6 +3804,9 @@ class Game {
         aiDifficultyButton.style.transform = '';
       }, 150);
     }
+
+    // Update mobile AI difficulty button
+    this.syncMobileButtonState('mobile-ai-difficulty-button', 'ai-difficulty-button');
     
     // Show notification with detailed info
     const difficultyInfo = this.getDifficultyInfo(this.aiDifficulty);

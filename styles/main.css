@@ -981,7 +981,8 @@ footer .container {
   }
   
   .tile {
-    font-size: clamp(0.8rem, calc(var(--tile-size) * 0.39), 2.6rem);
+    /* Significantly increased mobile font size for better accessibility */
+    font-size: clamp(1.1rem, calc(var(--tile-size) * 0.55), 3.5rem);
   }
 }
 
@@ -1089,6 +1090,19 @@ footer .container {
     /* Mobile-optimized gaps with tighter spacing */
     --gap-base: clamp(1px, 0.8vmin, 5px);
     --mobile-button-size: 44px;
+    
+    /* Enhanced Mobile Font Scaling for Better Accessibility */
+    --font-scale-4x4-base: clamp(0.50, 0.60, 0.70);
+    --font-scale-4x4-large: clamp(0.42, 0.50, 0.58);
+    --font-scale-4x4-mega: clamp(0.35, 0.42, 0.48);
+    
+    --font-scale-5x5-base: clamp(0.38, 0.45, 0.50);
+    --font-scale-5x5-large: clamp(0.32, 0.38, 0.42);
+    --font-scale-5x5-mega: clamp(0.26, 0.32, 0.36);
+    
+    --font-scale-7x7-base: clamp(0.28, 0.32, 0.36);
+    --font-scale-7x7-large: clamp(0.24, 0.28, 0.32);
+    --font-scale-7x7-mega: clamp(0.20, 0.24, 0.28);
   }
   
   /* Better mobile viewport handling */
@@ -1572,6 +1586,16 @@ footer .container {
   
 /* Mobile responsive adjustments for board sizes */
 @media (max-width: 480px) {
+  /* Hide desktop navigation on mobile */
+  .desktop-nav {
+    display: none;
+  }
+  
+  /* Show mobile hamburger menu */
+  .mobile-menu-toggle {
+    display: flex;
+  }
+  
   .board-size-3 {
     --base-board-size: min(90vw, 85vh, 320px);
     --board-max-size: min(90vw, 85vh, 320px);
@@ -2210,4 +2234,256 @@ footer button:hover {
 @keyframes slideOutRight {
   from { transform: translateX(0); opacity: 1; }
   to { transform: translateX(100%); opacity: 0; }
+}
+
+/* ============================================
+   Mobile Hamburger Menu System
+   ============================================ */
+
+/* Mobile hamburger toggle button */
+.mobile-menu-toggle {
+  display: none; /* Hidden by default, shown on mobile */
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  width: 44px;
+  height: 44px;
+  background: var(--highlight-color);
+  border: none;
+  border-radius: 8px;
+  padding: 8px;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  position: relative;
+  z-index: 1001;
+}
+
+.mobile-menu-toggle:hover {
+  background: var(--highlight-hover);
+  transform: scale(1.05);
+}
+
+.mobile-menu-toggle:active {
+  transform: scale(0.95);
+}
+
+/* Hamburger lines */
+.hamburger-line {
+  display: block;
+  width: 22px;
+  height: 2px;
+  background: #000;
+  margin: 3px 0;
+  border-radius: 1px;
+  transition: all 0.3s ease-in-out;
+  transform-origin: center;
+}
+
+/* Animated hamburger to X transformation */
+.mobile-menu-toggle.active .hamburger-line:nth-child(1) {
+  transform: rotate(45deg) translate(6px, 6px);
+}
+
+.mobile-menu-toggle.active .hamburger-line:nth-child(2) {
+  opacity: 0;
+}
+
+.mobile-menu-toggle.active .hamburger-line:nth-child(3) {
+  transform: rotate(-45deg) translate(6px, -6px);
+}
+
+/* Mobile controls overlay menu */
+.mobile-controls-menu {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(26, 26, 26, 0.98);
+  backdrop-filter: blur(10px);
+  z-index: 1000;
+  transform: translateX(100%);
+  transition: transform 0.3s ease-in-out;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+}
+
+.mobile-controls-menu.active {
+  transform: translateX(0);
+}
+
+/* Mobile menu header */
+.mobile-menu-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px;
+  border-bottom: 1px solid rgba(255, 204, 0, 0.3);
+  background: rgba(255, 204, 0, 0.1);
+}
+
+.mobile-menu-header h2 {
+  color: var(--highlight-color);
+  font-size: 1.5rem;
+  margin: 0;
+  font-weight: 700;
+}
+
+.mobile-menu-close {
+  width: 44px;
+  height: 44px;
+  background: var(--highlight-color);
+  border: none;
+  border-radius: 8px;
+  color: #000;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1.2rem;
+  transition: all 0.3s ease;
+}
+
+.mobile-menu-close:hover {
+  background: var(--highlight-hover);
+  transform: scale(1.05);
+}
+
+/* Mobile menu content */
+.mobile-menu-content {
+  padding: 20px;
+}
+
+.mobile-menu-section {
+  margin-bottom: 30px;
+}
+
+.mobile-menu-section h3 {
+  color: var(--highlight-color);
+  font-size: 1.2rem;
+  margin: 0 0 15px 0;
+  padding-bottom: 8px;
+  border-bottom: 1px solid rgba(255, 204, 0, 0.2);
+  font-weight: 600;
+}
+
+.mobile-button-group {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+/* Mobile menu buttons */
+.mobile-menu-button {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 16px 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 204, 0, 0.3);
+  border-radius: 12px;
+  color: var(--text-primary);
+  font-size: 0.9rem;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  min-height: 80px;
+  text-align: center;
+}
+
+.mobile-menu-button:hover {
+  background: rgba(255, 204, 0, 0.1);
+  border-color: var(--highlight-color);
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(255, 204, 0, 0.2);
+}
+
+.mobile-menu-button:active {
+  transform: translateY(0);
+  box-shadow: 0 2px 6px rgba(255, 204, 0, 0.2);
+}
+
+.mobile-menu-button i {
+  font-size: 1.5rem;
+  margin-bottom: 8px;
+  color: var(--highlight-color);
+}
+
+.mobile-menu-button span {
+  font-weight: 500;
+  line-height: 1.2;
+}
+
+/* Special styling for active states */
+.mobile-menu-button.active {
+  background: rgba(255, 204, 0, 0.2);
+  border-color: var(--highlight-color);
+  color: #fff;
+}
+
+/* Desktop navigation visibility */
+@media (min-width: 481px) {
+  .mobile-menu-toggle,
+  .mobile-controls-menu {
+    display: none;
+  }
+  
+  .desktop-nav {
+    display: block;
+  }
+}
+
+/* Accessibility improvements for mobile menu */
+@media (max-width: 480px) {
+  .mobile-menu-button {
+    min-height: 88px; /* Larger touch targets */
+  }
+  
+  .mobile-button-group {
+    grid-template-columns: 1fr; /* Single column on very small screens */
+    gap: 16px;
+  }
+}
+
+/* Mobile menu animations */
+@keyframes menuSlideIn {
+  from {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+  to {
+    transform: translateX(0);
+    opacity: 1;
+  }
+}
+
+@keyframes menuSlideOut {
+  from {
+    transform: translateX(0);
+    opacity: 1;
+  }
+  to {
+    transform: translateX(100%);
+    opacity: 0;
+  }
+}
+
+/* Ensure menu is accessible with keyboard navigation */
+.mobile-menu-button:focus {
+  outline: 2px solid var(--highlight-color);
+  outline-offset: 2px;
+}
+
+/* Mobile header adjustments when menu is present */
+@media (max-width: 480px) {
+  header .container {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  
+  header h1 {
+    margin: 0;
+    flex: 1;
+  }
 }
