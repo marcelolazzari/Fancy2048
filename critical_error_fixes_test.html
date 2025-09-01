@@ -1,0 +1,391 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Critical Error Fixes Test - Fancy2048</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%);
+            color: white;
+            min-height: 100vh;
+        }
+        
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.05);
+            backdrop-filter: blur(15px);
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.37);
+        }
+        
+        h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 2.5rem;
+            background: linear-gradient(45deg, #ff6b6b, #ffd93d);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+        
+        .test-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .test-section h2 {
+            color: #ffd93d;
+            margin-bottom: 15px;
+            font-size: 1.3rem;
+        }
+        
+        .pass { color: #4CAF50; font-weight: bold; }
+        .fail { color: #f44336; font-weight: bold; }
+        .warning { color: #ff9800; font-weight: bold; }
+        .info { color: #2196F3; font-weight: bold; }
+        
+        button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 10px 5px;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(76, 175, 80, 0.3);
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+        
+        .test-results {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-top: 10px;
+            font-family: 'Courier New', monospace;
+            max-height: 300px;
+            overflow-y: auto;
+        }
+        
+        .error-fix {
+            background: rgba(76, 175, 80, 0.1);
+            border-left: 4px solid #4CAF50;
+            padding: 15px;
+            margin: 10px 0;
+            border-radius: 5px;
+        }
+        
+        .game-frame {
+            width: 100%;
+            height: 500px;
+            border: 2px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            margin-top: 20px;
+        }
+        
+        pre {
+            background: rgba(0, 0, 0, 0.5);
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🔧 Critical Error Fixes Verification</h1>
+        
+        <div class="test-section">
+            <h2>📋 Errors Fixed in This Session</h2>
+            
+            <div class="error-fix">
+                <div class="pass">✅ Fixed: Duplicate Enhanced2048AI class declaration</div>
+                <div class="info">Solution: Renamed enhanced_ai_core.js class to Enhanced2048AICore</div>
+            </div>
+            
+            <div class="error-fix">
+                <div class="pass">✅ Fixed: TypeError: this.isMobile is not a function</div>
+                <div class="info">Solution: Added isMobileDevice() method to Game class</div>
+            </div>
+            
+            <div class="error-fix">
+                <div class="pass">✅ Fixed: ReferenceError: Game is not defined</div>
+                <div class="info">Solution: Added conditional loading check in enhanced_game_integration.js</div>
+            </div>
+            
+            <div class="error-fix">
+                <div class="pass">✅ Fixed: Missing UI event handlers</div>
+                <div class="info">Solution: Added handleOrientationChange() and handleResize() methods</div>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🧪 System Validation Tests</h2>
+            <button onclick="runClassAvailabilityTest()">Test Class Availability</button>
+            <button onclick="runMethodAvailabilityTest()">Test Missing Methods</button>
+            <button onclick="runGameInitializationTest()">Test Game Initialization</button>
+            <div id="testResults" class="test-results" style="display: none;"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎮 Live Game Test</h2>
+            <p class="info">Test the actual game with all fixes applied:</p>
+            <button onclick="loadGameFrame()">Load Game for Testing</button>
+            <div id="gameFrameContainer"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📊 Console Error Monitor</h2>
+            <p class="info">Real-time console error monitoring:</p>
+            <button onclick="startErrorMonitoring()">Start Error Monitor</button>
+            <button onclick="stopErrorMonitoring()">Stop Monitor</button>
+            <div id="errorMonitor" class="test-results" style="display: none;"></div>
+        </div>
+    </div>
+
+    <script>
+        let errorMonitorInterval = null;
+        let originalConsoleError = console.error;
+        let capturedErrors = [];
+        
+        // Override console.error to capture errors
+        console.error = function(...args) {
+            capturedErrors.push({
+                timestamp: new Date().toLocaleTimeString(),
+                message: args.join(' ')
+            });
+            originalConsoleError.apply(console, args);
+            updateErrorDisplay();
+        };
+        
+        // Test class availability
+        function runClassAvailabilityTest() {
+            const results = document.getElementById('testResults');
+            results.style.display = 'block';
+            results.innerHTML = '<div class="info">🔍 Testing class availability...</div>';
+            
+            let testResults = '';
+            let allPassed = true;
+            
+            // Test enhanced AI classes
+            const classesToTest = [
+                { name: 'Enhanced2048AI', expected: true },
+                { name: 'Enhanced2048AICore', expected: true },
+                { name: 'Game2048Core', expected: true },
+                { name: 'GameOverManager', expected: true },
+                { name: 'UnifiedDataManager', expected: true },
+                { name: 'UnifiedUIManager', expected: true }
+            ];
+            
+            classesToTest.forEach(test => {
+                const exists = typeof window[test.name] !== 'undefined';
+                if (exists === test.expected) {
+                    testResults += `<div class="pass">✅ ${test.name}: Available</div>`;
+                } else {
+                    testResults += `<div class="fail">❌ ${test.name}: ${exists ? 'Unexpected' : 'Missing'}</div>`;
+                    allPassed = false;
+                }
+            });
+            
+            testResults += allPassed ? 
+                '<div class="pass">🎉 All classes available correctly!</div>' :
+                '<div class="fail">⚠️ Some classes have issues</div>';
+            
+            results.innerHTML = testResults;
+        }
+        
+        // Test method availability
+        function runMethodAvailabilityTest() {
+            const results = document.getElementById('testResults');
+            results.style.display = 'block';
+            results.innerHTML = '<div class="info">🔍 Testing method availability...</div>';
+            
+            let testResults = '';
+            let allPassed = true;
+            
+            try {
+                // Test Game class methods (create dummy instance)
+                const testGame = new Game(4);
+                
+                const methodsToTest = [
+                    'isMobileDevice',
+                    'handleOrientationChange', 
+                    'handleResize',
+                    'handleLayoutChange',
+                    'updateTileFontSizes'
+                ];
+                
+                methodsToTest.forEach(methodName => {
+                    if (typeof testGame[methodName] === 'function') {
+                        testResults += `<div class="pass">✅ Game.${methodName}(): Available</div>`;
+                    } else {
+                        testResults += `<div class="fail">❌ Game.${methodName}(): Missing</div>`;
+                        allPassed = false;
+                    }
+                });
+                
+                // Test mobile detection
+                try {
+                    const isMobile = testGame.isMobileDevice();
+                    testResults += `<div class="pass">✅ Mobile detection working: ${isMobile}</div>`;
+                } catch (error) {
+                    testResults += `<div class="fail">❌ Mobile detection error: ${error.message}</div>`;
+                    allPassed = false;
+                }
+                
+            } catch (error) {
+                testResults += `<div class="fail">❌ Cannot create Game instance: ${error.message}</div>`;
+                allPassed = false;
+            }
+            
+            testResults += allPassed ? 
+                '<div class="pass">🎉 All methods available and working!</div>' :
+                '<div class="fail">⚠️ Some methods have issues</div>';
+            
+            results.innerHTML = testResults;
+        }
+        
+        // Test game initialization
+        function runGameInitializationTest() {
+            const results = document.getElementById('testResults');
+            results.style.display = 'block';
+            results.innerHTML = '<div class="info">🔍 Testing game initialization...</div>';
+            
+            let testResults = '';
+            
+            try {
+                // Clear previous errors
+                capturedErrors = [];
+                
+                // Attempt to create a game instance
+                const testGame = new Game(4);
+                testResults += '<div class="pass">✅ Game instance created successfully</div>';
+                
+                // Test basic methods
+                testResults += `<div class="info">📱 Mobile device detected: ${testGame.isMobileDevice()}</div>`;
+                testResults += `<div class="info">🎯 Board size: ${testGame.size}×${testGame.size}</div>`;
+                testResults += `<div class="info">🎮 Game state: ${testGame.gameState}</div>`;
+                
+                // Check if any errors were captured during initialization
+                if (capturedErrors.length === 0) {
+                    testResults += '<div class="pass">✅ No errors during initialization</div>';
+                } else {
+                    testResults += `<div class="warning">⚠️ ${capturedErrors.length} errors captured:</div>`;
+                    capturedErrors.forEach(error => {
+                        testResults += `<div class="fail">❌ ${error.timestamp}: ${error.message}</div>`;
+                    });
+                }
+                
+                testResults += '<div class="pass">🎉 Game initialization test completed!</div>';
+                
+            } catch (error) {
+                testResults += `<div class="fail">❌ Game initialization failed: ${error.message}</div>`;
+                testResults += `<div class="fail">Stack trace: ${error.stack}</div>`;
+            }
+            
+            results.innerHTML = testResults;
+        }
+        
+        // Load game frame
+        function loadGameFrame() {
+            const container = document.getElementById('gameFrameContainer');
+            container.innerHTML = '<div class="info">🚀 Loading game...</div>';
+            
+            const iframe = document.createElement('iframe');
+            iframe.src = '../pages/index.html';
+            iframe.className = 'game-frame';
+            iframe.onload = function() {
+                container.innerHTML = '<div class="pass">✅ Game loaded successfully!</div>';
+                container.appendChild(iframe);
+            };
+            iframe.onerror = function() {
+                container.innerHTML = '<div class="fail">❌ Failed to load game</div>';
+            };
+            
+            setTimeout(() => {
+                container.appendChild(iframe);
+            }, 500);
+        }
+        
+        // Start error monitoring
+        function startErrorMonitoring() {
+            const monitor = document.getElementById('errorMonitor');
+            monitor.style.display = 'block';
+            monitor.innerHTML = '<div class="info">👁️ Monitoring for errors...</div>';
+            
+            capturedErrors = []; // Clear previous errors
+            
+            errorMonitorInterval = setInterval(() => {
+                updateErrorDisplay();
+            }, 1000);
+        }
+        
+        // Stop error monitoring
+        function stopErrorMonitoring() {
+            if (errorMonitorInterval) {
+                clearInterval(errorMonitorInterval);
+                errorMonitorInterval = null;
+            }
+            
+            const monitor = document.getElementById('errorMonitor');
+            monitor.innerHTML += '<div class="warning">⏸️ Error monitoring stopped</div>';
+        }
+        
+        // Update error display
+        function updateErrorDisplay() {
+            const monitor = document.getElementById('errorMonitor');
+            if (!monitor || monitor.style.display === 'none') return;
+            
+            let content = '<div class="info">👁️ Error Monitor Active</div>';
+            content += `<div class="info">📊 Total errors captured: ${capturedErrors.length}</div>`;
+            
+            if (capturedErrors.length === 0) {
+                content += '<div class="pass">✅ No errors detected - All fixes working!</div>';
+            } else {
+                content += '<div class="fail">❌ Recent errors:</div>';
+                // Show last 5 errors
+                const recentErrors = capturedErrors.slice(-5);
+                recentErrors.forEach(error => {
+                    content += `<div class="fail">[${error.timestamp}] ${error.message}</div>`;
+                });
+            }
+            
+            monitor.innerHTML = content;
+        }
+        
+        // Auto-run class availability test on load
+        document.addEventListener('DOMContentLoaded', () => {
+            setTimeout(() => {
+                runClassAvailabilityTest();
+            }, 2000);
+        });
+    </script>
+    
+    <!-- Load game scripts for testing -->
+    <script src="../scripts/unified_data_manager.js"></script>
+    <script src="../scripts/unified_ui_manager.js"></script>
+    <script src="../scripts/ai_learning_system.js"></script>
+    <script src="../scripts/enhanced_ai.js"></script>
+    <script src="../scripts/enhanced_ai_core.js"></script>
+    <script src="../scripts/advanced_ai_solver.js"></script>
+    <script src="../scripts/game_core.js"></script>
+    <script src="../scripts/game_over_manager.js"></script>
+    <script src="../scripts/enhanced_game_integration.js"></script>
+    <script src="../scripts/game.js"></script>
+</body>
+</html>

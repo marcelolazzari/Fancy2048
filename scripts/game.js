@@ -40,7 +40,7 @@ class Game {
     
     // Game history for undo - optimized based on device
     this.gameStateStack = [];
-    this.maxUndoSteps = this.isMobile() ? 5 : 10;
+    this.maxUndoSteps = this.isMobileDevice() ? 5 : 10;
     
     // Visual settings from unified settings
     this.isLightMode = settings.theme === 'light';
@@ -178,6 +178,17 @@ class Game {
     }
     
     console.log('✅ Game initialized successfully');
+  }
+
+  /**
+   * Detect if running on mobile device
+   * @returns {boolean} True if mobile device
+   */
+  isMobileDevice() {
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
+           ('ontouchstart' in window) ||
+           (navigator.maxTouchPoints && navigator.maxTouchPoints > 0) ||
+           (window.innerWidth <= 768);
   }
 
   handleInitializationError(error) {
@@ -1644,6 +1655,31 @@ class Game {
     // Adjust AI speed for device
     if (!isDesktop && this.isAIPlaying) {
       this.aiSpeed = Math.max(this.aiSpeed, 800); // Slower on mobile
+    }
+  }
+
+  /**
+   * Handle device orientation changes
+   */
+  handleOrientationChange() {
+    // Slight delay to let orientation change complete
+    setTimeout(() => {
+      this.refreshLayout();
+      this.updateTileFontSizes();
+    }, 100);
+  }
+
+  /**
+   * Handle window resize events
+   */
+  handleResize(dimensions) {
+    // Update UI based on new dimensions
+    this.refreshLayout();
+    this.updateTileFontSizes();
+    
+    // Update mobile optimizations if needed
+    if (this.isMobileDevice() && dimensions) {
+      this.enableAdvancedMobileOptimizations();
     }
   }
 

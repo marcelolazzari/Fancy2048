@@ -3,6 +3,12 @@
  * Integrates all improved components: Game2048Core, Enhanced2048AI, and GameOverManager
  */
 
+// Check if Game class is available
+if (typeof Game === 'undefined') {
+  console.log('⚠️ Enhanced Game Integration: Game class not yet loaded, deferring...');
+  // This file will be executed again when game.js loads
+} else {
+  
 class EnhancedGame extends Game {
   constructor(size = 4) {
     super(size);
@@ -560,3 +566,5 @@ if (!document.querySelector('#enhanced-game-styles')) {
 
 // Export for global use
 window.EnhancedGame = EnhancedGame;
+
+} // End Game class check

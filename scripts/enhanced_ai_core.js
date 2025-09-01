@@ -1,9 +1,9 @@
 /**
- * Enhanced AI System for 2048 Game
+ * Enhanced AI Core System for 2048 Game
  * Implements advanced AI algorithms with proper game logic integration
  */
 
-class Enhanced2048AI {
+class Enhanced2048AICore {
   constructor(gameCore) {
     this.gameCore = gameCore;
     this.searchDepth = 6;
@@ -425,8 +425,8 @@ class Enhanced2048AI {
 
 // Export for use in other modules
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = Enhanced2048AI;
+  module.exports = Enhanced2048AICore;
 }
 
 // Make available globally
-window.Enhanced2048AI = Enhanced2048AI;
+window.Enhanced2048AICore = Enhanced2048AICore;
