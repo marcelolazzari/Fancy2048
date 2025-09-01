@@ -849,6 +849,72 @@ main {
   }
 }
 
+@keyframes invalidSwipe {
+  0%, 100% {
+    transform: scale(1) rotate(0deg);
+    filter: brightness(1);
+  }
+  25% {
+    transform: scale(0.98) rotate(-1deg);
+    filter: brightness(1.1) saturate(1.2);
+  }
+  50% {
+    transform: scale(1.02) rotate(1deg);
+    filter: brightness(1.2) saturate(1.4);
+  }
+  75% {
+    transform: scale(0.99) rotate(-0.5deg);
+    filter: brightness(1.1) saturate(1.1);
+  }
+}
+
+}
+
+/* Enhanced Mobile Optimization Classes */
+.mobile-optimized {
+  /* Improve touch responsiveness */
+  touch-action: pan-x pan-y;
+  user-select: none;
+  -webkit-user-select: none;
+  -webkit-touch-callout: none;
+}
+
+.reduced-animations * {
+  /* Reduce animations on lower-end devices */
+  animation-duration: 0.1s !important;
+  transition-duration: 0.1s !important;
+}
+
+.low-performance .tile {
+  /* Simplified styling for low-performance devices */
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.3) !important;
+  background: linear-gradient(135deg, var(--tile-color), var(--tile-color)) !important;
+}
+
+.low-performance .board-container {
+  /* Reduce visual complexity */
+  filter: none !important;
+}
+
+/* High contrast accessibility mode */
+.high-contrast {
+  --tile-color: #000000;
+  --text-color: #ffffff;
+  --background-color: #ffffff;
+  --board-background: #333333;
+}
+
+.high-contrast .tile {
+  border: 2px solid #ffffff !important;
+  color: #ffffff !important;
+  font-weight: bold !important;
+}
+
+.high-contrast .board-container {
+  background: #333333 !important;
+  border: 2px solid #000000 !important;
+}
+
 @keyframes pulse {
   0%, 100% {
     transform: scale(1);
@@ -2585,8 +2651,264 @@ footer button:hover {
 }
 
 /* ============================================
-   Mobile Menu and Navigation Visibility Controls
+   Advanced Performance & Accessibility Optimizations
    ============================================ */
+
+/* Enhanced High Contrast Mode Support */
+@media (prefers-contrast: high) {
+  :root {
+    --primary-color: #000000;
+    --text-primary: #ffffff;
+    --text-secondary: #ffffff;
+    --highlight-color: #ffff00;
+    --board-bg: #000000;
+    --tile-bg: #333333;
+    --background: #000000;
+    --overlay-dark: rgba(0, 0, 0, 0.95);
+  }
+  
+  .tile {
+    border: 2px solid #ffffff !important;
+    font-weight: 900 !important;
+    text-shadow: none !important;
+  }
+  
+  button {
+    border: 2px solid #ffffff !important;
+    font-weight: 700 !important;
+  }
+}
+
+/* Enhanced Reduced Motion Support */
+@media (prefers-reduced-motion: reduce) {
+  * {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    transition-delay: 0ms !important;
+  }
+  
+  .tile {
+    transform: none !important;
+  }
+  
+  #board-container {
+    transform: none !important;
+  }
+}
+
+/* Advanced Focus Management */
+.focus-trap {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+  background: rgba(0, 0, 0, 0.8);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Enhanced Error State Styling */
+.game-error {
+  background: linear-gradient(135deg, #ff6b6b, #ee5a52);
+  color: white;
+  padding: 20px;
+  border-radius: 12px;
+  text-align: center;
+  box-shadow: 0 8px 32px rgba(255, 107, 107, 0.3);
+  border: 2px solid rgba(255, 255, 255, 0.2);
+}
+
+.game-error h3 {
+  margin: 0 0 10px 0;
+  font-size: 1.3rem;
+}
+
+.game-error button {
+  background: rgba(255, 255, 255, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  padding: 10px 20px;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: 15px;
+  transition: all 0.3s ease;
+}
+
+.game-error button:hover {
+  background: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+/* Loading State Improvements */
+.loading-state {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  font-size: 1.1rem;
+  color: var(--text-secondary);
+}
+
+.loading-spinner {
+  width: 32px;
+  height: 32px;
+  border: 3px solid rgba(255, 204, 0, 0.3);
+  border-top: 3px solid var(--highlight-color);
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
+  margin-right: 12px;
+}
+
+@keyframes spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+
+/* Enhanced Performance Mode */
+.performance-mode {
+  --animation-duration: 0.1s;
+  --transition-duration: 0.1s;
+}
+
+.performance-mode * {
+  animation-duration: var(--animation-duration) !important;
+  transition-duration: var(--transition-duration) !important;
+}
+
+/* Advanced Color Scheme Support */
+@media (prefers-color-scheme: dark) {
+  body:not(.light-mode) {
+    --text-primary: #f8f9fa;
+    --text-secondary: #e9ecef;
+    --board-bg: #1a1a1a;
+    --tile-bg: #2d3748;
+    --background: #121212;
+  }
+}
+
+@media (prefers-color-scheme: light) {
+  body.light-mode {
+    --text-primary: #2d3748;
+    --text-secondary: #4a5568;
+    --board-bg: #f7fafc;
+    --tile-bg: #edf2f7;
+    --background: #ffffff;
+  }
+}
+
+/* Enhanced Print Styles */
+@media print {
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  
+  .mobile-menu-toggle,
+  .mobile-controls-menu,
+  button {
+    display: none !important;
+  }
+  
+  #board-container {
+    border: 2px solid black;
+    page-break-inside: avoid;
+  }
+  
+  .tile {
+    border: 1px solid black !important;
+    color: black !important;
+    background: white !important;
+  }
+  
+  #score-container {
+    border: 1px solid black;
+    background: white;
+    color: black;
+  }
+}
+
+/* Memory-Efficient Animations */
+.tile-appear {
+  animation: tileAppear 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  will-change: transform, opacity;
+}
+
+.tile-merge {
+  animation: tileMerge 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform;
+}
+
+.tile-slide {
+  transition: transform 0.15s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  will-change: transform;
+}
+
+/* Remove will-change after animations */
+.tile:not(.animating) {
+  will-change: auto;
+}
+
+@keyframes tileAppear {
+  0% {
+    opacity: 0;
+    transform: scale(0);
+  }
+  50% {
+    opacity: 0.5;
+    transform: scale(1.1);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes tileMerge {
+  0% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.1);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* Enhanced Safe Area Support with Custom Properties */
+@supports (padding-top: env(safe-area-inset-top)) {
+  .safe-area-aware {
+    padding-top: max(8px, env(safe-area-inset-top));
+    padding-left: max(8px, env(safe-area-inset-left));
+    padding-right: max(8px, env(safe-area-inset-right));
+    padding-bottom: max(8px, env(safe-area-inset-bottom));
+  }
+}
+
+/* Advanced Container Queries (Future-Proof) */
+@supports (container-type: inline-size) {
+  #board-container {
+    container-type: inline-size;
+  }
+  
+  @container (max-width: 300px) {
+    .tile {
+      font-size: 0.8rem;
+    }
+  }
+  
+  @container (min-width: 500px) {
+    .tile {
+      font-size: 1.2rem;
+    }
+  }
+}
+
+/* Enhanced Mobile Menu and Navigation Visibility Controls */
 
 /* Show mobile hamburger menu on small screens */
 @media (max-width: 480px) {

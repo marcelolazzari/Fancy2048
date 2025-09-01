@@ -31,28 +31,33 @@ class Game {
     this.isLightMode = localStorage.getItem('isLightMode') === 'true';
     this.hueValue = parseInt(localStorage.getItem('hueValue')) || 0;
     
-    // Touch handling
+    // Touch handling with performance optimization
     this.touchStartX = null;
     this.touchStartY = null;
     this.touchMoved = false;
     this.touchStartTime = null;
+    this.lastTouchTime = 0; // Throttle touch events
+    this.touchThrottleDelay = 50; // ms
     
     // Timer
     this.timerInterval = null;
     
-    // Stats
+    // Stats with memory management
     this.stats = JSON.parse(localStorage.getItem('gameStats')) || [];
+    this.maxStoredStats = 500; // Prevent memory bloat
     
     // Performance optimization
     this.debounceTimeout = null;
+    this.resizeTimeout = null; // For resize throttling
     
-    // Mobile state management
+    // Mobile state management with enhanced lifecycle
     this.lastSavedState = null;
     this.autoSaveInterval = null;
     this.pageVisibilityTimeout = null;
-    this.mobileHiddenMessageTimeout = null;
+    this.backgroundTime = 0; // Track time in background
+    this.isInBackground = false;
 
-    // Autoplay properties
+    // Autoplay properties with improved performance
     this.isAutoPlaying = false;
     this.autoPlayInterval = null;
     this.autoPlaySpeed = 800; // milliseconds between moves
@@ -61,43 +66,63 @@ class Game {
     this.isAutoPlayedGame = false; // Track if current game used autoplay
     this.hasHumanMoves = false; // Track if current game has human moves
 
-    // Initialize the game
-    this.initializeUI();
-    this.addEventListeners();
-    this.applyTheme();
-    this.updateHue();
-    
-    // Enhanced responsive handling
-    this.setupResponsiveHandlers();
-    
-    // Initialize resize observer for better font scaling
-    this.initializeResizeObserver();
-    
-    // Initialize autoplay button
-    this.updateAutoPlayButton();
-    this.updateSpeedButton();
-    
-    // Start the game
-    this.addRandomTile();
-    this.addRandomTile();
-    this.updateUI();
-    this.startTimer();
-    
-    // Initialize enhanced AI and learning systems automatically
-    this.enhancedAI = null;
-    this.aiLearningSystem = null;
+    // Enhanced error tracking and debugging
+    this.errorCount = 0;
+    this.maxErrors = 10;
+    this.debugMode = window.debugFancy2048 || false;
+    this.performanceMetrics = {
+      moveCount: 0,
+      averageMoveTime: 0,
+      totalMoveTime: 0
+    };
+
+    // Initialize the game with error handling
     try {
+      this.initializeUI();
+      this.addEventListeners();
+      this.applyTheme();
+      this.updateHue();
+      
+      // Enhanced responsive handling
+      this.setupResponsiveHandlers();
+      
+      // Initialize resize observer for better font scaling
+      this.initializeResizeObserver();
+      
+      // Initialize autoplay button
+      this.updateAutoPlayButton();
+      this.updateSpeedButton();
+      
+      // Start the game
+      this.addRandomTile();
+      this.addRandomTile();
+      this.updateUI();
+      this.startTimer();
+      
+      // Initialize enhanced AI and learning systems automatically
+      this.enhancedAI = null;
+      this.aiLearningSystem = null;
       this.initializeEnhancedSystems();
+      
+      // AI performance settings
+      this.aiDifficulty = localStorage.getItem('aiDifficulty') || 'normal';
+      this.adaptiveDepth = true;
+      
+      // Enhanced game state persistence (improved mobile handling)
+      this.startAutoSave();
+      
+      // Enhanced mobile optimizations
+      if (this.isMobileDevice()) {
+        this.enableAdvancedMobileOptimizations();
+      }
+      
+      // Clean up old data periodically
+      this.scheduleDataCleanup();
+      
     } catch (error) {
-      console.error('❌ Failed to initialize enhanced systems in constructor:', error);
+      console.error('❌ Failed to initialize game:', error);
+      this.handleInitializationError(error);
     }
-    
-    // AI performance settings
-    this.aiDifficulty = localStorage.getItem('aiDifficulty') || 'normal';
-    this.adaptiveDepth = true;
-    
-    // Enhanced game state persistence (improved mobile handling)
-    this.startAutoSave();
     this.restoreGameStateIfNeeded();
     
     // Add message handler for test interface
@@ -1427,6 +1452,16 @@ class Game {
         // Update UI first, then add new tile after animation
         this.updateUI();
         
+        // Dispatch accessibility event for screen readers and audio feedback
+        document.dispatchEvent(new CustomEvent('tilesMoved', {
+          detail: { 
+            direction, 
+            score: this.score, 
+            scoreDelta: this.scoreDelta,
+            moved: true 
+          }
+        }));
+        
         // Add slight delay for better visual feedback
         setTimeout(() => {
           this.addRandomTile();
@@ -1872,6 +1907,15 @@ class Game {
       // Record game completion for statistics and AI learning
       this.recordGameCompletion(false);
       
+      // Dispatch accessibility event for game over
+      document.dispatchEvent(new CustomEvent('gameOver', {
+        detail: { 
+          finalScore: this.score, 
+          moves: this.moves,
+          playMode: playMode
+        }
+      }));
+      
       // Show game over message
       this.showGameOver();
     } else {
@@ -1921,6 +1965,15 @@ class Game {
     
     // Record game completion for AI learning (win = true)
     this.recordGameCompletion(true);
+    
+    // Dispatch accessibility event for game won
+    document.dispatchEvent(new CustomEvent('gameWon', {
+      detail: { 
+        finalScore: this.score, 
+        moves: this.moves,
+        tile: 2048
+      }
+    }));
     
     if (this.isMobileDevice()) {
       // Compact mobile win message
@@ -2268,28 +2321,43 @@ class Game {
 
   // Enhanced touch handling for mobile with advanced gesture recognition
   handleTouchStart(event) {
-    if (this.isPaused || (this.gameState !== 'playing' && this.gameState !== 'won-continue')) return;
+    const now = Date.now();
     
-    // Support multi-touch by using first touch only
-    const touch = event.touches[0];
-    this.touchStartX = touch.clientX;
-    this.touchStartY = touch.clientY;
-    this.touchStartTime = Date.now();
-    this.touchMoved = false;
-    
-    // Enhanced visual feedback for touch start
-    const boardContainer = document.getElementById('board-container');
-    if (boardContainer) {
-      boardContainer.style.transform = 'scale(0.98)';
-      boardContainer.style.transition = 'transform 0.1s cubic-bezier(0.2, 0, 0.2, 1)';
+    // Throttle rapid touches for performance
+    if (this.lastTouchTime && now - this.lastTouchTime < this.touchThrottleDelay) {
+      return;
+    }
+    this.lastTouchTime = now;
+
+    if (this.isPaused || this.animationInProgress || (this.gameState !== 'playing' && this.gameState !== 'won-continue')) {
+      return;
     }
     
-    // Prevent default behavior to avoid scrolling and context menus
-    event.preventDefault();
-    
-    // Add haptic feedback on supported devices
-    if (navigator.vibrate) {
-      navigator.vibrate(10);
+    try {
+      // Support multi-touch by using first touch only
+      const touch = event.touches[0];
+      this.touchStartX = touch.clientX;
+      this.touchStartY = touch.clientY;
+      this.touchStartTime = now;
+      this.touchMoved = false;
+      
+      // Enhanced visual feedback for touch start
+      const boardContainer = document.getElementById('board-container');
+      if (boardContainer) {
+        boardContainer.style.transform = 'scale(0.98)';
+        boardContainer.style.transition = 'transform 0.1s cubic-bezier(0.2, 0, 0.2, 1)';
+      }
+      
+      // Prevent default behavior to avoid scrolling and context menus
+      event.preventDefault();
+      
+      // Add haptic feedback on supported devices
+      if (navigator.vibrate && !this.isInBackground) {
+        navigator.vibrate(10);
+      }
+    } catch (error) {
+      console.error('Touch start error:', error);
+      this.errorCount++;
     }
   }
 
@@ -2332,87 +2400,85 @@ class Game {
       boardContainer.style.transition = '';
     }
     
-    const touch = event.changedTouches[0];
-    const touchEndX = touch.clientX;
-    const touchEndY = touch.clientY;
-    const touchEndTime = Date.now();
-    
-    const deltaX = touchEndX - this.touchStartX;
-    const deltaY = touchEndY - this.touchStartY;
-    const deltaTime = touchEndTime - this.touchStartTime;
-    
-    // Enhanced swipe detection with improved accuracy
-    const swipeDistance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
-    const velocity = swipeDistance / deltaTime;
-    
-    // Adaptive thresholds based on screen size
-    const screenMin = Math.min(window.innerWidth, window.innerHeight);
-    const minSwipeDistance = Math.max(25, screenMin * 0.04);
-    const maxSwipeTime = 800;
-    const minVelocity = 0.08;
-    
-    // Enhanced validation for intentional swipes
-    const isValidSwipe = 
-      swipeDistance >= minSwipeDistance && 
-      deltaTime <= maxSwipeTime && 
-      velocity >= minVelocity &&
-      this.touchMoved;
-    
-    if (!isValidSwipe) {
-      this.resetTouchState();
-      return;
-    }
-    
-    // Advanced direction detection with deadzone
-    const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
-    const absAngle = Math.abs(angle);
-    const deadzone = 20; // Degrees of deadzone around diagonals
-    
-    let direction = null;
-    
-    // Use refined angle-based direction detection
-    if (absAngle <= 45 - deadzone || absAngle >= 135 + deadzone) {
-      // Horizontal movement
-      direction = deltaX > 0 ? 'right' : 'left';
-    } else if (angle > 45 + deadzone && angle < 135 - deadzone) {
-      direction = 'down';
-    } else if (angle < -45 - deadzone && angle > -135 + deadzone) {
-      direction = 'up';
-    }
-    
-    if (direction) {
-      // Add haptic feedback on supported devices
-      if (navigator.vibrate) {
-        navigator.vibrate(50);
+    try {
+      const touch = event.changedTouches[0];
+      const touchEndX = touch.clientX;
+      const touchEndY = touch.clientY;
+      const touchEndTime = Date.now();
+      
+      const deltaX = touchEndX - this.touchStartX;
+      const deltaY = touchEndY - this.touchStartY;
+      const deltaTime = touchEndTime - this.touchStartTime;
+      
+      // Enhanced swipe detection with improved accuracy
+      const swipeDistance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+      const velocity = swipeDistance / deltaTime;
+      
+      // Adaptive thresholds based on screen size and device capabilities
+      const screenMin = Math.min(window.innerWidth, window.innerHeight);
+      const minSwipeDistance = Math.max(25, screenMin * 0.04);
+      const maxSwipeTime = 800;
+      const minVelocity = 0.08;
+      
+      // Enhanced validation for intentional swipes
+      const isValidSwipe = 
+        swipeDistance >= minSwipeDistance && 
+        deltaTime <= maxSwipeTime && 
+        velocity >= minVelocity &&
+        this.touchMoved;
+      
+      if (!isValidSwipe) {
+        this.showInvalidSwipe();
+        this.resetTouchState();
+        return;
       }
       
-      // Track human move for statistics
-      this.hasHumanMoves = true;
+      // Determine direction with improved accuracy
+      const absDeltaX = Math.abs(deltaX);
+      const absDeltaY = Math.abs(deltaY);
       
-      // Perform the move with enhanced visual feedback and game state checking
-      const moved = this.move(direction);
+      let direction = null;
       
-      if (moved) {
-        // Add enhanced swipe direction indicator
-        this.showSwipeIndicator(direction);
+      // Enhanced direction detection with bias correction
+      if (absDeltaX > absDeltaY * 0.8) {
+        // Horizontal swipe
+        direction = deltaX > 0 ? 'right' : 'left';
+      } else if (absDeltaY > absDeltaX * 0.8) {
+        // Vertical swipe
+        direction = deltaY > 0 ? 'down' : 'up';
+      }
+      
+      if (direction) {
+        const moveStartTime = performance.now();
+        const moved = this.move(direction);
+        const moveTime = performance.now() - moveStartTime;
         
-        // Add subtle screen flash for successful moves
-        this.showMoveSuccess();
+        this.trackMovePerformance(moveTime);
         
-        // Check game state after move completes (mobile-specific timing)
-        setTimeout(() => {
-          if (!this.animationInProgress) {
-            this.checkGameState();
+        if (moved) {
+          this.showMoveSuccess(direction);
+          // Add haptic feedback for successful moves
+          if (navigator.vibrate && !this.isInBackground) {
+            navigator.vibrate([25, 10, 25]);
           }
-        }, 300); // Slightly longer delay for mobile to account for slower rendering
-      } else {
-        // Visual feedback for invalid move
-        this.showInvalidMove();
+          
+          // Enhanced game state check with proper timing
+          setTimeout(() => {
+            if (!this.animationInProgress) {
+              this.checkGameState();
+            }
+          }, this.isMobileDevice() ? 300 : 250);
+          
+        } else {
+          this.showInvalidMove();
+        }
       }
+      
+    } catch (error) {
+      GameErrorHandler.handleError(error, 'Touch');
+    } finally {
+      this.resetTouchState();
     }
-    
-    this.resetTouchState();
-    event.preventDefault();
   }
 
   resetTouchState() {
@@ -2489,6 +2555,102 @@ class Game {
     }, 250);
   }
 
+  showInvalidSwipe() {
+    // Visual feedback for invalid swipe gestures
+    const boardContainer = document.getElementById('board-container');
+    if (boardContainer) {
+      boardContainer.style.animation = 'invalidSwipe 0.4s ease-in-out';
+      boardContainer.style.borderColor = 'rgba(255, 150, 50, 0.8)';
+      
+      setTimeout(() => {
+        boardContainer.style.animation = '';
+        boardContainer.style.borderColor = '';
+      }, 400);
+    }
+    
+    // Add subtle haptic feedback for invalid swipe
+    if (navigator.vibrate) {
+      navigator.vibrate([50, 30, 50]);
+    }
+    
+    // Show brief message to user
+    this.showTemporaryMessage('Swipe further or try a different direction', 'warning');
+  }
+
+  showTemporaryMessage(message, type = 'info') {
+    const messageEl = document.createElement('div');
+    messageEl.className = `temporary-message ${type}`;
+    messageEl.textContent = message;
+    
+    messageEl.style.cssText = `
+      position: fixed;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      padding: 12px 20px;
+      background: ${type === 'warning' ? 'rgba(255, 150, 50, 0.95)' : 'rgba(100, 150, 255, 0.95)'};
+      color: white;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      z-index: 1002;
+      opacity: 0;
+      transition: opacity 0.3s ease;
+      pointer-events: none;
+      text-align: center;
+      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+    `;
+    
+    document.body.appendChild(messageEl);
+    
+    setTimeout(() => messageEl.style.opacity = '1', 10);
+    setTimeout(() => messageEl.style.opacity = '0', 1500);
+    setTimeout(() => {
+      if (messageEl.parentNode) {
+        messageEl.parentNode.removeChild(messageEl);
+      }
+    }, 1800);
+  }
+
+  trackMovePerformance(moveTime) {
+    // Track move performance metrics
+    if (typeof GamePerformanceMonitor !== 'undefined') {
+      GamePerformanceMonitor.logOperation('move', moveTime);
+    }
+    
+    // Add to internal performance tracking
+    if (!this.performanceMetrics) {
+      this.performanceMetrics = {
+        moveTimes: [],
+        averageMoveTime: 0
+      };
+    }
+    
+    this.performanceMetrics.moveTimes.push(moveTime);
+    
+    // Keep only last 50 move times for rolling average
+    if (this.performanceMetrics.moveTimes.length > 50) {
+      this.performanceMetrics.moveTimes.shift();
+    }
+    
+    // Update average
+    this.performanceMetrics.averageMoveTime = 
+      this.performanceMetrics.moveTimes.reduce((sum, time) => sum + time, 0) / 
+      this.performanceMetrics.moveTimes.length;
+    
+    // Log performance issues if move is unusually slow
+    if (moveTime > 100) {
+      console.warn(`🐌 Slow move detected: ${moveTime.toFixed(2)}ms (avg: ${this.performanceMetrics.averageMoveTime.toFixed(2)}ms)`);
+    }
+  }
+
+  getPerformanceMetrics() {
+    return this.performanceMetrics || {
+      moveTimes: [],
+      averageMoveTime: 0
+    };
+  }
+
   showInvalidMove() {
     // Visual feedback for invalid move attempts
     const boardContainer = document.getElementById('board-container');
@@ -2526,6 +2688,163 @@ class Game {
       right: { x: distance, y: 0 }
     };
     return offsets[direction] || { x: 0, y: 0 };
+  }
+
+  // Enhanced Mobile Optimization and Memory Management Methods
+  scheduleDataCleanup() {
+    // Initial cleanup after startup
+    setTimeout(() => {
+      this.performDataCleanup();
+    }, 5000);
+    
+    // Periodic cleanup every 5 minutes
+    setInterval(() => {
+      this.performDataCleanup();
+    }, 300000);
+    
+    console.log('📅 Data cleanup scheduled');
+  }
+  
+  performDataCleanup() {
+    try {
+      // Clean up game statistics (keep recent + high scores)
+      const stats = JSON.parse(localStorage.getItem('gameStats')) || [];
+      if (stats.length > this.maxStoredStats) {
+        const sortedStats = stats.sort((a, b) => parseInt(b.score) - parseInt(a.score));
+        const topScores = sortedStats.slice(0, Math.floor(this.maxStoredStats * 0.3));
+        const recentGames = stats.slice(-Math.floor(this.maxStoredStats * 0.7));
+        const cleanedStats = [...topScores, ...recentGames.filter(game => 
+          !topScores.some(top => top.date === game.date)
+        )];
+        localStorage.setItem('gameStats', JSON.stringify(cleanedStats));
+        console.log(`🧹 Cleaned stats: ${stats.length} → ${cleanedStats.length}`);
+      }
+      
+      // Clean up AI learning data if available
+      if (this.aiLearningSystem && this.aiLearningSystem.performMaintenanceCleanup) {
+        this.aiLearningSystem.performMaintenanceCleanup();
+      }
+      
+      // Memory management for mobile
+      if (this.isMobileDevice()) {
+        this.performMobileMemoryCleanup();
+      }
+      
+    } catch (error) {
+      console.warn('⚠️ Data cleanup failed:', error);
+    }
+  }
+  
+  performMobileMemoryCleanup() {
+    // Aggressive cleanup for mobile devices
+    if (this.gameStateStack.length > 5) {
+      this.gameStateStack = this.gameStateStack.slice(-5);
+    }
+    
+    // Clear old performance metrics
+    if (this.performanceMetrics && this.performanceMetrics.moveTimes.length > 20) {
+      this.performanceMetrics.moveTimes = this.performanceMetrics.moveTimes.slice(-20);
+      this.performanceMetrics.averageMoveTime = 
+        this.performanceMetrics.moveTimes.reduce((sum, time) => sum + time, 0) / 
+        this.performanceMetrics.moveTimes.length;
+    }
+    
+    // Clear AI cache if available
+    if (this.enhancedAI && this.enhancedAI.clearCache) {
+      this.enhancedAI.clearCache();
+    }
+    
+    console.log('📱 Mobile memory cleanup completed');
+  }
+  
+  getFormattedTime() {
+    if (!this.startTime) return '00:00';
+    
+    const currentTime = new Date();
+    let totalElapsed = Math.floor((currentTime - this.startTime) / 1000);
+    
+    // Subtract paused time
+    let pausedTime = this.pausedTime || 0;
+    if (this.isPaused && this.pauseStartTime) {
+      pausedTime += Math.floor((currentTime - this.pauseStartTime) / 1000);
+    }
+    
+    const actualGameTime = Math.max(0, totalElapsed - pausedTime);
+    const minutes = Math.floor(actualGameTime / 60).toString().padStart(2, '0');
+    const seconds = (actualGameTime % 60).toString().padStart(2, '0');
+    
+    return `${minutes}:${seconds}`;
+  }
+  
+  // Enhanced mobile optimization methods
+  enableAdvancedMobileOptimizations() {
+    if (!this.isMobileDevice()) return;
+    
+    // Reduce visual effects on lower-end devices
+    const hardwareConcurrency = navigator.hardwareConcurrency || 2;
+    if (hardwareConcurrency < 4) {
+      document.body.classList.add('reduced-animations');
+      this.maxUndoSteps = 3; // Reduce memory usage
+    }
+    
+    // Optimize touch responsiveness
+    document.body.style.touchAction = 'pan-x pan-y';
+    document.body.style.userSelect = 'none';
+    
+    // Enable hardware acceleration where possible
+    const boardContainer = document.getElementById('board-container');
+    if (boardContainer) {
+      boardContainer.style.willChange = 'transform';
+    }
+    
+    // Battery optimization for background handling
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        this.handleBackgroundState();
+      } else {
+        this.handleForegroundState();
+      }
+    });
+    
+    console.log('📱 Advanced mobile optimizations enabled');
+  }
+  
+  handleBackgroundState() {
+    this.isInBackground = true;
+    
+    // Pause auto-play when in background to save battery
+    if (this.isAutoPlaying && !this.wasPausedByUser) {
+      this.pauseForBackground = true;
+      this.stopAutoPlay();
+    }
+    
+    // Save game state
+    this.saveCurrentGameState();
+    
+    // Reduce performance monitoring
+    if (typeof GamePerformanceMonitor !== 'undefined') {
+      GamePerformanceMonitor.stopMonitoring();
+    }
+  }
+  
+  handleForegroundState() {
+    this.isInBackground = false;
+    
+    // Resume auto-play if it was paused for background
+    if (this.pauseForBackground) {
+      this.pauseForBackground = false;
+      this.startAutoPlay();
+    }
+    
+    // Resume performance monitoring
+    if (typeof GamePerformanceMonitor !== 'undefined') {
+      GamePerformanceMonitor.startMonitoring();
+    }
+    
+    // Refresh layout in case of orientation change
+    setTimeout(() => {
+      this.refreshLayout();
+    }, 100);
   }
 
   // Enhanced responsive layout management
@@ -4694,6 +5013,464 @@ if (document.readyState === 'loading') {
   // DOM is already loaded
   initializeFancy2048();
 }
+
+// Enhanced Error Handling and Recovery System
+class GameErrorHandler {
+  static handleError(error, context = 'Unknown') {
+    console.error(`🚨 Game Error [${context}]:`, error);
+    
+    // Track error frequency
+    if (!window.gameErrorStats) {
+      window.gameErrorStats = { count: 0, contexts: {} };
+    }
+    window.gameErrorStats.count++;
+    window.gameErrorStats.contexts[context] = (window.gameErrorStats.contexts[context] || 0) + 1;
+    
+    // Attempt recovery based on context
+    switch (context) {
+      case 'AI':
+        GameErrorHandler.recoverFromAIError();
+        break;
+      case 'Touch':
+        GameErrorHandler.recoverFromTouchError();
+        break;
+      case 'Animation':
+        GameErrorHandler.recoverFromAnimationError();
+        break;
+      case 'Storage':
+        GameErrorHandler.recoverFromStorageError();
+        break;
+      default:
+        GameErrorHandler.recoverGeneral();
+    }
+  }
+  
+  static recoverFromAIError() {
+    if (window.game) {
+      window.game.stopAutoPlay();
+      console.log('🔧 Recovered from AI error by stopping autoplay');
+    }
+  }
+  
+  static recoverFromTouchError() {
+    if (window.game) {
+      window.game.resetTouchState();
+      console.log('🔧 Recovered from touch error by resetting touch state');
+    }
+  }
+  
+  static recoverFromAnimationError() {
+    if (window.game) {
+      window.game.animationInProgress = false;
+      console.log('🔧 Recovered from animation error by resetting animation flag');
+    }
+  }
+  
+  static recoverFromStorageError() {
+    console.log('🔧 Attempting storage recovery...');
+    try {
+      localStorage.setItem('test', 'test');
+      localStorage.removeItem('test');
+      console.log('✅ Storage recovery successful');
+    } catch (e) {
+      console.warn('⚠️ Storage still unavailable, using memory-only mode');
+    }
+  }
+  
+  static recoverGeneral() {
+    console.log('🔧 Attempting general game recovery...');
+    if (window.game && typeof window.game.updateUI === 'function') {
+      try {
+        window.game.updateUI();
+        console.log('✅ UI refresh successful');
+      } catch (e) {
+        console.error('❌ UI refresh failed:', e);
+      }
+    }
+  }
+  
+  static getErrorReport() {
+    if (!window.gameErrorStats) return 'No errors recorded';
+    
+    const report = {
+      totalErrors: window.gameErrorStats.count,
+      errorsByContext: window.gameErrorStats.contexts,
+      timestamp: new Date().toISOString()
+    };
+    
+    return JSON.stringify(report, null, 2);
+  }
+}
+
+// Performance Monitoring System
+class GamePerformanceMonitor {
+  static metrics = {
+    frameRate: [],
+    memoryUsage: [],
+    gameOperations: []
+  };
+  
+  static startMonitoring() {
+    if (GamePerformanceMonitor.isMonitoring) return;
+    GamePerformanceMonitor.isMonitoring = true;
+    
+    // Monitor frame rate
+    let lastTime = performance.now();
+    let frameCount = 0;
+    
+    function measureFrameRate() {
+      const now = performance.now();
+      frameCount++;
+      
+      if (now - lastTime >= 1000) {
+        const fps = Math.round((frameCount * 1000) / (now - lastTime));
+        GamePerformanceMonitor.metrics.frameRate.push(fps);
+        
+        // Keep only last 60 seconds of data
+        if (GamePerformanceMonitor.metrics.frameRate.length > 60) {
+          GamePerformanceMonitor.metrics.frameRate.shift();
+        }
+        
+        frameCount = 0;
+        lastTime = now;
+      }
+      
+      if (GamePerformanceMonitor.isMonitoring) {
+        requestAnimationFrame(measureFrameRate);
+      }
+    }
+    
+    requestAnimationFrame(measureFrameRate);
+    
+    // Monitor memory usage (if available)
+    if (performance.memory) {
+      setInterval(() => {
+        GamePerformanceMonitor.metrics.memoryUsage.push({
+          used: Math.round(performance.memory.usedJSHeapSize / 1024 / 1024),
+          total: Math.round(performance.memory.totalJSHeapSize / 1024 / 1024),
+          timestamp: Date.now()
+        });
+        
+        // Keep only last 5 minutes of memory data
+        if (GamePerformanceMonitor.metrics.memoryUsage.length > 300) {
+          GamePerformanceMonitor.metrics.memoryUsage.shift();
+        }
+      }, 1000);
+    }
+    
+    console.log('📊 Performance monitoring started');
+  }
+  
+  static stopMonitoring() {
+    GamePerformanceMonitor.isMonitoring = false;
+    console.log('📊 Performance monitoring stopped');
+  }
+  
+  static getReport() {
+    const frameRate = GamePerformanceMonitor.metrics.frameRate;
+    const memoryUsage = GamePerformanceMonitor.metrics.memoryUsage;
+    
+    const avgFrameRate = frameRate.length > 0 ? 
+      Math.round(frameRate.reduce((a, b) => a + b, 0) / frameRate.length) : 0;
+    
+    const latestMemory = memoryUsage[memoryUsage.length - 1] || { used: 0, total: 0 };
+    
+    return {
+      performance: {
+        averageFrameRate: avgFrameRate,
+        currentMemoryUsage: `${latestMemory.used}MB / ${latestMemory.total}MB`,
+        memoryUsagePercentage: latestMemory.total > 0 ? 
+          Math.round((latestMemory.used / latestMemory.total) * 100) : 0
+      },
+      gameStats: window.game ? {
+        moves: window.game.moves,
+        score: window.game.score,
+        gameTime: window.game.getFormattedTime(),
+        boardSize: `${window.game.size}x${window.game.size}`,
+        gameState: window.game.gameState
+      } : null
+    };
+  }
+  
+  static logOperation(operation, duration) {
+    GamePerformanceMonitor.metrics.gameOperations.push({
+      operation,
+      duration,
+      timestamp: Date.now()
+    });
+    
+    // Keep only last 100 operations
+    if (GamePerformanceMonitor.metrics.gameOperations.length > 100) {
+      GamePerformanceMonitor.metrics.gameOperations.shift();
+    }
+  }
+}
+
+// Accessibility Enhancement System
+class AccessibilityEnhancer {
+  static audioContext = null;
+  static audioEnabled = true;
+  
+  static initialize() {
+    AccessibilityEnhancer.setupKeyboardNavigation();
+    AccessibilityEnhancer.setupScreenReaderSupport();
+    AccessibilityEnhancer.setupHighContrastMode();
+    AccessibilityEnhancer.setupFocusManagement();
+    console.log('♿ Accessibility enhancements initialized');
+  }
+  
+  static setupKeyboardNavigation() {
+    document.addEventListener('keydown', (event) => {
+      // Enhanced keyboard shortcuts
+      if (event.target.tagName.toLowerCase() === 'input') return;
+      
+      const shortcuts = {
+        'KeyR': () => window.game?.reset(),
+        'KeyP': () => window.game?.togglePause(),
+        'KeyU': () => window.game?.undo(),
+        'KeyA': () => window.game?.toggleAutoPlay(),
+        'KeyH': () => AccessibilityEnhancer.showHelpDialog(),
+        'Digit1': () => window.game?.changeBoardSize(4),
+        'Digit2': () => window.game?.changeBoardSize(5),
+        'Digit3': () => window.game?.changeBoardSize(7),
+        'Digit4': () => window.game?.changeBoardSize(9),
+      };
+      
+      if (event.ctrlKey || event.metaKey) {
+        const action = shortcuts[event.code];
+        if (action) {
+          event.preventDefault();
+          action();
+        }
+      }
+    });
+  }
+  
+  static setupScreenReaderSupport() {
+    // Enhanced ARIA live regions
+    const gameContainer = document.getElementById('board-container');
+    if (gameContainer && !gameContainer.getAttribute('aria-live')) {
+      gameContainer.setAttribute('aria-live', 'polite');
+      gameContainer.setAttribute('aria-atomic', 'false');
+    }
+    
+    // Add score announcements
+    const scoreContainer = document.getElementById('score-container');
+    if (scoreContainer) {
+      scoreContainer.setAttribute('aria-live', 'polite');
+    }
+    
+    // Create enhanced screen reader announcements
+    AccessibilityEnhancer.createAnnouncementRegion();
+    
+    // Listen for game events and provide audio/screen reader feedback
+    document.addEventListener('tilesMoved', (event) => {
+      const { direction, score, moved } = event.detail;
+      if (moved) {
+        AccessibilityEnhancer.announce(`Moved ${direction}, score is now ${score}`);
+        AccessibilityEnhancer.playMoveSound(direction);
+      }
+    });
+    
+    document.addEventListener('gameWon', () => {
+      AccessibilityEnhancer.announce('Congratulations! You reached 2048!');
+      AccessibilityEnhancer.playSuccessSound();
+    });
+    
+    document.addEventListener('gameOver', () => {
+      AccessibilityEnhancer.announce('Game over. No more moves available.');
+      AccessibilityEnhancer.playGameOverSound();
+    });
+  }
+  
+  static createAnnouncementRegion() {
+    if (document.getElementById('sr-announcements')) return;
+    
+    const announcer = document.createElement('div');
+    announcer.id = 'sr-announcements';
+    announcer.setAttribute('aria-live', 'assertive');
+    announcer.setAttribute('aria-atomic', 'true');
+    announcer.style.cssText = `
+      position: absolute;
+      left: -10000px;
+      width: 1px;
+      height: 1px;
+      overflow: hidden;
+    `;
+    document.body.appendChild(announcer);
+  }
+  
+  static announce(message) {
+    const announcer = document.getElementById('sr-announcements');
+    if (announcer) {
+      announcer.textContent = message;
+    }
+  }
+  
+  static playMoveSound(direction) {
+    if (!AccessibilityEnhancer.audioEnabled) return;
+    
+    // Create simple audio feedback using Web Audio API
+    try {
+      const audioContext = AccessibilityEnhancer.getAudioContext();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      // Different frequencies for different directions
+      const frequencies = {
+        up: 440,    // A4
+        down: 330,  // E4
+        left: 293,  // D4
+        right: 349  // F4
+      };
+      
+      oscillator.frequency.setValueAtTime(frequencies[direction] || 440, audioContext.currentTime);
+      oscillator.type = 'sine';
+      
+      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.1);
+    } catch (error) {
+      // Audio not supported or blocked, fail silently
+    }
+  }
+  
+  static playSuccessSound() {
+    if (!AccessibilityEnhancer.audioEnabled) return;
+    
+    try {
+      const audioContext = AccessibilityEnhancer.getAudioContext();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.frequency.setValueAtTime(523, audioContext.currentTime); // C5
+      oscillator.frequency.setValueAtTime(659, audioContext.currentTime + 0.1); // E5
+      oscillator.frequency.setValueAtTime(784, audioContext.currentTime + 0.2); // G5
+      
+      gainNode.gain.setValueAtTime(0.2, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.3);
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.3);
+    } catch (error) {
+      // Audio not supported or blocked, fail silently
+    }
+  }
+  
+  static playGameOverSound() {
+    if (!AccessibilityEnhancer.audioEnabled) return;
+    
+    try {
+      const audioContext = AccessibilityEnhancer.getAudioContext();
+      const oscillator = audioContext.createOscillator();
+      const gainNode = audioContext.createGain();
+      
+      oscillator.frequency.setValueAtTime(196, audioContext.currentTime); // G3
+      oscillator.frequency.setValueAtTime(147, audioContext.currentTime + 0.15); // D3
+      oscillator.frequency.setValueAtTime(123, audioContext.currentTime + 0.3); // B2
+      
+      gainNode.gain.setValueAtTime(0.15, audioContext.currentTime);
+      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.5);
+      
+      oscillator.connect(gainNode);
+      gainNode.connect(audioContext.destination);
+      
+      oscillator.start(audioContext.currentTime);
+      oscillator.stop(audioContext.currentTime + 0.5);
+    } catch (error) {
+      // Audio not supported or blocked, fail silently
+    }
+  }
+  
+  static getAudioContext() {
+    if (!AccessibilityEnhancer.audioContext) {
+      AccessibilityEnhancer.audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    }
+    return AccessibilityEnhancer.audioContext;
+  }
+  
+  static toggleAudio() {
+    AccessibilityEnhancer.audioEnabled = !AccessibilityEnhancer.audioEnabled;
+    AccessibilityEnhancer.announce(
+      AccessibilityEnhancer.audioEnabled ? 
+      'Audio feedback enabled' : 
+      'Audio feedback disabled'
+    );
+    return AccessibilityEnhancer.audioEnabled;
+  }
+  
+  static setupHighContrastMode() {
+    // Detect high contrast preference
+    if (window.matchMedia('(prefers-contrast: high)').matches) {
+      document.body.classList.add('high-contrast');
+      console.log('🎨 High contrast mode enabled');
+    }
+    
+    // Listen for changes
+    window.matchMedia('(prefers-contrast: high)').addEventListener('change', (e) => {
+      document.body.classList.toggle('high-contrast', e.matches);
+    });
+  }
+  
+  static setupFocusManagement() {
+    // Enhanced focus management
+    let lastFocusedElement = null;
+    
+    document.addEventListener('focusin', (event) => {
+      lastFocusedElement = event.target;
+    });
+    
+    // Restore focus after modal closes
+    window.addEventListener('modalClosed', () => {
+      if (lastFocusedElement) {
+        lastFocusedElement.focus();
+      }
+    });
+  }
+  
+  static showHelpDialog() {
+    const helpContent = `
+      <h2>Fancy2048 Keyboard Shortcuts</h2>
+      <ul>
+        <li><strong>Arrow Keys:</strong> Move tiles</li>
+        <li><strong>R:</strong> Reset game</li>
+        <li><strong>P:</strong> Pause/Resume</li>
+        <li><strong>U:</strong> Undo last move</li>
+        <li><strong>A:</strong> Toggle AI autoplay</li>
+        <li><strong>1-4:</strong> Change board size (4x4, 5x5, 7x7, 9x9)</li>
+        <li><strong>H:</strong> Show this help</li>
+      </ul>
+      <p>Swipe gestures work on touch devices.</p>
+    `;
+    
+    // You would implement a modal here
+    alert(helpContent.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim());
+  }
+}
+
+// Initialize enhanced systems
+window.addEventListener('DOMContentLoaded', () => {
+  GamePerformanceMonitor.startMonitoring();
+  AccessibilityEnhancer.initialize();
+});
+
+// Global error handler
+window.addEventListener('error', (event) => {
+  GameErrorHandler.handleError(event.error, 'Global');
+});
+
+// Unhandled promise rejection handler
+window.addEventListener('unhandledrejection', (event) => {
+  GameErrorHandler.handleError(event.reason, 'Promise');
+});
 
 // AI Debug Tools - Enhanced Version
 window.aiDebugTools = {

@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fancy2048 Functionality Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #1a1a2e; color: #eee; }
+        .test-section { margin: 20px 0; padding: 15px; border: 1px solid #444; border-radius: 5px; }
+        .success { color: #4CAF50; }
+        .error { color: #f44336; }
+        .warning { color: #ff9800; }
+        .info { color: #2196F3; }
+        button { margin: 5px; padding: 10px 15px; background: #16213e; color: #eee; border: 1px solid #444; border-radius: 5px; cursor: pointer; }
+        button:hover { background: #0f1419; }
+        #output { background: #0f1419; padding: 15px; border-radius: 5px; margin: 10px 0; font-family: monospace; white-space: pre-wrap; max-height: 400px; overflow-y: auto; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Fancy2048 Functionality Test</h1>
+    
+    <div class="test-section">
+        <h2>🧪 System Tests</h2>
+        <button onclick="testJavaScriptFiles()">Test JavaScript Files</button>
+        <button onclick="testGameInitialization()">Test Game Initialization</button>
+        <button onclick="testAISystems()">Test AI Systems</button>
+        <button onclick="testGameMoves()">Test Game Moves</button>
+        <button onclick="testMobileFeatures()">Test Mobile Features</button>
+        <button onclick="testAccessibility()">Test Accessibility</button>
+        <button onclick="runAllTests()">🚀 Run All Tests</button>
+        <button onclick="clearOutput()">🗑️ Clear Output</button>
+    </div>
+    
+    <div id="output"></div>
+
+    <!-- Include the game files -->
+    <script src="../scripts/enhanced_ai.js"></script>
+    <script src="../scripts/ai_learning_system.js"></script>
+    <script src="../scripts/advanced_ai_solver.js"></script>
+    <script src="../scripts/statistics.js"></script>
+    <script src="../scripts/game.js"></script>
+
+    <script>
+        let testOutput = document.getElementById('output');
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const className = type === 'success' ? 'success' : type === 'error' ? 'error' : type === 'warning' ? 'warning' : 'info';
+            testOutput.innerHTML += `<span class="${className}">[${timestamp}] ${message}</span>\n`;
+            testOutput.scrollTop = testOutput.scrollHeight;
+        }
+        
+        function clearOutput() {
+            testOutput.innerHTML = '';
+        }
+        
+        async function testJavaScriptFiles() {
+            log('🧪 Testing JavaScript Files...', 'info');
+            
+            // Test if classes are available
+            const tests = [
+                { name: 'Game', class: typeof Game !== 'undefined' },
+                { name: 'Enhanced2048AI', class: typeof Enhanced2048AI !== 'undefined' },
+                { name: 'AdvancedAI2048Solver', class: typeof AdvancedAI2048Solver !== 'undefined' },
+                { name: 'AILearningSystem', class: typeof AILearningSystem !== 'undefined' }
+            ];
+            
+            tests.forEach(test => {
+                if (test.class) {
+                    log(`✅ ${test.name} class loaded successfully`, 'success');
+                } else {
+                    log(`❌ ${test.name} class not found`, 'error');
+                }
+            });
+        }
+        
+        async function testGameInitialization() {
+            log('🎮 Testing Game Initialization...', 'info');
+            
+            try {
+                // Create a temporary game instance
+                const tempGame = new Game(4);
+                log('✅ Game instance created successfully', 'success');
+                
+                // Test basic properties
+                if (tempGame.size === 4) {
+                    log('✅ Game size set correctly', 'success');
+                } else {
+                    log('❌ Game size incorrect', 'error');
+                }
+                
+                if (Array.isArray(tempGame.board)) {
+                    log('✅ Game board created', 'success');
+                } else {
+                    log('❌ Game board not created', 'error');
+                }
+                
+                // Test methods exist
+                const methods = ['move', 'addRandomTile', 'updateUI', 'isGameOver'];
+                methods.forEach(method => {
+                    if (typeof tempGame[method] === 'function') {
+                        log(`✅ Method ${method} exists`, 'success');
+                    } else {
+                        log(`❌ Method ${method} missing`, 'error');
+                    }
+                });
+                
+            } catch (error) {
+                log(`❌ Game initialization failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testAISystems() {
+            log('🤖 Testing AI Systems...', 'info');
+            
+            try {
+                // Test Enhanced AI
+                const enhancedAI = new Enhanced2048AI();
+                log('✅ Enhanced2048AI created successfully', 'success');
+                
+                // Test Advanced AI
+                const tempGame = new Game(4);
+                const advancedAI = new AdvancedAI2048Solver(tempGame);
+                log('✅ AdvancedAI2048Solver created successfully', 'success');
+                
+                // Test AI Learning System
+                const learningSystem = new AILearningSystem();
+                log('✅ AILearningSystem created successfully', 'success');
+                
+                // Test AI decision making
+                const move = enhancedAI.findBestMove(tempGame.board);
+                if (['up', 'down', 'left', 'right'].includes(move)) {
+                    log(`✅ AI returned valid move: ${move}`, 'success');
+                } else {
+                    log(`❌ AI returned invalid move: ${move}`, 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ AI system test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testGameMoves() {
+            log('🎯 Testing Game Moves...', 'info');
+            
+            try {
+                const tempGame = new Game(4);
+                
+                // Test move directions
+                const directions = ['up', 'down', 'left', 'right'];
+                directions.forEach(direction => {
+                    try {
+                        const canMove = tempGame.canMove(direction);
+                        log(`✅ Can check move ${direction}: ${canMove}`, 'success');
+                    } catch (error) {
+                        log(`❌ Error checking move ${direction}: ${error.message}`, 'error');
+                    }
+                });
+                
+                // Test game over detection
+                const gameOver = tempGame.isGameOver();
+                log(`✅ Game over detection works: ${gameOver}`, 'success');
+                
+            } catch (error) {
+                log(`❌ Game moves test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testMobileFeatures() {
+            log('📱 Testing Mobile Features...', 'info');
+            
+            try {
+                const tempGame = new Game(4);
+                
+                // Test mobile detection
+                const isMobile = tempGame.isMobileDevice();
+                log(`✅ Mobile detection: ${isMobile}`, 'success');
+                
+                // Test touch handling methods
+                const touchMethods = ['handleTouchStart', 'handleTouchMove', 'handleTouchEnd'];
+                touchMethods.forEach(method => {
+                    if (typeof tempGame[method] === 'function') {
+                        log(`✅ Touch method ${method} exists`, 'success');
+                    } else {
+                        log(`❌ Touch method ${method} missing`, 'error');
+                    }
+                });
+                
+            } catch (error) {
+                log(`❌ Mobile features test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testAccessibility() {
+            log('♿ Testing Accessibility Features...', 'info');
+            
+            try {
+                // Test AccessibilityEnhancer class
+                if (typeof AccessibilityEnhancer !== 'undefined') {
+                    log('✅ AccessibilityEnhancer class available', 'success');
+                    
+                    // Test announcement region creation
+                    AccessibilityEnhancer.createAnnouncementRegion();
+                    const announcer = document.getElementById('sr-announcements');
+                    if (announcer) {
+                        log('✅ Screen reader announcement region created', 'success');
+                    } else {
+                        log('❌ Screen reader announcement region not created', 'error');
+                    }
+                } else {
+                    log('❌ AccessibilityEnhancer class not found', 'error');
+                }
+                
+            } catch (error) {
+                log(`❌ Accessibility test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function runAllTests() {
+            log('🚀 Running All Tests...', 'info');
+            log('='.repeat(50), 'info');
+            
+            await testJavaScriptFiles();
+            log('', 'info');
+            await testGameInitialization();
+            log('', 'info');
+            await testAISystems();
+            log('', 'info');
+            await testGameMoves();
+            log('', 'info');
+            await testMobileFeatures();
+            log('', 'info');
+            await testAccessibility();
+            
+            log('='.repeat(50), 'info');
+            log('🏁 All tests completed!', 'success');
+        }
+        
+        // Auto-run basic test on load
+        window.addEventListener('load', () => {
+            log('🔧 Fancy2048 Test Suite Loaded', 'info');
+            log('Click "Run All Tests" to perform comprehensive testing.', 'info');
+        });
+    </script>
+</body>
+</html>
