@@ -796,7 +796,7 @@ class Game {
         playMode: this.getPlayModeString() // Get comprehensive play mode
       };
       
-      // Use unified data manager for statistics
+      // localStorage storage
       const currentStats = JSON.parse(localStorage.getItem('gameStats')) ||  [];
       currentStats.push(stat);
       localStorage.setItem('gameStats', JSON.stringify( currentStats));
@@ -3323,7 +3323,7 @@ class Game {
     const oldHue = this.hueValue;
     this.hueValue = (this.hueValue + 30) % 360;
     
-    // Save to unified data manager
+    // Save to localStorage
     localStorage.setItem('hueValue', JSON.stringify( this.hueValue));
     
     // Animate the hue transition
@@ -4094,7 +4094,7 @@ class Game {
     const nextIndex = (currentIndex + 1) % difficulties.length;
     this.aiDifficulty = difficulties[nextIndex];
     
-    // Save preference to unified data manager
+    // Save preference to localStorage
     localStorage.setItem('aiDifficulty', JSON.stringify( this.aiDifficulty));
     
     // Update AI settings immediately if AI is available
