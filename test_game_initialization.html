@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Game Initialization Test</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #1a1a2e; 
+            color: #eee; 
+        }
+        .test-section { 
+            margin: 20px 0; 
+            padding: 15px; 
+            border: 1px solid #444; 
+            border-radius: 5px; 
+        }
+        .pass { color: #4CAF50; font-weight: bold; }
+        .fail { color: #f44336; font-weight: bold; }
+        .warning { color: #ff9800; font-weight: bold; }
+        .info { color: #2196F3; font-weight: bold; }
+        button { 
+            margin: 5px; 
+            padding: 10px 15px; 
+            background: #16213e; 
+            color: #eee; 
+            border: 1px solid #444; 
+            border-radius: 5px; 
+            cursor: pointer; 
+        }
+        button:hover { background: #0f1419; }
+        pre { 
+            background: #000; 
+            padding: 10px; 
+            border-radius: 5px; 
+            overflow-x: auto; 
+            font-size: 12px; 
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Fancy2048 Game Initialization Test</h1>
+    
+    <div class="test-section">
+        <h2>📋 Script Loading Test</h2>
+        <button onclick="testScriptLoading()">Test All Script Dependencies</button>
+        <div id="script-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🎮 Game Initialization Test</h2>
+        <button onclick="testGameInitialization()">Test Game Initialization</button>
+        <div id="init-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🔍 Debug Console Output</h2>
+        <div id="console-output"></div>
+    </div>
+    
+    <script>
+        let consoleOutput = [];
+        
+        // Capture console messages
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        console.log = function(...args) {
+            consoleOutput.push({type: 'log', message: args.join(' ')});
+            updateConsoleDisplay();
+            originalLog.apply(console, args);
+        };
+        
+        console.error = function(...args) {
+            consoleOutput.push({type: 'error', message: args.join(' ')});
+            updateConsoleDisplay();
+            originalError.apply(console, args);
+        };
+        
+        console.warn = function(...args) {
+            consoleOutput.push({type: 'warn', message: args.join(' ')});
+            updateConsoleDisplay();
+            originalWarn.apply(console, args);
+        };
+        
+        function updateConsoleDisplay() {
+            const output = document.getElementById('console-output');
+            if (output) {
+                const lastFive = consoleOutput.slice(-10);
+                output.innerHTML = lastFive.map(entry => {
+                    const className = entry.type === 'error' ? 'fail' : 
+                                    entry.type === 'warn' ? 'warning' : 'info';
+                    return `<div class="${className}">[${entry.type.toUpperCase()}] ${entry.message}</div>`;
+                }).join('');
+            }
+        }
+        
+        async function testScriptLoading() {
+            const resultsDiv = document.getElementById('script-results');
+            resultsDiv.innerHTML = '<div class="info">Testing script dependencies...</div>';
+            
+            const scriptsToTest = [
+                '../scripts/unified_data_manager.js',
+                '../scripts/unified_ui_manager.js',
+                '../scripts/ai_learning_system.js',
+                '../scripts/enhanced_ai.js',
+                '../scripts/advanced_ai_solver.js',
+                '../scripts/enhanced_ai_core.js',
+                '../scripts/game_core.js',
+                '../scripts/game_over_manager.js',
+                '../scripts/enhanced_game_integration.js',
+                '../scripts/game.js'
+            ];
+            
+            let results = [];
+            
+            for (let scriptPath of scriptsToTest) {
+                try {
+                    const response = await fetch(scriptPath);
+                    if (response.ok) {
+                        results.push(`<div class="pass">✅ ${scriptPath} - Accessible</div>`);
+                    } else {
+                        results.push(`<div class="fail">❌ ${scriptPath} - HTTP ${response.status}</div>`);
+                    }
+                } catch (error) {
+                    results.push(`<div class="fail">❌ ${scriptPath} - ${error.message}</div>`);
+                }
+            }
+            
+            resultsDiv.innerHTML = results.join('');
+            
+            // Test global objects after scripts would be loaded
+            setTimeout(() => {
+                const globalTests = [
+                    'UnifiedDataManager',
+                    'UnifiedUIManager', 
+                    'AILearningSystem',
+                    'Enhanced2048AI',
+                    'Game2048Core',
+                    'Game'
+                ];
+                
+                let globalResults = globalTests.map(className => {
+                    const exists = typeof window[className] !== 'undefined';
+                    return `<div class="${exists ? 'pass' : 'fail'}">${exists ? '✅' : '❌'} ${className} class ${exists ? 'available' : 'missing'}</div>`;
+                });
+                
+                resultsDiv.innerHTML += '<h4>Global Class Availability:</h4>' + globalResults.join('');
+            }, 1000);
+        }
+        
+        function testGameInitialization() {
+            const resultsDiv = document.getElementById('init-results');
+            resultsDiv.innerHTML = '<div class="info">Testing game initialization...</div>';
+            
+            try {
+                // Test basic DOM elements
+                const requiredElements = [
+                    'board-container',
+                    'score-container', 
+                    'score',
+                    'best-score',
+                    'moves',
+                    'time'
+                ];
+                
+                let elementResults = requiredElements.map(id => {
+                    const element = document.getElementById(id);
+                    return `<div class="${element ? 'pass' : 'fail'}">${element ? '✅' : '❌'} ${id} element ${element ? 'found' : 'missing'}</div>`;
+                });
+                
+                let output = '<h4>DOM Elements:</h4>' + elementResults.join('');
+                
+                // Test if we can create a game instance
+                if (typeof Game !== 'undefined') {
+                    try {
+                        const testGame = new Game(4);
+                        output += '<div class="pass">✅ Game instance created successfully</div>';
+                        output += `<div class="info">📊 Game size: ${testGame.size}</div>`;
+                        output += `<div class="info">📊 Game state: ${testGame.gameState}</div>`;
+                        output += `<div class="info">📊 Data manager: ${testGame.dataManager ? 'Available' : 'Missing'}</div>`;
+                        output += `<div class="info">📊 UI manager: ${testGame.uiManager ? 'Available' : 'Missing'}</div>`;
+                    } catch (gameError) {
+                        output += `<div class="fail">❌ Game creation failed: ${gameError.message}</div>`;
+                    }
+                } else {
+                    output += '<div class="fail">❌ Game class not available</div>';
+                }
+                
+                resultsDiv.innerHTML = output;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<div class="fail">❌ Initialization test failed: ${error.message}</div>`;
+            }
+        }
+        
+        // Auto-run tests
+        setTimeout(() => {
+            testScriptLoading();
+        }, 500);
+    </script>
+    
+    <!-- Load the actual game scripts to test them -->
+    <script src="../scripts/unified_data_manager.js"></script>
+    <script src="../scripts/unified_ui_manager.js"></script>
+    <script src="../scripts/ai_learning_system.js"></script>
+    <script src="../scripts/enhanced_ai.js"></script>
+    <script src="../scripts/advanced_ai_solver.js"></script>
+    <script src="../scripts/enhanced_ai_core.js"></script>
+    <script src="../scripts/game_core.js"></script>
+    <script src="../scripts/game_over_manager.js"></script>
+    <script src="../scripts/enhanced_game_integration.js"></script>
+    <script src="../scripts/game.js"></script>
+    
+    <!-- Add minimal DOM elements for testing -->
+    <div id="board-container" style="display: none;"></div>
+    <div id="score-container" style="display: none;">
+        <span id="score">0</span>
+        <span id="best-score">0</span>
+        <span id="moves">0</span>
+        <span id="time">00:00</span>
+    </div>
+</body>
+</html>

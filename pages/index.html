@@ -212,7 +212,7 @@
       
       // Track script loading
       let scriptsLoaded = 0;
-      let expectedScripts = 9; // Number of scripts we're loading
+      let expectedScripts = 10; // Number of scripts we're loading
       
       function trackScriptLoad(scriptName) {
         scriptsLoaded++;
@@ -257,7 +257,12 @@
       setTimeout(verifyDOMElements, 50);
     </script>
     
-    <!-- Load Unified Managers First -->
+    <!-- Load Comprehensive System Fixes First -->
+    <script src="../scripts/comprehensive_fixes.js" 
+            onload="trackScriptLoad('comprehensive_fixes.js')" 
+            onerror="console.error('Failed to load comprehensive_fixes.js')"></script>
+    
+    <!-- Load Unified Managers -->
     <script src="../scripts/unified_data_manager.js" 
             onload="trackScriptLoad('unified_data_manager.js')" 
             onerror="console.error('Failed to load unified_data_manager.js')"></script>

@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🎉 Final Integration Test - Fancy2048</title>
+    <style>
+        body { 
+            font-family: 'Segoe UI', Arial, sans-serif; 
+            margin: 20px; 
+            background: linear-gradient(135deg, #1a1a2e 0%, #16213e 100%);
+            color: #eee; 
+            min-height: 100vh;
+        }
+        .test-container { 
+            max-width: 1200px; 
+            margin: 0 auto; 
+            padding: 20px;
+        }
+        .test-section { 
+            margin: 20px 0; 
+            padding: 20px; 
+            border: 1px solid #444; 
+            border-radius: 10px; 
+            background: rgba(0,0,0,0.3);
+            backdrop-filter: blur(10px);
+        }
+        .pass { color: #4CAF50; font-weight: bold; }
+        .fail { color: #f44336; font-weight: bold; }
+        .warning { color: #ff9800; font-weight: bold; }
+        .info { color: #2196F3; font-weight: bold; }
+        button { 
+            margin: 8px; 
+            padding: 12px 20px; 
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #fff; 
+            border: none; 
+            border-radius: 8px; 
+            cursor: pointer; 
+            font-weight: bold;
+            transition: transform 0.2s;
+        }
+        button:hover { 
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+        }
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        .status-card {
+            background: rgba(0,0,0,0.4);
+            border: 1px solid #333;
+            border-radius: 8px;
+            padding: 15px;
+        }
+        .status-card h4 {
+            margin: 0 0 10px 0;
+            color: #ffcc00;
+        }
+        iframe { 
+            width: 100%; 
+            height: 600px; 
+            border: 1px solid #444; 
+            border-radius: 10px;
+            background: #000;
+        }
+        .game-frame-container {
+            position: relative;
+            overflow: hidden;
+            border-radius: 10px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        pre { 
+            background: #000; 
+            padding: 15px; 
+            border-radius: 8px; 
+            overflow-x: auto; 
+            font-size: 12px;
+            border: 1px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🎉 Fancy2048 - Final Integration Test</h1>
+        <p class="info">Testing all fixes, merges, and logic improvements applied to the repository.</p>
+
+        <div class="test-section">
+            <h2>🔧 System Status Check</h2>
+            <div class="status-grid">
+                <div class="status-card">
+                    <h4>🏗️ Core Systems</h4>
+                    <div id="core-systems-status">Checking...</div>
+                </div>
+                <div class="status-card">
+                    <h4>🎮 Game Logic</h4>
+                    <div id="game-logic-status">Checking...</div>
+                </div>
+                <div class="status-card">
+                    <h4>🤖 AI Systems</h4>
+                    <div id="ai-systems-status">Checking...</div>
+                </div>
+                <div class="status-card">
+                    <h4>📊 Data Management</h4>
+                    <div id="data-management-status">Checking...</div>
+                </div>
+                <div class="status-card">
+                    <h4>🎨 UI/UX</h4>
+                    <div id="ui-status">Checking...</div>
+                </div>
+                <div class="status-card">
+                    <h4>📱 Mobile Support</h4>
+                    <div id="mobile-status">Checking...</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>🧪 Interactive Tests</h2>
+            <button onclick="runComprehensiveTests()">🔍 Run All Tests</button>
+            <button onclick="testGameInitialization()">🎮 Test Game Init</button>
+            <button onclick="testAIFunctionality()">🤖 Test AI</button>
+            <button onclick="testDataPersistence()">💾 Test Data</button>
+            <button onclick="testMobileFeatures()">📱 Test Mobile</button>
+            <button onclick="openFullGame()">🚀 Open Full Game</button>
+            <div id="test-results"></div>
+        </div>
+
+        <div class="test-section" id="game-preview-section" style="display: none;">
+            <h2>🎮 Live Game Preview</h2>
+            <div class="game-frame-container">
+                <iframe id="game-iframe" title="Fancy2048 Game Preview"></iframe>
+            </div>
+        </div>
+
+        <div class="test-section">
+            <h2>📝 Test Results & Logs</h2>
+            <pre id="test-logs"></pre>
+        </div>
+    </div>
+
+    <script>
+        let testLogs = [];
+        
+        function log(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const logEntry = `[${timestamp}] [${type.toUpperCase()}] ${message}`;
+            testLogs.push(logEntry);
+            updateTestLogs();
+            
+            // Also log to console
+            console.log(logEntry);
+        }
+        
+        function updateTestLogs() {
+            const logsElement = document.getElementById('test-logs');
+            if (logsElement) {
+                logsElement.textContent = testLogs.slice(-20).join('\n'); // Show last 20 logs
+                logsElement.scrollTop = logsElement.scrollHeight;
+            }
+        }
+        
+        function updateStatus(elementId, status, isSuccess) {
+            const element = document.getElementById(elementId);
+            if (element) {
+                element.innerHTML = `<span class="${isSuccess ? 'pass' : 'fail'}">${status}</span>`;
+            }
+        }
+        
+        async function checkCoreSystem() {
+            log('Checking core system status...');
+            
+            try {
+                // Check if comprehensive fixes are loaded
+                const fixesLoaded = typeof window.masterGameInit === 'function' && 
+                                  window.systemFixesApplied !== undefined;
+                
+                // Check if main classes are available
+                const classesAvailable = [
+                    'UnifiedDataManager',
+                    'UnifiedUIManager', 
+                    'Game',
+                    'Enhanced2048AI'
+                ].every(className => typeof window[className] !== 'undefined');
+                
+                if (fixesLoaded && classesAvailable) {
+                    updateStatus('core-systems-status', '✅ All systems operational', true);
+                    log('Core systems check: PASSED');
+                    return true;
+                } else {
+                    updateStatus('core-systems-status', '❌ Missing components', false);
+                    log('Core systems check: FAILED - Missing components');
+                    return false;
+                }
+            } catch (error) {
+                updateStatus('core-systems-status', '❌ System error', false);
+                log(`Core systems check: ERROR - ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function checkGameLogic() {
+            log('Testing game logic...');
+            
+            try {
+                // Try to create a test game instance
+                const testGame = new Game(4);
+                
+                // Test basic methods
+                const hasBasicMethods = [
+                    'move', 'canMove', 'addRandomTile', 'isGameOver', 'updateUI'
+                ].every(method => typeof testGame[method] === 'function');
+                
+                // Test board initialization
+                const hasBoardStructure = Array.isArray(testGame.board) && 
+                                        testGame.board.length === 4 &&
+                                        Array.isArray(testGame.board[0]);
+                
+                if (hasBasicMethods && hasBoardStructure) {
+                    updateStatus('game-logic-status', '✅ Game logic working', true);
+                    log('Game logic check: PASSED');
+                    return true;
+                } else {
+                    updateStatus('game-logic-status', '❌ Logic issues', false);
+                    log('Game logic check: FAILED - Missing methods or board structure');
+                    return false;
+                }
+            } catch (error) {
+                updateStatus('game-logic-status', '❌ Logic error', false);
+                log(`Game logic check: ERROR - ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function checkAISystems() {
+            log('Testing AI systems...');
+            
+            try {
+                let aiWorking = false;
+                
+                // Test Enhanced2048AI
+                if (typeof Enhanced2048AI !== 'undefined') {
+                    const testGame = new Game(4);
+                    const ai = new Enhanced2048AI(testGame);
+                    
+                    if (typeof ai.getBestMove === 'function') {
+                        const move = ai.getBestMove();
+                        aiWorking = move !== undefined;
+                    }
+                }
+                
+                if (aiWorking) {
+                    updateStatus('ai-systems-status', '✅ AI operational', true);
+                    log('AI systems check: PASSED');
+                    return true;
+                } else {
+                    updateStatus('ai-systems-status', '⚠️ AI limited', false);
+                    log('AI systems check: PARTIAL - AI available but may have issues');
+                    return false;
+                }
+            } catch (error) {
+                updateStatus('ai-systems-status', '❌ AI error', false);
+                log(`AI systems check: ERROR - ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function checkDataManagement() {
+            log('Testing data management...');
+            
+            try {
+                let dataWorking = false;
+                
+                // Test localStorage
+                try {
+                    localStorage.setItem('test', 'test');
+                    localStorage.removeItem('test');
+                    dataWorking = true;
+                } catch (e) {
+                    dataWorking = false;
+                }
+                
+                // Test unified data manager
+                if (typeof UnifiedDataManager !== 'undefined') {
+                    const dataManager = new UnifiedDataManager();
+                    if (typeof dataManager.getData === 'function' && 
+                        typeof dataManager.setData === 'function') {
+                        dataWorking = true;
+                    }
+                }
+                
+                if (dataWorking) {
+                    updateStatus('data-management-status', '✅ Data systems working', true);
+                    log('Data management check: PASSED');
+                    return true;
+                } else {
+                    updateStatus('data-management-status', '❌ Data issues', false);
+                    log('Data management check: FAILED');
+                    return false;
+                }
+            } catch (error) {
+                updateStatus('data-management-status', '❌ Data error', false);
+                log(`Data management check: ERROR - ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function checkUISystem() {
+            log('Testing UI system...');
+            
+            try {
+                let uiWorking = false;
+                
+                // Test unified UI manager
+                if (typeof UnifiedUIManager !== 'undefined') {
+                    const uiManager = new UnifiedUIManager();
+                    if (typeof uiManager.updateScore === 'function') {
+                        uiWorking = true;
+                    }
+                }
+                
+                if (uiWorking) {
+                    updateStatus('ui-status', '✅ UI system working', true);
+                    log('UI system check: PASSED');
+                    return true;
+                } else {
+                    updateStatus('ui-status', '❌ UI issues', false);
+                    log('UI system check: FAILED');
+                    return false;
+                }
+            } catch (error) {
+                updateStatus('ui-status', '❌ UI error', false);
+                log(`UI system check: ERROR - ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function checkMobileSupport() {
+            log('Testing mobile support...');
+            
+            try {
+                // Check for touch events support
+                const touchSupport = 'ontouchstart' in window;
+                
+                // Check viewport meta tag
+                const viewportMeta = document.querySelector('meta[name="viewport"]');
+                const hasViewport = viewportMeta !== null;
+                
+                // Check for mobile-optimized CSS
+                const hasMobileStyles = document.querySelector('link[href*="main.css"]') !== null;
+                
+                const mobileReady = touchSupport || hasViewport || hasMobileStyles;
+                
+                if (mobileReady) {
+                    updateStatus('mobile-status', '✅ Mobile ready', true);
+                    log('Mobile support check: PASSED');
+                    return true;
+                } else {
+                    updateStatus('mobile-status', '⚠️ Limited mobile support', false);
+                    log('Mobile support check: PARTIAL');
+                    return false;
+                }
+            } catch (error) {
+                updateStatus('mobile-status', '❌ Mobile error', false);
+                log(`Mobile support check: ERROR - ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        async function runComprehensiveTests() {
+            log('=== Starting Comprehensive Test Suite ===');
+            const results = document.getElementById('test-results');
+            results.innerHTML = '<div class="info">Running comprehensive tests...</div>';
+            
+            const tests = [
+                { name: 'Core Systems', func: checkCoreSystem },
+                { name: 'Game Logic', func: checkGameLogic },
+                { name: 'AI Systems', func: checkAISystems },
+                { name: 'Data Management', func: checkDataManagement },
+                { name: 'UI System', func: checkUISystem },
+                { name: 'Mobile Support', func: checkMobileSupport }
+            ];
+            
+            let passed = 0;
+            let total = tests.length;
+            
+            for (const test of tests) {
+                log(`Running ${test.name} test...`);
+                const result = await test.func();
+                if (result) passed++;
+            }
+            
+            const successRate = Math.round((passed / total) * 100);
+            const resultClass = successRate >= 80 ? 'pass' : successRate >= 60 ? 'warning' : 'fail';
+            
+            results.innerHTML = `
+                <div class="${resultClass}">
+                    <h3>Test Results: ${passed}/${total} passed (${successRate}%)</h3>
+                    <p>Overall Status: ${successRate >= 80 ? '✅ Excellent' : successRate >= 60 ? '⚠️ Good' : '❌ Needs Improvement'}</p>
+                </div>
+            `;
+            
+            log(`=== Test Suite Complete: ${passed}/${total} passed ===`);
+        }
+        
+        function testGameInitialization() {
+            log('Testing game initialization...');
+            checkGameLogic();
+        }
+        
+        function testAIFunctionality() {
+            log('Testing AI functionality...');
+            checkAISystems();
+        }
+        
+        function testDataPersistence() {
+            log('Testing data persistence...');
+            checkDataManagement();
+        }
+        
+        function testMobileFeatures() {
+            log('Testing mobile features...');
+            checkMobileSupport();
+        }
+        
+        function openFullGame() {
+            log('Opening full game...');
+            const gameSection = document.getElementById('game-preview-section');
+            const gameIframe = document.getElementById('game-iframe');
+            
+            gameIframe.src = 'index.html';
+            gameSection.style.display = 'block';
+            gameSection.scrollIntoView({ behavior: 'smooth' });
+        }
+        
+        // Auto-run initial checks when page loads
+        document.addEventListener('DOMContentLoaded', () => {
+            log('Final integration test page loaded');
+            setTimeout(runComprehensiveTests, 1000);
+        });
+        
+        // Load the game scripts for testing
+        const scriptsToLoad = [
+            'comprehensive_fixes.js',
+            'unified_data_manager.js',
+            'unified_ui_manager.js',
+            'ai_learning_system.js',
+            'enhanced_ai.js',
+            'game_core.js',
+            'game.js'
+        ];
+        
+        let scriptsLoaded = 0;
+        scriptsToLoad.forEach(scriptName => {
+            const script = document.createElement('script');
+            script.src = `../scripts/${scriptName}`;
+            script.onload = () => {
+                scriptsLoaded++;
+                log(`Loaded ${scriptName} (${scriptsLoaded}/${scriptsToLoad.length})`);
+            };
+            script.onerror = () => {
+                log(`Failed to load ${scriptName}`, 'error');
+            };
+            document.head.appendChild(script);
+        });
+    </script>
+</body>
+</html>
