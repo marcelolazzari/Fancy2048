@@ -212,7 +212,7 @@
       
       // Track script loading
       let scriptsLoaded = 0;
-      let expectedScripts = 10; // Number of scripts we're loading
+      let expectedScripts = 11; // Updated count with unified initialization fix
       
       function trackScriptLoad(scriptName) {
         scriptsLoaded++;
@@ -257,7 +257,12 @@
       setTimeout(verifyDOMElements, 50);
     </script>
     
-    <!-- Load Comprehensive System Fixes First -->
+    <!-- Load Unified Initialization Fix First to prevent conflicts -->
+    <script src="../scripts/unified_initialization_fix.js" 
+            onload="trackScriptLoad('unified_initialization_fix.js')" 
+            onerror="console.error('Failed to load unified_initialization_fix.js')"></script>
+    
+    <!-- Load Comprehensive System Fixes -->
     <script src="../scripts/comprehensive_fixes.js" 
             onload="trackScriptLoad('comprehensive_fixes.js')" 
             onerror="console.error('Failed to load comprehensive_fixes.js')"></script>

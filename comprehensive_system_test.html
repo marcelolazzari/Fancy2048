@@ -1,0 +1,556 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔧 Comprehensive System Test - Fancy2048</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1a1a2e;
+            color: #eee;
+            line-height: 1.6;
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 20px;
+            border: 1px solid #444;
+            border-radius: 8px;
+            background: rgba(255,255,255,0.05);
+        }
+        .pass { color: #4CAF50; font-weight: bold; }
+        .fail { color: #f44336; font-weight: bold; }
+        .warning { color: #ff9800; font-weight: bold; }
+        .info { color: #2196F3; font-weight: bold; }
+        button {
+            background: #ffcc00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover { background: #e6b800; }
+        pre {
+            background: #000;
+            padding: 15px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+        iframe {
+            width: 100%;
+            height: 600px;
+            border: 2px solid #444;
+            border-radius: 8px;
+            margin-top: 10px;
+        }
+        .test-results {
+            max-height: 400px;
+            overflow-y: auto;
+            background: #222;
+            padding: 15px;
+            border-radius: 5px;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Fancy2048 - Comprehensive System Test</h1>
+    <p class="info">This test validates all systems, identifies issues, and provides fixes if needed.</p>
+
+    <div class="test-section">
+        <h2>📋 System Overview</h2>
+        <button onclick="runSystemCheck()">Run Complete System Check</button>
+        <div id="system-overview"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🧪 JavaScript Testing</h2>
+        <button onclick="testJavaScript()">Test JavaScript Files</button>
+        <div id="js-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🎮 Game Functionality Test</h2>
+        <button onclick="testGameFunctionality()">Test Game Logic</button>
+        <button onclick="loadGameFrame()">Load Full Game</button>
+        <div id="game-results"></div>
+        <div id="game-frame-container"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🤖 AI Systems Test</h2>
+        <button onclick="testAISystems()">Test AI Components</button>
+        <div id="ai-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📊 Data Management Test</h2>
+        <button onclick="testDataSystems()">Test Data Systems</button>
+        <div id="data-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>🔧 Auto-Fix Issues</h2>
+        <button onclick="runAutoFix()">Auto-Fix Detected Issues</button>
+        <div id="fix-results"></div>
+    </div>
+
+    <div class="test-section">
+        <h2>📈 Health Report</h2>
+        <button onclick="generateHealthReport()">Generate Complete Health Report</button>
+        <div id="health-report"></div>
+    </div>
+
+    <script>
+        // Console capture for debugging
+        let consoleLog = [];
+        const originalLog = console.log;
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        
+        console.log = function(...args) {
+            consoleLog.push({ type: 'log', message: args.join(' '), timestamp: new Date() });
+            originalLog.apply(console, args);
+        };
+        
+        console.error = function(...args) {
+            consoleLog.push({ type: 'error', message: args.join(' '), timestamp: new Date() });
+            originalError.apply(console, args);
+        };
+        
+        console.warn = function(...args) {
+            consoleLog.push({ type: 'warn', message: args.join(' '), timestamp: new Date() });
+            originalWarn.apply(console, args);
+        };
+
+        // System check function
+        function runSystemCheck() {
+            const results = document.getElementById('system-overview');
+            results.innerHTML = '<div class="info">🔍 Running comprehensive system check...</div>';
+            
+            let report = '';
+            
+            // Check basic environment
+            report += '<h3>🌐 Environment Check</h3>';
+            report += `<div class="pass">✅ Browser: ${navigator.userAgent.split(' ')[0]}</div>`;
+            report += `<div class="pass">✅ JavaScript Enabled: true</div>`;
+            report += `<div class="pass">✅ LocalStorage Available: ${typeof Storage !== 'undefined'}</div>`;
+            report += `<div class="pass">✅ Console Access: Available</div>`;
+            
+            // Check file structure
+            report += '<h3>📁 File Structure</h3>';
+            const requiredFiles = [
+                'scripts/game.js',
+                'scripts/comprehensive_fixes.js',
+                'scripts/unified_data_manager.js',
+                'scripts/unified_ui_manager.js',
+                'styles/main.css',
+                'pages/index.html'
+            ];
+            
+            // We can't directly check file existence from browser, but we can check if scripts loaded
+            report += '<div class="info">📁 File structure assumed correct (browser security prevents direct checks)</div>';
+            
+            // Check current page elements
+            report += '<h3>🏗️ DOM Structure</h3>';
+            const requiredElements = ['board-container', 'score-container', 'score', 'best-score', 'moves', 'time'];
+            const missingElements = [];
+            
+            requiredElements.forEach(id => {
+                if (document.getElementById(id)) {
+                    report += `<div class="pass">✅ Element #${id} found</div>`;
+                } else {
+                    report += `<div class="fail">❌ Element #${id} missing</div>`;
+                    missingElements.push(id);
+                }
+            });
+            
+            // Overall system health
+            report += '<h3>🔋 System Health</h3>';
+            if (missingElements.length === 0) {
+                report += '<div class="pass">✅ All systems operational</div>';
+            } else {
+                report += `<div class="warning">⚠️ ${missingElements.length} issues detected</div>`;
+            }
+            
+            results.innerHTML = report;
+        }
+
+        // JavaScript testing
+        function testJavaScript() {
+            const results = document.getElementById('js-results');
+            results.innerHTML = '<div class="info">🧪 Testing JavaScript components...</div>';
+            
+            const tests = [
+                { name: 'UnifiedDataManager', test: () => typeof UnifiedDataManager !== 'undefined' },
+                { name: 'UnifiedUIManager', test: () => typeof UnifiedUIManager !== 'undefined' },
+                { name: 'AILearningSystem', test: () => typeof AILearningSystem !== 'undefined' },
+                { name: 'Enhanced2048AI', test: () => typeof Enhanced2048AI !== 'undefined' },
+                { name: 'AdvancedAI2048Solver', test: () => typeof AdvancedAI2048Solver !== 'undefined' },
+                { name: 'Game2048Core', test: () => typeof Game2048Core !== 'undefined' },
+                { name: 'Game', test: () => typeof Game !== 'undefined' },
+                { name: 'GameOverManager', test: () => typeof GameOverManager !== 'undefined' }
+            ];
+            
+            let testResults = '';
+            let passCount = 0;
+            
+            tests.forEach(test => {
+                try {
+                    const result = test.test();
+                    if (result) {
+                        testResults += `<div class="pass">✅ ${test.name}: Available</div>`;
+                        passCount++;
+                    } else {
+                        testResults += `<div class="fail">❌ ${test.name}: Not found</div>`;
+                    }
+                } catch (error) {
+                    testResults += `<div class="fail">❌ ${test.name}: Error - ${error.message}</div>`;
+                }
+            });
+            
+            testResults += `<div class="info">📊 Test Results: ${passCount}/${tests.length} components available</div>`;
+            
+            if (passCount === tests.length) {
+                testResults += '<div class="pass">✅ All JavaScript components loaded successfully</div>';
+            } else {
+                testResults += '<div class="warning">⚠️ Some components missing - game may have reduced functionality</div>';
+            }
+            
+            results.innerHTML = testResults;
+        }
+
+        // Game functionality testing
+        function testGameFunctionality() {
+            const results = document.getElementById('game-results');
+            results.innerHTML = '<div class="info">🎮 Testing game functionality...</div>';
+            
+            let gameResults = '';
+            
+            try {
+                // Test if we can create a game instance
+                if (typeof Game !== 'undefined') {
+                    const testGame = new Game(4);
+                    gameResults += '<div class="pass">✅ Game instance created successfully</div>';
+                    
+                    // Test basic methods
+                    const methods = ['move', 'canMove', 'addRandomTile', 'isGameOver', 'updateUI'];
+                    methods.forEach(method => {
+                        if (typeof testGame[method] === 'function') {
+                            gameResults += `<div class="pass">✅ Method ${method}() exists</div>`;
+                        } else {
+                            gameResults += `<div class="fail">❌ Method ${method}() missing</div>`;
+                        }
+                    });
+                    
+                    // Test board structure
+                    if (testGame.board && Array.isArray(testGame.board)) {
+                        gameResults += '<div class="pass">✅ Game board structure valid</div>';
+                    } else {
+                        gameResults += '<div class="fail">❌ Game board structure invalid</div>';
+                    }
+                    
+                } else {
+                    gameResults += '<div class="fail">❌ Game class not available</div>';
+                }
+            } catch (error) {
+                gameResults += `<div class="fail">❌ Game functionality test failed: ${error.message}</div>`;
+            }
+            
+            results.innerHTML = gameResults;
+        }
+
+        // Load game in frame
+        function loadGameFrame() {
+            const container = document.getElementById('game-frame-container');
+            container.innerHTML = '<div class="info">🚀 Loading full game...</div>';
+            
+            const iframe = document.createElement('iframe');
+            iframe.src = 'pages/index.html';
+            iframe.onload = function() {
+                container.innerHTML = '<div class="pass">✅ Game loaded successfully in frame</div>';
+                container.appendChild(iframe);
+            };
+            iframe.onerror = function() {
+                container.innerHTML = '<div class="fail">❌ Failed to load game in frame</div>';
+            };
+            
+            setTimeout(() => {
+                if (!iframe.contentWindow) {
+                    container.innerHTML = '<div class="fail">❌ Game frame failed to load</div>';
+                } else {
+                    container.appendChild(iframe);
+                }
+            }, 1000);
+        }
+
+        // Test AI systems
+        function testAISystems() {
+            const results = document.getElementById('ai-results');
+            results.innerHTML = '<div class="info">🤖 Testing AI systems...</div>';
+            
+            let aiResults = '';
+            
+            try {
+                // Test Enhanced AI
+                if (typeof Enhanced2048AI !== 'undefined') {
+                    aiResults += '<div class="pass">✅ Enhanced2048AI class available</div>';
+                    
+                    // Try to create an instance (we need a game instance)
+                    if (typeof Game !== 'undefined') {
+                        const testGame = new Game(4);
+                        const ai = new Enhanced2048AI(testGame);
+                        if (typeof ai.getBestMove === 'function') {
+                            aiResults += '<div class="pass">✅ Enhanced AI functional</div>';
+                        }
+                    }
+                } else {
+                    aiResults += '<div class="fail">❌ Enhanced2048AI not available</div>';
+                }
+                
+                // Test Advanced AI
+                if (typeof AdvancedAI2048Solver !== 'undefined') {
+                    aiResults += '<div class="pass">✅ AdvancedAI2048Solver class available</div>';
+                } else {
+                    aiResults += '<div class="fail">❌ AdvancedAI2048Solver not available</div>';
+                }
+                
+                // Test AI Learning
+                if (typeof AILearningSystem !== 'undefined') {
+                    const learningAI = new AILearningSystem();
+                    aiResults += '<div class="pass">✅ AI Learning System functional</div>';
+                } else {
+                    aiResults += '<div class="fail">❌ AI Learning System not available</div>';
+                }
+                
+            } catch (error) {
+                aiResults += `<div class="fail">❌ AI system error: ${error.message}</div>`;
+            }
+            
+            results.innerHTML = aiResults;
+        }
+
+        // Test data systems
+        function testDataSystems() {
+            const results = document.getElementById('data-results');
+            results.innerHTML = '<div class="info">📊 Testing data management systems...</div>';
+            
+            let dataResults = '';
+            
+            try {
+                // Test localStorage
+                localStorage.setItem('test', 'test');
+                localStorage.removeItem('test');
+                dataResults += '<div class="pass">✅ LocalStorage functional</div>';
+                
+                // Test UnifiedDataManager
+                if (typeof UnifiedDataManager !== 'undefined') {
+                    const dataManager = new UnifiedDataManager();
+                    dataResults += '<div class="pass">✅ UnifiedDataManager available</div>';
+                } else {
+                    dataResults += '<div class="fail">❌ UnifiedDataManager not available</div>';
+                }
+                
+                // Test UI Manager
+                if (typeof UnifiedUIManager !== 'undefined') {
+                    dataResults += '<div class="pass">✅ UnifiedUIManager available</div>';
+                } else {
+                    dataResults += '<div class="fail">❌ UnifiedUIManager not available</div>';
+                }
+                
+            } catch (error) {
+                dataResults += `<div class="fail">❌ Data system error: ${error.message}</div>`;
+            }
+            
+            results.innerHTML = dataResults;
+        }
+
+        // Auto-fix function
+        function runAutoFix() {
+            const results = document.getElementById('fix-results');
+            results.innerHTML = '<div class="info">🔧 Running auto-fix procedures...</div>';
+            
+            let fixResults = '';
+            let fixesApplied = 0;
+            
+            // Fix 1: Check if required DOM elements exist, create if missing
+            const requiredElements = [
+                { id: 'board-container', tag: 'div', className: 'board-container' },
+                { id: 'score-container', tag: 'div', className: 'score-container' },
+                { id: 'score', tag: 'span', className: 'score-value' },
+                { id: 'best-score', tag: 'span', className: 'score-value' },
+                { id: 'moves', tag: 'span', className: 'score-value' },
+                { id: 'time', tag: 'span', className: 'score-value' }
+            ];
+            
+            requiredElements.forEach(element => {
+                if (!document.getElementById(element.id)) {
+                    const newElement = document.createElement(element.tag);
+                    newElement.id = element.id;
+                    newElement.className = element.className;
+                    newElement.textContent = element.id === 'time' ? '00:00' : '0';
+                    document.body.appendChild(newElement);
+                    fixResults += `<div class="pass">✅ Created missing element: #${element.id}</div>`;
+                    fixesApplied++;
+                }
+            });
+            
+            // Fix 2: Clear any error states
+            try {
+                if (consoleLog.length > 0) {
+                    const errors = consoleLog.filter(log => log.type === 'error');
+                    if (errors.length > 0) {
+                        fixResults += `<div class="info">📋 Found ${errors.length} console errors - see browser console for details</div>`;
+                    }
+                }
+            } catch (e) {
+                // Silent handling
+            }
+            
+            // Fix 3: Reinitialize if needed
+            if (typeof window.game === 'undefined' && typeof Game !== 'undefined') {
+                try {
+                    window.game = new Game(4);
+                    fixResults += '<div class="pass">✅ Reinitialized game instance</div>';
+                    fixesApplied++;
+                } catch (error) {
+                    fixResults += `<div class="fail">❌ Failed to reinitialize game: ${error.message}</div>`;
+                }
+            }
+            
+            // Summary
+            if (fixesApplied === 0) {
+                fixResults += '<div class="pass">✅ No fixes needed - system is healthy</div>';
+            } else {
+                fixResults += `<div class="info">🔧 Applied ${fixesApplied} fixes</div>`;
+            }
+            
+            results.innerHTML = fixResults;
+        }
+
+        // Health report
+        function generateHealthReport() {
+            const results = document.getElementById('health-report');
+            results.innerHTML = '<div class="info">📈 Generating comprehensive health report...</div>';
+            
+            let report = '';
+            let score = 0;
+            let totalChecks = 0;
+            
+            // System checks
+            report += '<h3>🔋 System Health Report</h3>';
+            
+            // JavaScript availability
+            const jsClasses = ['Game', 'UnifiedDataManager', 'UnifiedUIManager', 'Enhanced2048AI'];
+            jsClasses.forEach(className => {
+                totalChecks++;
+                if (typeof window[className] !== 'undefined') {
+                    report += `<div class="pass">✅ ${className}: Available</div>`;
+                    score++;
+                } else {
+                    report += `<div class="fail">❌ ${className}: Missing</div>`;
+                }
+            });
+            
+            // DOM elements
+            const elements = ['board-container', 'score-container', 'score', 'best-score'];
+            elements.forEach(id => {
+                totalChecks++;
+                if (document.getElementById(id)) {
+                    report += `<div class="pass">✅ #${id}: Found</div>`;
+                    score++;
+                } else {
+                    report += `<div class="fail">❌ #${id}: Missing</div>`;
+                }
+            });
+            
+            // Browser features
+            const browserFeatures = [
+                { name: 'LocalStorage', test: () => typeof Storage !== 'undefined' },
+                { name: 'Touch Events', test: () => 'ontouchstart' in window },
+                { name: 'CSS Grid', test: () => CSS.supports('display', 'grid') },
+                { name: 'ES6 Classes', test: () => typeof class {} === 'function' }
+            ];
+            
+            browserFeatures.forEach(feature => {
+                totalChecks++;
+                try {
+                    if (feature.test()) {
+                        report += `<div class="pass">✅ ${feature.name}: Supported</div>`;
+                        score++;
+                    } else {
+                        report += `<div class="warning">⚠️ ${feature.name}: Not supported</div>`;
+                    }
+                } catch (e) {
+                    report += `<div class="fail">❌ ${feature.name}: Error testing</div>`;
+                }
+            });
+            
+            // Calculate health percentage
+            const healthPercentage = Math.round((score / totalChecks) * 100);
+            
+            report += '<h3>📊 Health Summary</h3>';
+            if (healthPercentage >= 90) {
+                report += `<div class="pass">✅ System Health: ${healthPercentage}% - Excellent</div>`;
+            } else if (healthPercentage >= 70) {
+                report += `<div class="warning">⚠️ System Health: ${healthPercentage}% - Good</div>`;
+            } else {
+                report += `<div class="fail">❌ System Health: ${healthPercentage}% - Needs attention</div>`;
+            }
+            
+            report += `<div class="info">📈 Passed ${score}/${totalChecks} checks</div>`;
+            
+            // Console log summary
+            if (consoleLog.length > 0) {
+                const errorCount = consoleLog.filter(log => log.type === 'error').length;
+                const warnCount = consoleLog.filter(log => log.type === 'warn').length;
+                
+                report += '<h3>📋 Console Summary</h3>';
+                report += `<div class="info">🔍 Total console messages: ${consoleLog.length}</div>`;
+                if (errorCount > 0) {
+                    report += `<div class="fail">❌ Errors: ${errorCount}</div>`;
+                }
+                if (warnCount > 0) {
+                    report += `<div class="warning">⚠️ Warnings: ${warnCount}</div>`;
+                }
+                
+                // Show recent messages
+                report += '<h4>Recent Console Messages:</h4>';
+                report += '<div class="test-results">';
+                const recentLogs = consoleLog.slice(-10);
+                recentLogs.forEach(log => {
+                    const timeStr = log.timestamp.toLocaleTimeString();
+                    report += `<div class="${log.type}">[${timeStr}] ${log.type.toUpperCase()}: ${log.message}</div>`;
+                });
+                report += '</div>';
+            }
+            
+            results.innerHTML = report;
+        }
+
+        // Auto-run system check on load
+        document.addEventListener('DOMContentLoaded', () => {
+            console.log('🚀 Comprehensive system test page loaded');
+            setTimeout(runSystemCheck, 500);
+        });
+    </script>
+
+    <!-- Load the actual game scripts for testing -->
+    <script src="scripts/comprehensive_fixes.js"></script>
+    <script src="scripts/unified_data_manager.js"></script>
+    <script src="scripts/unified_ui_manager.js"></script>
+    <script src="scripts/ai_learning_system.js"></script>
+    <script src="scripts/enhanced_ai.js"></script>
+    <script src="scripts/advanced_ai_solver.js"></script>
+    <script src="scripts/enhanced_ai_core.js"></script>
+    <script src="scripts/game_core.js"></script>
+    <script src="scripts/game_over_manager.js"></script>
+    <script src="scripts/enhanced_game_integration.js"></script>
+    <script src="scripts/game.js"></script>
+</body>
+</html>

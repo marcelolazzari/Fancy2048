@@ -4594,6 +4594,11 @@ function initializeFancy2048() {
   const maxInitAttempts = 2; // Reduced to prevent excessive retries
   
   function attemptInitialization() {
+    // Skip if already initialized
+    if (initializationComplete || initializationInProgress) {
+      return;
+    }
+    
     initAttempts++;
     console.log(`🎮 Initialization attempt ${initAttempts}/${maxInitAttempts}`);
     
@@ -4601,7 +4606,6 @@ function initializeFancy2048() {
       // Wait for DOM to be fully ready
       if (document.readyState === 'loading') {
         console.log('⏳ DOM still loading, waiting...');
-        document.addEventListener('DOMContentLoaded', attemptInitialization, { once: true });
         return;
       }
       
