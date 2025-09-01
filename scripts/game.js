@@ -4620,6 +4620,14 @@ function initializeFancy2048() {
         window.game = new Game(4);
         window.game.initialized = true; // Mark as initialized
         
+        // Initialize enhanced systems
+        if (typeof GamePerformanceMonitor !== 'undefined') {
+          GamePerformanceMonitor.startMonitoring();
+        }
+        if (typeof AccessibilityEnhancer !== 'undefined') {
+          AccessibilityEnhancer.initialize();
+        }
+        
         console.log('🎉 Fancy2048 initialized successfully!');
         
         // Dispatch initialization complete event
@@ -5634,12 +5642,6 @@ class AccessibilityEnhancer {
     alert(helpContent.replace(/<[^>]*>/g, '').replace(/\s+/g, ' ').trim());
   }
 }
-
-// Initialize enhanced systems
-window.addEventListener('DOMContentLoaded', () => {
-  GamePerformanceMonitor.startMonitoring();
-  AccessibilityEnhancer.initialize();
-});
 
 // Global error handler
 window.addEventListener('error', (event) => {
