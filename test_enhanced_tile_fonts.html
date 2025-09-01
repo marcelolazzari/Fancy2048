@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Enhanced Tile Font Size Test - Fancy 2048</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <style>
+        body {
+            margin: 20px;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: var(--background);
+            color: var(--text-primary);
+        }
+        
+        .test-section {
+            margin-bottom: 40px;
+            padding: 20px;
+            border: 2px solid var(--accent);
+            border-radius: var(--button-border-radius);
+            background: var(--surface);
+        }
+        
+        .test-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .board-demo {
+            display: grid;
+            gap: var(--gap);
+            padding: var(--gap);
+            background: var(--board-bg);
+            border-radius: var(--tile-border-radius);
+            margin: 10px 0;
+        }
+        
+        .board-demo.size-3 {
+            grid-template-columns: repeat(3, 1fr);
+            width: min(300px, 80vw);
+            height: min(300px, 80vw);
+        }
+        
+        .board-demo.size-4 {
+            grid-template-columns: repeat(4, 1fr);
+            width: min(350px, 85vw);
+            height: min(350px, 85vw);
+        }
+        
+        .board-demo.size-5 {
+            grid-template-columns: repeat(5, 1fr);
+            width: min(400px, 90vw);
+            height: min(400px, 90vw);
+        }
+        
+        .demo-tile {
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--tile-border-radius);
+            font-weight: bold;
+            transition: all var(--transition-duration);
+        }
+        
+        /* Test different tile values with enhanced fonts */
+        .tile-2 { background: var(--tile-2-bg); color: var(--tile-2-text); font-size: calc(var(--tile-size, 60px) * var(--font-scale-base, 0.8)); }
+        .tile-4 { background: var(--tile-4-bg); color: var(--tile-4-text); font-size: calc(var(--tile-size, 60px) * var(--font-scale-base, 0.8)); }
+        .tile-8 { background: var(--tile-8-bg); color: var(--tile-8-text); font-size: calc(var(--tile-size, 60px) * var(--font-scale-base, 0.8)); }
+        .tile-16 { background: var(--tile-16-bg); color: var(--tile-16-text); font-size: calc(var(--tile-size, 60px) * var(--font-scale-base, 0.8)); }
+        .tile-32 { background: var(--tile-32-bg); color: var(--tile-32-text); font-size: calc(var(--tile-size, 60px) * var(--font-scale-base, 0.8)); }
+        .tile-64 { background: var(--tile-64-bg); color: var(--tile-64-text); font-size: calc(var(--tile-size, 60px) * var(--font-scale-base, 0.8)); }
+        .tile-128 { background: var(--tile-128-bg); color: var(--tile-128-text); font-size: calc(var(--tile-size, 60px) * var(--font-scale-base, 0.8)); }
+        .tile-256 { background: var(--tile-256-bg); color: var(--tile-256-text); font-size: calc(var(--tile-size, 60px) * var(--font-scale-large, 0.6)); }
+        .tile-512 { background: var(--tile-512-bg); color: var(--tile-512-text); font-size: calc(var(--tile-size, 60px) * var(--font-scale-large, 0.6)); }
+        .tile-1024 { background: var(--tile-1024-bg); color: var(--tile-1024-text); font-size: calc(var(--tile-size, 60px) * var(--font-scale-large, 0.6)); }
+        .tile-2048 { background: var(--tile-2048-bg); color: var(--tile-2048-text); font-size: calc(var(--tile-size, 60px) * var(--font-scale-large, 0.6)); }
+        .tile-4096 { background: var(--tile-4096-bg); color: var(--tile-4096-text); font-size: calc(var(--tile-size, 60px) * var(--font-scale-large, 0.6)); }
+        .tile-8192 { background: var(--tile-8192-bg); color: var(--tile-8192-text); font-size: calc(var(--tile-size, 60px) * var(--font-scale-mega, 0.4)); }
+        .tile-16384 { background: var(--tile-16384-bg); color: var(--tile-16384-text); font-size: calc(var(--tile-size, 60px) * var(--font-scale-mega, 0.4)); }
+        .tile-32768 { background: var(--tile-32768-bg); color: var(--tile-32768-text); font-size: calc(var(--tile-size, 60px) * var(--font-scale-mega, 0.4)); }
+        .tile-65536 { background: var(--tile-65536-bg); color: var(--tile-65536-text); font-size: calc(var(--tile-size, 60px) * var(--font-scale-mega, 0.4)); }
+        
+        .empty-tile {
+            background: var(--empty-cell-bg);
+        }
+        
+        h2 {
+            color: var(--accent);
+            margin-bottom: 10px;
+        }
+        
+        p {
+            color: var(--text-secondary);
+            margin-bottom: 15px;
+        }
+        
+        .font-info {
+            background: var(--surface-variant);
+            padding: 15px;
+            border-radius: var(--button-border-radius);
+            margin-top: 15px;
+            font-size: 0.9em;
+            line-height: 1.4;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎯 Enhanced Tile Font Size Test - Maximum Readability</h1>
+    <p>Testing the enhanced font scaling system with significantly larger tile numbers for optimal visibility across all grid sizes.</p>
+    
+    <div class="test-section">
+        <h2>3x3 Grid - Enhanced Font Scaling</h2>
+        <p>Base: 0.75-0.95, Large: 0.65-0.75, Mega: 0.50-0.65 (Desktop up to 0.80-1.00)</p>
+        <div class="board-demo size-3 board-size-3">
+            <div class="demo-tile tile-2">2</div>
+            <div class="demo-tile tile-4">4</div>
+            <div class="demo-tile tile-8">8</div>
+            <div class="demo-tile tile-16">16</div>
+            <div class="demo-tile tile-32">32</div>
+            <div class="demo-tile tile-64">64</div>
+            <div class="demo-tile tile-128">128</div>
+            <div class="demo-tile tile-256">256</div>
+            <div class="demo-tile tile-512">512</div>
+        </div>
+        <div class="font-info">
+            <strong>3x3 Enhanced Scaling:</strong> Single digits (2-8) now use 75-95% scaling, double digits (16-64) maintain excellent readability, triple digits (128-512) use large scale 65-75%.
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>4x4 Grid - Enhanced Font Scaling</h2>
+        <p>Base: 0.65-0.85, Large: 0.55-0.70, Mega: 0.45-0.60 (Desktop up to 0.70-0.90)</p>
+        <div class="board-demo size-4 board-size-4">
+            <div class="demo-tile tile-2">2</div>
+            <div class="demo-tile tile-4">4</div>
+            <div class="demo-tile tile-8">8</div>
+            <div class="demo-tile tile-16">16</div>
+            <div class="demo-tile tile-32">32</div>
+            <div class="demo-tile tile-64">64</div>
+            <div class="demo-tile tile-128">128</div>
+            <div class="demo-tile tile-256">256</div>
+            <div class="demo-tile tile-512">512</div>
+            <div class="demo-tile tile-1024">1024</div>
+            <div class="demo-tile tile-2048">2048</div>
+            <div class="demo-tile tile-4096">4096</div>
+            <div class="demo-tile tile-8192">8192</div>
+            <div class="demo-tile tile-16384">16384</div>
+            <div class="demo-tile empty-tile"></div>
+            <div class="demo-tile empty-tile"></div>
+        </div>
+        <div class="font-info">
+            <strong>4x4 Enhanced Scaling:</strong> Most common grid size now features 65-85% base scaling for optimal 2048 gameplay experience. High numbers (8192+) use mega scale 45-60%.
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>5x5 Grid - Enhanced Font Scaling</h2>
+        <p>Base: 0.48-0.62, Large: 0.40-0.52, Mega: 0.33-0.45 (Desktop up to 0.55-0.68)</p>
+        <div class="board-demo size-5 board-size-5">
+            <div class="demo-tile tile-2">2</div>
+            <div class="demo-tile tile-4">4</div>
+            <div class="demo-tile tile-8">8</div>
+            <div class="demo-tile tile-16">16</div>
+            <div class="demo-tile tile-32">32</div>
+            <div class="demo-tile tile-64">64</div>
+            <div class="demo-tile tile-128">128</div>
+            <div class="demo-tile tile-256">256</div>
+            <div class="demo-tile tile-512">512</div>
+            <div class="demo-tile tile-1024">1024</div>
+            <div class="demo-tile tile-2048">2048</div>
+            <div class="demo-tile tile-4096">4096</div>
+            <div class="demo-tile tile-8192">8192</div>
+            <div class="demo-tile tile-16384">16384</div>
+            <div class="demo-tile tile-32768">32768</div>
+            <div class="demo-tile tile-65536">65536</div>
+            <div class="demo-tile empty-tile"></div>
+            <div class="demo-tile empty-tile"></div>
+            <div class="demo-tile empty-tile"></div>
+            <div class="demo-tile empty-tile"></div>
+            <div class="demo-tile empty-tile"></div>
+            <div class="demo-tile empty-tile"></div>
+            <div class="demo-tile empty-tile"></div>
+            <div class="demo-tile empty-tile"></div>
+            <div class="demo-tile empty-tile"></div>
+        </div>
+        <div class="font-info">
+            <strong>5x5 Enhanced Scaling:</strong> Smaller tiles now use 48-62% base scaling (increased from 38-47%), making numbers much more readable while maintaining proper fit. Very large numbers (32768+) use enhanced mega scaling.
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>Font Scaling Comparison - Before vs After</h2>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 20px;">
+            <div>
+                <h3 style="color: var(--error);">❌ Previous Scaling (Too Small)</h3>
+                <ul style="color: var(--text-secondary); line-height: 1.6;">
+                    <li><strong>3x3:</strong> Base 0.65-0.85, Large 0.55-0.65, Mega 0.40-0.55</li>
+                    <li><strong>4x4:</strong> Base 0.50-0.68, Large 0.40-0.55, Mega 0.30-0.44</li>
+                    <li><strong>5x5:</strong> Base 0.38-0.47, Large 0.30-0.38, Mega 0.23-0.30</li>
+                    <li><strong>7x7:</strong> Base 0.27-0.34, Large 0.21-0.27, Mega 0.17-0.23</li>
+                    <li><strong>9x9:</strong> Base 0.21-0.27, Large 0.17-0.21, Mega 0.13-0.17</li>
+                </ul>
+            </div>
+            <div>
+                <h3 style="color: var(--success);">✅ Enhanced Scaling (Optimal Size)</h3>
+                <ul style="color: var(--text-secondary); line-height: 1.6;">
+                    <li><strong>3x3:</strong> Base 0.75-0.95, Large 0.65-0.75, Mega 0.50-0.65</li>
+                    <li><strong>4x4:</strong> Base 0.65-0.85, Large 0.55-0.70, Mega 0.45-0.60</li>
+                    <li><strong>5x5:</strong> Base 0.48-0.62, Large 0.40-0.52, Mega 0.33-0.45</li>
+                    <li><strong>7x7:</strong> Base 0.37-0.48, Large 0.31-0.40, Mega 0.27-0.35</li>
+                    <li><strong>9x9:</strong> Base 0.31-0.40, Large 0.27-0.34, Mega 0.23-0.31</li>
+                </ul>
+            </div>
+        </div>
+        <div class="font-info">
+            <strong>📈 Improvement Summary:</strong> Font sizes increased by 15-50% across all grid sizes while maintaining responsive behavior. Desktop versions feature even larger fonts (up to 100% scaling for 3x3 base numbers).
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📱 Responsive Behavior Test</h2>
+        <p>Resize your browser window to test responsive font scaling across different viewport sizes.</p>
+        <div style="padding: 20px; background: var(--surface-variant); border-radius: var(--button-border-radius); margin-top: 15px;">
+            <p style="margin: 0;"><strong>Testing Instructions:</strong></p>
+            <ol style="margin-top: 10px; color: var(--text-secondary);">
+                <li>Resize browser window from mobile (320px) to desktop (1920px+)</li>
+                <li>Observe how tile numbers scale smoothly using clamp() functions</li>
+                <li>Verify text remains readable and fits within tile boundaries</li>
+                <li>Check that larger grids maintain proportional scaling</li>
+                <li>Test on actual mobile devices for touch accessibility</li>
+            </ol>
+        </div>
+    </div>
+
+</body>
+</html>
