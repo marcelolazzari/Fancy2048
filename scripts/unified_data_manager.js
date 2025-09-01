@@ -327,7 +327,7 @@ class UnifiedDataManager {
   getSettings() {
     return this.getData('settings', {
       theme: 'dark',
-      soundEnabled: true,
+      soundEnabled: false, // Sound disabled by default
       vibrationEnabled: true,
       animationsEnabled: true,
       gridSize: 4,

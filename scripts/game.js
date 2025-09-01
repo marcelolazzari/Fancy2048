@@ -1421,10 +1421,7 @@ class Game {
         // Handle score change animations or effects
         break;
       case 'bestScore':
-        // Handle new best score effects
-        if (value > oldValue && this.soundEnabled) {
-          this.playSound('achievement');
-        }
+        // Handle new best score effects (sound disabled)
         break;
       case 'layout':
         // Handle layout changes (mobile/desktop)
@@ -5154,7 +5151,7 @@ class GamePerformanceMonitor {
 // Accessibility Enhancement System
 class AccessibilityEnhancer {
   static audioContext = null;
-  static audioEnabled = true;
+  static audioEnabled = false; // Audio disabled by default
   
   static initialize() {
     AccessibilityEnhancer.setupKeyboardNavigation();
@@ -5253,36 +5250,8 @@ class AccessibilityEnhancer {
   }
   
   static playMoveSound(direction) {
-    if (!AccessibilityEnhancer.audioEnabled) return;
-    
-    // Create simple audio feedback using Web Audio API
-    try {
-      const audioContext = AccessibilityEnhancer.getAudioContext();
-      const oscillator = audioContext.createOscillator();
-      const gainNode = audioContext.createGain();
-      
-      // Different frequencies for different directions
-      const frequencies = {
-        up: 440,    // A4
-        down: 330,  // E4
-        left: 293,  // D4
-        right: 349  // F4
-      };
-      
-      oscillator.frequency.setValueAtTime(frequencies[direction] || 440, audioContext.currentTime);
-      oscillator.type = 'sine';
-      
-      gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
-      gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
-      
-      oscillator.connect(gainNode);
-      gainNode.connect(audioContext.destination);
-      
-      oscillator.start(audioContext.currentTime);
-      oscillator.stop(audioContext.currentTime + 0.1);
-    } catch (error) {
-      // Audio not supported or blocked, fail silently
-    }
+    // Tile moving sound removed - silent operation
+    return;
   }
   
   static playSuccessSound() {
