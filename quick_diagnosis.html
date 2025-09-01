@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🔍 Quick Diagnosis - Fancy2048</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #1a1a2e; color: #eee; }
+        .result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .pass { background: rgba(76, 175, 80, 0.2); color: #4CAF50; }
+        .fail { background: rgba(244, 67, 54, 0.2); color: #f44336; }
+        .warn { background: rgba(255, 152, 0, 0.2); color: #ff9800; }
+        pre { background: #000; padding: 10px; border-radius: 5px; font-size: 12px; }
+    </style>
+</head>
+<body>
+    <h1>🔍 Quick Diagnosis</h1>
+    <div id="results"></div>
+    <h3>Console Log:</h3>
+    <pre id="log"></pre>
+    
+    <script>
+        let log = [];
+        
+        function addLog(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            log.push(`[${timestamp}] ${message}`);
+            updateLog();
+        }
+        
+        function updateLog() {
+            document.getElementById('log').textContent = log.join('\n');
+        }
+        
+        function addResult(message, status) {
+            const div = document.createElement('div');
+            div.className = `result ${status}`;
+            div.textContent = message;
+            document.getElementById('results').appendChild(div);
+        }
+        
+        async function runDiagnosis() {
+            addLog('Starting diagnosis...');
+            
+            // Test 1: Script loading
+            const scriptsToTest = [
+                'comprehensive_fixes',
+                'unified_data_manager', 
+                'unified_ui_manager',
+                'enhanced_ai',
+                'game_core',
+                'game'
+            ];
+            
+            for (const script of scriptsToTest) {
+                try {
+                    const response = await fetch(`scripts/${script}.js`);
+                    if (response.ok) {
+                        addResult(`✅ ${script}.js - Available`, 'pass');
+                        addLog(`${script}.js loaded successfully`);
+                    } else {
+                        addResult(`❌ ${script}.js - HTTP ${response.status}`, 'fail');
+                        addLog(`${script}.js failed to load: ${response.status}`, 'error');
+                    }
+                } catch (error) {
+                    addResult(`❌ ${script}.js - ${error.message}`, 'fail');
+                    addLog(`${script}.js error: ${error.message}`, 'error');
+                }
+            }
+            
+            // Test 2: Global classes
+            setTimeout(() => {
+                const classes = [
+                    'UnifiedDataManager',
+                    'UnifiedUIManager', 
+                    'Enhanced2048AI',
+                    'Game2048Core',
+                    'Game'
+                ];
+                
+                classes.forEach(className => {
+                    if (typeof window[className] !== 'undefined') {
+                        addResult(`✅ ${className} class available`, 'pass');
+                        addLog(`${className} class found`);
+                    } else {
+                        addResult(`❌ ${className} class missing`, 'fail');
+                        addLog(`${className} class not found`, 'error');
+                    }
+                });
+                
+                // Test 3: Game instance creation
+                try {
+                    if (typeof Game !== 'undefined') {
+                        const testGame = new Game(4);
+                        addResult('✅ Game instance created', 'pass');
+                        addLog('Game instance created successfully');
+                        
+                        // Test methods
+                        const methods = ['move', 'canMove', 'addRandomTile', 'isGameOver', 'updateUI'];
+                        methods.forEach(method => {
+                            if (typeof testGame[method] === 'function') {
+                                addResult(`✅ Game.${method}() method exists`, 'pass');
+                            } else {
+                                addResult(`❌ Game.${method}() method missing`, 'fail');
+                                addLog(`Game.${method}() method not found`, 'error');
+                            }
+                        });
+                        
+                        // Test board structure
+                        if (Array.isArray(testGame.board) && testGame.board.length === 4) {
+                            addResult('✅ Game board structure correct', 'pass');
+                        } else {
+                            addResult('❌ Game board structure invalid', 'fail');
+                            addLog('Game board structure is incorrect', 'error');
+                        }
+                    } else {
+                        addResult('❌ Game class not available', 'fail');
+                        addLog('Game class not available', 'error');
+                    }
+                } catch (error) {
+                    addResult(`❌ Game creation failed: ${error.message}`, 'fail');
+                    addLog(`Game creation error: ${error.message}`, 'error');
+                }
+                
+                // Test 4: AI systems
+                try {
+                    if (typeof Enhanced2048AI !== 'undefined' && typeof Game !== 'undefined') {
+                        const testGame = new Game(4);
+                        const ai = new Enhanced2048AI(testGame);
+                        if (typeof ai.getBestMove === 'function') {
+                            addResult('✅ AI system functional', 'pass');
+                            addLog('AI system working');
+                        } else {
+                            addResult('❌ AI getBestMove missing', 'fail');
+                            addLog('AI getBestMove method not found', 'error');
+                        }
+                    } else {
+                        addResult('⚠️ AI classes not available', 'warn');
+                        addLog('AI classes not available', 'warn');
+                    }
+                } catch (error) {
+                    addResult(`❌ AI test failed: ${error.message}`, 'fail');
+                    addLog(`AI test error: ${error.message}`, 'error');
+                }
+                
+                addLog('Diagnosis complete');
+            }, 2000);
+        }
+        
+        // Start diagnosis
+        runDiagnosis();
+    </script>
+    
+    <!-- Load scripts for testing -->
+    <script src="scripts/comprehensive_fixes.js"></script>
+    <script src="scripts/unified_data_manager.js"></script>
+    <script src="scripts/unified_ui_manager.js"></script>
+    <script src="scripts/ai_learning_system.js"></script>
+    <script src="scripts/enhanced_ai.js"></script>
+    <script src="scripts/advanced_ai_solver.js"></script>
+    <script src="scripts/enhanced_ai_core.js"></script>
+    <script src="scripts/game_core.js"></script>
+    <script src="scripts/game_over_manager.js"></script>
+    <script src="scripts/enhanced_game_integration.js"></script>
+    <script src="scripts/game.js"></script>
+</body>
+</html>

@@ -28,7 +28,34 @@ function fixInitializationSystem() {
   
   window.gameInitializationFixed = true;
   
-  // Master initialization function
+  // Enhanced dependency checker
+  function checkDependencies() {
+    const requiredClasses = [
+      'UnifiedDataManager',
+      'UnifiedUIManager', 
+      'Enhanced2048AI',
+      'Game'
+    ];
+    
+    const availableClasses = requiredClasses.filter(className => 
+      typeof window[className] !== 'undefined'
+    );
+    
+    console.log(`📊 Dependencies: ${availableClasses.length}/${requiredClasses.length} available`);
+    console.log('Available:', availableClasses);
+    
+    const missingClasses = requiredClasses.filter(className => 
+      typeof window[className] === 'undefined'
+    );
+    
+    if (missingClasses.length > 0) {
+      console.log('Missing:', missingClasses);
+    }
+    
+    return missingClasses.length === 0;
+  }
+  
+  // Master initialization function with enhanced error handling
   window.masterGameInit = function() {
     if (window.game && window.game.gameState !== 'error') {
       console.log('✅ Game already properly initialized');
@@ -38,35 +65,116 @@ function fixInitializationSystem() {
     try {
       console.log('🎮 Running master game initialization...');
       
-      // Ensure managers are available
-      if (!window.unifiedDataManager && typeof UnifiedDataManager !== 'undefined') {
-        window.unifiedDataManager = new UnifiedDataManager();
+      // Check dependencies with retry logic
+      if (!checkDependencies()) {
+        console.warn('⏳ Some dependencies not yet available, retrying...');
+        setTimeout(window.masterGameInit, 300);
+        return;
       }
       
-      if (!window.unifiedUIManager && typeof UnifiedUIManager !== 'undefined') {
-        window.unifiedUIManager = new UnifiedUIManager();
+      // Ensure managers are available
+      if (!window.unifiedDataManager) {
+        if (typeof UnifiedDataManager !== 'undefined') {
+          window.unifiedDataManager = new UnifiedDataManager();
+          console.log('✅ UnifiedDataManager created');
+        } else {
+          console.warn('⚠️ UnifiedDataManager not available, using fallback');
+        }
+      }
+      
+      if (!window.unifiedUIManager) {
+        if (typeof UnifiedUIManager !== 'undefined') {
+          window.unifiedUIManager = new UnifiedUIManager();
+          console.log('✅ UnifiedUIManager created');
+        } else {
+          console.warn('⚠️ UnifiedUIManager not available, using fallback');
+        }
       }
       
       // Create or fix game instance
       if (!window.game || window.game.gameState === 'error') {
-        window.game = new Game(4);
-        console.log('✅ Game instance created/fixed successfully');
+        if (typeof Game !== 'undefined') {
+          window.game = new Game(4);
+          console.log('✅ Game instance created/fixed successfully');
+          
+          // Verify game has required methods
+          const requiredMethods = ['move', 'canMove', 'addRandomTile', 'isGameOver', 'updateUI'];
+          const missingMethods = requiredMethods.filter(method => 
+            typeof window.game[method] !== 'function'
+          );
+          
+          if (missingMethods.length > 0) {
+            console.error('❌ Game missing required methods:', missingMethods);
+          } else {
+            console.log('✅ All game methods verified');
+          }
+        } else {
+          throw new Error('Game class not available');
+        }
       }
       
       // Verify game is working
       if (window.game && typeof window.game.updateUI === 'function') {
-        window.game.updateUI();
-        console.log('✅ Game UI updated successfully');
+        try {
+          window.game.updateUI();
+          console.log('✅ Game UI updated successfully');
+        } catch (uiError) {
+          console.warn('⚠️ UI update failed, but game created:', uiError.message);
+        }
       }
+      
+      // Mark initialization as successful
+      window.gameInitialized = true;
+      
+      // Dispatch success event
+      document.dispatchEvent(new CustomEvent('gameInitializationComplete', {
+        detail: { 
+          success: true,
+          timestamp: Date.now(),
+          game: window.game
+        }
+      }));
       
     } catch (error) {
       console.error('❌ Master initialization failed:', error);
-      // Try creating minimal working game
+      
+      // Enhanced fallback with better error reporting
       try {
-        window.game = new Game(4);
-        console.log('⚡ Fallback game creation succeeded');
+        if (typeof Game !== 'undefined') {
+          console.log('🔄 Attempting fallback game creation...');
+          window.game = new Game(4);
+          console.log('⚡ Fallback game creation succeeded');
+          
+          // Dispatch partial success event
+          document.dispatchEvent(new CustomEvent('gameInitializationComplete', {
+            detail: { 
+              success: true,
+              fallback: true,
+              timestamp: Date.now(),
+              game: window.game
+            }
+          }));
+        } else {
+          console.error('� Game class still not available for fallback');
+          
+          // Dispatch failure event
+          document.dispatchEvent(new CustomEvent('gameInitializationFailed', {
+            detail: { 
+              error: 'Game class not available',
+              timestamp: Date.now()
+            }
+          }));
+        }
       } catch (fallbackError) {
         console.error('💥 Even fallback failed:', fallbackError);
+        
+        // Dispatch complete failure event
+        document.dispatchEvent(new CustomEvent('gameInitializationFailed', {
+          detail: { 
+            error: fallbackError.message,
+            timestamp: Date.now()
+          }
+        }));
       }
     }
   };
@@ -362,23 +470,89 @@ function applyPerformanceOptimizations() {
 function applyComprehensiveFixes() {
   console.log('🚀 Applying comprehensive system fixes...');
   
-  // Apply fixes in order
-  fixInitializationSystem();
+  // Prevent multiple executions
+  if (window.systemFixesApplied) {
+    console.log('✅ System fixes already applied, skipping...');
+    return;
+  }
   
-  // Apply other fixes after initialization
-  setTimeout(() => {
-    fixGameLogic();
-    fixUIResponsiveness(); 
-    fixDataPersistence();
-    applyPerformanceOptimizations();
+  try {
+    // Apply fixes in order
+    fixInitializationSystem();
     
-    console.log('🎉 Comprehensive system fixes completed!');
+    // Apply other fixes after initialization with enhanced timing
+    const initDelay = document.readyState === 'complete' ? 200 : 800;
     
-    // Dispatch completion event
-    document.dispatchEvent(new CustomEvent('systemFixesComplete', {
-      detail: { timestamp: Date.now() }
-    }));
-  }, 500);
+    setTimeout(() => {
+      try {
+        fixGameLogic();
+        fixUIResponsiveness(); 
+        fixDataPersistence();
+        applyPerformanceOptimizations();
+        
+        // Mark as complete
+        window.systemFixesApplied = true;
+        
+        console.log('🎉 Comprehensive system fixes completed!');
+        
+        // Trigger master initialization after all fixes
+        setTimeout(() => {
+          if (typeof window.masterGameInit === 'function') {
+            console.log('🎯 Triggering master initialization after all fixes...');
+            window.masterGameInit();
+          } else {
+            console.warn('⚠️ masterGameInit not available, using direct initialization');
+            try {
+              if (typeof Game !== 'undefined' && !window.game) {
+                window.game = new Game(4);
+                console.log('✅ Direct game initialization succeeded');
+              }
+            } catch (directError) {
+              console.error('💥 Direct initialization failed:', directError);
+            }
+          }
+        }, 100);
+        
+        // Dispatch completion event
+        document.dispatchEvent(new CustomEvent('systemFixesComplete', {
+          detail: { 
+            timestamp: Date.now(),
+            gameInitialized: !!window.game
+          }
+        }));
+        
+      } catch (error) {
+        console.error('❌ Error applying secondary fixes:', error);
+        
+        // Emergency game creation if everything else failed
+        setTimeout(() => {
+          if (!window.game && typeof Game !== 'undefined') {
+            try {
+              window.game = new Game(4);
+              console.log('🆘 Emergency game creation succeeded');
+            } catch (emergencyError) {
+              console.error('🚨 Emergency creation failed:', emergencyError);
+            }
+          }
+        }, 1000);
+      }
+    }, initDelay);
+    
+  } catch (error) {
+    console.error('❌ Error applying primary fixes:', error);
+    
+    // Fallback for critical failures
+    setTimeout(() => {
+      try {
+        if (typeof Game !== 'undefined' && !window.game) {
+          window.game = new Game(4);
+          console.log('🔄 Critical failure recovery succeeded');
+        }
+      } catch (recoveryError) {
+        console.error('💀 Complete system failure:', recoveryError);
+      }
+    }, 2000);
+  }
 }
 
 // Execute fixes based on current DOM state

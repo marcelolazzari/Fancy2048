@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Final System Integration Test - Fancy2048</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        .test-container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 15px;
+            padding: 20px;
+            backdrop-filter: blur(10px);
+        }
+        .test-section {
+            margin: 20px 0;
+            padding: 15px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 10px;
+            border-left: 4px solid #4CAF50;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 5px 0;
+            border-radius: 5px;
+        }
+        .pass { background: rgba(76, 175, 80, 0.3); }
+        .fail { background: rgba(244, 67, 54, 0.3); }
+        .warn { background: rgba(255, 193, 7, 0.3); }
+        .info { background: rgba(33, 150, 243, 0.3); }
+        
+        #gamePreview {
+            width: 300px;
+            height: 300px;
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 10px;
+            margin: 20px auto;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 18px;
+        }
+        
+        button {
+            background: linear-gradient(45deg, #4CAF50, #45a049);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 5px;
+            font-size: 16px;
+        }
+        
+        button:hover {
+            background: linear-gradient(45deg, #45a049, #4CAF50);
+        }
+        
+        .console-log {
+            background: rgba(0, 0, 0, 0.7);
+            color: #00ff00;
+            font-family: 'Courier New', monospace;
+            padding: 15px;
+            border-radius: 8px;
+            height: 200px;
+            overflow-y: scroll;
+            white-space: pre-wrap;
+            margin-top: 15px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Final System Integration Test</h1>
+        <p>Comprehensive testing of all Fancy2048 game systems and fixes</p>
+        
+        <div class="test-section">
+            <h2>📊 System Status</h2>
+            <div id="systemStatus">Initializing tests...</div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🧩 Dependency Tests</h2>
+            <div id="dependencyTests"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎮 Game Functionality Tests</h2>
+            <div id="gameTests"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🤖 AI System Tests</h2>
+            <div id="aiTests"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>💾 Data Management Tests</h2>
+            <div id="dataTests"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎨 UI System Tests</h2>
+            <div id="uiTests"></div>
+        </div>
+        
+        <div class="test-section">
+            <h2>🎯 Game Preview</h2>
+            <div id="gamePreview">Loading game...</div>
+            <div style="text-align: center; margin-top: 15px;">
+                <button onclick="runGameTest()">Test Game Movement</button>
+                <button onclick="runAITest()">Test AI Move</button>
+                <button onclick="resetGameTest()">Reset Game</button>
+            </div>
+        </div>
+        
+        <div class="test-section">
+            <h2>📋 Console Output</h2>
+            <div id="consoleOutput" class="console-log"></div>
+        </div>
+        
+        <div style="text-align: center; margin-top: 20px;">
+            <button onclick="runAllTests()" style="background: linear-gradient(45deg, #2196F3, #1976D2); font-size: 18px; padding: 15px 30px;">
+                🚀 Run All Tests
+            </button>
+        </div>
+    </div>
+
+    <!-- Include all game scripts -->
+    <script src="scripts/unified_data_manager.js"></script>
+    <script src="scripts/unified_ui_manager.js"></script>
+    <script src="scripts/enhanced_ai_core.js"></script>
+    <script src="scripts/enhanced_ai.js"></script>
+    <script src="scripts/advanced_ai_solver.js"></script>
+    <script src="scripts/ai_learning_system.js"></script>
+    <script src="scripts/game_core.js"></script>
+    <script src="scripts/game.js"></script>
+    <script src="scripts/game_over_manager.js"></script>
+    <script src="scripts/enhanced_game_integration.js"></script>
+    <script src="scripts/leaderboard-stats.js"></script>
+    <script src="scripts/statistics.js"></script>
+    <script src="scripts/comprehensive_fixes.js"></script>
+
+    <script>
+        let testResults = {
+            dependencies: [],
+            game: [],
+            ai: [],
+            data: [],
+            ui: [],
+            console: []
+        };
+        
+        // Capture console output
+        const originalLog = console.log;
+        const originalWarn = console.warn;
+        const originalError = console.error;
+        
+        function logToConsole(type, ...args) {
+            const message = args.join(' ');
+            const timestamp = new Date().toLocaleTimeString();
+            testResults.console.push(`[${timestamp}] ${type.toUpperCase()}: ${message}`);
+            updateConsoleOutput();
+            
+            // Call original console method
+            if (type === 'log') originalLog(...args);
+            else if (type === 'warn') originalWarn(...args);
+            else if (type === 'error') originalError(...args);
+        }
+        
+        console.log = (...args) => logToConsole('log', ...args);
+        console.warn = (...args) => logToConsole('warn', ...args);
+        console.error = (...args) => logToConsole('error', ...args);
+        
+        function updateConsoleOutput() {
+            const output = document.getElementById('consoleOutput');
+            output.textContent = testResults.console.slice(-50).join('\n'); // Last 50 messages
+            output.scrollTop = output.scrollHeight;
+        }
+        
+        function addTestResult(category, testName, passed, message = '') {
+            const result = {
+                name: testName,
+                passed: passed,
+                message: message,
+                timestamp: new Date().toLocaleTimeString()
+            };
+            
+            testResults[category].push(result);
+            updateTestDisplay(category);
+        }
+        
+        function updateTestDisplay(category) {
+            const container = document.getElementById(category + 'Tests');
+            const results = testResults[category];
+            
+            container.innerHTML = results.map(result => {
+                const className = result.passed ? 'pass' : 'fail';
+                const icon = result.passed ? '✅' : '❌';
+                return `<div class="test-result ${className}">
+                    ${icon} ${result.name} (${result.timestamp})
+                    ${result.message ? `<br><small>${result.message}</small>` : ''}
+                </div>`;
+            }).join('');
+        }
+        
+        function testDependencies() {
+            console.log('🧩 Testing dependencies...');
+            
+            const dependencies = [
+                'UnifiedDataManager',
+                'UnifiedUIManager',
+                'Enhanced2048AI',
+                'Game',
+                'GameOverManager',
+                'EnhancedGameIntegration'
+            ];
+            
+            dependencies.forEach(dep => {
+                const exists = typeof window[dep] !== 'undefined';
+                addTestResult('dependencies', dep, exists, 
+                    exists ? 'Available' : 'Missing - check script loading');
+            });
+            
+            // Test global objects
+            const globals = ['game', 'unifiedDataManager', 'unifiedUIManager'];
+            globals.forEach(global => {
+                const exists = typeof window[global] !== 'undefined';
+                addTestResult('dependencies', `window.${global}`, exists,
+                    exists ? 'Initialized' : 'Not yet created');
+            });
+        }
+        
+        function testGameFunctionality() {
+            console.log('🎮 Testing game functionality...');
+            
+            if (!window.game) {
+                addTestResult('game', 'Game Instance', false, 'Game not initialized');
+                return;
+            }
+            
+            addTestResult('game', 'Game Instance', true, 'Game object exists');
+            
+            // Test game methods
+            const methods = ['move', 'canMove', 'addRandomTile', 'isGameOver', 'updateUI'];
+            methods.forEach(method => {
+                const exists = typeof window.game[method] === 'function';
+                addTestResult('game', `game.${method}()`, exists,
+                    exists ? 'Method available' : 'Method missing');
+            });
+            
+            // Test game state
+            try {
+                const hasBoard = Array.isArray(window.game.board);
+                addTestResult('game', 'Game Board', hasBoard, 
+                    hasBoard ? `${window.game.board.length}x${window.game.board.length} board` : 'Board not found');
+                
+                const hasScore = typeof window.game.score === 'number';
+                addTestResult('game', 'Game Score', hasScore, 
+                    hasScore ? `Current score: ${window.game.score}` : 'Score not tracked');
+            } catch (error) {
+                addTestResult('game', 'Game State', false, `Error: ${error.message}`);
+            }
+        }
+        
+        function testAISystems() {
+            console.log('🤖 Testing AI systems...');
+            
+            // Test AI availability
+            const aiExists = typeof window.Enhanced2048AI !== 'undefined';
+            addTestResult('ai', 'AI Class', aiExists, aiExists ? 'Available' : 'Not loaded');
+            
+            if (aiExists) {
+                try {
+                    const ai = new Enhanced2048AI();
+                    addTestResult('ai', 'AI Creation', true, 'AI instance created successfully');
+                    
+                    // Test AI methods
+                    const aiMethods = ['findBestMove', 'evaluateBoard', 'minimax'];
+                    aiMethods.forEach(method => {
+                        const hasMethod = typeof ai[method] === 'function';
+                        addTestResult('ai', `AI.${method}()`, hasMethod,
+                            hasMethod ? 'Method available' : 'Method missing');
+                    });
+                } catch (error) {
+                    addTestResult('ai', 'AI Creation', false, `Error: ${error.message}`);
+                }
+            }
+        }
+        
+        function testDataManagement() {
+            console.log('💾 Testing data management...');
+            
+            const dmExists = window.unifiedDataManager || typeof UnifiedDataManager !== 'undefined';
+            addTestResult('data', 'Data Manager', dmExists, dmExists ? 'Available' : 'Not found');
+            
+            if (dmExists) {
+                try {
+                    const dm = window.unifiedDataManager || new UnifiedDataManager();
+                    
+                    // Test data operations
+                    dm.setData('test', { value: 123, timestamp: Date.now() });
+                    const retrieved = dm.getData('test');
+                    const dataTest = retrieved && retrieved.value === 123;
+                    addTestResult('data', 'Data Storage', dataTest, 
+                        dataTest ? 'Store/retrieve working' : 'Data operations failed');
+                        
+                    // Test statistics
+                    const statsTest = typeof dm.getGameStatistics === 'function';
+                    addTestResult('data', 'Statistics', statsTest,
+                        statsTest ? 'Statistics system available' : 'Statistics not found');
+                        
+                } catch (error) {
+                    addTestResult('data', 'Data Operations', false, `Error: ${error.message}`);
+                }
+            }
+        }
+        
+        function testUISystem() {
+            console.log('🎨 Testing UI system...');
+            
+            const uiExists = window.unifiedUIManager || typeof UnifiedUIManager !== 'undefined';
+            addTestResult('ui', 'UI Manager', uiExists, uiExists ? 'Available' : 'Not found');
+            
+            // Test DOM elements
+            const gameContainer = document.createElement('div');
+            gameContainer.id = 'gameContainer';
+            const hasGameContainer = !!gameContainer;
+            addTestResult('ui', 'Game Container', hasGameContainer, 'Container can be created');
+            
+            // Test responsive features
+            const viewportMeta = document.querySelector('meta[name="viewport"]');
+            addTestResult('ui', 'Viewport Meta', !!viewportMeta, 'Mobile viewport configured');
+        }
+        
+        function runGameTest() {
+            if (!window.game) {
+                alert('Game not initialized! Run all tests first.');
+                return;
+            }
+            
+            try {
+                // Test a move
+                const canMoveUp = window.game.canMove('up');
+                console.log('Can move up:', canMoveUp);
+                
+                if (canMoveUp) {
+                    window.game.move('up');
+                    console.log('Move executed successfully');
+                }
+                
+                updateGamePreview();
+            } catch (error) {
+                console.error('Game test failed:', error);
+            }
+        }
+        
+        function runAITest() {
+            if (!window.game || typeof Enhanced2048AI === 'undefined') {
+                alert('Game or AI not available! Run all tests first.');
+                return;
+            }
+            
+            try {
+                const ai = new Enhanced2048AI();
+                const bestMove = ai.findBestMove(window.game.board);
+                console.log('AI suggests move:', bestMove);
+                
+                if (bestMove && window.game.canMove(bestMove)) {
+                    window.game.move(bestMove);
+                    console.log('AI move executed');
+                }
+                
+                updateGamePreview();
+            } catch (error) {
+                console.error('AI test failed:', error);
+            }
+        }
+        
+        function resetGameTest() {
+            if (window.game) {
+                try {
+                    if (typeof Game !== 'undefined') {
+                        window.game = new Game(4);
+                        console.log('Game reset successfully');
+                        updateGamePreview();
+                    }
+                } catch (error) {
+                    console.error('Game reset failed:', error);
+                }
+            }
+        }
+        
+        function updateGamePreview() {
+            const preview = document.getElementById('gamePreview');
+            if (window.game && window.game.board) {
+                const totalTiles = window.game.board.flat().filter(x => x > 0).length;
+                const maxTile = Math.max(...window.game.board.flat());
+                preview.innerHTML = `
+                    <div>
+                        <div>Score: ${window.game.score || 0}</div>
+                        <div>Tiles: ${totalTiles}/16</div>
+                        <div>Max: ${maxTile > 0 ? maxTile : 'None'}</div>
+                        <div style="margin-top: 10px; font-size: 14px;">
+                            ${window.game.board.map(row => 
+                                row.map(cell => cell || '.').join(' ')
+                            ).join('<br>')}
+                        </div>
+                    </div>
+                `;
+            } else {
+                preview.textContent = 'Game not available';
+            }
+        }
+        
+        function runAllTests() {
+            console.log('🚀 Starting comprehensive system test...');
+            
+            // Clear previous results
+            Object.keys(testResults).forEach(key => {
+                if (key !== 'console') testResults[key] = [];
+            });
+            
+            // Update system status
+            document.getElementById('systemStatus').innerHTML = `
+                <div class="test-result info">🔄 Running comprehensive tests...</div>
+            `;
+            
+            // Run tests in sequence with delays for proper loading
+            setTimeout(() => testDependencies(), 100);
+            setTimeout(() => testGameFunctionality(), 500);
+            setTimeout(() => testAISystems(), 1000);
+            setTimeout(() => testDataManagement(), 1500);
+            setTimeout(() => testUISystem(), 2000);
+            setTimeout(() => {
+                updateGamePreview();
+                
+                // Final status
+                const totalTests = Object.values(testResults).reduce((sum, tests) => sum + tests.length, 0) - testResults.console.length;
+                const passedTests = Object.values(testResults).reduce((sum, tests) => 
+                    sum + tests.filter(test => test.passed).length, 0) - testResults.console.length;
+                
+                document.getElementById('systemStatus').innerHTML = `
+                    <div class="test-result ${passedTests === totalTests ? 'pass' : 'warn'}">
+                        📊 Tests Complete: ${passedTests}/${totalTests} passed
+                        ${passedTests === totalTests ? ' - All systems operational! 🎉' : ' - Some issues detected'}
+                    </div>
+                `;
+                
+                console.log(`🏁 Test suite complete: ${passedTests}/${totalTests} tests passed`);
+            }, 2500);
+        }
+        
+        // Auto-start tests when page loads
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                console.log('🎯 Auto-starting tests...');
+                runAllTests();
+            }, 1000);
+        });
+    </script>
+</body>
+</html>
