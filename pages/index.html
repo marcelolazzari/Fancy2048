@@ -204,38 +204,94 @@
 
     <!-- JavaScript files - loaded in specific order for proper initialization -->
     <script>
-      // Pre-initialization debugging
+      // Enhanced pre-initialization debugging
       console.log('🚀 Starting Fancy2048 script loading...');
       console.log('Document ready state:', document.readyState);
       console.log('Current URL:', window.location.href);
       console.log('Base URL:', window.location.origin);
-      console.log('DOM elements check:', {
-        boardContainer: !!document.getElementById('board-container'),
-        scoreContainer: !!document.getElementById('score-container'),
-        score: !!document.getElementById('score'),
+      
+      // Track script loading
+      let scriptsLoaded = 0;
+      let expectedScripts = 9; // Number of scripts we're loading
+      
+      function trackScriptLoad(scriptName) {
+        scriptsLoaded++;
+        console.log(`📦 Loaded: ${scriptName} (${scriptsLoaded}/${expectedScripts})`);
+        
+        if (scriptsLoaded === expectedScripts) {
+          console.log('✅ All scripts loaded successfully');
+        }
+      }
+      
+      // Enhanced error handler for script loading
+      window.addEventListener('error', (e) => {
+        if (e.filename && e.filename.includes('.js')) {
+          console.error('❌ Script loading error:', {
+            filename: e.filename,
+            line: e.lineno,
+            message: e.message,
+            error: e.error
+          });
+          
+          // Try to provide helpful recovery information
+          const scriptName = e.filename.split('/').pop();
+          console.warn(`💡 If ${scriptName} failed to load, the game may still work with reduced functionality`);
+        }
       });
       
-      // Global error handler for script loading
-      window.addEventListener('error', (e) => {
-        console.error('Script loading error:', e.filename, e.lineno, e.message);
-      });
+      // Check DOM elements after scripts load
+      function verifyDOMElements() {
+        const requiredElements = ['board-container', 'score-container', 'score', 'best-score', 'moves', 'time'];
+        const missingElements = requiredElements.filter(id => !document.getElementById(id));
+        
+        if (missingElements.length > 0) {
+          console.error('❌ Missing DOM elements:', missingElements);
+          return false;
+        }
+        
+        console.log('✅ All required DOM elements found');
+        return true;
+      }
+      
+      // Initial DOM check
+      setTimeout(verifyDOMElements, 50);
     </script>
     
     <!-- Load Unified Managers First -->
-    <script src="../scripts/unified_data_manager.js" onerror="console.error('Failed to load unified_data_manager.js')"></script>
-    <script src="../scripts/unified_ui_manager.js" onerror="console.error('Failed to load unified_ui_manager.js')"></script>
+    <script src="../scripts/unified_data_manager.js" 
+            onload="trackScriptLoad('unified_data_manager.js')" 
+            onerror="console.error('Failed to load unified_data_manager.js')"></script>
+    <script src="../scripts/unified_ui_manager.js" 
+            onload="trackScriptLoad('unified_ui_manager.js')" 
+            onerror="console.error('Failed to load unified_ui_manager.js')"></script>
     
     <!-- Load AI and Game Logic -->
-    <script src="../scripts/ai_learning_system.js" onerror="console.error('Failed to load ai_learning_system.js')"></script>
-    <script src="../scripts/enhanced_ai.js" onerror="console.error('Failed to load enhanced_ai.js')"></script>
-    <script src="../scripts/advanced_ai_solver.js" onerror="console.error('Failed to load advanced_ai_solver.js')"></script>
-    <script src="../scripts/enhanced_ai_core.js" onerror="console.error('Failed to load enhanced_ai_core.js')"></script>
-    <script src="../scripts/game_core.js" onerror="console.error('Failed to load game_core.js')"></script>
-    <script src="../scripts/game_over_manager.js" onerror="console.error('Failed to load game_over_manager.js')"></script>
-    <script src="../scripts/enhanced_game_integration.js" onerror="console.error('Failed to load enhanced_game_integration.js')"></script>
+    <script src="../scripts/ai_learning_system.js" 
+            onload="trackScriptLoad('ai_learning_system.js')" 
+            onerror="console.error('Failed to load ai_learning_system.js')"></script>
+    <script src="../scripts/enhanced_ai.js" 
+            onload="trackScriptLoad('enhanced_ai.js')" 
+            onerror="console.error('Failed to load enhanced_ai.js')"></script>
+    <script src="../scripts/advanced_ai_solver.js" 
+            onload="trackScriptLoad('advanced_ai_solver.js')" 
+            onerror="console.error('Failed to load advanced_ai_solver.js')"></script>
+    <script src="../scripts/enhanced_ai_core.js" 
+            onload="trackScriptLoad('enhanced_ai_core.js')" 
+            onerror="console.error('Failed to load enhanced_ai_core.js')"></script>
+    <script src="../scripts/game_core.js" 
+            onload="trackScriptLoad('game_core.js')" 
+            onerror="console.error('Failed to load game_core.js')"></script>
+    <script src="../scripts/game_over_manager.js" 
+            onload="trackScriptLoad('game_over_manager.js')" 
+            onerror="console.error('Failed to load game_over_manager.js')"></script>
+    <script src="../scripts/enhanced_game_integration.js" 
+            onload="trackScriptLoad('enhanced_game_integration.js')" 
+            onerror="console.error('Failed to load enhanced_game_integration.js')"></script>
     
     <!-- Load Main Game Last -->
-    <script src="../scripts/game.js" onerror="console.error('Failed to load game.js')"></script>
+    <script src="../scripts/game.js" 
+            onload="trackScriptLoad('game.js')" 
+            onerror="console.error('Failed to load game.js')"></script>
     
     <script>
       // Post-initialization debugging
@@ -247,13 +303,24 @@
         console.log('- Enhanced2048AI:', !!window.Enhanced2048AI);
         console.log('- Game2048Core:', !!window.Game2048Core);
         console.log('- Game:', !!window.Game);
+        console.log('- Game Instance:', !!window.game);
         
-        // Initialize game if not already done
-        if (typeof initializeFancy2048 === 'function' && !window.gameInstance) {
-          console.log('🚀 Initializing game...');
-          initializeFancy2048();
+        // Check if game instance exists and is properly initialized
+        if (window.game) {
+          console.log('✅ Game successfully initialized!');
+          console.log('- Board Size:', window.game.size);
+          console.log('- Game State:', window.game.gameState);
+          console.log('- Data Manager:', !!window.game.dataManager);
+          console.log('- UI Manager:', !!window.game.uiManager);
+        } else {
+          console.warn('⚠️ Game instance not found - initialization may have failed');
         }
-      }, 100);
+        
+        // Dispatch a custom event to indicate scripts are ready
+        document.dispatchEvent(new CustomEvent('scriptsLoaded', {
+          detail: { timestamp: Date.now() }
+        }));
+      }, 200);
     </script>
   </body>
 </html>
