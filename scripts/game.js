@@ -71,10 +71,12 @@ class Game {
     this.backgroundTime = 0;
     this.isInBackground = false;
 
-    // Enhanced mobile detection
-    this.isMobileDevice = this.detectMobileDevice();
-    this.isTablet = this.detectTablet();
-    this.isDesktop = !this.isMobileDevice && !this.isTablet;
+    // Enhanced device detection (avoid overriding isMobileDevice() method)
+    this.deviceInfo = {
+      isMobile: this.isMobileDevice(),
+      isTablet: false,
+      isDesktop: !this.isMobileDevice()
+    };
     
     // Game features from settings
     this.animationSpeed = settings.animationsEnabled ? 1 : 0;
@@ -301,12 +303,19 @@ class Game {
       }
       
       console.warn('⚠️ UnifiedUIManager not available, using fallback');
-      // Fallback UI manager with minimal functionality
+      // Fallback UI manager with minimal functionality and API parity
       return {
         updateScore: (score) => this.updateScoreElementsSafely('score', score),
         updateBestScore: (score) => this.updateScoreElementsSafely('best-score', score),
         updateMoves: (moves) => this.updateScoreElementsSafely('moves', moves),
         updateTimer: (time) => this.updateScoreElementsSafely('time', time),
+        updateTime: (time) => this.updateScoreElementsSafely('time', time),
+        updateAllStats: ({ score, bestScore, moves, time }) => {
+          if (score !== undefined) this.updateScoreElementsSafely('score', score);
+          if (bestScore !== undefined) this.updateScoreElementsSafely('best-score', bestScore);
+          if (moves !== undefined) this.updateScoreElementsSafely('moves', moves);
+          if (time !== undefined) this.updateScoreElementsSafely('time', time);
+        },
         subscribe: () => {},
         showMessage: (message) => console.log('Game message:', message)
       };
@@ -318,6 +327,8 @@ class Game {
         updateBestScore: () => {},
         updateMoves: () => {},
         updateTimer: () => {},
+        updateTime: () => {},
+        updateAllStats: () => {},
         subscribe: () => {},
         showMessage: () => {}
       };
@@ -346,33 +357,13 @@ class Game {
     // Set CSS custom property for board size
     document.documentElement.style.setProperty('--size', this.size);
     
-    // Clear and setup board container
-    this.setupBoardContainer();
+  // Clear and setup board container
+  this.setupBoardContainer();
     
-    // Update score display
-    this.updateScoreDisplay();
-    
-    console.log('✅ UI setup complete');
-  }
+  // Update score display via dedicated method (handles fallbacks internally)
+  this.updateScoreDisplay();
 
-  setupBoardContainer() {
-    const boardContainer = document.getElementById('board-container');
-    if (!boardContainer) {
-      console.error('Board container not found!');
-      return;
-    }
-    
-    // Clear existing content
-    boardContainer.innerHTML = '';
-    
-    // Update CSS custom properties for the current grid size
-    document.documentElement.style.setProperty('--size', this.size);
-    
-    // Add board size class to body for CSS targeting
-    document.body.className = document.body.className.replace(/board-size-\d+/g, '');
-    document.body.classList.add(`board-size-${this.size}`);
-    
-    // Initialize responsive variables
+  // Initialize responsive variables
     this.updateResponsiveVariables();
     
     // Create grid cells for the board
@@ -1238,6 +1229,21 @@ class Game {
            (navigator.maxTouchPoints > 0);
   }
 
+  // Additional helper methods for nuanced device detection (non-breaking)
+  detectMobileDevice() {
+    try {
+      const ua = navigator.userAgent || navigator.vendor || '';
+      return /android|iphone|ipod|ipad|mobile/i.test(ua) || ('ontouchstart' in window) || (navigator.maxTouchPoints > 1);
+    } catch (_) { return false; }
+  }
+
+  detectTablet() {
+    try {
+      const ua = navigator.userAgent || navigator.vendor || '';
+      return /ipad|tablet/i.test(ua) || (/android/i.test(ua) && !/mobile/i.test(ua));
+    } catch (_) { return false; }
+  }
+
   // Utility method for debouncing function calls
   debounce(func, wait) {
     return (...args) => {
@@ -1565,18 +1571,38 @@ class Game {
 
 
   updateScoreDisplay() {
-    // Use unified UI manager for consistent score updates
-    this.uiManager.updateAllStats({
-      score: this.score,
-      bestScore: this.bestScore,
-      moves: this.moves,
-      time: this.formatTime(Math.floor((Date.now() - (this.startTime || Date.now())) / 1000))
-    });
-    
-    // Update best score in data manager if needed
-    if (this.score > this.bestScore) {
-      this.bestScore = this.score;
-      this.dataManager.setData('bestScore', this.bestScore);
+    try {
+      const formattedTime = this.formatTime(Math.floor((Date.now() - (this.startTime || Date.now())) / 1000));
+      if (this.uiManager && typeof this.uiManager.updateAllStats === 'function') {
+        this.uiManager.updateAllStats({
+          score: this.score,
+          bestScore: this.bestScore,
+          moves: this.moves,
+          time: formattedTime
+        });
+      } else if (this.uiManager) {
+        this.uiManager.updateScore?.(this.score);
+        this.uiManager.updateBestScore?.(this.bestScore);
+        this.uiManager.updateMoves?.(this.moves);
+        this.uiManager.updateTime?.(formattedTime);
+        this.uiManager.updateTimer?.(formattedTime);
+      } else {
+        const scoreElement = document.getElementById('score');
+        const bestScoreElement = document.getElementById('best-score');
+        const movesElement = document.getElementById('moves');
+        const timeElement = document.getElementById('time');
+        if (scoreElement) scoreElement.textContent = this.score;
+        if (bestScoreElement) bestScoreElement.textContent = Math.max(this.bestScore, this.score);
+        if (movesElement) movesElement.textContent = this.moves;
+        if (timeElement) timeElement.textContent = formattedTime;
+      }
+
+      if (this.score > this.bestScore) {
+        this.bestScore = this.score;
+        this.dataManager.setData('bestScore', this.bestScore);
+      }
+    } catch (err) {
+      console.warn('updateScoreDisplay failed gracefully:', err);
     }
   }
 
