@@ -48,11 +48,6 @@ document.addEventListener('DOMContentLoaded', () => {
       loadStats();
     }
   });
-    if (confirm('Are you sure you want to reset all game statistics? This action cannot be undone.')) {
-      localStorage.removeItem('gameStats');
-      loadStats();
-    }
-  });
   
   // Loading functions
   function loadLeaderboard() {
