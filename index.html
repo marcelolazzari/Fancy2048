@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fancy2048 - Redirecting...</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
+            color: #f2f2f2;
+            margin: 0;
+            padding: 0;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+        .container {
+            background: rgba(42, 42, 42, 0.9);
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            border: 2px solid #ffcc00;
+            max-width: 500px;
+        }
+        .logo {
+            font-size: 48px;
+            font-weight: bold;
+            color: #ffcc00;
+            margin-bottom: 20px;
+            text-shadow: 0 0 10px rgba(255, 204, 0, 0.3);
+        }
+        .loading {
+            font-size: 18px;
+            margin: 20px 0;
+            opacity: 0.8;
+        }
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 4px solid rgba(255, 204, 0, 0.3);
+            border-left: 4px solid #ffcc00;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        .manual-link {
+            display: inline-block;
+            background: #ffcc00;
+            color: #000;
+            padding: 15px 30px;
+            text-decoration: none;
+            border-radius: 10px;
+            font-weight: bold;
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            border: none;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        .manual-link:hover {
+            background: #e6b800;
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(255, 204, 0, 0.3);
+        }
+        .test-link {
+            background: rgba(76, 175, 80, 0.8);
+            color: white;
+        }
+        .test-link:hover {
+            background: rgba(76, 175, 80, 1);
+        }
+        .info {
+            font-size: 14px;
+            opacity: 0.7;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="logo">🎮 Fancy2048</div>
+        <div class="loading">Redirecting to game...</div>
+        <div class="spinner"></div>
+        
+        <p>You are being redirected to the main game.</p>
+        <p>If the redirect doesn't work automatically:</p>
+        
+        <a href="pages/index.html" class="manual-link">🚀 Start Game</a>
+        <br>
+        <a href="pages/github-pages-test.html" class="manual-link test-link">🧪 Run Tests</a>
+        
+        <div class="info">
+            This page ensures compatibility with GitHub Pages hosting
+        </div>
+    </div>
+
+    <script>
+        // Auto-redirect after 3 seconds
+        setTimeout(() => {
+            window.location.href = 'pages/index.html';
+        }, 3000);
+
+        // Handle different GitHub Pages scenarios
+        const currentPath = window.location.pathname;
+        const isGitHubPages = window.location.hostname.includes('github.io');
+        
+        if (isGitHubPages) {
+            // For GitHub Pages, ensure proper navigation
+            console.log('GitHub Pages detected, using relative paths');
+            
+            // Update links to work with GitHub Pages structure
+            document.querySelector('a[href="pages/index.html"]').href = 'pages/index.html';
+            document.querySelector('a[href="pages/github-pages-test.html"]').href = 'pages/github-pages-test.html';
+        }
+        
+        // Log current location for debugging
+        console.log('Current location:', {
+            href: window.location.href,
+            pathname: window.location.pathname,
+            origin: window.location.origin,
+            isGitHubPages: isGitHubPages
+        });
+    </script>
+</body>
+</html>

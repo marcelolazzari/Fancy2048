@@ -20,10 +20,12 @@
   <link rel="preload" href="../styles/main.css" as="style" />
   <link rel="dns-prefetch" href="https://cdnjs.cloudflare.com" />
   
-  <!-- Primary CSS with optimized loading -->
+  <!-- Primary CSS with GitHub Pages support -->
   <link rel="stylesheet" href="../styles/main.css" />
   <!-- Fallback CSS for GitHub Pages -->
-  <link rel="stylesheet" href="/Fancy2048/styles/main.css" onerror="this.onerror=null;this.href='styles/main.css';" />
+  <link rel="stylesheet" href="/Fancy2048/styles/main.css" onerror="this.onerror=null;this.href='../styles/main.css';" />
+  <!-- Additional fallback for direct access -->
+  <link rel="stylesheet" href="styles/main.css" onerror="this.remove();" />
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css" crossorigin="anonymous" />
   <!-- Fallback styles to ensure basic layout if CSS fails to load -->
   <style>
@@ -97,7 +99,7 @@
               </button>
             </li>
             <li role="none">
-              <button type="button" id="leaderboard-button" aria-label="View Statistics" onclick="window.location.href='leaderboard.html'" tabindex="0" role="menuitem" data-tooltip="View statistics and leaderboard">
+              <button type="button" id="leaderboard-button" aria-label="View Statistics" onclick="navigateToLeaderboard()" tabindex="0" role="menuitem" data-tooltip="View statistics and leaderboard">
                 <i class="fas fa-chart-line" aria-hidden="true"></i>
               </button>
             </li>
@@ -163,7 +165,7 @@
           <p>No more moves possible.</p>
           <div class="message-buttons">
             <button onclick="window.game?.resetGame()" class="restart-button">Try Again</button>
-            <button onclick="window.location.href='leaderboard.html'" class="stats-button">View Stats</button>
+            <button onclick="navigateToLeaderboard()" class="stats-button">View Stats</button>
           </div>
         </div>
       </div>
@@ -292,78 +294,106 @@
         });
       }
       
-      function showGameError(message) {
-        const boardContainer = document.getElementById('board-container');
-        if (boardContainer) {
-          boardContainer.innerHTML = `
-            <div style="
-              display: flex; 
-              flex-direction: column; 
-              align-items: center; 
-              justify-content: center; 
-              height: 100%; 
-              text-align: center; 
-              color: #ff6b6b;
-              padding: 20px;
-            ">
-              <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 20px;"></i>
-              <h3 style="margin: 0 0 10px 0; color: #ff6b6b;">Game Loading Error</h3>
-              <p style="margin: 0 0 20px 0;">${message}</p>
-              <button onclick="location.reload()" style="
-                background: #ff6b6b; 
-                color: white; 
-                border: none; 
-                padding: 10px 20px; 
-                border-radius: 5px; 
-                cursor: pointer;
-                font-size: 16px;
+        function showGameError(message) {
+          const boardContainer = document.getElementById('board-container');
+          if (boardContainer) {
+            boardContainer.innerHTML = `
+              <div style="
+                display: flex; 
+                flex-direction: column; 
+                align-items: center; 
+                justify-content: center; 
+                height: 100%; 
+                text-align: center; 
+                color: #ff6b6b;
+                padding: 20px;
               ">
-                <i class="fas fa-redo"></i> Reload Game
-              </button>
-            </div>
-          `;
+                <i class="fas fa-exclamation-triangle" style="font-size: 48px; margin-bottom: 20px;"></i>
+                <h3 style="margin: 0 0 10px 0; color: #ff6b6b;">Game Loading Error</h3>
+                <p style="margin: 0 0 20px 0;">${message}</p>
+                <button onclick="location.reload()" style="
+                  background: #ff6b6b; 
+                  color: white; 
+                  border: none; 
+                  padding: 10px 20px; 
+                  border-radius: 5px; 
+                  cursor: pointer;
+                  font-size: 16px;
+                ">
+                  <i class="fas fa-redo"></i> Reload Game
+                </button>
+              </div>
+            `;
+          }
         }
-      }
-      
-      // Load scripts sequentially
-      function loadScript(src, name) {
-        return new Promise((resolve, reject) => {
-          const script = document.createElement('script');
-          script.src = src;
-          script.onload = () => {
-            console.log(`✅ Loaded: ${name}`);
-            resolve();
-          };
-          script.onerror = () => {
-            console.error(`❌ Failed to load: ${name}`);
-            reject(new Error(`Failed to load ${name}`));
-          };
-          document.head.appendChild(script);
-        });
-      }
-      
-      // Load all scripts and initialize
-      async function loadGameScripts() {
-        try {
-          console.log('📦 Loading game scripts...');
+        
+        // Navigation helper for GitHub Pages
+        function navigateToLeaderboard() {
+          // Try multiple possible paths for GitHub Pages
+          const possiblePaths = [
+            'leaderboard.html',
+            '/Fancy2048/pages/leaderboard.html',
+            '../pages/leaderboard.html'
+          ];
           
-          await loadScript('../scripts/ai_learning_system.js', 'AI Learning System');
-          await loadScript('../scripts/advanced_ai_solver.js', 'Advanced AI Solver');  
-          await loadScript('../scripts/enhanced_ai.js', 'Enhanced AI');
-          await loadScript('../scripts/game.js', 'Game Engine');
-          
-          console.log('📦 All scripts loaded successfully');
-          
-          // Initialize game after a short delay to ensure everything is ready
-          setTimeout(initializeFancy2048, 100);
-          
-        } catch (error) {
-          console.error('❌ Script loading failed:', error);
-          showGameError('Failed to load game scripts. Please refresh the page.');
+          // Use the first path as default
+          window.location.href = possiblePaths[0];
+        }        // Load scripts sequentially
+        function loadScript(src, name) {
+          return new Promise((resolve, reject) => {
+            const script = document.createElement('script');
+            script.src = src;
+            script.onload = () => {
+              console.log(`✅ Loaded: ${name}`);
+              resolve();
+            };
+            script.onerror = () => {
+              console.error(`❌ Failed to load: ${name}`);
+              reject(new Error(`Failed to load ${name}`));
+            };
+            document.head.appendChild(script);
+          });
         }
-      }
-      
-      // Start loading when DOM is ready
+        
+        // Load all scripts with GitHub Pages support
+        async function loadGameScripts() {
+          try {
+            console.log('📦 Loading game scripts...');
+            
+            // Try multiple path patterns for each script
+            const scripts = [
+              { name: 'AI Learning System', paths: ['../scripts/ai_learning_system.js', '/Fancy2048/scripts/ai_learning_system.js', 'scripts/ai_learning_system.js'] },
+              { name: 'Advanced AI Solver', paths: ['../scripts/advanced_ai_solver.js', '/Fancy2048/scripts/advanced_ai_solver.js', 'scripts/advanced_ai_solver.js'] },
+              { name: 'Enhanced AI', paths: ['../scripts/enhanced_ai.js', '/Fancy2048/scripts/enhanced_ai.js', 'scripts/enhanced_ai.js'] },
+              { name: 'Game Engine', paths: ['../scripts/game.js', '/Fancy2048/scripts/game.js', 'scripts/game.js'] }
+            ];
+            
+            for (const script of scripts) {
+              let loaded = false;
+              for (const path of script.paths) {
+                try {
+                  await loadScript(path, script.name);
+                  loaded = true;
+                  break;
+                } catch (error) {
+                  console.warn(`Failed to load ${script.name} from ${path}, trying next...`);
+                }
+              }
+              if (!loaded) {
+                throw new Error(`Failed to load ${script.name} from all paths`);
+              }
+            }
+            
+            console.log('📦 All scripts loaded successfully');
+            
+            // Initialize game after a short delay to ensure everything is ready
+            setTimeout(initializeFancy2048, 100);
+            
+          } catch (error) {
+            console.error('❌ Script loading failed:', error);
+            showGameError('Failed to load game scripts. Please refresh the page.');
+          }
+        }      // Start loading when DOM is ready
       if (document.readyState === 'loading') {
         document.addEventListener('DOMContentLoaded', loadGameScripts);
       } else {
