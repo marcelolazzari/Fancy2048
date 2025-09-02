@@ -73,7 +73,23 @@ class Game {
     this.isAutoPlayedGame = false; // Track if current game used autoplay
     this.hasHumanMoves = false; // Track if current game has human moves
 
-    // Initialize the game
+    // Initialize enhanced AI and learning systems first
+    this.enhancedAI = null;
+    this.aiLearningSystem = null;
+    this.aiDifficulty = localStorage.getItem('aiDifficulty') || 'normal';
+    this.adaptiveDepth = true;
+
+    // Initialize the game safely
+    try {
+      this.initializeGame();
+    } catch (error) {
+      console.error('❌ Game initialization failed:', error);
+      this.handleInitializationFailure(error);
+    }
+  }
+
+  initializeGame() {
+    // Initialize UI components
     this.initializeUI();
     this.addEventListeners();
     this.applyTheme();
@@ -95,18 +111,12 @@ class Game {
     this.updateUI();
     this.startTimer();
     
-    // Initialize enhanced AI and learning systems automatically
-    this.enhancedAI = null;
-    this.aiLearningSystem = null;
+    // Initialize enhanced systems after UI is ready
     try {
       this.initializeEnhancedSystems();
     } catch (error) {
       console.error('❌ Failed to initialize enhanced systems in constructor:', error);
     }
-    
-    // AI performance settings
-    this.aiDifficulty = localStorage.getItem('aiDifficulty') || 'normal';
-    this.adaptiveDepth = true;
     
     // Enhanced game state persistence (improved mobile handling)
     this.startAutoSave();
@@ -116,6 +126,29 @@ class Game {
     this.setupMessageHandler();
     
     console.log('✅ Game initialized successfully');
+  }
+
+  handleInitializationFailure(error) {
+    console.error('🚨 Critical initialization failure:', error);
+    
+    // Show user-friendly error message
+    const boardContainer = document.getElementById('board-container');
+    if (boardContainer) {
+      boardContainer.innerHTML = `
+        <div style="text-align: center; padding: 20px; color: #ff6b6b; border: 2px solid #ff6b6b; border-radius: 10px; background: rgba(255, 107, 107, 0.1);">
+          <h3>⚠️ Game Loading Error</h3>
+          <p>Failed to initialize the game properly.</p>
+          <button onclick="location.reload()" style="padding: 10px 20px; background: #ff6b6b; color: white; border: none; border-radius: 5px; cursor: pointer; margin-top: 10px;">
+            Reload Game
+          </button>
+        </div>
+      `;
+    }
+    
+    // Set minimal state to prevent further errors
+    this.gameState = 'error';
+    this.score = 0;
+    this.moves = 0;
   }
 
   // Performance utility: Check if in development mode
@@ -884,7 +917,16 @@ class Game {
     const gameOverElement = document.getElementById('game-over');
     if (gameOverElement) {
       gameOverElement.classList.add('hidden');
-      gameOverElement.classList.remove('win-state');
+    }
+    
+    const gameWonElement = document.getElementById('game-won');
+    if (gameWonElement) {
+      gameWonElement.classList.add('hidden');
+    }
+    
+    const pauseOverlay = document.getElementById('pause-overlay');
+    if (pauseOverlay) {
+      pauseOverlay.classList.add('hidden');
     }
     
     // Restart timer
@@ -892,6 +934,11 @@ class Game {
 
     // Enable back button if we have game states
     this.updateBackButtonState();
+  }
+
+  // Alias for compatibility with HTML buttons
+  resetGame() {
+    this.reset();
   }
 
   // Create grid cells for better visualization
@@ -1891,29 +1938,16 @@ class Game {
     // Record game completion for AI learning
     this.recordGameCompletion(false);
     
-    if (this.isMobileDevice()) {
-      // Smaller, mobile-friendly game over message
-      gameOverElement.innerHTML = `
-        <div class="mobile-game-over">
-          <div class="game-over-icon">💀</div>
-          <h3>Game Over!</h3>
-          <div class="final-stats">
-            <div class="stat">Score: ${this.score.toLocaleString()}</div>
-            <div class="stat">Moves: ${this.moves}</div>
-          </div>
-          <div class="button-row">
-            <button class="compact-btn primary" onclick="game.reset(); game.updateUI();">
-              <i class="fas fa-redo"></i> New Game
-            </button>
-          </div>
-        </div>
-      `;
+    if (gameOverElement) {
+      gameOverElement.classList.remove('hidden');
+      // Update the message content
+      const messageContent = gameOverElement.querySelector('.message-content p');
+      if (messageContent) {
+        messageContent.textContent = `Final Score: ${this.score.toLocaleString()} • Moves: ${this.moves}`;
+      }
     } else {
-      gameOverElement.textContent = 'Game Over!';
+      console.warn('⚠️ Game over element not found');
     }
-    
-    gameOverElement.classList.remove('hidden');
-    gameOverElement.classList.remove('win-state');
     
     if (!this.hasSavedStats) {
       this.saveStats();
@@ -1922,89 +1956,30 @@ class Game {
   }
 
   showWinMessage() {
-    const gameOverElement = document.getElementById('game-over');
-    gameOverElement.innerHTML = ''; // Clear any existing content
+    const gameWonElement = document.getElementById('game-won');
     
     // Record game completion for AI learning (win = true)
     this.recordGameCompletion(true);
     
-    if (this.isMobileDevice()) {
-      // Compact mobile win message
-      const winDiv = document.createElement('div');
-      winDiv.className = 'mobile-win-message';
-      winDiv.innerHTML = `
-        <div class="win-icon">🎉</div>
-        <h3>You Won!</h3>
-        <p>You reached 2048!</p>
-        <div class="win-buttons">
-          <button class="compact-btn primary" onclick="document.getElementById('game-over').classList.add('hidden'); game.gameState = 'won-continue';">
-            <i class="fas fa-play"></i> Keep Playing
-          </button>
-          <button class="compact-btn secondary" onclick="game.reset(); game.updateUI();">
-            <i class="fas fa-redo"></i> New Game
-          </button>
-        </div>
-      `;
-      gameOverElement.appendChild(winDiv);
+    if (gameWonElement) {
+      gameWonElement.classList.remove('hidden');
+      // Update the message content  
+      const messageContent = gameWonElement.querySelector('.message-content p');
+      if (messageContent) {
+        messageContent.textContent = `Score: ${this.score.toLocaleString()} • Keep playing for higher tiles!`;
+      }
     } else {
-      // Desktop version (keep existing)
-      const messageDiv = document.createElement('div');
-      messageDiv.style.marginBottom = '15px';
-      messageDiv.innerHTML = `
-        <h3 style="margin: 0 0 10px 0; color: #ffcc00;">🎉 Congratulations!</h3>
-        <p style="margin: 0;">You reached 2048! Keep playing to reach even higher tiles!</p>
-      `;
-      
-      // Add a continue button
-      const continueButton = document.createElement('button');
-      continueButton.textContent = 'Keep Playing';
-      continueButton.style.cssText = `
-        background: linear-gradient(45deg, #4CAF50, #45a049);
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        margin: 0 5px;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 1rem;
-        font-weight: bold;
-      `;
-      continueButton.addEventListener('click', () => {
-        gameOverElement.classList.add('hidden');
-        this.gameState = 'won-continue'; // Mark as won but continuing
-      });
-      
-      // Add a new game button
-      const newGameButton = document.createElement('button');
-      newGameButton.textContent = 'New Game';
-      newGameButton.style.cssText = `
-        background: linear-gradient(45deg, #2196F3, #1976D2);
-        color: white;
-        border: none;
-        padding: 10px 20px;
-        margin: 0 5px;
-        border-radius: 5px;
-        cursor: pointer;
-        font-size: 1rem;
-        font-weight: bold;
-      `;
-      newGameButton.addEventListener('click', () => {
-        this.reset();
-        this.updateUI();
-      });
-      
-      gameOverElement.appendChild(messageDiv);
-      gameOverElement.appendChild(continueButton);
-      gameOverElement.appendChild(newGameButton);
+      console.warn('⚠️ Game won element not found');
     }
-    
-    gameOverElement.classList.remove('hidden');
-    gameOverElement.classList.add('win-state');
-    
-    if (!this.hasSavedStats) {
-      this.saveStats();
-      this.hasSavedStats = true;
+  }
+
+  continueGame() {
+    this.gameState = 'won-continue';
+    const gameWonElement = document.getElementById('game-won');
+    if (gameWonElement) {
+      gameWonElement.classList.add('hidden');
     }
+    console.log('🎮 Game continued after win');
   }
 
   // Mobile state management methods
@@ -3374,43 +3349,24 @@ class Game {
   }
 
   showPauseOverlay(isUserInitiated) {
-    // Remove existing overlay
-    this.hidePauseOverlay();
-
-    const overlay = document.createElement('div');
-    overlay.id = 'pause-overlay';
-    overlay.className = 'pause-overlay';
-    overlay.innerHTML = `
-      <div class="pause-content">
-        <div class="pause-icon">
-          <i class="fas fa-${isUserInitiated ? 'pause' : 'eye-slash'}"></i>
-        </div>
-        <h2>${isUserInitiated ? 'Game Paused' : 'Game Auto-Paused'}</h2>
-        <p>${isUserInitiated 
-          ? 'Click the pause button or press Space to resume'
-          : 'Game paused due to tab switch. Return to resume automatically.'
-        }</p>
-        ${isUserInitiated ? '<button id="resume-from-overlay" class="resume-btn">Resume Game</button>' : ''}
-      </div>
-    `;
-
-    document.body.appendChild(overlay);
-
-    // Add click handler for resume button
-    const resumeBtn = document.getElementById('resume-from-overlay');
-    if (resumeBtn) {
-      resumeBtn.addEventListener('click', () => this.resumeGame());
+    const pauseOverlay = document.getElementById('pause-overlay');
+    if (pauseOverlay) {
+      pauseOverlay.classList.remove('hidden');
+      
+      // Update message based on type
+      const messageElement = pauseOverlay.querySelector('.overlay-content p');
+      if (messageElement) {
+        messageElement.textContent = isUserInitiated 
+          ? 'Press Space or click Resume to continue'
+          : 'Game paused automatically. Return to continue.';
+      }
     }
-
-    // Focus management
-    overlay.setAttribute('tabindex', '-1');
-    overlay.focus();
   }
 
   hidePauseOverlay() {
-    const overlay = document.getElementById('pause-overlay');
-    if (overlay) {
-      overlay.remove();
+    const pauseOverlay = document.getElementById('pause-overlay');
+    if (pauseOverlay) {
+      pauseOverlay.classList.add('hidden');
     }
   }
 

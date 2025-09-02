@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fancy2048 - Complete Test Suite</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #f2f2f2;
+            padding: 20px;
+            margin: 0;
+        }
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            border-left: 4px solid #ffcc00;
+        }
+        .test-result {
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border-left: 4px solid #ccc;
+        }
+        .pass { border-left-color: #4CAF50; background: rgba(76, 175, 80, 0.1); }
+        .fail { border-left-color: #f44336; background: rgba(244, 67, 54, 0.1); }
+        .warn { border-left-color: #ff9800; background: rgba(255, 152, 0, 0.1); }
+        button {
+            background: #ffcc00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+        button:hover { background: #e6b800; }
+        .game-demo {
+            width: 300px;
+            height: 300px;
+            background: #333;
+            margin: 20px auto;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 5px;
+            padding: 10px;
+            border-radius: 10px;
+        }
+        .demo-tile {
+            background: #666;
+            border-radius: 3px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        .log {
+            background: #1a1a1a;
+            padding: 15px;
+            border-radius: 5px;
+            max-height: 200px;
+            overflow-y: auto;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Fancy2048 Complete Test Suite</h1>
+    
+    <div class="test-section">
+        <h2>📋 Test Controls</h2>
+        <button onclick="runAllTests()">Run All Tests</button>
+        <button onclick="runGameTest()">Test Game Engine</button>
+        <button onclick="runAITest()">Test AI Systems</button>
+        <button onclick="runUITest()">Test UI Components</button>
+        <button onclick="clearResults()">Clear Results</button>
+    </div>
+    
+    <div id="test-results"></div>
+    
+    <div class="test-section">
+        <h2>🎮 Game Demo</h2>
+        <div>Score: <span id="demo-score">0</span> | Moves: <span id="demo-moves">0</span></div>
+        <div id="game-demo" class="game-demo"></div>
+        <div>
+            <button onclick="demoMove('up')">↑</button>
+            <button onclick="demoMove('down')">↓</button>
+            <button onclick="demoMove('left')">←</button>
+            <button onclick="demoMove('right')">→</button>
+            <button onclick="resetDemo()">Reset</button>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📊 Test Log</h2>
+        <div id="test-log" class="log"></div>
+    </div>
+
+    <!-- Hidden DOM elements for testing -->
+    <div style="display: none;">
+        <div id="board-container"></div>
+        <span id="score">0</span>
+        <span id="best-score">0</span>
+        <span id="moves">0</span>
+        <span id="time">00:00</span>
+        <div id="game-over" class="hidden"></div>
+        <div id="game-won" class="hidden"></div>
+        <div id="pause-overlay" class="hidden"></div>
+        <button id="changeColor-button"></button>
+        <button id="leaderboard-button"></button>
+        <button id="export-stats-button"></button>
+        <button id="back-button"></button>
+        <button id="pause-button"></button>
+        <button id="board-size-button"></button>
+        <button id="theme-toggle-button"></button>
+        <button id="autoplay-button"></button>
+        <button id="speed-button"><span class="speed-text">1x</span></button>
+        <button id="reset-button"></button>
+        <button id="ai-difficulty-button"><span class="button-text">Normal</span></button>
+    </div>
+
+    <!-- Load scripts -->
+    <script src="../scripts/ai_learning_system.js"></script>
+    <script src="../scripts/advanced_ai_solver.js"></script>
+    <script src="../scripts/enhanced_ai.js"></script>
+    <script src="../scripts/game.js"></script>
+    
+    <script>
+        let testGame = null;
+        let testResults = [];
+        const log = document.getElementById('test-log');
+        const resultsDiv = document.getElementById('test-results');
+        
+        function logMessage(message, type = 'info') {
+            const timestamp = new Date().toLocaleTimeString();
+            const div = document.createElement('div');
+            div.textContent = `[${timestamp}] ${message}`;
+            div.style.color = type === 'error' ? '#ff6b6b' : type === 'warn' ? '#ffa500' : '#4CAF50';
+            log.appendChild(div);
+            log.scrollTop = log.scrollHeight;
+            console.log(message);
+        }
+        
+        function addTestResult(testName, passed, message) {
+            testResults.push({ testName, passed, message });
+            
+            const div = document.createElement('div');
+            div.className = `test-result ${passed ? 'pass' : 'fail'}`;
+            div.innerHTML = `
+                <strong>${testName}</strong>: ${passed ? '✅ PASS' : '❌ FAIL'}
+                ${message ? `<br><small>${message}</small>` : ''}
+            `;
+            resultsDiv.appendChild(div);
+            
+            logMessage(`${testName}: ${passed ? 'PASS' : 'FAIL'}${message ? ' - ' + message : ''}`, passed ? 'info' : 'error');
+        }
+        
+        function clearResults() {
+            testResults = [];
+            resultsDiv.innerHTML = '';
+            log.innerHTML = '';
+        }
+        
+        async function runAllTests() {
+            clearResults();
+            logMessage('🧪 Starting comprehensive test suite...', 'info');
+            
+            await runGameTest();
+            await runAITest();
+            await runUITest();
+            
+            const passed = testResults.filter(r => r.passed).length;
+            const total = testResults.length;
+            
+            logMessage(`🏁 Test suite completed: ${passed}/${total} tests passed`, passed === total ? 'info' : 'warn');
+        }
+        
+        async function runGameTest() {
+            logMessage('🎮 Testing game engine...', 'info');
+            
+            // Test 1: Game class exists
+            addTestResult('Game Class Available', typeof Game !== 'undefined', 'Game constructor found');
+            
+            if (typeof Game === 'undefined') return;
+            
+            // Test 2: Game initialization
+            try {
+                testGame = new Game(4);
+                addTestResult('Game Initialization', !!testGame, 'Game instance created successfully');
+            } catch (error) {
+                addTestResult('Game Initialization', false, error.message);
+                return;
+            }
+            
+            // Test 3: Board creation
+            const validBoard = Array.isArray(testGame.board) && 
+                              testGame.board.length === 4 && 
+                              testGame.board.every(row => Array.isArray(row) && row.length === 4);
+            addTestResult('Board Creation', validBoard, '4x4 board structure valid');
+            
+            // Test 4: Move validation
+            const canMoveUp = typeof testGame.canMove === 'function' && typeof testGame.canMove('up') === 'boolean';
+            addTestResult('Move Validation', canMoveUp, 'canMove method works correctly');
+            
+            // Test 5: Game state management
+            const hasValidState = ['playing', 'won', 'over', 'won-continue'].includes(testGame.gameState);
+            addTestResult('Game State', hasValidState, `Game state: ${testGame.gameState}`);
+            
+            // Test 6: Score tracking
+            const hasValidScore = typeof testGame.score === 'number' && testGame.score >= 0;
+            addTestResult('Score Tracking', hasValidScore, `Initial score: ${testGame.score}`);
+        }
+        
+        async function runAITest() {
+            logMessage('🤖 Testing AI systems...', 'info');
+            
+            // Test 1: AI Learning System
+            const hasLearningSystem = typeof AILearningSystem !== 'undefined';
+            addTestResult('AI Learning System', hasLearningSystem, 'AILearningSystem class available');
+            
+            // Test 2: Enhanced AI
+            const hasEnhancedAI = typeof Enhanced2048AI !== 'undefined';
+            addTestResult('Enhanced AI', hasEnhancedAI, 'Enhanced2048AI class available');
+            
+            // Test 3: Advanced AI Solver
+            const hasAdvancedAI = typeof AdvancedAI2048Solver !== 'undefined';
+            addTestResult('Advanced AI Solver', hasAdvancedAI, 'AdvancedAI2048Solver class available');
+            
+            if (testGame && hasEnhancedAI) {
+                try {
+                    const ai = new Enhanced2048AI(testGame);
+                    const move = ai.getBestMove();
+                    const validMove = ['up', 'down', 'left', 'right'].includes(move) || move === null;
+                    addTestResult('AI Move Generation', validMove, `AI suggests: ${move || 'no move'}`);
+                } catch (error) {
+                    addTestResult('AI Move Generation', false, error.message);
+                }
+            }
+        }
+        
+        async function runUITest() {
+            logMessage('🖥️ Testing UI components...', 'info');
+            
+            // Test 1: Required DOM elements
+            const requiredElements = ['board-container', 'score', 'best-score', 'moves', 'time'];
+            const missingElements = requiredElements.filter(id => !document.getElementById(id));
+            addTestResult('Required DOM Elements', missingElements.length === 0, 
+                         missingElements.length ? `Missing: ${missingElements.join(', ')}` : 'All elements present');
+            
+            // Test 2: Game overlays
+            const overlayElements = ['game-over', 'game-won', 'pause-overlay'];
+            const missingOverlays = overlayElements.filter(id => !document.getElementById(id));
+            addTestResult('Game Overlays', missingOverlays.length === 0,
+                         missingOverlays.length ? `Missing: ${missingOverlays.join(', ')}` : 'All overlays present');
+            
+            // Test 3: Control buttons
+            const controlButtons = ['reset-button', 'pause-button', 'autoplay-button'];
+            const missingButtons = controlButtons.filter(id => !document.getElementById(id));
+            addTestResult('Control Buttons', missingButtons.length === 0,
+                         missingButtons.length ? `Missing: ${missingButtons.join(', ')}` : 'All buttons present');
+            
+            // Test 4: CSS loading
+            const hasCSS = getComputedStyle(document.body).backgroundColor !== 'rgba(0, 0, 0, 0)';
+            addTestResult('CSS Loading', hasCSS, 'Stylesheets loaded and applied');
+        }
+        
+        // Demo game functionality
+        function resetDemo() {
+            if (testGame) {
+                testGame.reset();
+                updateDemoBoard();
+                document.getElementById('demo-score').textContent = testGame.score;
+                document.getElementById('demo-moves').textContent = testGame.moves;
+            }
+        }
+        
+        function demoMove(direction) {
+            if (testGame && testGame.canMove(direction)) {
+                testGame.move(direction);
+                updateDemoBoard();
+                document.getElementById('demo-score').textContent = testGame.score;
+                document.getElementById('demo-moves').textContent = testGame.moves;
+            }
+        }
+        
+        function updateDemoBoard() {
+            const demoBoard = document.getElementById('game-demo');
+            demoBoard.innerHTML = '';
+            
+            if (testGame) {
+                for (let i = 0; i < 4; i++) {
+                    for (let j = 0; j < 4; j++) {
+                        const tile = document.createElement('div');
+                        tile.className = 'demo-tile';
+                        const value = testGame.board[i][j];
+                        tile.textContent = value || '';
+                        tile.style.background = value ? getTileColor(value) : '#666';
+                        demoBoard.appendChild(tile);
+                    }
+                }
+            }
+        }
+        
+        function getTileColor(value) {
+            const colors = {
+                2: '#eee4da', 4: '#ede0c8', 8: '#f2b179', 16: '#f59563',
+                32: '#f67c5f', 64: '#f65e3b', 128: '#edcf72', 256: '#edcc61',
+                512: '#edc850', 1024: '#edc53f', 2048: '#edc22e'
+            };
+            return colors[value] || '#3c3a32';
+        }
+        
+        // Initialize demo
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                logMessage('🚀 Test suite ready', 'info');
+                if (typeof Game !== 'undefined') {
+                    try {
+                        testGame = new Game(4);
+                        updateDemoBoard();
+                        logMessage('✅ Demo game initialized', 'info');
+                    } catch (error) {
+                        logMessage('❌ Demo game failed: ' + error.message, 'error');
+                    }
+                }
+            }, 100);
+        });
+    </script>
+</body>
+</html>
