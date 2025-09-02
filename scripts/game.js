@@ -935,6 +935,112 @@ class Game {
     
     this.gameState = 'error';
   }
+
+  // Score tracking and saving methods
+  saveGameResult(gameWon = false) {
+    try {
+      const gameResult = {
+        score: this.score || 0,
+        moves: this.moves || 0,
+        duration: this.gameTime || 0,
+        maxTile: this.getMaxTile(),
+        won: gameWon,
+        playerType: this.currentPlayerType || 'human',
+        aiType: this.currentAIType || null,
+        timestamp: Date.now(),
+        boardSize: this.size || 4,
+        gameId: Date.now() + '-' + Math.random().toString(36).substr(2, 9)
+      };
+      
+      // Save to appropriate storage based on player type
+      const storageKey = this.getStorageKey();
+      let savedGames = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      savedGames.push(gameResult);
+      
+      // Keep only last 100 games per category
+      if (savedGames.length > 100) {
+        savedGames = savedGames.slice(-100);
+      }
+      
+      localStorage.setItem(storageKey, JSON.stringify(savedGames));
+      
+      // Also save to general leaderboard
+      this.updateLeaderboard(gameResult);
+      
+      console.log(`Game result saved: ${gameResult.score} points (${gameResult.playerType})`);
+      return gameResult;
+      
+    } catch (error) {
+      console.error('Failed to save game result:', error);
+      return null;
+    }
+  }
+  
+  getStorageKey() {
+    if (this.currentPlayerType === 'ai') {
+      return 'aiGameStats';
+    } else if (this.currentPlayerType === 'mixed') {
+      return 'mixedGameStats';
+    }
+    return 'gameStats';
+  }
+  
+  updateLeaderboard(gameResult) {
+    try {
+      let leaderboard = JSON.parse(localStorage.getItem('leaderboard') || '[]');
+      leaderboard.push(gameResult);
+      
+      // Sort by score and keep top 50
+      leaderboard.sort((a, b) => b.score - a.score);
+      leaderboard = leaderboard.slice(0, 50);
+      
+      localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+    } catch (error) {
+      console.error('Failed to update leaderboard:', error);
+    }
+  }
+  
+  getMaxTile() {
+    let maxTile = 0;
+    if (this.board) {
+      this.board.flat().forEach(tile => {
+        if (tile > maxTile) maxTile = tile;
+      });
+    }
+    return maxTile;
+  }
+  
+  setPlayerType(playerType, aiType = null) {
+    this.currentPlayerType = playerType;
+    this.currentAIType = aiType;
+  }
+  
+  // Override game over to save results
+  showGameOver() {
+    // Save game result before showing game over
+    this.saveGameResult(false);
+    
+    // Call original game over logic if it exists
+    if (this.originalShowGameOver) {
+      this.originalShowGameOver();
+    } else {
+      console.log('Game Over! Final Score:', this.score);
+    }
+  }
+  
+  // Override win condition to save results
+  showWinMessage() {
+    // Save game result as won
+    this.saveGameResult(true);
+    
+    // Call original win logic if it exists
+    if (this.originalShowWinMessage) {
+      this.originalShowWinMessage();
+    } else {
+      console.log('You Won! Score:', this.score);
+    }
+  }
+
 }
 
 // Enhanced CSS animations for notifications
