@@ -1,0 +1,288 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fancy2048 - Functionality Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            border-left: 4px solid #333;
+        }
+        .pass { border-left-color: #4CAF50; background: rgba(76, 175, 80, 0.1); }
+        .fail { border-left-color: #f44336; background: rgba(244, 67, 54, 0.1); }
+        .warning { border-left-color: #ff9800; background: rgba(255, 152, 0, 0.1); }
+        button {
+            background: #ff9900;
+            border: none;
+            padding: 10px 20px;
+            color: white;
+            border-radius: 5px;
+            margin: 5px;
+            cursor: pointer;
+        }
+        button:hover { background: #ffb300; }
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Fancy2048 - Complete Functionality Test</h1>
+    <p>This page tests all core functionality to ensure everything is correctly implemented.</p>
+    
+    <button onclick="runAllTests()">🚀 Run All Tests</button>
+    <button onclick="clearResults()">🗑️ Clear Results</button>
+    
+    <div id="test-results"></div>
+    
+    <!-- Hidden game elements for testing -->
+    <div class="hidden">
+        <div id="score-container"><ul><li>Score: <span id="score">0</span></li></ul></div>
+        <div id="board-container"></div>
+        <button id="reset-button">Reset</button>
+        <button id="ai-play-button">AI Play</button>
+    </div>
+
+    <script src="scripts/ai_learning_system.js"></script>
+    <script src="scripts/enhanced_ai.js"></script>
+    <script src="scripts/advanced_ai_solver.js"></script>
+    <script src="scripts/logger.js"></script>
+    <script src="scripts/game.js"></script>
+
+    <script>
+        function logResult(test, status, message) {
+            const resultsDiv = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = `test-result ${status}`;
+            div.innerHTML = `<strong>${test}:</strong> ${message}`;
+            resultsDiv.appendChild(div);
+        }
+        
+        function clearResults() {
+            document.getElementById('test-results').innerHTML = '';
+        }
+        
+        async function runAllTests() {
+            clearResults();
+            logResult('Test Suite', 'pass', 'Starting comprehensive functionality tests...');
+            
+            // Test 1: Class Availability
+            logResult('Class Loading', 'pass', 'Testing class availability...');
+            
+            try {
+                if (typeof Game !== 'undefined') {
+                    logResult('Game Class', 'pass', 'Game class is available');
+                } else {
+                    logResult('Game Class', 'fail', 'Game class is not available');
+                    return;
+                }
+                
+                if (typeof Enhanced2048AI !== 'undefined') {
+                    logResult('Enhanced AI', 'pass', 'Enhanced2048AI class is available');
+                } else {
+                    logResult('Enhanced AI', 'warning', 'Enhanced2048AI class is not available');
+                }
+                
+                if (typeof AdvancedAI2048Solver !== 'undefined') {
+                    logResult('Advanced AI', 'pass', 'AdvancedAI2048Solver class is available');
+                } else {
+                    logResult('Advanced AI', 'warning', 'AdvancedAI2048Solver class is not available');
+                }
+                
+                if (typeof AILearningSystem !== 'undefined') {
+                    logResult('Learning AI', 'pass', 'AILearningSystem class is available');
+                } else {
+                    logResult('Learning AI', 'warning', 'AILearningSystem class is not available');
+                }
+                
+                if (typeof Logger !== 'undefined') {
+                    logResult('Logger System', 'pass', 'Logger class is available');
+                } else {
+                    logResult('Logger System', 'warning', 'Logger class is not available');
+                }
+            } catch (error) {
+                logResult('Class Loading', 'fail', `Error during class loading: ${error.message}`);
+                return;
+            }
+            
+            // Test 2: Game Instantiation
+            logResult('Game Creation', 'pass', 'Testing game instantiation...');
+            
+            try {
+                const testGame = new Game(4);
+                if (testGame) {
+                    logResult('Game Instance', 'pass', 'Game instance created successfully');
+                    
+                    // Test basic properties
+                    if (testGame.size === 4) {
+                        logResult('Game Properties', 'pass', 'Game properties initialized correctly');
+                    } else {
+                        logResult('Game Properties', 'fail', 'Game properties not initialized correctly');
+                    }
+                    
+                    // Test board creation
+                    if (testGame.board && testGame.board.length === 16) {
+                        logResult('Board Creation', 'pass', 'Game board created with correct size');
+                    } else {
+                        logResult('Board Creation', 'fail', 'Game board not created properly');
+                    }
+                    
+                } else {
+                    logResult('Game Instance', 'fail', 'Failed to create game instance');
+                    return;
+                }
+            } catch (error) {
+                logResult('Game Creation', 'fail', `Error creating game: ${error.message}`);
+                return;
+            }
+            
+            // Test 3: AI Systems
+            logResult('AI Systems', 'pass', 'Testing AI functionality...');
+            
+            try {
+                // Test Enhanced AI
+                if (typeof Enhanced2048AI !== 'undefined') {
+                    const enhancedAI = new Enhanced2048AI({ board: new Array(16).fill(0), size: 4 });
+                    if (enhancedAI && typeof enhancedAI.getBestMove === 'function') {
+                        logResult('Enhanced AI Methods', 'pass', 'Enhanced AI methods available');
+                    } else {
+                        logResult('Enhanced AI Methods', 'fail', 'Enhanced AI methods missing');
+                    }
+                }
+                
+                // Test Learning AI
+                if (typeof AILearningSystem !== 'undefined') {
+                    const learningAI = new AILearningSystem();
+                    if (learningAI && typeof learningAI.getBestMove === 'function') {
+                        const testMove = learningAI.getBestMove(new Array(16).fill(0), ['up', 'down', 'left', 'right']);
+                        if (testMove && ['up', 'down', 'left', 'right'].includes(testMove)) {
+                            logResult('Learning AI Methods', 'pass', `Learning AI working - suggested move: ${testMove}`);
+                        } else {
+                            logResult('Learning AI Methods', 'fail', 'Learning AI not returning valid moves');
+                        }
+                    } else {
+                        logResult('Learning AI Methods', 'fail', 'Learning AI methods missing');
+                    }
+                }
+                
+                // Test Advanced AI
+                if (typeof AdvancedAI2048Solver !== 'undefined') {
+                    const advancedAI = new AdvancedAI2048Solver({ board: new Array(16).fill(0), size: 4 });
+                    if (advancedAI && typeof advancedAI.getBestMove === 'function') {
+                        logResult('Advanced AI Methods', 'pass', 'Advanced AI methods available');
+                    } else {
+                        logResult('Advanced AI Methods', 'fail', 'Advanced AI methods missing');
+                    }
+                }
+                
+            } catch (error) {
+                logResult('AI Systems', 'fail', `Error testing AI systems: ${error.message}`);
+            }
+            
+            // Test 4: Local Storage Functions
+            logResult('Storage Systems', 'pass', 'Testing storage functionality...');
+            
+            try {
+                // Test localStorage access
+                const testKey = 'fancy2048_test';
+                const testData = { test: true, timestamp: Date.now() };
+                
+                localStorage.setItem(testKey, JSON.stringify(testData));
+                const retrieved = JSON.parse(localStorage.getItem(testKey));
+                
+                if (retrieved && retrieved.test === true) {
+                    logResult('LocalStorage', 'pass', 'LocalStorage read/write working');
+                    localStorage.removeItem(testKey);
+                } else {
+                    logResult('LocalStorage', 'fail', 'LocalStorage not working correctly');
+                }
+                
+                // Test game statistics system
+                if (typeof window.gameStats !== 'undefined') {
+                    logResult('Game Stats', 'pass', 'Game statistics system available');
+                } else {
+                    logResult('Game Stats', 'warning', 'Game statistics system not loaded');
+                }
+                
+            } catch (error) {
+                logResult('Storage Systems', 'fail', `Storage error: ${error.message}`);
+            }
+            
+            // Test 5: DOM Integration
+            logResult('DOM Integration', 'pass', 'Testing DOM integration...');
+            
+            try {
+                const scoreContainer = document.getElementById('score-container');
+                const boardContainer = document.getElementById('board-container');
+                
+                if (scoreContainer && boardContainer) {
+                    logResult('DOM Elements', 'pass', 'Required DOM elements present');
+                } else {
+                    logResult('DOM Elements', 'warning', 'Some DOM elements missing (normal for test page)');
+                }
+                
+            } catch (error) {
+                logResult('DOM Integration', 'fail', `DOM error: ${error.message}`);
+            }
+            
+            // Test 6: Performance & Memory
+            logResult('Performance', 'pass', 'Testing performance aspects...');
+            
+            try {
+                const startTime = performance.now();
+                
+                // Create multiple game instances to test memory
+                const games = [];
+                for (let i = 0; i < 5; i++) {
+                    games.push(new Game(4));
+                }
+                
+                const endTime = performance.now();
+                const duration = endTime - startTime;
+                
+                if (duration < 100) {
+                    logResult('Instantiation Speed', 'pass', `Created 5 game instances in ${duration.toFixed(2)}ms`);
+                } else {
+                    logResult('Instantiation Speed', 'warning', `Game creation took ${duration.toFixed(2)}ms (may be slow)`);
+                }
+                
+                // Check memory usage if available
+                if (performance.memory) {
+                    const memInfo = performance.memory;
+                    logResult('Memory Usage', 'pass', 
+                        `Used: ${(memInfo.usedJSHeapSize / 1048576).toFixed(1)}MB, ` +
+                        `Total: ${(memInfo.totalJSHeapSize / 1048576).toFixed(1)}MB`);
+                }
+                
+            } catch (error) {
+                logResult('Performance', 'warning', `Performance test error: ${error.message}`);
+            }
+            
+            // Final Summary
+            logResult('Test Complete', 'pass', '🎉 All functionality tests completed! Check results above.');
+            
+            // Log to console for debugging
+            console.log('🧪 Fancy2048 functionality test completed');
+            console.log('📊 Available classes:', {
+                Game: typeof Game !== 'undefined',
+                Enhanced2048AI: typeof Enhanced2048AI !== 'undefined',
+                AdvancedAI2048Solver: typeof AdvancedAI2048Solver !== 'undefined',
+                AILearningSystem: typeof AILearningSystem !== 'undefined',
+                Logger: typeof Logger !== 'undefined'
+            });
+        }
+        
+        // Auto-run tests when page loads
+        window.addEventListener('load', () => {
+            setTimeout(runAllTests, 1000);
+        });
+    </script>
+</body>
+</html>

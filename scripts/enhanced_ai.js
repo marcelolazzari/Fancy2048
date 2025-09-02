@@ -643,4 +643,3 @@ if (typeof module !== 'undefined' && module.exports) {
 
 // Make available globally
 window.Enhanced2048AI = Enhanced2048AI;
-window.Enhanced2048AI = Enhanced2048AI;
