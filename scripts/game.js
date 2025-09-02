@@ -93,8 +93,8 @@ class Game {
     this.aiLearningSystem = null;
     this.aiDifficulty = safeStorage.getItem('aiDifficulty', 'normal');
 
-    // Initialize the game
-    this.initializeGame();
+    // Initialize the game with a short delay to ensure DOM is ready
+    setTimeout(() => this.initializeGame(), 50);
   }
 
   initializeGame() {

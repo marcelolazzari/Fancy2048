@@ -6,242 +6,13 @@
     <title>Fancy 2048</title>
     
     <!-- Primary CSS -->
-    <link rel="stylesheet" href="../styles/main.css">
-    <!-- Fallback CSS for different path structures -->
-    <link rel="stylesheet" href="../styles/main.css" onerror="this.remove();">
-    <link rel="stylesheet" href="../styles/main.css" onerror="this.remove();">
+    <link rel="stylesheet" href="../styles/main.css" onload="console.log('✅ CSS loaded')" onerror="console.error('❌ CSS failed to load')">
     
     <!-- Font Awesome for icons -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
     
     <style>
-        /* Critical inline styles to ensure basic functionality */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%);
-            color: #f2f2f2;
-            margin: 0;
-            padding: 0;
-            min-height: 100vh;
-            display: flex;
-            flex-direction: column;
-        }
-        
-        header {
-            text-align: center;
-            padding: 20px;
-            background: rgba(42, 42, 42, 0.95);
-            backdrop-filter: blur(10px);
-        }
-        
-        header h1 {
-            color: #ffcc00;
-            margin: 0;
-            font-size: 2.5em;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
-        }
-        
-        .controls {
-            display: flex;
-            flex-wrap: wrap;
-            justify-content: center;
-            gap: 8px;
-            margin: 15px 0;
-            list-style: none;
-            padding: 0;
-        }
-        
-        button {
-            background: linear-gradient(135deg, #ffcc00 0%, #ffb300 100%);
-            color: #000;
-            border: none;
-            padding: 10px 14px;
-            border-radius: 8px;
-            cursor: pointer;
-            font-weight: bold;
-            font-size: 13px;
-            transition: all 0.2s ease;
-            box-shadow: 0 2px 8px rgba(255, 204, 0, 0.3);
-            display: flex;
-            align-items: center;
-            gap: 5px;
-        }
-        
-        button:hover {
-            transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(255, 204, 0, 0.4);
-        }
-        
-        button:active {
-            transform: translateY(0);
-        }
-        
-        main {
-            flex: 1;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            padding: 20px;
-            gap: 20px;
-        }
-        
-        #score-container {
-            background: rgba(42, 42, 42, 0.9);
-            padding: 20px;
-            border-radius: 12px;
-            box-shadow: 0 8px 32px rgba(0,0,0,0.3);
-        }
-        
-        #score-container ul {
-            list-style: none;
-            padding: 0;
-            margin: 0;
-            display: flex;
-            gap: 25px;
-            flex-wrap: wrap;
-            justify-content: center;
-        }
-        
-        #score-container li {
-            font-weight: bold;
-            font-size: 16px;
-            text-align: center;
-        }
-        
-        #score-container span {
-            color: #ffcc00;
-            font-size: 1.3em;
-            display: block;
-            margin-top: 5px;
-        }
-        
-        #board-container {
-            width: min(85vw, 85vh, 480px);
-            height: min(85vw, 85vh, 480px);
-            background: #333;
-            border-radius: 12px;
-            padding: 12px;
-            box-shadow: 0 12px 48px rgba(0,0,0,0.4);
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            grid-template-rows: repeat(4, 1fr);
-            gap: 10px;
-            position: relative;
-        }
-        
-        .grid-cell {
-            background: #666;
-            border-radius: 8px;
-            transition: all 0.2s ease;
-        }
-        
-        .tile {
-            position: absolute;
-            background: linear-gradient(135deg, #ffcc00 0%, #ffb300 100%);
-            color: #000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            font-weight: bold;
-            border-radius: 8px;
-            font-size: 24px;
-            transition: all 0.15s ease;
-            box-shadow: 0 4px 16px rgba(0,0,0,0.2);
-        }
-        
-        /* Message overlays */
-        .message-overlay, .overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(5px);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            z-index: 1000;
-        }
-        
-        .message-content, .overlay-content {
-            background: linear-gradient(135deg, #2a2a2a 0%, #1a1a1a 100%);
-            padding: 40px;
-            border-radius: 20px;
-            text-align: center;
-            box-shadow: 0 20px 60px rgba(0,0,0,0.6);
-            border: 2px solid #ffcc00;
-            max-width: 400px;
-            animation: slideInModal 0.3s ease;
-        }
-        
-        .message-content h2, .overlay-content h2 {
-            color: #ffcc00;
-            margin: 0 0 20px 0;
-            font-size: 2em;
-        }
-        
-        .message-buttons {
-            display: flex;
-            gap: 15px;
-            justify-content: center;
-            margin-top: 25px;
-            flex-wrap: wrap;
-        }
-        
-        .continue-button, .restart-button, .stats-button, .resume-button {
-            background: linear-gradient(135deg, #4CAF50 0%, #45a049 100%);
-            color: white;
-            padding: 12px 24px;
-            font-size: 16px;
-        }
-        
-        .restart-button {
-            background: linear-gradient(135deg, #f44336 0%, #d32f2f 100%);
-        }
-        
-        .stats-button {
-            background: linear-gradient(135deg, #2196F3 0%, #1976D2 100%);
-        }
-        
-        .hidden {
-            display: none !important;
-        }
-        
-        @keyframes slideInModal {
-            from { transform: scale(0.8) translateY(20px); opacity: 0; }
-            to { transform: scale(1) translateY(0); opacity: 1; }
-        }
-        
-        .skip-link {
-            position: absolute;
-            top: -40px;
-            left: 6px;
-            background: #ffcc00;
-            color: #000;
-            padding: 8px;
-            text-decoration: none;
-            border-radius: 4px;
-            font-weight: bold;
-        }
-        
-        .skip-link:focus {
-            top: 6px;
-        }
-        
-        .visually-hidden {
-            position: absolute;
-            width: 1px;
-            height: 1px;
-            padding: 0;
-            margin: -1px;
-            overflow: hidden;
-            clip: rect(0, 0, 0, 0);
-            white-space: nowrap;
-            border: 0;
-        }
-        
-        /* Loading indicator */
+        /* Critical inline styles to ensure loading works */
         .loading-indicator {
             display: flex;
             align-items: center;
@@ -267,22 +38,8 @@
             100% { transform: rotate(360deg); }
         }
         
-        /* Responsive design */
-        @media (max-width: 768px) {
-            header h1 { font-size: 2em; }
-            .controls { gap: 6px; }
-            button { padding: 8px 12px; font-size: 12px; }
-            #board-container { width: 95vw; height: 95vw; max-width: 400px; max-height: 400px; }
-            #score-container ul { gap: 15px; }
-            .message-content, .overlay-content { padding: 30px 20px; max-width: 90vw; }
-        }
-        
-        @media (max-width: 480px) {
-            header { padding: 15px; }
-            header h1 { font-size: 1.8em; }
-            button { padding: 6px 10px; font-size: 11px; }
-            #score-container ul { flex-direction: column; gap: 10px; }
-            .message-buttons { flex-direction: column; }
+        .hidden {
+            display: none !important;
         }
     </style>
 </head>
@@ -294,7 +51,7 @@
         <nav>
             <ul class="controls">
                 <li><button id="changeColor-button" title="Change colors"><i class="fas fa-palette"></i></button></li>
-                <li><button id="leaderboard-button" title="View statistics" onclick="navigateToLeaderboard()"><i class="fas fa-chart-line"></i></button></li>
+                <li><button id="leaderboard-button" title="View statistics"><i class="fas fa-chart-line"></i></button></li>
                 <li><button id="export-stats-button" title="Export stats"><i class="fas fa-download"></i></button></li>
                 <li><button id="back-button" title="Undo move"><i class="fas fa-undo"></i></button></li>
                 <li><button id="pause-button" title="Pause game"><i class="fas fa-pause"></i></button></li>
@@ -415,18 +172,46 @@
             }
         }
 
-        // Script loading system with improved error handling
-        async function loadScript(src, name) {
+        function setupButtonHandlers() {
+            try {
+                // Setup leaderboard button
+                const leaderboardBtn = document.getElementById('leaderboard-button');
+                if (leaderboardBtn) {
+                    leaderboardBtn.addEventListener('click', navigateToLeaderboard);
+                    console.log('✅ Leaderboard button handler added');
+                }
+
+                // Setup reset button
+                const resetBtn = document.getElementById('reset-button');
+                if (resetBtn) {
+                    resetBtn.addEventListener('click', () => {
+                        if (window.game && window.game.resetGame) {
+                            window.game.resetGame();
+                        }
+                    });
+                    console.log('✅ Reset button handler added');
+                }
+                
+                // Add other button handlers as needed
+                console.log('✅ Button handlers setup complete');
+                
+            } catch (error) {
+                console.warn('⚠️ Button handlers setup failed:', error);
+            }
+        }
+
+        // Script loading system - simplified for reliability
+        function loadScript(src, name) {
             return new Promise((resolve, reject) => {
                 const script = document.createElement('script');
                 script.src = src;
                 script.onload = () => {
-                    console.log(`✅ Loaded: ${name}`);
+                    console.log(`✅ ${name} loaded`);
                     resolve();
                 };
                 script.onerror = () => {
-                    console.error(`❌ Failed to load: ${name} from ${src}`);
-                    reject(new Error(`Failed to load ${name} from ${src}`));
+                    console.warn(`⚠️ Failed to load ${name} from ${src}`);
+                    reject(new Error(`Failed to load ${name}`));
                 };
                 document.head.appendChild(script);
             });
@@ -434,162 +219,90 @@
 
         async function initializeGame() {
             try {
-                console.log('🚀 Starting Fancy2048 initialization...');
+                console.log('🚀 Initializing Fancy2048...');
 
-                // Detect GitHub Pages path
-                const isGitHubPages = window.location.hostname.includes('github.io');
-                const basePath = isGitHubPages ? '/Fancy2048' : '..';
-                
-                console.log(`🔍 Detected environment: ${isGitHubPages ? 'GitHub Pages' : 'Local'}`);
-                console.log(`📁 Using base path: ${basePath}`);
-
-                // Load all scripts with multiple fallback paths
                 const scripts = [
-                    { src: `${basePath}/scripts/ai_learning_system.js`, name: 'AI Learning System' },
-                    { src: `${basePath}/scripts/advanced_ai_solver.js`, name: 'Advanced AI Solver' },
-                    { src: `${basePath}/scripts/enhanced_ai.js`, name: 'Enhanced AI' },
-                    { src: `${basePath}/scripts/game.js`, name: 'Game Engine' }
+                    { src: '../scripts/logger.js', name: 'Logger' },
+                    { src: '../scripts/ai_learning_system.js', name: 'AI Learning System' },
+                    { src: '../scripts/enhanced_ai.js', name: 'Enhanced AI' },
+                    { src: '../scripts/advanced_ai_solver.js', name: 'Advanced AI Solver' },
+                    { src: '../scripts/game.js', name: 'Game Engine' }
                 ];
 
+                // Load scripts sequentially
                 for (const script of scripts) {
                     try {
                         await loadScript(script.src, script.name);
-                        await new Promise(resolve => setTimeout(resolve, 100));
+                        await new Promise(resolve => setTimeout(resolve, 50));
                     } catch (error) {
-                        console.warn(`⚠️ Primary path failed for ${script.name}, trying fallbacks...`);
-                        
-                        // Try alternative paths
-                        const fallbackPaths = [
-                            `../scripts/${script.src.split('/').pop()}`,
-                            `scripts/${script.src.split('/').pop()}`,
-                            `./scripts/${script.src.split('/').pop()}`
-                        ];
-                        
-                        let loaded = false;
-                        for (const fallbackPath of fallbackPaths) {
-                            try {
-                                await loadScript(fallbackPath, script.name + ' (fallback)');
-                                loaded = true;
-                                console.log(`✅ Successfully loaded ${script.name} from fallback: ${fallbackPath}`);
-                                break;
-                            } catch (fallbackError) {
-                                console.warn(`⚠️ Fallback path failed: ${fallbackPath}`);
-                                continue;
-                            }
-                        }
-                        
-                        if (!loaded) {
-                            console.error(`❌ All paths failed for ${script.name}`);
-                            throw new Error(`Failed to load ${script.name} from any path`);
-                        }
+                        console.warn(`⚠️ ${script.name} failed to load, trying to continue...`);
                     }
                 }
 
-                // Wait for scripts to initialize
-                console.log('⏳ Waiting for scripts to initialize...');
-                await new Promise(resolve => setTimeout(resolve, 500));
+                // Wait for initialization
+                await new Promise(resolve => setTimeout(resolve, 300));
 
-                // Verify class availability with better error messages
-                const requiredClasses = ['Game', 'Enhanced2048AI', 'AdvancedAI2048Solver', 'AILearningSystem'];
-                const missingClasses = [];
-                
-                requiredClasses.forEach(className => {
-                    if (typeof window[className] === 'undefined') {
-                        missingClasses.push(className);
-                        console.warn(`⚠️ ${className} class not available`);
-                    } else {
-                        console.log(`✅ ${className} class loaded successfully`);
-                    }
-                });
-
-                // Check for Game class specifically
-                if (typeof Game === 'undefined') {
-                    throw new Error('Game class not found after loading scripts. This is required for the game to function.');
+                // Check for required Game class
+                if (typeof Game === 'undefined' || typeof window.Game === 'undefined') {
+                    throw new Error('Game class not found. Core game engine failed to load.');
                 }
 
                 console.log('🎮 Creating game instance...');
                 
-                // Verify required DOM elements exist
-                const requiredElements = ['board-container', 'score-container', 'score', 'best-score', 'moves', 'time'];
-                const missingElements = [];
-                
-                requiredElements.forEach(id => {
+                // Verify DOM elements exist
+                const requiredElements = ['board-container', 'score', 'best-score'];
+                for (const id of requiredElements) {
                     if (!document.getElementById(id)) {
-                        missingElements.push(id);
+                        throw new Error(`Missing required element: ${id}`);
+                    }
+                }
+                
+                // Create game instance
+                window.game = new Game(4);
+                
+                if (!window.game) {
+                    throw new Error('Failed to create game instance');
+                }
+                
+                console.log('✅ Game initialized successfully!');
+                hideLoadingIndicator();
+                
+                // Setup button event handlers
+                setupButtonHandlers();
+                
+                // Setup keyboard controls
+                document.addEventListener('keydown', (event) => {
+                    if (!window.game || window.game.isPaused) return;
+                    
+                    switch (event.key) {
+                        case 'ArrowUp':
+                            event.preventDefault();
+                            window.game.move('up');
+                            break;
+                        case 'ArrowDown':
+                            event.preventDefault();
+                            window.game.move('down');
+                            break;
+                        case 'ArrowLeft':
+                            event.preventDefault();
+                            window.game.move('left');
+                            break;
+                        case 'ArrowRight':
+                            event.preventDefault();
+                            window.game.move('right');
+                            break;
+                        case ' ':
+                            event.preventDefault();
+                            if (window.game.togglePause) {
+                                window.game.togglePause();
+                            }
+                            break;
                     }
                 });
-                
-                if (missingElements.length > 0) {
-                    console.error('❌ Missing required DOM elements:', missingElements);
-                    throw new Error(`Missing required DOM elements: ${missingElements.join(', ')}`);
-                }
-                
-                // Create game instance with error handling
-                try {
-                    window.game = new Game(4);
-                    
-                    if (!window.game) {
-                        throw new Error('Game instance is null or undefined');
-                    }
-                    
-                    console.log('✅ Game instance created successfully!');
-                    console.log('🎯 Game state:', {
-                        size: window.game.size,
-                        score: window.game.score,
-                        gameState: window.game.gameState
-                    });
-                    
-                    hideLoadingIndicator();
-                    
-                } catch (gameError) {
-                    console.error('❌ Game instance creation failed:', gameError);
-                    throw new Error(`Game initialization error: ${gameError.message}`);
-                }
-                
-                // Setup keyboard controls with error handling
-                try {
-                    document.addEventListener('keydown', (event) => {
-                        if (!window.game || window.game.isPaused) return;
-                        
-                        switch (event.key) {
-                            case 'ArrowUp':
-                                event.preventDefault();
-                                window.game.move('up');
-                                break;
-                            case 'ArrowDown':
-                                event.preventDefault();
-                                window.game.move('down');
-                                break;
-                            case 'ArrowLeft':
-                                event.preventDefault();
-                                window.game.move('left');
-                                break;
-                            case 'ArrowRight':
-                                event.preventDefault();
-                                window.game.move('right');
-                                break;
-                            case ' ':
-                                event.preventDefault();
-                                if (typeof window.game.togglePause === 'function') {
-                                    window.game.togglePause();
-                                }
-                                break;
-                        }
-                    });
-                    
-                    console.log('✅ Keyboard controls initialized');
-                } catch (controlsError) {
-                    console.warn('⚠️ Keyboard controls setup failed:', controlsError);
-                }
 
             } catch (error) {
-                console.error('❌ Game initialization failed:', error);
-                console.error('Error details:', {
-                    message: error.message,
-                    stack: error.stack,
-                    url: window.location.href
-                });
-                showError(`Initialization failed: ${error.message}`);
+                console.error('❌ Initialization failed:', error);
+                showError(`Failed to load game: ${error.message}`);
             }
         }
 
