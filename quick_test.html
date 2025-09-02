@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Quick Game Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #f2f2f2;
+            padding: 20px;
+            text-align: center;
+        }
+        .status {
+            padding: 20px;
+            margin: 20px auto;
+            max-width: 600px;
+            border-radius: 10px;
+            border-left: 4px solid #ffcc00;
+            background: #2a2a2a;
+        }
+        .pass { border-left-color: #4CAF50; background: rgba(76, 175, 80, 0.1); }
+        .fail { border-left-color: #f44336; background: rgba(244, 67, 54, 0.1); }
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+            background: #333;
+        }
+        button {
+            background: #ffcc00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin: 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-weight: bold;
+            font-size: 16px;
+        }
+        button:hover { background: #e6b800; }
+        .game-link {
+            background: #4CAF50;
+            color: white;
+            font-size: 18px;
+            padding: 15px 30px;
+        }
+    </style>
+</head>
+<body>
+    <h1>🔧 Fancy2048 Quick Test</h1>
+    
+    <div id="test-status" class="status">
+        Running overlay test...
+    </div>
+    
+    <div id="test-results"></div>
+    
+    <button onclick="testGame()">Test Game Loading</button>
+    <button onclick="window.open('pages/index.html', '_blank')" class="game-link">
+        🎮 Open Game
+    </button>
+
+    <script>
+        function updateStatus(message, type = 'info') {
+            const statusEl = document.getElementById('test-status');
+            statusEl.textContent = message;
+            statusEl.className = `status ${type}`;
+        }
+        
+        function addResult(message, type = 'pass') {
+            const resultsEl = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = `test-result ${type}`;
+            div.textContent = message;
+            resultsEl.appendChild(div);
+        }
+        
+        function testGame() {
+            updateStatus('Testing game components...', 'info');
+            
+            // Test 1: Check if main page loads without overlay blocking
+            fetch('pages/index.html')
+                .then(response => {
+                    if (response.ok) {
+                        addResult('✅ Main game page accessible', 'pass');
+                        return response.text();
+                    } else {
+                        throw new Error('Failed to load main page');
+                    }
+                })
+                .then(html => {
+                    // Check if the problematic overlay is removed
+                    if (html.includes('<div class="overlay" aria-hidden="true"></div>')) {
+                        addResult('❌ Blocking overlay still present', 'fail');
+                    } else {
+                        addResult('✅ Blocking overlay removed', 'pass');
+                    }
+                    
+                    // Check if proper overlays exist
+                    if (html.includes('id="game-over"') && html.includes('id="game-won"')) {
+                        addResult('✅ Game status overlays present', 'pass');
+                    } else {
+                        addResult('⚠️ Game status overlays missing', 'fail');
+                    }
+                    
+                    updateStatus('Test completed! Game should be playable now.', 'pass');
+                })
+                .catch(error => {
+                    addResult(`❌ Error: ${error.message}`, 'fail');
+                    updateStatus('Test failed', 'fail');
+                });
+        }
+        
+        // Auto-run test on load
+        window.addEventListener('load', () => {
+            setTimeout(testGame, 500);
+        });
+    </script>
+</body>
+</html>
