@@ -537,3 +537,4 @@ if (typeof module !== 'undefined' && module.exports) {
 
 // Make available globally
 window.AILearningSystem = AILearningSystem;
+window.AILearningSystem = AILearningSystem;
