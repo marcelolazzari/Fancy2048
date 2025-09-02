@@ -318,17 +318,33 @@ class Game {
     
     const boardContainer = document.getElementById('board-container');
     if (boardContainer) {
-      // Enhanced touch event handling with passive options for better performance
-      boardContainer.addEventListener('touchstart', this.handleTouchStart.bind(this), { passive: false });
-      boardContainer.addEventListener('touchmove', this.handleTouchMove.bind(this), { passive: false });
-      boardContainer.addEventListener('touchend', this.handleTouchEnd.bind(this), { passive: false });
-      boardContainer.addEventListener('touchcancel', this.resetTouchState.bind(this), { passive: true });
+      // Optimized touch event handling for better performance and responsiveness
+      const touchOptions = { 
+        passive: false, 
+        capture: false 
+      };
+      
+      const passiveTouchOptions = { 
+        passive: true, 
+        capture: false 
+      };
+      
+      boardContainer.addEventListener('touchstart', this.handleTouchStart.bind(this), touchOptions);
+      boardContainer.addEventListener('touchmove', this.handleTouchMove.bind(this), touchOptions);
+      boardContainer.addEventListener('touchend', this.handleTouchEnd.bind(this), touchOptions);
+      boardContainer.addEventListener('touchcancel', this.resetTouchState.bind(this), passiveTouchOptions);
       
       // Add mouse events for desktop drag simulation (optional)
-      boardContainer.addEventListener('mousedown', this.handleMouseStart.bind(this));
-      boardContainer.addEventListener('mousemove', this.handleMouseMove.bind(this));
-      boardContainer.addEventListener('mouseup', this.handleMouseEnd.bind(this));
-      boardContainer.addEventListener('mouseleave', this.resetMouseState.bind(this));
+      boardContainer.addEventListener('mousedown', this.handleMouseStart.bind(this), { passive: true });
+      boardContainer.addEventListener('mousemove', this.handleMouseMove.bind(this), { passive: true });
+      boardContainer.addEventListener('mouseup', this.handleMouseEnd.bind(this), { passive: true });
+      boardContainer.addEventListener('mouseleave', this.resetMouseState.bind(this), { passive: true });
+      
+      // Optimize board container for touch interactions
+      boardContainer.style.touchAction = 'none';
+      boardContainer.style.userSelect = 'none';
+      boardContainer.style.webkitUserSelect = 'none';
+      boardContainer.style.willChange = 'transform';
     }
     
     // Prevent page scrolling and zooming on mobile during gameplay
@@ -2164,7 +2180,7 @@ class Game {
     }
   }
 
-  // Enhanced touch handling for mobile with advanced gesture recognition
+  // Enhanced touch handling for mobile with advanced gesture recognition and performance optimization
   handleTouchStart(event) {
     if (this.isPaused || (this.gameState !== 'playing' && this.gameState !== 'won-continue')) return;
     
@@ -2175,19 +2191,20 @@ class Game {
     this.touchStartTime = Date.now();
     this.touchMoved = false;
     
-    // Enhanced visual feedback for touch start
+    // Enhanced visual feedback with smooth scaling
     const boardContainer = document.getElementById('board-container');
     if (boardContainer) {
-      boardContainer.style.transform = 'scale(0.98)';
-      boardContainer.style.transition = 'transform 0.1s cubic-bezier(0.2, 0, 0.2, 1)';
+      boardContainer.classList.add('touch-active');
+      // Use CSS class for hardware acceleration instead of inline styles
+      boardContainer.style.willChange = 'transform';
     }
     
     // Prevent default behavior to avoid scrolling and context menus
     event.preventDefault();
     
-    // Add haptic feedback on supported devices
-    if (navigator.vibrate) {
-      navigator.vibrate(10);
+    // Add subtle haptic feedback on supported devices
+    if (navigator.vibrate && window.DeviceMotionEvent) {
+      navigator.vibrate(8);
     }
   }
 
@@ -2197,24 +2214,42 @@ class Game {
     // Mark that touch has moved (helps distinguish from taps)
     this.touchMoved = true;
     
-    // Calculate movement for potential preview
+    // Calculate movement for real-time preview
     const touch = event.touches[0];
     const deltaX = touch.clientX - this.touchStartX;
     const deltaY = touch.clientY - this.touchStartY;
     const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
     
-    // Show subtle visual preview for large movements
-    if (distance > 20) {
+    // Enhanced real-time visual feedback with smooth animations
+    if (distance > 15) {
       const boardContainer = document.getElementById('board-container');
       if (boardContainer) {
-        const maxOffset = 8;
-        const offsetX = Math.max(-maxOffset, Math.min(maxOffset, deltaX * 0.1));
-        const offsetY = Math.max(-maxOffset, Math.min(maxOffset, deltaY * 0.1));
-        boardContainer.style.transform = `scale(0.98) translate(${offsetX}px, ${offsetY}px)`;
+        // Use requestAnimationFrame for smooth updates
+        if (!this.rafId) {
+          this.rafId = requestAnimationFrame(() => {
+            const maxOffset = 12;
+            const dampening = 0.15;
+            const offsetX = Math.max(-maxOffset, Math.min(maxOffset, deltaX * dampening));
+            const offsetY = Math.max(-maxOffset, Math.min(maxOffset, deltaY * dampening));
+            
+            // Apply transform with hardware acceleration
+            boardContainer.style.transform = `scale(0.98) translate3d(${offsetX}px, ${offsetY}px, 0)`;
+            
+            // Add directional glow effect
+            const direction = this.getSwipeDirection(deltaX, deltaY, distance);
+            if (direction && distance > 30) {
+              boardContainer.classList.add(`swipe-preview-${direction}`);
+            } else {
+              boardContainer.classList.remove('swipe-preview-up', 'swipe-preview-down', 'swipe-preview-left', 'swipe-preview-right');
+            }
+            
+            this.rafId = null;
+          });
+        }
       }
     }
     
-    // Prevent scrolling during swipe
+    // Prevent scrolling during swipe with passive handling
     event.preventDefault();
   }
 
@@ -2224,10 +2259,28 @@ class Game {
       return;
     }
     
+    // Cancel any pending animation frame
+    if (this.rafId) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
+    
     const boardContainer = document.getElementById('board-container');
     if (boardContainer) {
+      // Clean up CSS classes and enable smooth return animation
+      boardContainer.classList.remove('touch-active', 'swipe-preview-up', 'swipe-preview-down', 'swipe-preview-left', 'swipe-preview-right');
+      boardContainer.classList.add('touch-ending');
+      boardContainer.style.willChange = 'auto';
+      
+      // Remove inline transform to let CSS handle the return animation
       boardContainer.style.transform = '';
-      boardContainer.style.transition = '';
+      
+      // Clean up after animation
+      setTimeout(() => {
+        if (boardContainer.classList.contains('touch-ending')) {
+          boardContainer.classList.remove('touch-ending');
+        }
+      }, 200);
     }
     
     const touch = event.changedTouches[0];
@@ -2239,73 +2292,63 @@ class Game {
     const deltaY = touchEndY - this.touchStartY;
     const deltaTime = touchEndTime - this.touchStartTime;
     
-    // Enhanced swipe detection with improved accuracy
+    // Enhanced swipe detection with velocity and acceleration
     const swipeDistance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
     const velocity = swipeDistance / deltaTime;
     
-    // Adaptive thresholds based on screen size
-    const screenMin = Math.min(window.innerWidth, window.innerHeight);
-    const minSwipeDistance = Math.max(25, screenMin * 0.04);
-    const maxSwipeTime = 800;
-    const minVelocity = 0.08;
+    // Dynamic thresholds based on device capabilities
+    const screenDiagonal = Math.sqrt(window.innerWidth ** 2 + window.innerHeight ** 2);
+    const minSwipeDistance = Math.max(30, screenDiagonal * 0.03);
+    const maxSwipeTime = 600;
+    const minVelocity = 0.05;
     
-    // Enhanced validation for intentional swipes
+    // Enhanced validation with gesture confidence scoring
+    const distanceScore = Math.min(swipeDistance / (minSwipeDistance * 2), 1);
+    const velocityScore = Math.min(velocity / (minVelocity * 3), 1);
+    const timeScore = Math.max(0, (maxSwipeTime - deltaTime) / maxSwipeTime);
+    const confidenceScore = (distanceScore + velocityScore + timeScore) / 3;
+    
     const isValidSwipe = 
       swipeDistance >= minSwipeDistance && 
       deltaTime <= maxSwipeTime && 
       velocity >= minVelocity &&
-      this.touchMoved;
+      this.touchMoved &&
+      confidenceScore >= 0.4;
     
     if (!isValidSwipe) {
       this.resetTouchState();
       return;
     }
     
-    // Advanced direction detection with deadzone
-    const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
-    const absAngle = Math.abs(angle);
-    const deadzone = 20; // Degrees of deadzone around diagonals
-    
-    let direction = null;
-    
-    // Use refined angle-based direction detection
-    if (absAngle <= 45 - deadzone || absAngle >= 135 + deadzone) {
-      // Horizontal movement
-      direction = deltaX > 0 ? 'right' : 'left';
-    } else if (angle > 45 + deadzone && angle < 135 - deadzone) {
-      direction = 'down';
-    } else if (angle < -45 - deadzone && angle > -135 + deadzone) {
-      direction = 'up';
-    }
+    // Enhanced direction detection with improved accuracy
+    const direction = this.getSwipeDirection(deltaX, deltaY, swipeDistance);
     
     if (direction) {
-      // Add haptic feedback on supported devices
-      if (navigator.vibrate) {
-        navigator.vibrate(50);
+      // Progressive haptic feedback based on swipe strength
+      if (navigator.vibrate && window.DeviceMotionEvent) {
+        const intensity = Math.min(80, 30 + (confidenceScore * 50));
+        navigator.vibrate(Math.round(intensity));
       }
       
       // Track human move for statistics
       this.hasHumanMoves = true;
       
-      // Perform the move with enhanced visual feedback and game state checking
+      // Perform the move with enhanced feedback
       const moved = this.move(direction);
       
       if (moved) {
-        // Add enhanced swipe direction indicator
-        this.showSwipeIndicator(direction);
+        // Enhanced success feedback
+        this.showEnhancedSwipeSuccess(direction, confidenceScore);
         
-        // Add subtle screen flash for successful moves
-        this.showMoveSuccess();
-        
-        // Check game state after move completes (mobile-specific timing)
+        // Check game state with optimized timing
         setTimeout(() => {
           if (!this.animationInProgress) {
             this.checkGameState();
           }
-        }, 300); // Slightly longer delay for mobile to account for slower rendering
+        }, 250);
       } else {
-        // Visual feedback for invalid move
-        this.showInvalidMove();
+        // Enhanced invalid move feedback
+        this.showEnhancedInvalidMove(direction);
       }
     }
     
@@ -2318,6 +2361,70 @@ class Game {
     this.touchStartY = null;
     this.touchStartTime = null;
     this.touchMoved = false;
+    
+    // Cancel any pending animation frames
+    if (this.rafId) {
+      cancelAnimationFrame(this.rafId);
+      this.rafId = null;
+    }
+  }
+
+  // Enhanced swipe direction detection with improved accuracy
+  getSwipeDirection(deltaX, deltaY, distance) {
+    if (distance < 20) return null;
+    
+    const angle = Math.atan2(deltaY, deltaX) * (180 / Math.PI);
+    const absAngle = Math.abs(angle);
+    const deadzone = 15; // Reduced deadzone for better responsiveness
+    
+    // Use vector-based direction detection for better accuracy
+    const absX = Math.abs(deltaX);
+    const absY = Math.abs(deltaY);
+    const ratio = Math.min(absX, absY) / Math.max(absX, absY);
+    
+    // Reject diagonal swipes with high ratio
+    if (ratio > 0.75) return null;
+    
+    // Determine direction based on dominant axis
+    if (absX > absY) {
+      return deltaX > 0 ? 'right' : 'left';
+    } else {
+      return deltaY > 0 ? 'down' : 'up';
+    }
+  }
+
+  // Enhanced success feedback with dynamic effects
+  showEnhancedSwipeSuccess(direction, confidence) {
+    // Create dynamic swipe indicator
+    this.showEnhancedSwipeIndicator(direction, confidence);
+    
+    // Board success animation
+    const boardContainer = document.getElementById('board-container');
+    if (boardContainer) {
+      boardContainer.classList.add('swipe-success');
+      setTimeout(() => {
+        boardContainer.classList.remove('swipe-success');
+      }, 600);
+    }
+    
+    // Screen flash effect based on confidence
+    this.showDynamicMoveSuccess(confidence);
+  }
+
+  // Enhanced invalid move feedback
+  showEnhancedInvalidMove(direction) {
+    const boardContainer = document.getElementById('board-container');
+    if (boardContainer) {
+      boardContainer.classList.add(`invalid-swipe-${direction}`);
+      setTimeout(() => {
+        boardContainer.classList.remove(`invalid-swipe-${direction}`);
+      }, 400);
+    }
+    
+    // Subtle haptic feedback for invalid moves
+    if (navigator.vibrate && window.DeviceMotionEvent) {
+      navigator.vibrate([20, 20, 20]);
+    }
   }
 
   showSwipeIndicator(direction) {
@@ -2358,6 +2465,128 @@ class Game {
         indicator.parentNode.removeChild(indicator);
       }
     }, 450);
+  }
+
+  // Enhanced swipe indicator with dynamic effects
+  showEnhancedSwipeIndicator(direction, confidence = 1) {
+    const indicator = document.createElement('div');
+    indicator.className = 'enhanced-swipe-indicator';
+    
+    const icon = this.getDirectionIcon(direction);
+    const intensity = Math.min(1, confidence * 1.2);
+    const size = 2 + (intensity * 1.5);
+    
+    indicator.innerHTML = `
+      <div class="swipe-icon-bg"></div>
+      <div class="swipe-icon">${icon}</div>
+    `;
+    
+    const boardContainer = document.getElementById('board-container');
+    const rect = boardContainer.getBoundingClientRect();
+    
+    indicator.style.cssText = `
+      position: fixed;
+      left: ${rect.left + rect.width / 2}px;
+      top: ${rect.top + rect.height / 2}px;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 1001;
+      will-change: transform, opacity;
+    `;
+    
+    const icon_elem = indicator.querySelector('.swipe-icon');
+    const bg_elem = indicator.querySelector('.swipe-icon-bg');
+    
+    icon_elem.style.cssText = `
+      font-size: ${size}rem;
+      color: hsl(${this.hueValue}, 85%, 65%);
+      position: relative;
+      z-index: 2;
+      text-shadow: 0 2px 12px rgba(0, 0, 0, 0.5);
+      filter: drop-shadow(0 0 12px hsl(${this.hueValue}, 85%, 65%));
+      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    `;
+    
+    bg_elem.style.cssText = `
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      width: ${size * 1.8}rem;
+      height: ${size * 1.8}rem;
+      background: radial-gradient(circle, 
+        hsla(${this.hueValue}, 70%, 60%, 0.3) 0%,
+        hsla(${this.hueValue}, 80%, 70%, 0.15) 50%,
+        transparent 100%);
+      border-radius: 50%;
+      z-index: 1;
+      transition: all 0.5s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    `;
+    
+    document.body.appendChild(indicator);
+    
+    // Enhanced animation sequence
+    const offset = this.getDirectionOffset(direction, 40 * intensity);
+    
+    // Initial scale in
+    requestAnimationFrame(() => {
+      icon_elem.style.transform = 'scale(1.1)';
+      bg_elem.style.transform = 'translate(-50%, -50%) scale(1.1)';
+    });
+    
+    // Move and scale out
+    setTimeout(() => {
+      indicator.style.transform = `translate(-50%, -50%) translate3d(${offset.x}px, ${offset.y}px, 0) scale(${0.8 + intensity * 0.4})`;
+      icon_elem.style.opacity = '0';
+      bg_elem.style.opacity = '0';
+    }, 80);
+    
+    // Clean up
+    setTimeout(() => {
+      if (indicator.parentNode) {
+        indicator.parentNode.removeChild(indicator);
+      }
+    }, 580);
+  }
+
+  // Dynamic move success effect
+  showDynamicMoveSuccess(confidence = 1) {
+    const overlay = document.createElement('div');
+    overlay.className = 'move-success-overlay';
+    
+    const intensity = Math.min(1, confidence * 0.8);
+    const duration = 200 + (intensity * 100);
+    
+    overlay.style.cssText = `
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      bottom: 0;
+      background: radial-gradient(circle at center, 
+        hsla(${this.hueValue}, 60%, 70%, ${0.03 + intensity * 0.05}) 0%,
+        transparent 70%);
+      pointer-events: none;
+      z-index: 999;
+      opacity: 0;
+      transition: opacity ${duration}ms cubic-bezier(0.4, 0.0, 0.2, 1);
+    `;
+    
+    document.body.appendChild(overlay);
+    
+    requestAnimationFrame(() => {
+      overlay.style.opacity = '1';
+    });
+    
+    setTimeout(() => {
+      overlay.style.opacity = '0';
+    }, duration / 2);
+    
+    setTimeout(() => {
+      if (overlay.parentNode) {
+        overlay.parentNode.removeChild(overlay);
+      }
+    }, duration * 2);
   }
 
   showMoveSuccess() {

@@ -585,6 +585,17 @@ main {
   -ms-user-select: none;
   user-select: none;
   
+  /* Performance optimizations for mobile */
+  will-change: transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+  
+  /* Smooth transitions for touch feedback */
+  transition: 
+    transform 0.15s cubic-bezier(0.175, 0.885, 0.32, 1.275),
+    box-shadow 0.15s ease-out,
+    filter 0.15s ease-out;
+  
   /* Border and Visual Enhancements */
   border: 1px solid rgba(255, 255, 255, 0.15);
   margin: 0 auto;
@@ -2210,4 +2221,138 @@ footer button:hover {
 @keyframes slideOutRight {
   from { transform: translateX(0); opacity: 1; }
   to { transform: translateX(100%); opacity: 0; }
+}
+
+/* Enhanced Mobile Touch Effects and Animations */
+
+/* Touch feedback states */
+#board-container.touch-active {
+  transform: scale(0.98) translate3d(0, 0, 0);
+  transition: transform 0.1s cubic-bezier(0.4, 0.0, 0.2, 1);
+}
+
+#board-container.touch-ending {
+  transform: scale(1) translate3d(0, 0, 0) !important;
+  transition: transform 0.2s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+/* Swipe preview effects */
+#board-container.swipe-preview-up {
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 -4px 20px hsla(var(--hue-value, 45), 70%, 60%, 0.3);
+}
+
+#board-container.swipe-preview-down {
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 4px 20px hsla(var(--hue-value, 45), 70%, 60%, 0.3);
+}
+
+#board-container.swipe-preview-left {
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    -4px 0 20px hsla(var(--hue-value, 45), 70%, 60%, 0.3);
+}
+
+#board-container.swipe-preview-right {
+  box-shadow: 
+    0 8px 32px rgba(0, 0, 0, 0.4),
+    0 2px 8px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    4px 0 20px hsla(var(--hue-value, 45), 70%, 60%, 0.3);
+}
+
+/* Swipe success animation */
+#board-container.swipe-success {
+  animation: swipe-success-pulse 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+@keyframes swipe-success-pulse {
+  0% { 
+    transform: scale(1) translate3d(0, 0, 0);
+    filter: brightness(1);
+  }
+  50% { 
+    transform: scale(1.02) translate3d(0, 0, 0);
+    filter: brightness(1.1);
+  }
+  100% { 
+    transform: scale(1) translate3d(0, 0, 0);
+    filter: brightness(1);
+  }
+}
+
+/* Invalid swipe feedback */
+#board-container.invalid-swipe-up,
+#board-container.invalid-swipe-down,
+#board-container.invalid-swipe-left,
+#board-container.invalid-swipe-right {
+  animation: invalid-swipe-shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+
+@keyframes invalid-swipe-shake {
+  0%, 100% { transform: translate3d(0, 0, 0) scale(1); }
+  10%, 30%, 50%, 70%, 90% { transform: translate3d(-2px, 0, 0) scale(0.99); }
+  20%, 40%, 60%, 80% { transform: translate3d(2px, 0, 0) scale(0.99); }
+}
+
+/* Enhanced swipe indicator */
+.enhanced-swipe-indicator {
+  pointer-events: none;
+  z-index: 1001;
+}
+
+.enhanced-swipe-indicator .swipe-icon {
+  display: inline-block;
+  position: relative;
+  text-align: center;
+  line-height: 1;
+}
+
+.enhanced-swipe-indicator .swipe-icon-bg {
+  position: absolute;
+  pointer-events: none;
+}
+
+/* Move success overlay */
+.move-success-overlay {
+  pointer-events: none;
+  z-index: 999;
+}
+
+/* Performance optimizations for touch interactions */
+@media (max-width: 768px) {
+  #board-container {
+    /* Optimize animations for mobile */
+    transition: 
+      transform 0.12s cubic-bezier(0.4, 0.0, 0.2, 1),
+      box-shadow 0.12s ease-out,
+      filter 0.12s ease-out;
+  }
+  
+  #board-container.touch-active {
+    transition: transform 0.08s cubic-bezier(0.4, 0.0, 0.2, 1);
+  }
+  
+  /* Reduce motion for devices that prefer it */
+  @media (prefers-reduced-motion: reduce) {
+    #board-container,
+    #board-container.touch-active,
+    #board-container.touch-ending {
+      transition: none !important;
+      animation: none !important;
+    }
+    
+    .enhanced-swipe-indicator,
+    .move-success-overlay {
+      display: none !important;
+    }
+  }
 }
