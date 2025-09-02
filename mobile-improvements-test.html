@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Tile Size Test - Fancy2048</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            margin: 20px; 
+            background: #faf8ef;
+        }
+        .info-box { 
+            background: white; 
+            padding: 20px; 
+            margin: 20px 0;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .improvement { color: #27ae60; font-weight: bold; }
+        .device-sizes { 
+            display: grid; 
+            gap: 10px; 
+            margin: 20px 0; 
+        }
+        .device { 
+            padding: 10px; 
+            background: #f8f8f8; 
+            border-radius: 4px; 
+            border-left: 4px solid #3498db;
+        }
+        .test-button {
+            display: inline-block;
+            padding: 15px 30px;
+            background: #8f7a66;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+            margin: 10px;
+            font-weight: bold;
+            text-align: center;
+        }
+        .test-button:hover {
+            background: #9f8a76;
+        }
+    </style>
+</head>
+<body>
+    <h1>📱 Mobile Tile Size Improvements</h1>
+    
+    <div class="info-box">
+        <h2>✨ What's Been Improved</h2>
+        <p>The number tiles in Fancy2048 are now <span class="improvement">significantly larger and more readable</span> on mobile devices!</p>
+        
+        <h3>🔧 Technical Changes:</h3>
+        <ul>
+            <li><strong>Mobile Phones (≤480px):</strong> Font scales increased by 25-50%</li>
+            <li><strong>Small Phones (≤360px):</strong> Even larger fonts for better readability</li>
+            <li><strong>Tablets (≤768px):</strong> Enhanced scaling for medium-sized screens</li>
+            <li><strong>Landscape Mobile:</strong> Optimized for horizontal orientation</li>
+        </ul>
+    </div>
+    
+    <div class="info-box">
+        <h2>📐 Responsive Improvements by Device Size</h2>
+        <div class="device-sizes">
+            <div class="device">
+                <strong>📱 Small Phones (≤360px width)</strong><br>
+                Font scaling increased to 0.48-0.60 (was 0.32-0.45)<br>
+                <em>Perfect for older iPhones and compact Android devices</em>
+            </div>
+            
+            <div class="device">
+                <strong>📱 Mobile Phones (≤480px width)</strong><br>
+                Font scaling increased to 0.42-0.55 (was 0.32-0.45)<br>
+                <em>Optimized for most modern smartphones</em>
+            </div>
+            
+            <div class="device">
+                <strong>📱 Landscape Mobile (≤768px width, ≤500px height)</strong><br>
+                Font scaling increased to 0.34-0.50 (was default)<br>
+                <em>Better readability when phone is rotated</em>
+            </div>
+            
+            <div class="device">
+                <strong>📱 Tablets (≤768px width)</strong><br>
+                Enhanced font scaling: 0.38-0.60 (was 0.30-0.50)<br>
+                <em>Improved for iPad and Android tablets</em>
+            </div>
+        </div>
+    </div>
+    
+    <div class="info-box">
+        <h2>🎯 Grid Size Specific Improvements</h2>
+        <ul>
+            <li><strong>3x3 Grid:</strong> Largest font increases - perfect for beginners</li>
+            <li><strong>4x4 Grid:</strong> Balanced scaling - optimal for most players</li>
+            <li><strong>5x5 Grid:</strong> Smart scaling - maintains readability with more tiles</li>
+            <li><strong>7x7+ Grids:</strong> Proportional increases - keeps advanced play accessible</li>
+        </ul>
+    </div>
+    
+    <div class="info-box">
+        <h2>🧪 Test the Improvements</h2>
+        <p>Try the game on different devices and orientations to see the improvements:</p>
+        <a href="index.html" class="test-button">🎮 Play Fancy2048</a>
+        <a href="javascript:void(0)" onclick="simulateMobile()" class="test-button">📱 Simulate Mobile View</a>
+    </div>
+    
+    <div class="info-box">
+        <h2>💡 Tips for Mobile Play</h2>
+        <ul>
+            <li>📱 <strong>Portrait Mode:</strong> Best experience for most phone sizes</li>
+            <li>🔄 <strong>Landscape Mode:</strong> Great for wide phones and small tablets</li>
+            <li>👆 <strong>Touch Gestures:</strong> Swipe in any direction to move tiles</li>
+            <li>🎯 <strong>Grid Size:</strong> Start with 3x3 or 4x4 on mobile for best experience</li>
+        </ul>
+    </div>
+
+    <script>
+        function simulateMobile() {
+            // Open game in a smaller window to simulate mobile
+            window.open('index.html', 'mobile-sim', 'width=375,height=667,scrollbars=yes,resizable=yes');
+        }
+        
+        // Show current screen size
+        function updateScreenInfo() {
+            const width = window.innerWidth;
+            const height = window.innerHeight;
+            
+            let deviceType = '';
+            if (width <= 360) deviceType = '📱 Small Phone';
+            else if (width <= 480) deviceType = '📱 Mobile Phone';
+            else if (width <= 768) deviceType = '📱 Tablet/Large Phone';
+            else deviceType = '💻 Desktop';
+            
+            document.title = `${deviceType} (${width}×${height}) - Mobile Tile Size Test`;
+        }
+        
+        updateScreenInfo();
+        window.addEventListener('resize', updateScreenInfo);
+    </script>
+</body>
+</html>

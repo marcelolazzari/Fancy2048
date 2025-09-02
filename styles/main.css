@@ -1133,6 +1133,19 @@ footer .container {
 @media (max-width: 768px) {
   :root {
     --board-max-size: min(90vw, 90vh, 400px);
+    
+    /* Enhanced font scaling for better mobile readability */
+    --font-scale-3x3-base: clamp(0.50, 0.55, 0.60);
+    --font-scale-3x3-large: clamp(0.42, 0.45, 0.48); 
+    --font-scale-3x3-mega: clamp(0.34, 0.38, 0.42);
+    
+    --font-scale-4x4-base: clamp(0.38, 0.42, 0.48);
+    --font-scale-4x4-large: clamp(0.32, 0.36, 0.40);
+    --font-scale-4x4-mega: clamp(0.26, 0.30, 0.34);
+    
+    --font-scale-5x5-base: clamp(0.30, 0.34, 0.38);
+    --font-scale-5x5-large: clamp(0.26, 0.28, 0.32);
+    --font-scale-5x5-mega: clamp(0.22, 0.24, 0.28);
   }
   
   header {
@@ -1357,6 +1370,25 @@ footer .container {
     --base-board-size-5x5: min(min(70vh, 70svh), min(85vw, 85svw), 450px);
     
     --gap-base: clamp(1px, 0.8vmin, 6px);
+  }
+  
+  /* Larger fonts for landscape mobile */
+  .board-size-3 {
+    --font-scale-base: 0.50;
+    --font-scale-large: 0.42;
+    --font-scale-mega: 0.34;
+  }
+  
+  .board-size-4 {
+    --font-scale-base: 0.38;
+    --font-scale-large: 0.32;
+    --font-scale-mega: 0.26;
+  }
+  
+  .board-size-5 {
+    --font-scale-base: 0.34;
+    --font-scale-large: 0.28;
+    --font-scale-mega: 0.22;
   }
   
   body {
@@ -1633,6 +1665,25 @@ footer .container {
     --mobile-button-size: 38px;
   }
   
+  /* Larger font sizes for very small screens */
+  .board-size-3 {
+    --font-scale-base: 0.60;
+    --font-scale-large: 0.50;
+    --font-scale-mega: 0.42;
+  }
+  
+  .board-size-4 {
+    --font-scale-base: 0.48;
+    --font-scale-large: 0.42;
+    --font-scale-mega: 0.36;
+  }
+  
+  .board-size-5 {
+    --font-scale-base: 0.44;
+    --font-scale-large: 0.38;
+    --font-scale-mega: 0.32;
+  }
+  
   header h1 {
     font-size: clamp(1.2rem, 4vw, 1.6rem);
   }
@@ -1769,41 +1820,41 @@ footer .container {
   .board-size-3 {
     --base-board-size: min(90vw, 85vh, 320px);
     --board-max-size: min(90vw, 85vh, 320px);
-    --font-scale-base: 0.45;
-    --font-scale-large: 0.36;
-    --font-scale-mega: 0.28;
+    --font-scale-base: 0.55;
+    --font-scale-large: 0.46;
+    --font-scale-mega: 0.38;
   }
   
   .board-size-4 {
     --base-board-size: min(92vw, 85vh, 340px);
     --board-max-size: min(92vw, 85vh, 340px);
-    --font-scale-base: 0.32;
-    --font-scale-large: 0.26;
-    --font-scale-mega: 0.2;
+    --font-scale-base: 0.42;
+    --font-scale-large: 0.36;
+    --font-scale-mega: 0.30;
   }
   
   .board-size-5 {
     --base-board-size: min(95vw, 85vh, 360px);
     --board-max-size: min(95vw, 85vh, 360px);
-    --font-scale-base: 0.28;
-    --font-scale-large: 0.22;
-    --font-scale-mega: 0.16;
+    --font-scale-base: 0.38;
+    --font-scale-large: 0.32;
+    --font-scale-mega: 0.26;
   }
   
   .board-size-7 {
     --base-board-size: min(96vw, 85vh, 400px);
     --board-max-size: min(96vw, 85vh, 400px);
-    --font-scale-base: 0.18;
-    --font-scale-large: 0.14;
-    --font-scale-mega: 0.12;
+    --font-scale-base: 0.28;
+    --font-scale-large: 0.24;
+    --font-scale-mega: 0.22;
   }
   
   .board-size-9 {
     --base-board-size: min(98vw, 85vh, 440px);
     --board-max-size: min(98vw, 85vh, 440px);
-    --font-scale-base: 0.14;
-    --font-scale-large: 0.11;
-    --font-scale-mega: 0.09;
+    --font-scale-base: 0.24;
+    --font-scale-large: 0.21;
+    --font-scale-mega: 0.19;
   }
   
   header h1 {
