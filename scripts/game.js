@@ -1026,41 +1026,42 @@ class Game {
     let moved = false;
     
     for (let col = 0; col < this.size; col++) {
-      // Extract non-zero values from column (top to bottom)
-      const column = [];
+      // Extract non-zero tiles from top to bottom
+      const tiles = [];
       for (let row = 0; row < this.size; row++) {
         if (this.board[row][col] !== 0) {
-          column.push(this.board[row][col]);
+          tiles.push(this.board[row][col]);
         }
       }
       
-      // If column is empty, no move possible
-      if (column.length === 0) continue;
+      if (tiles.length === 0) continue;
       
-      // Check if tiles can slide up (if there are zeros above non-zero tiles)
-      let firstNonZeroRow = -1;
-      for (let row = 0; row < this.size; row++) {
-        if (this.board[row][col] !== 0) {
-          firstNonZeroRow = row;
+      // Check if any tiles can merge
+      let canMerge = false;
+      for (let i = 0; i < tiles.length - 1; i++) {
+        if (tiles[i] === tiles[i + 1]) {
+          canMerge = true;
           break;
         }
       }
       
-      // If first non-zero tile is not at row 0, tiles can slide up
-      if (firstNonZeroRow > 0) {
+      // Check if tiles are not already at the top
+      let canSlide = false;
+      let position = 0;
+      for (let row = 0; row < this.size; row++) {
+        if (this.board[row][col] !== 0) {
+          if (row > position) {
+            canSlide = true;
+            break;
+          }
+          position++;
+        }
+      }
+      
+      if (canMerge || canSlide) {
         moved = true;
         break;
       }
-      
-      // Check if adjacent tiles can merge
-      for (let i = 0; i < column.length - 1; i++) {
-        if (column[i] === column[i + 1]) {
-          moved = true;
-          break;
-        }
-      }
-      
-      if (moved) break;
     }
     
     return moved;
@@ -1070,41 +1071,42 @@ class Game {
     let moved = false;
     
     for (let col = 0; col < this.size; col++) {
-      // Extract non-zero values from column (bottom to top)
-      const column = [];
+      // Extract non-zero tiles from bottom to top
+      const tiles = [];
       for (let row = this.size - 1; row >= 0; row--) {
         if (this.board[row][col] !== 0) {
-          column.push(this.board[row][col]);
+          tiles.push(this.board[row][col]);
         }
       }
       
-      // If column is empty, no move possible
-      if (column.length === 0) continue;
+      if (tiles.length === 0) continue;
       
-      // Check if tiles can slide down (if there are zeros below non-zero tiles)
-      let lastNonZeroRow = -1;
-      for (let row = this.size - 1; row >= 0; row--) {
-        if (this.board[row][col] !== 0) {
-          lastNonZeroRow = row;
+      // Check if any tiles can merge
+      let canMerge = false;
+      for (let i = 0; i < tiles.length - 1; i++) {
+        if (tiles[i] === tiles[i + 1]) {
+          canMerge = true;
           break;
         }
       }
       
-      // If last non-zero tile is not at bottom row, tiles can slide down
-      if (lastNonZeroRow < this.size - 1) {
+      // Check if tiles are not already at the bottom
+      let canSlide = false;
+      let position = this.size - 1;
+      for (let row = this.size - 1; row >= 0; row--) {
+        if (this.board[row][col] !== 0) {
+          if (row < position) {
+            canSlide = true;
+            break;
+          }
+          position--;
+        }
+      }
+      
+      if (canMerge || canSlide) {
         moved = true;
         break;
       }
-      
-      // Check if adjacent tiles can merge (when moving down, we check from bottom)
-      for (let i = 0; i < column.length - 1; i++) {
-        if (column[i] === column[i + 1]) {
-          moved = true;
-          break;
-        }
-      }
-      
-      if (moved) break;
     }
     
     return moved;
@@ -1114,41 +1116,42 @@ class Game {
     let moved = false;
     
     for (let row = 0; row < this.size; row++) {
-      // Extract non-zero values from row (left to right)
-      const rowData = [];
+      // Extract non-zero tiles from left to right
+      const tiles = [];
       for (let col = 0; col < this.size; col++) {
         if (this.board[row][col] !== 0) {
-          rowData.push(this.board[row][col]);
+          tiles.push(this.board[row][col]);
         }
       }
       
-      // If row is empty, no move possible
-      if (rowData.length === 0) continue;
+      if (tiles.length === 0) continue;
       
-      // Check if tiles can slide left (if there are zeros to the left of non-zero tiles)
-      let firstNonZeroCol = -1;
-      for (let col = 0; col < this.size; col++) {
-        if (this.board[row][col] !== 0) {
-          firstNonZeroCol = col;
+      // Check if any tiles can merge
+      let canMerge = false;
+      for (let i = 0; i < tiles.length - 1; i++) {
+        if (tiles[i] === tiles[i + 1]) {
+          canMerge = true;
           break;
         }
       }
       
-      // If first non-zero tile is not at col 0, tiles can slide left
-      if (firstNonZeroCol > 0) {
+      // Check if tiles are not already at the left
+      let canSlide = false;
+      let position = 0;
+      for (let col = 0; col < this.size; col++) {
+        if (this.board[row][col] !== 0) {
+          if (col > position) {
+            canSlide = true;
+            break;
+          }
+          position++;
+        }
+      }
+      
+      if (canMerge || canSlide) {
         moved = true;
         break;
       }
-      
-      // Check if adjacent tiles can merge
-      for (let i = 0; i < rowData.length - 1; i++) {
-        if (rowData[i] === rowData[i + 1]) {
-          moved = true;
-          break;
-        }
-      }
-      
-      if (moved) break;
     }
     
     return moved;
@@ -1158,41 +1161,42 @@ class Game {
     let moved = false;
     
     for (let row = 0; row < this.size; row++) {
-      // Extract non-zero values from row (right to left)
-      const rowData = [];
+      // Extract non-zero tiles from right to left
+      const tiles = [];
       for (let col = this.size - 1; col >= 0; col--) {
         if (this.board[row][col] !== 0) {
-          rowData.push(this.board[row][col]);
+          tiles.push(this.board[row][col]);
         }
       }
       
-      // If row is empty, no move possible
-      if (rowData.length === 0) continue;
+      if (tiles.length === 0) continue;
       
-      // Check if tiles can slide right (if there are zeros to the right of non-zero tiles)
-      let lastNonZeroCol = -1;
-      for (let col = this.size - 1; col >= 0; col--) {
-        if (this.board[row][col] !== 0) {
-          lastNonZeroCol = col;
+      // Check if any tiles can merge
+      let canMerge = false;
+      for (let i = 0; i < tiles.length - 1; i++) {
+        if (tiles[i] === tiles[i + 1]) {
+          canMerge = true;
           break;
         }
       }
       
-      // If last non-zero tile is not at rightmost col, tiles can slide right
-      if (lastNonZeroCol < this.size - 1) {
+      // Check if tiles are not already at the right
+      let canSlide = false;
+      let position = this.size - 1;
+      for (let col = this.size - 1; col >= 0; col--) {
+        if (this.board[row][col] !== 0) {
+          if (col < position) {
+            canSlide = true;
+            break;
+          }
+          position--;
+        }
+      }
+      
+      if (canMerge || canSlide) {
         moved = true;
         break;
       }
-      
-      // Check if adjacent tiles can merge (when moving right, we check from right)
-      for (let i = 0; i < rowData.length - 1; i++) {
-        if (rowData[i] === rowData[i + 1]) {
-          moved = true;
-          break;
-        }
-      }
-      
-      if (moved) break;
     }
     
     return moved;
@@ -1493,138 +1497,194 @@ class Game {
 
   moveUp() {
     let moved = false;
+    
     for (let col = 0; col < this.size; col++) {
-      for (let row = 1; row < this.size; row++) {
+      // Extract non-zero tiles from top to bottom
+      const tiles = [];
+      for (let row = 0; row < this.size; row++) {
         if (this.board[row][col] !== 0) {
-          let currentRow = row;
-          while (currentRow > 0 && 
-                (this.board[currentRow - 1][col] === 0 || 
-                 this.board[currentRow - 1][col] === this.board[currentRow][col]) &&
-                !this.isInMergedList(currentRow - 1, col)) {
-            
-            if (this.board[currentRow - 1][col] === 0) {
-              // Move to empty space
-              this.board[currentRow - 1][col] = this.board[currentRow][col];
-              this.board[currentRow][col] = 0;
-              currentRow--;
-              moved = true;
-            } else if (this.board[currentRow - 1][col] === this.board[currentRow][col]) {
-              // Merge with matching tile
-              this.board[currentRow - 1][col] *= 2;
-              this.score += this.board[currentRow - 1][col];
-              this.board[currentRow][col] = 0;
-              this.lastMerged.push({ row: currentRow - 1, col: col });
-              moved = true;
-              break;
-            }
-          }
+          tiles.push(this.board[row][col]);
         }
       }
+      
+      // Clear the column
+      for (let row = 0; row < this.size; row++) {
+        this.board[row][col] = 0;
+      }
+      
+      // Process merges and moves
+      const mergedTiles = [];
+      for (let i = 0; i < tiles.length; i++) {
+        if (i < tiles.length - 1 && tiles[i] === tiles[i + 1]) {
+          // Merge tiles
+          const mergedValue = tiles[i] * 2;
+          mergedTiles.push(mergedValue);
+          this.score += mergedValue;
+          this.lastMerged.push({ row: mergedTiles.length - 1, col: col });
+          i++; // Skip the next tile as it was merged
+        } else {
+          // Keep tile as is
+          mergedTiles.push(tiles[i]);
+        }
+      }
+      
+      // Place merged tiles back
+      for (let i = 0; i < mergedTiles.length; i++) {
+        this.board[i][col] = mergedTiles[i];
+      }
+      
+      // Check if anything moved
+      if (mergedTiles.length !== tiles.length || 
+          !mergedTiles.every((tile, i) => tile === tiles[i])) {
+        moved = true;
+      }
     }
+    
     return moved;
   }
 
   moveDown() {
     let moved = false;
+    
     for (let col = 0; col < this.size; col++) {
-      for (let row = this.size - 2; row >= 0; row--) {
+      // Extract non-zero tiles from bottom to top
+      const tiles = [];
+      for (let row = this.size - 1; row >= 0; row--) {
         if (this.board[row][col] !== 0) {
-          let currentRow = row;
-          while (currentRow < this.size - 1 && 
-                (this.board[currentRow + 1][col] === 0 || 
-                 this.board[currentRow + 1][col] === this.board[currentRow][col]) &&
-                !this.isInMergedList(currentRow + 1, col)) {
-            
-            if (this.board[currentRow + 1][col] === 0) {
-              // Move to empty space
-              this.board[currentRow + 1][col] = this.board[currentRow][col];
-              this.board[currentRow][col] = 0;
-              currentRow++;
-              moved = true;
-            } else if (this.board[currentRow + 1][col] === this.board[currentRow][col]) {
-              // Merge with matching tile
-              this.board[currentRow + 1][col] *= 2;
-              this.score += this.board[currentRow + 1][col];
-              this.board[currentRow][col] = 0;
-              this.lastMerged.push({ row: currentRow + 1, col: col });
-              moved = true;
-              break;
-            }
-          }
+          tiles.push(this.board[row][col]);
         }
       }
+      
+      // Clear the column
+      for (let row = 0; row < this.size; row++) {
+        this.board[row][col] = 0;
+      }
+      
+      // Process merges and moves
+      const mergedTiles = [];
+      for (let i = 0; i < tiles.length; i++) {
+        if (i < tiles.length - 1 && tiles[i] === tiles[i + 1]) {
+          // Merge tiles
+          const mergedValue = tiles[i] * 2;
+          mergedTiles.push(mergedValue);
+          this.score += mergedValue;
+          this.lastMerged.push({ row: this.size - mergedTiles.length, col: col });
+          i++; // Skip the next tile as it was merged
+        } else {
+          // Keep tile as is
+          mergedTiles.push(tiles[i]);
+        }
+      }
+      
+      // Place merged tiles back (from bottom)
+      for (let i = 0; i < mergedTiles.length; i++) {
+        this.board[this.size - 1 - i][col] = mergedTiles[i];
+      }
+      
+      // Check if anything moved
+      if (mergedTiles.length !== tiles.length || 
+          !mergedTiles.every((tile, i) => tile === tiles[i])) {
+        moved = true;
+      }
     }
+    
     return moved;
   }
 
   moveLeft() {
     let moved = false;
+    
     for (let row = 0; row < this.size; row++) {
-      for (let col = 1; col < this.size; col++) {
+      // Extract non-zero tiles from left to right
+      const tiles = [];
+      for (let col = 0; col < this.size; col++) {
         if (this.board[row][col] !== 0) {
-          let currentCol = col;
-          while (currentCol > 0 && 
-                (this.board[row][currentCol - 1] === 0 || 
-                 this.board[row][currentCol - 1] === this.board[row][currentCol]) &&
-                !this.isInMergedList(row, currentCol - 1)) {
-            
-            if (this.board[row][currentCol - 1] === 0) {
-              // Move to empty space
-              this.board[row][currentCol - 1] = this.board[row][currentCol];
-              this.board[row][currentCol] = 0;
-              currentCol--;
-              moved = true;
-            } else if (this.board[row][currentCol - 1] === this.board[row][currentCol]) {
-              // Merge with matching tile
-              this.board[row][currentCol - 1] *= 2;
-              this.score += this.board[row][currentCol - 1];
-              this.board[row][currentCol] = 0;
-              this.lastMerged.push({ row: row, col: currentCol - 1 });
-              moved = true;
-              break;
-            }
-          }
+          tiles.push(this.board[row][col]);
         }
       }
+      
+      // Clear the row
+      for (let col = 0; col < this.size; col++) {
+        this.board[row][col] = 0;
+      }
+      
+      // Process merges and moves
+      const mergedTiles = [];
+      for (let i = 0; i < tiles.length; i++) {
+        if (i < tiles.length - 1 && tiles[i] === tiles[i + 1]) {
+          // Merge tiles
+          const mergedValue = tiles[i] * 2;
+          mergedTiles.push(mergedValue);
+          this.score += mergedValue;
+          this.lastMerged.push({ row: row, col: mergedTiles.length - 1 });
+          i++; // Skip the next tile as it was merged
+        } else {
+          // Keep tile as is
+          mergedTiles.push(tiles[i]);
+        }
+      }
+      
+      // Place merged tiles back
+      for (let i = 0; i < mergedTiles.length; i++) {
+        this.board[row][i] = mergedTiles[i];
+      }
+      
+      // Check if anything moved
+      if (mergedTiles.length !== tiles.length || 
+          !mergedTiles.every((tile, i) => tile === tiles[i])) {
+        moved = true;
+      }
     }
+    
     return moved;
   }
 
   moveRight() {
     let moved = false;
+    
     for (let row = 0; row < this.size; row++) {
-      for (let col = this.size - 2; col >= 0; col--) {
+      // Extract non-zero tiles from right to left
+      const tiles = [];
+      for (let col = this.size - 1; col >= 0; col--) {
         if (this.board[row][col] !== 0) {
-          let currentCol = col;
-          while (currentCol < this.size - 1 && 
-                (this.board[row][currentCol + 1] === 0 || 
-                 this.board[row][currentCol + 1] === this.board[row][currentCol]) &&
-                !this.isInMergedList(row, currentCol + 1)) {
-            
-            if (this.board[row][currentCol + 1] === 0) {
-              // Move to empty space
-              this.board[row][currentCol + 1] = this.board[row][currentCol];
-              this.board[row][currentCol] = 0;
-              currentCol++;
-              moved = true;
-            } else if (this.board[row][currentCol + 1] === this.board[row][currentCol]) {
-              // Merge with matching tile
-              this.board[row][currentCol + 1] *= 2;
-              this.score += this.board[row][currentCol + 1];
-              this.board[row][currentCol] = 0;
-              this.lastMerged.push({ row: row, col: currentCol + 1 });
-              moved = true;
-              break;
-            }
-          }
+          tiles.push(this.board[row][col]);
         }
       }
+      
+      // Clear the row
+      for (let col = 0; col < this.size; col++) {
+        this.board[row][col] = 0;
+      }
+      
+      // Process merges and moves
+      const mergedTiles = [];
+      for (let i = 0; i < tiles.length; i++) {
+        if (i < tiles.length - 1 && tiles[i] === tiles[i + 1]) {
+          // Merge tiles
+          const mergedValue = tiles[i] * 2;
+          mergedTiles.push(mergedValue);
+          this.score += mergedValue;
+          this.lastMerged.push({ row: row, col: this.size - mergedTiles.length });
+          i++; // Skip the next tile as it was merged
+        } else {
+          // Keep tile as is
+          mergedTiles.push(tiles[i]);
+        }
+      }
+      
+      // Place merged tiles back (from right)
+      for (let i = 0; i < mergedTiles.length; i++) {
+        this.board[row][this.size - 1 - i] = mergedTiles[i];
+      }
+      
+      // Check if anything moved
+      if (mergedTiles.length !== tiles.length || 
+          !mergedTiles.every((tile, i) => tile === tiles[i])) {
+        moved = true;
+      }
     }
+    
     return moved;
-  }
-
-  isInMergedList(row, col) {
-    return this.lastMerged.some(pos => pos.row === row && pos.col === col);
   }
 
   // Comprehensive game over detection for all scenarios
