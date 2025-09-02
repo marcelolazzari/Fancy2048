@@ -1,12 +1,15 @@
 class Game {
   constructor(size = 4) {
-    console.log(`Initializing game with size: ${size}x${size}`);
+    // Performance optimization: Reduce console logging in production
+    if (this.isDevelopment()) {
+      console.log(`🎮 Initializing game with size: ${size}x${size}`);
+    }
     
     // Core game properties
     this.size = size;
     this.board = this.createEmptyBoard();
     this.score = 0;
-    this.bestScore = +localStorage.getItem('bestScore') || 0;
+    this.bestScore = this.loadBestScore();
     this.moves = 0;
     this.startTime = null;
 
@@ -51,6 +54,15 @@ class Game {
     this.autoSaveInterval = null;
     this.pageVisibilityTimeout = null;
     this.mobileHiddenMessageTimeout = null;
+
+    // Performance: Tile element pool for reuse
+    this.tilePool = [];
+    this.maxPoolSize = 50;
+    this.poolIndex = 0;
+
+    // Performance: Batch DOM updates
+    this.pendingDOMUpdates = [];
+    this.domUpdateScheduled = false;
 
     // Autoplay properties
     this.isAutoPlaying = false;
@@ -104,6 +116,30 @@ class Game {
     this.setupMessageHandler();
     
     console.log('✅ Game initialized successfully');
+  }
+
+  // Performance utility: Check if in development mode
+  isDevelopment() {
+    return location.hostname === 'localhost' || location.hostname.includes('127.0.0.1') || location.search.includes('debug=true');
+  }
+
+  // Optimized localStorage access with caching
+  loadBestScore() {
+    if (this._cachedBestScore === undefined) {
+      this._cachedBestScore = parseInt(localStorage.getItem('bestScore')) || 0;
+    }
+    return this._cachedBestScore;
+  }
+
+  // Batch localStorage updates to reduce I/O
+  saveBestScore(score) {
+    if (score > this._cachedBestScore) {
+      this._cachedBestScore = score;
+      if (this._saveTimeout) clearTimeout(this._saveTimeout);
+      this._saveTimeout = setTimeout(() => {
+        localStorage.setItem('bestScore', this._cachedBestScore);
+      }, 100); // Debounce saves
+    }
   }
 
   initializeUI() {
@@ -898,10 +934,24 @@ class Game {
     this.createTileElement(randomCell.row, randomCell.col, this.board[randomCell.row][randomCell.col], true);
   }
 
+  /**
+   * Enhanced tile creation with object pooling and performance optimizations
+   */
   createTileElement(row, col, value, isNew = false) {
     const boardContainer = document.getElementById('board-container');
-    const tile = document.createElement('div');
-    tile.className = 'tile';
+    
+    // Performance: Reuse tile elements from pool
+    let tile = this.getTileFromPool();
+    
+    if (!tile) {
+      tile = document.createElement('div');
+      tile.className = 'tile';
+    } else {
+      // Reset classes for reused tile
+      tile.className = 'tile';
+    }
+    
+    // Set attributes efficiently
     tile.setAttribute('data-value', value);
     tile.dataset.row = row;
     tile.dataset.col = col;
@@ -913,21 +963,50 @@ class Game {
     
     if (gridCell) {
       gridCell.appendChild(tile);
-      // Apply dynamic font sizing instead of relying on CSS
       this.adjustTileFontSize(tile);
     } else {
-      console.error(`No grid cell found at position ${row}, ${col}`);
+      if (window.gameLogger) {
+        window.gameLogger.error('DOM', `No grid cell found at position ${row}, ${col}`);
+      }
       boardContainer.appendChild(tile);
     }
     
     if (isNew) {
       tile.classList.add('new-tile');
+      // Schedule cleanup of animation class using requestAnimationFrame
+      this.scheduleAnimationCleanup(tile, 'new-tile', 300);
     }
     
     // Apply glow effect based on value
     this.applyTileGlow(tile, value);
     
     return tile;
+  }
+
+  /**
+   * Get tile from pool or create new one
+   */
+  getTileFromPool() {
+    if (this.tilePool.length > 0) {
+      return this.tilePool.pop();
+    }
+    return null;
+  }
+
+  /**
+   * Return tile to pool for reuse
+   */
+  returnTileToPool(tile) {
+    if (this.tilePool.length < this.maxPoolSize && tile.parentNode) {
+      // Clean tile for reuse
+      tile.parentNode.removeChild(tile);
+      tile.className = 'tile';
+      tile.removeAttribute('data-value');
+      tile.removeAttribute('data-row');
+      tile.removeAttribute('data-col');
+      tile.textContent = '';
+      this.tilePool.push(tile);
+    }
   }
 
   applyTileGlow(tile, value) {
@@ -984,6 +1063,21 @@ class Game {
     return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) ||
            ('ontouchstart' in window) ||
            (navigator.maxTouchPoints > 0);
+  }
+
+  // Performance-optimized animation cleanup
+  scheduleAnimationCleanup(element, className, delay) {
+    const startTime = performance.now();
+    
+    const cleanup = (currentTime) => {
+      if (currentTime - startTime >= delay) {
+        element.classList.remove(className);
+      } else {
+        requestAnimationFrame(cleanup);
+      }
+    };
+    
+    requestAnimationFrame(cleanup);
   }
 
   // Utility method for debouncing function calls

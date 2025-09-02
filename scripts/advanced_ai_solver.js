@@ -7,9 +7,25 @@
 class AdvancedAI2048Solver {
   constructor(game) {
     this.game = game;
+    
+    // Enhanced caching system with memory management
     this.transpositionTable = new Map();
+    this.evaluationCache = new Map();
+    this.moveCache = new Map();
     this.cacheHits = 0;
     this.totalLookups = 0;
+    
+    // Performance optimization: Tiered cache system
+    this.l1Cache = new Map(); // Most recent positions (fast access)
+    this.l2Cache = new Map(); // Frequent positions (medium access)
+    this.maxL1Size = 1000;
+    this.maxL2Size = 10000;
+    this.cacheStats = {
+      l1Hits: 0,
+      l2Hits: 0,
+      misses: 0,
+      evictions: 0
+    };
     
     // Initialize learning system with error handling
     try {
@@ -287,14 +303,26 @@ class AdvancedAI2048Solver {
     const directions = ['up', 'down', 'left', 'right'];
     let hasValidMove = false;
     
+    // Move ordering: evaluate moves and sort by potential
+    const moveEvaluations = [];
     for (const direction of directions) {
       const nextState = this.simulateMove(boardState, direction);
       
       if (nextState !== boardState) {
         hasValidMove = true;
-        const score = this.expectimax(nextState, depth - 1, false, probability);
-        maxScore = Math.max(maxScore, score);
+        // Quick evaluation for move ordering
+        const quickScore = this.evaluateBoard(nextState);
+        moveEvaluations.push({ direction, nextState, quickScore });
       }
+    }
+    
+    // Sort moves by quick evaluation (best first)
+    moveEvaluations.sort((a, b) => b.quickScore - a.quickScore);
+    
+    // Evaluate sorted moves
+    for (const { nextState } of moveEvaluations) {
+      const score = this.expectimax(nextState, depth - 1, false, probability);
+      maxScore = Math.max(maxScore, score);
     }
     
     return hasValidMove ? maxScore : this.evaluateBoard(boardState);
@@ -334,9 +362,68 @@ class AdvancedAI2048Solver {
   }
 
   /**
-   * Board encoding for efficient storage and computation
+   * Enhanced board encoding with bit-packing optimization
    */
   encodeBoardState(board) {
+    const size = board.length;
+    
+    // Use different encoding strategies based on board size
+    if (size === 4) {
+      return this.encodeBoardState4x4(board);
+    } else if (size <= 6) {
+      return this.encodeBoardStateCompact(board);
+    } else {
+      return this.encodeBoardStateStandard(board);
+    }
+  }
+
+  /**
+   * Optimized encoding for 4x4 boards using 64-bit integer
+   */
+  encodeBoardState4x4(board) {
+    let state = 0n;
+    for (let i = 0; i < 16; i++) {
+      const row = Math.floor(i / 4);
+      const col = i % 4;
+      const value = board[row][col];
+      
+      let logValue = 0;
+      if (value > 0) {
+        logValue = Math.log2(value);
+      }
+      
+      // Pack into 4 bits per tile (supports up to 65536)
+      state = state | (BigInt(logValue) << (BigInt(i) * 4n));
+    }
+    return state;
+  }
+
+  /**
+   * Compact encoding for boards up to 6x6
+   */
+  encodeBoardStateCompact(board) {
+    const size = board.length;
+    let state = 0n;
+    
+    for (let i = 0; i < size * size; i++) {
+      const row = Math.floor(i / size);
+      const col = i % size;
+      const value = board[row][col];
+      
+      let logValue = 0;
+      if (value > 0) {
+        logValue = Math.min(15, Math.log2(value)); // Cap at 15 for 4-bit storage
+      }
+      
+      state = state | (BigInt(logValue) << (BigInt(i) * 4n));
+    }
+    return state;
+  }
+
+  /**
+   * Standard encoding for larger boards
+   */
+  encodeBoardStateStandard(board) {
     let state = 0n;
     const size = board.length;
     
@@ -696,10 +783,69 @@ class AdvancedAI2048Solver {
   /**
    * Select best empty cells for tile placement consideration
    */
+  /**
+   * Get neighbor tile values for a given cell index
+   */
+  getNeighborTiles(boardState, cellIndex) {
+    const size = this.game.size;
+    const row = Math.floor(cellIndex / size);
+    const col = cellIndex % size;
+    const neighbors = [];
+    
+    // Check all four directions
+    const directions = [
+      { dr: -1, dc: 0 }, // up
+      { dr: 1, dc: 0 },  // down
+      { dr: 0, dc: -1 }, // left
+      { dr: 0, dc: 1 }   // right
+    ];
+    
+    for (const { dr, dc } of directions) {
+      const newRow = row + dr;
+      const newCol = col + dc;
+      
+      if (newRow >= 0 && newRow < size && newCol >= 0 && newCol < size) {
+        const neighborIndex = newRow * size + newCol;
+        const logValue = Number((boardState >> (BigInt(neighborIndex) * 4n)) & 0xFn);
+        neighbors.push(logValue > 0 ? Math.pow(2, logValue) : 0);
+      }
+    }
+    
+    return neighbors;
+  }
+
   selectBestEmptyCells(boardState, emptyCells, maxCells) {
-    // For now, just return first maxCells empty cells
-    // Could be enhanced with position-based scoring
-    return emptyCells.slice(0, maxCells);
+    if (emptyCells.length <= maxCells) return emptyCells;
+    
+    // Score each empty cell based on strategic importance
+    const cellScores = emptyCells.map(cellIndex => {
+      const row = Math.floor(cellIndex / this.game.size);
+      const col = cellIndex % this.game.size;
+      
+      // Prefer corners and edges (better for merging strategies)
+      let score = 0;
+      
+      // Corner bonus
+      if ((row === 0 || row === this.game.size - 1) && 
+          (col === 0 || col === this.game.size - 1)) {
+        score += 8;
+      }
+      // Edge bonus  
+      else if (row === 0 || row === this.game.size - 1 || 
+               col === 0 || col === this.game.size - 1) {
+        score += 4;
+      }
+      
+      // Prefer cells near higher tiles for better merging opportunities
+      const neighbors = this.getNeighborTiles(boardState, cellIndex);
+      score += neighbors.reduce((sum, tileValue) => sum + Math.log2(tileValue || 1), 0);
+      
+      return { cellIndex, score };
+    });
+    
+    // Sort by score (highest first) and return top maxCells
+    cellScores.sort((a, b) => b.score - a.score);
+    return cellScores.slice(0, maxCells).map(item => item.cellIndex);
   }
 
   /**

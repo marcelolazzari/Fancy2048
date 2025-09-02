@@ -265,6 +265,13 @@ body {
   -moz-osx-font-smoothing: grayscale;
   text-rendering: optimizeLegibility;
   
+  /* Hardware Acceleration and Performance Optimizations */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  will-change: transform;
+  
   /* CSS containment for better performance */
   contain: layout style paint;
 }
@@ -670,6 +677,14 @@ main {
   font-weight: bold;
   /* Remove default color and background - let specific tile rules handle this */
   border-radius: calc(var(--tile-border-radius) - 2px);
+  
+  /* Hardware Acceleration for Smooth Animations */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  will-change: transform, background-color;
+  
   transition: all 0.15s ease-in-out, background var(--hue-transition-duration) ease-in-out, border-color var(--hue-transition-duration) ease-in-out;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
   z-index: 10;
