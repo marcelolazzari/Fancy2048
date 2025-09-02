@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#1a1a1a">
+    <title>Fancy2048 - Log Export Center</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        body {
+            background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+            color: #f0f0f0;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        .export-container {
+            max-width: 900px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        .export-section {
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 15px;
+            padding: 25px;
+            margin: 20px 0;
+            border: 1px solid rgba(255, 204, 0, 0.2);
+            backdrop-filter: blur(10px);
+        }
+        
+        .export-section h2 {
+            color: #ffcc00;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            font-size: 1.5rem;
+        }
+        
+        .export-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+        
+        .export-card {
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .export-card:hover {
+            transform: translateY(-5px);
+            border-color: #ffcc00;
+            background: rgba(255, 204, 0, 0.1);
+        }
+        
+        .export-card h3 {
+            color: #ffcc00;
+            margin-top: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .export-card p {
+            margin: 10px 0;
+            opacity: 0.8;
+            line-height: 1.4;
+        }
+        
+        .export-button {
+            background: linear-gradient(45deg, #ffcc00, #ff9900);
+            border: none;
+            color: #1a1a1a;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            width: 100%;
+            margin-top: 15px;
+        }
+        
+        .export-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(255, 204, 0, 0.3);
+        }
+        
+        .export-button:active {
+            transform: translateY(0);
+        }
+        
+        .status-message {
+            margin: 15px 0;
+            padding: 12px;
+            border-radius: 8px;
+            border-left: 4px solid;
+            font-weight: 500;
+        }
+        
+        .status-success {
+            background: rgba(76, 175, 80, 0.1);
+            border-color: #4CAF50;
+            color: #4CAF50;
+        }
+        
+        .status-error {
+            background: rgba(244, 67, 54, 0.1);
+            border-color: #f44336;
+            color: #f44336;
+        }
+        
+        .status-warning {
+            background: rgba(255, 152, 0, 0.1);
+            border-color: #ff9800;
+            color: #ff9800;
+        }
+        
+        .data-preview {
+            background: #0a0a0a;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            font-family: 'Courier New', monospace;
+            font-size: 0.85rem;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .back-button {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            background: rgba(255, 204, 0, 0.2);
+            border: 2px solid #ffcc00;
+            color: #ffcc00;
+            padding: 10px 20px;
+            border-radius: 25px;
+            text-decoration: none;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+        
+        .back-button:hover {
+            background: #ffcc00;
+            color: #1a1a1a;
+            transform: scale(1.05);
+        }
+        
+        .stats-overview {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .stats-item {
+            text-align: center;
+            padding: 15px;
+            background: rgba(255, 204, 0, 0.1);
+            border-radius: 10px;
+            border: 1px solid rgba(255, 204, 0, 0.3);
+        }
+        
+        .stats-item .value {
+            display: block;
+            font-size: 2rem;
+            font-weight: bold;
+            color: #ffcc00;
+        }
+        
+        .stats-item .label {
+            display: block;
+            font-size: 0.9rem;
+            opacity: 0.8;
+            margin-top: 5px;
+        }
+        
+        @media (max-width: 768px) {
+            .export-grid {
+                grid-template-columns: 1fr;
+            }
+            .stats-overview {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+    <a href="index.html" class="back-button">
+        <i class="fas fa-arrow-left"></i> Back to Game
+    </a>
+
+    <div class="export-container">
+        <header style="text-align: center; margin: 40px 0;">
+            <h1 style="color: #ffcc00; font-size: 2.5rem; margin-bottom: 10px;">
+                🗂️ Fancy2048 Log Export Center
+            </h1>
+            <p style="opacity: 0.8; font-size: 1.1rem;">
+                Export game logs, statistics, and debug information for analysis or backup
+            </p>
+        </header>
+
+        <!-- Statistics Overview -->
+        <div class="export-section">
+            <h2><i class="fas fa-chart-bar"></i> Data Overview</h2>
+            <div class="stats-overview" id="data-stats">
+                <div class="stats-item">
+                    <span class="value" id="log-count">--</span>
+                    <span class="label">Log Entries</span>
+                </div>
+                <div class="stats-item">
+                    <span class="value" id="game-count">--</span>
+                    <span class="label">Games Played</span>
+                </div>
+                <div class="stats-item">
+                    <span class="value" id="ai-patterns">--</span>
+                    <span class="label">AI Patterns</span>
+                </div>
+                <div class="stats-item">
+                    <span class="value" id="storage-size">--</span>
+                    <span class="label">Storage Used</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Export Options -->
+        <div class="export-section">
+            <h2><i class="fas fa-download"></i> Export Options</h2>
+            <div class="export-grid">
+                <div class="export-card" onclick="exportGameLogs()">
+                    <h3><i class="fas fa-bug"></i> Game Logs</h3>
+                    <p>Export error logs, performance metrics, and debug information for troubleshooting.</p>
+                    <button class="export-button">Export Debug Logs</button>
+                </div>
+                
+                <div class="export-card" onclick="exportStatistics()">
+                    <h3><i class="fas fa-chart-line"></i> Game Statistics</h3>
+                    <p>Export all gameplay statistics, scores, and performance data in CSV/JSON format.</p>
+                    <button class="export-button">Export Statistics</button>
+                </div>
+                
+                <div class="export-card" onclick="exportAIData()">
+                    <h3><i class="fas fa-brain"></i> AI Learning Data</h3>
+                    <p>Export AI learning patterns, strategies, and trained models for backup or sharing.</p>
+                    <button class="export-button">Export AI Data</button>
+                </div>
+                
+                <div class="export-card" onclick="exportSystemInfo()">
+                    <h3><i class="fas fa-cog"></i> System Information</h3>
+                    <p>Export browser, device, and performance information for compatibility analysis.</p>
+                    <button class="export-button">Export System Info</button>
+                </div>
+                
+                <div class="export-card" onclick="exportCompleteBackup()">
+                    <h3><i class="fas fa-archive"></i> Complete Backup</h3>
+                    <p>Export everything: logs, statistics, AI data, and settings in one comprehensive file.</p>
+                    <button class="export-button">Export Everything</button>
+                </div>
+                
+                <div class="export-card" onclick="viewLiveLogs()">
+                    <h3><i class="fas fa-eye"></i> Live Log Viewer</h3>
+                    <p>View real-time logs and debug information as they happen during gameplay.</p>
+                    <button class="export-button">View Live Logs</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Live Log Viewer -->
+        <div class="export-section" id="live-logs-section" style="display: none;">
+            <h2><i class="fas fa-terminal"></i> Live Log Viewer</h2>
+            <div class="data-preview" id="live-logs" style="max-height: 400px;">
+                <div style="text-align: center; opacity: 0.5; padding: 20px;">
+                    Click "Start Monitoring" to begin viewing live logs...
+                </div>
+            </div>
+            <div style="text-align: center; margin-top: 15px;">
+                <button class="export-button" onclick="toggleLogMonitoring()" id="log-monitor-btn" style="width: auto; padding: 10px 30px;">
+                    Start Monitoring
+                </button>
+                <button class="export-button" onclick="clearLogViewer()" style="width: auto; padding: 10px 30px; background: #ff6b6b; margin-left: 10px;">
+                    Clear Viewer
+                </button>
+            </div>
+        </div>
+
+        <!-- Status Messages -->
+        <div id="status-messages"></div>
+    </div>
+
+    <script src="../scripts/logger.js"></script>
+    <script src="../scripts/ai_learning_system.js"></script>
+    <script src="../scripts/statistics.js"></script>
+    <script>
+        let logMonitoring = false;
+        let originalConsoleLog, originalConsoleWarn, originalConsoleError;
+
+        // Initialize page
+        document.addEventListener('DOMContentLoaded', function() {
+            updateDataStats();
+            setupLogInterception();
+        });
+
+        function updateDataStats() {
+            try {
+                // Count log entries
+                let logCount = 0;
+                if (window.gameLogger && window.gameLogger.logHistory) {
+                    logCount = window.gameLogger.logHistory.length;
+                }
+                document.getElementById('log-count').textContent = logCount;
+
+                // Count games
+                let gameCount = 0;
+                try {
+                    const humanGames = JSON.parse(localStorage.getItem('fancy2048_human_games') || '[]');
+                    const aiGames = JSON.parse(localStorage.getItem('fancy2048_ai_games') || '[]');
+                    const mixedGames = JSON.parse(localStorage.getItem('fancy2048_mixed_games') || '[]');
+                    gameCount = humanGames.length + aiGames.length + mixedGames.length;
+                } catch (e) {}
+                document.getElementById('game-count').textContent = gameCount;
+
+                // Count AI patterns
+                let patternCount = 0;
+                try {
+                    const aiData = JSON.parse(localStorage.getItem('fancy2048_ai_learning_data') || '{}');
+                    if (aiData.patterns) {
+                        patternCount = Object.keys(aiData.patterns).length;
+                    }
+                } catch (e) {}
+                document.getElementById('ai-patterns').textContent = patternCount;
+
+                // Calculate storage size
+                let storageSize = 0;
+                for (let key in localStorage) {
+                    if (key.startsWith('fancy2048')) {
+                        storageSize += localStorage[key].length;
+                    }
+                }
+                const sizeMB = (storageSize / (1024 * 1024)).toFixed(2);
+                document.getElementById('storage-size').textContent = sizeMB + 'MB';
+
+            } catch (error) {
+                console.error('Error updating data stats:', error);
+            }
+        }
+
+        function showStatus(message, type = 'success') {
+            const container = document.getElementById('status-messages');
+            const div = document.createElement('div');
+            div.className = `status-message status-${type}`;
+            div.innerHTML = message;
+            container.appendChild(div);
+
+            // Auto-remove after 5 seconds
+            setTimeout(() => {
+                if (div.parentNode) {
+                    div.parentNode.removeChild(div);
+                }
+            }, 5000);
+        }
+
+        function downloadFile(data, filename, type = 'application/json') {
+            const blob = new Blob([data], { type });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function exportGameLogs() {
+            try {
+                if (window.gameLogger && window.gameLogger.exportLogs) {
+                    window.gameLogger.exportLogs();
+                    showStatus('<i class="fas fa-check"></i> Game logs exported successfully!', 'success');
+                } else {
+                    // Fallback log export
+                    const logs = collectBasicLogs();
+                    const filename = `fancy2048-logs-${Date.now()}.json`;
+                    downloadFile(JSON.stringify(logs, null, 2), filename);
+                    showStatus('<i class="fas fa-check"></i> Basic logs exported successfully!', 'success');
+                }
+                updateDataStats();
+            } catch (error) {
+                showStatus(`<i class="fas fa-exclamation-triangle"></i> Error exporting logs: ${error.message}`, 'error');
+            }
+        }
+
+        function exportStatistics() {
+            try {
+                const stats = {
+                    timestamp: new Date().toISOString(),
+                    humanGames: JSON.parse(localStorage.getItem('fancy2048_human_games') || '[]'),
+                    aiGames: JSON.parse(localStorage.getItem('fancy2048_ai_games') || '[]'),
+                    mixedGames: JSON.parse(localStorage.getItem('fancy2048_mixed_games') || '[]'),
+                    aggregateStats: JSON.parse(localStorage.getItem('fancy2048_aggregate_stats') || '{}'),
+                    leaderboard: JSON.parse(localStorage.getItem('fancy2048_leaderboard') || '[]')
+                };
+
+                const filename = `fancy2048-statistics-${Date.now()}.json`;
+                downloadFile(JSON.stringify(stats, null, 2), filename);
+                showStatus('<i class="fas fa-check"></i> Statistics exported successfully!', 'success');
+                updateDataStats();
+            } catch (error) {
+                showStatus(`<i class="fas fa-exclamation-triangle"></i> Error exporting statistics: ${error.message}`, 'error');
+            }
+        }
+
+        function exportAIData() {
+            try {
+                if (window.AILearningSystem) {
+                    const aiSystem = new AILearningSystem();
+                    if (aiSystem.exportLearningData) {
+                        aiSystem.exportLearningData();
+                        showStatus('<i class="fas fa-check"></i> AI learning data exported successfully!', 'success');
+                    } else {
+                        throw new Error('Export method not available');
+                    }
+                } else {
+                    // Fallback AI data export
+                    const aiData = JSON.parse(localStorage.getItem('fancy2048_ai_learning_data') || '{}');
+                    const filename = `fancy2048-ai-data-${Date.now()}.json`;
+                    downloadFile(JSON.stringify(aiData, null, 2), filename);
+                    showStatus('<i class="fas fa-check"></i> AI data exported successfully!', 'success');
+                }
+                updateDataStats();
+            } catch (error) {
+                showStatus(`<i class="fas fa-exclamation-triangle"></i> Error exporting AI data: ${error.message}`, 'error');
+            }
+        }
+
+        function exportSystemInfo() {
+            try {
+                const systemInfo = {
+                    timestamp: new Date().toISOString(),
+                    browser: {
+                        userAgent: navigator.userAgent,
+                        language: navigator.language,
+                        platform: navigator.platform,
+                        cookieEnabled: navigator.cookieEnabled,
+                        onLine: navigator.onLine
+                    },
+                    screen: {
+                        width: screen.width,
+                        height: screen.height,
+                        colorDepth: screen.colorDepth
+                    },
+                    features: {
+                        localStorage: typeof Storage !== 'undefined',
+                        serviceWorker: 'serviceWorker' in navigator,
+                        webGL: !!window.WebGLRenderingContext,
+                        indexedDB: 'indexedDB' in window
+                    }
+                };
+
+                if ('memory' in performance) {
+                    systemInfo.memory = {
+                        used: Math.round(performance.memory.usedJSHeapSize / 1024 / 1024) + 'MB',
+                        total: Math.round(performance.memory.totalJSHeapSize / 1024 / 1024) + 'MB',
+                        limit: Math.round(performance.memory.jsHeapSizeLimit / 1024 / 1024) + 'MB'
+                    };
+                }
+
+                const filename = `fancy2048-system-info-${Date.now()}.json`;
+                downloadFile(JSON.stringify(systemInfo, null, 2), filename);
+                showStatus('<i class="fas fa-check"></i> System information exported successfully!', 'success');
+            } catch (error) {
+                showStatus(`<i class="fas fa-exclamation-triangle"></i> Error exporting system info: ${error.message}`, 'error');
+            }
+        }
+
+        function exportCompleteBackup() {
+            try {
+                const completeBackup = {
+                    timestamp: new Date().toISOString(),
+                    version: '1.0.0',
+                    statistics: {},
+                    aiLearning: {},
+                    settings: {},
+                    logs: {},
+                    systemInfo: {}
+                };
+
+                // Collect all data
+                try { completeBackup.statistics = JSON.parse(localStorage.getItem('fancy2048_human_games') || '[]'); } catch(e) {}
+                try { completeBackup.aiLearning = JSON.parse(localStorage.getItem('fancy2048_ai_learning_data') || '{}'); } catch(e) {}
+                try { 
+                    completeBackup.settings = {
+                        theme: localStorage.getItem('fancy2048_theme'),
+                        bestScore: localStorage.getItem('fancy2048_best_score'),
+                        difficulty: localStorage.getItem('fancy2048_ai_difficulty')
+                    };
+                } catch(e) {}
+
+                if (window.gameLogger && window.gameLogger.logHistory) {
+                    completeBackup.logs = window.gameLogger.logHistory;
+                }
+
+                const filename = `fancy2048-complete-backup-${Date.now()}.json`;
+                downloadFile(JSON.stringify(completeBackup, null, 2), filename);
+                showStatus('<i class="fas fa-check"></i> Complete backup exported successfully!', 'success');
+                updateDataStats();
+            } catch (error) {
+                showStatus(`<i class="fas fa-exclamation-triangle"></i> Error creating complete backup: ${error.message}`, 'error');
+            }
+        }
+
+        function collectBasicLogs() {
+            const logs = {
+                timestamp: new Date().toISOString(),
+                localStorage: {},
+                errors: []
+            };
+
+            // Collect localStorage data
+            for (let key in localStorage) {
+                if (key.startsWith('fancy2048')) {
+                    try {
+                        logs.localStorage[key] = JSON.parse(localStorage.getItem(key));
+                    } catch (e) {
+                        logs.localStorage[key] = localStorage.getItem(key);
+                    }
+                }
+            }
+
+            return logs;
+        }
+
+        function viewLiveLogs() {
+            const section = document.getElementById('live-logs-section');
+            section.style.display = section.style.display === 'none' ? 'block' : 'none';
+        }
+
+        function setupLogInterception() {
+            // Store original console methods
+            originalConsoleLog = console.log;
+            originalConsoleWarn = console.warn;
+            originalConsoleError = console.error;
+        }
+
+        function toggleLogMonitoring() {
+            const btn = document.getElementById('log-monitor-btn');
+            const logsDiv = document.getElementById('live-logs');
+
+            if (!logMonitoring) {
+                logMonitoring = true;
+                btn.textContent = 'Stop Monitoring';
+                btn.style.background = '#ff6b6b';
+                
+                logsDiv.innerHTML = '<div style="color: #4CAF50; margin-bottom: 10px;">🟢 Log monitoring started...</div>';
+
+                // Intercept console methods
+                console.log = (...args) => {
+                    originalConsoleLog.apply(console, args);
+                    appendLogToViewer('LOG', args.join(' '), '#4CAF50');
+                };
+
+                console.warn = (...args) => {
+                    originalConsoleWarn.apply(console, args);
+                    appendLogToViewer('WARN', args.join(' '), '#ff9800');
+                };
+
+                console.error = (...args) => {
+                    originalConsoleError.apply(console, args);
+                    appendLogToViewer('ERROR', args.join(' '), '#f44336');
+                };
+
+            } else {
+                logMonitoring = false;
+                btn.textContent = 'Start Monitoring';
+                btn.style.background = 'linear-gradient(45deg, #ffcc00, #ff9900)';
+
+                // Restore original console methods
+                console.log = originalConsoleLog;
+                console.warn = originalConsoleWarn;
+                console.error = originalConsoleError;
+
+                appendLogToViewer('SYSTEM', 'Log monitoring stopped', '#666');
+            }
+        }
+
+        function appendLogToViewer(type, message, color) {
+            const logsDiv = document.getElementById('live-logs');
+            const timestamp = new Date().toLocaleTimeString();
+            
+            const logEntry = document.createElement('div');
+            logEntry.style.marginBottom = '5px';
+            logEntry.style.borderLeft = `3px solid ${color}`;
+            logEntry.style.paddingLeft = '10px';
+            logEntry.innerHTML = `
+                <span style="color: ${color}; font-weight: bold;">[${type}]</span>
+                <span style="color: #999; font-size: 0.8em;">${timestamp}</span>
+                <br>
+                <span>${message}</span>
+            `;
+            
+            logsDiv.appendChild(logEntry);
+            logsDiv.scrollTop = logsDiv.scrollHeight;
+
+            // Limit to 100 entries
+            while (logsDiv.children.length > 100) {
+                logsDiv.removeChild(logsDiv.firstChild);
+            }
+        }
+
+        function clearLogViewer() {
+            const logsDiv = document.getElementById('live-logs');
+            logsDiv.innerHTML = '<div style="text-align: center; opacity: 0.5; padding: 20px;">Log viewer cleared</div>';
+        }
+    </script>
+</body>
+</html>

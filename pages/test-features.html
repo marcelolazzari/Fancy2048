@@ -88,6 +88,16 @@
             <div id="mobile-results"></div>
         </div>
 
+        <div class="test-section">
+            <h2>🗂️ Log & Debug Export</h2>
+            <button onclick="exportGameLogs()">📋 Export Game Logs</button>
+            <button onclick="exportAILearningData()">🧠 Export AI Learning Data</button>
+            <button onclick="exportAllGameData()">📊 Export All Statistics</button>
+            <button onclick="exportSystemInfo()">⚙️ Export System Info</button>
+            <button onclick="clearAllLogs()">🗑️ Clear All Logs</button>
+            <div id="export-results"></div>
+        </div>
+
         <div id="overall-results"></div>
     </main>
 
@@ -393,6 +403,292 @@
                 logResult(container, 'Responsive CSS', 'pass', 'CSS media queries detected for responsive design');
             } else {
                 logResult(container, 'Responsive CSS', 'warning', 'Media queries not detected');
+            }
+        }
+
+        // Export and logging functions
+        function exportGameLogs() {
+            const container = 'export-results';
+            
+            try {
+                if (window.gameLogger && window.gameLogger.exportLogs) {
+                    window.gameLogger.exportLogs();
+                    logResult(container, 'Game Logs Export', 'pass', 'Game logs exported successfully', 
+                        'Downloaded JSON file with error logs, performance metrics, and debug information');
+                } else if (window.logGame && window.logGame.exportLogs) {
+                    window.logGame.exportLogs();
+                    logResult(container, 'Game Logs Export', 'pass', 'Game logs exported via logGame interface');
+                } else {
+                    logResult(container, 'Game Logs Export', 'warning', 'Logger not found - creating basic export');
+                    exportBasicLogs();
+                }
+            } catch (error) {
+                logResult(container, 'Game Logs Export', 'fail', 'Error exporting logs', error.message);
+            }
+        }
+
+        function exportAILearningData() {
+            const container = 'export-results';
+            
+            try {
+                if (typeof AILearningSystem !== 'undefined') {
+                    const learningSystem = new AILearningSystem();
+                    if (learningSystem.exportLearningData) {
+                        learningSystem.exportLearningData();
+                        logResult(container, 'AI Learning Export', 'pass', 'AI learning data exported successfully',
+                            'Downloaded .2048brain file with learned patterns and strategies');
+                    } else {
+                        logResult(container, 'AI Learning Export', 'warning', 'Export method not found in AI system');
+                    }
+                } else {
+                    logResult(container, 'AI Learning Export', 'fail', 'AI Learning System not available');
+                }
+            } catch (error) {
+                logResult(container, 'AI Learning Export', 'fail', 'Error exporting AI data', error.message);
+            }
+        }
+
+        function exportAllGameData() {
+            const container = 'export-results';
+            
+            try {
+                // Collect all game data
+                const allData = {
+                    timestamp: new Date().toISOString(),
+                    gameVersion: '1.0.0',
+                    statistics: {},
+                    leaderboard: [],
+                    gameStates: [],
+                    aiLearning: {},
+                    userPreferences: {}
+                };
+
+                // Collect statistics
+                try {
+                    allData.statistics.humanGames = JSON.parse(localStorage.getItem('fancy2048_human_games') || '[]');
+                    allData.statistics.aiGames = JSON.parse(localStorage.getItem('fancy2048_ai_games') || '[]');
+                    allData.statistics.mixedGames = JSON.parse(localStorage.getItem('fancy2048_mixed_games') || '[]');
+                    allData.statistics.aggregate = JSON.parse(localStorage.getItem('fancy2048_aggregate_stats') || '{}');
+                } catch (e) {
+                    allData.statistics.error = 'Failed to collect statistics: ' + e.message;
+                }
+
+                // Collect leaderboard
+                try {
+                    allData.leaderboard = JSON.parse(localStorage.getItem('fancy2048_leaderboard') || '[]');
+                } catch (e) {
+                    allData.leaderboard.error = 'Failed to collect leaderboard: ' + e.message;
+                }
+
+                // Collect AI learning data
+                try {
+                    allData.aiLearning = JSON.parse(localStorage.getItem('fancy2048_ai_learning_data') || '{}');
+                } catch (e) {
+                    allData.aiLearning.error = 'Failed to collect AI learning data: ' + e.message;
+                }
+
+                // Collect user preferences
+                try {
+                    allData.userPreferences = {
+                        theme: localStorage.getItem('fancy2048_theme'),
+                        bestScore: localStorage.getItem('fancy2048_best_score'),
+                        boardSize: localStorage.getItem('fancy2048_board_size'),
+                        aiDifficulty: localStorage.getItem('fancy2048_ai_difficulty'),
+                        debugMode: localStorage.getItem('fancy2048_debug')
+                    };
+                } catch (e) {
+                    allData.userPreferences.error = 'Failed to collect preferences: ' + e.message;
+                }
+
+                // Export the data
+                const blob = new Blob([JSON.stringify(allData, null, 2)], { 
+                    type: 'application/json' 
+                });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `fancy2048-complete-export-${Date.now()}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                logResult(container, 'Complete Data Export', 'pass', 'All game data exported successfully',
+                    'Downloaded comprehensive JSON file with all statistics, settings, and AI data');
+
+            } catch (error) {
+                logResult(container, 'Complete Data Export', 'fail', 'Error exporting complete data', error.message);
+            }
+        }
+
+        function exportSystemInfo() {
+            const container = 'export-results';
+            
+            try {
+                const systemInfo = {
+                    timestamp: new Date().toISOString(),
+                    browser: {
+                        userAgent: navigator.userAgent,
+                        language: navigator.language,
+                        languages: navigator.languages,
+                        platform: navigator.platform,
+                        cookieEnabled: navigator.cookieEnabled,
+                        onLine: navigator.onLine,
+                        maxTouchPoints: navigator.maxTouchPoints || 0
+                    },
+                    screen: {
+                        width: screen.width,
+                        height: screen.height,
+                        availWidth: screen.availWidth,
+                        availHeight: screen.availHeight,
+                        colorDepth: screen.colorDepth,
+                        pixelDepth: screen.pixelDepth
+                    },
+                    viewport: {
+                        width: window.innerWidth,
+                        height: window.innerHeight,
+                        devicePixelRatio: window.devicePixelRatio || 1
+                    },
+                    features: {
+                        localStorage: typeof Storage !== 'undefined',
+                        serviceWorker: 'serviceWorker' in navigator,
+                        webGL: !!window.WebGLRenderingContext,
+                        webGL2: !!window.WebGL2RenderingContext,
+                        webAssembly: typeof WebAssembly !== 'undefined',
+                        indexedDB: 'indexedDB' in window,
+                        webWorkers: typeof Worker !== 'undefined',
+                        notifications: 'Notification' in window,
+                        geolocation: 'geolocation' in navigator,
+                        touchEvents: 'ontouchstart' in window,
+                        pointerEvents: 'onpointerdown' in window
+                    },
+                    performance: {},
+                    memory: {}
+                };
+
+                // Performance information
+                if ('performance' in window) {
+                    systemInfo.performance = {
+                        timing: performance.timing ? {
+                            navigationStart: performance.timing.navigationStart,
+                            loadEventEnd: performance.timing.loadEventEnd,
+                            domContentLoadedEventEnd: performance.timing.domContentLoadedEventEnd
+                        } : null,
+                        navigation: performance.navigation ? {
+                            type: performance.navigation.type,
+                            redirectCount: performance.navigation.redirectCount
+                        } : null
+                    };
+                }
+
+                // Memory information (Chrome only)
+                if ('memory' in performance) {
+                    systemInfo.memory = {
+                        usedJSHeapSize: Math.round(performance.memory.usedJSHeapSize / 1024 / 1024) + 'MB',
+                        totalJSHeapSize: Math.round(performance.memory.totalJSHeapSize / 1024 / 1024) + 'MB',
+                        jsHeapSizeLimit: Math.round(performance.memory.jsHeapSizeLimit / 1024 / 1024) + 'MB'
+                    };
+                }
+
+                const blob = new Blob([JSON.stringify(systemInfo, null, 2)], { 
+                    type: 'application/json' 
+                });
+                const url = URL.createObjectURL(blob);
+                
+                const a = document.createElement('a');
+                a.href = url;
+                a.download = `fancy2048-system-info-${Date.now()}.json`;
+                document.body.appendChild(a);
+                a.click();
+                document.body.removeChild(a);
+                URL.revokeObjectURL(url);
+
+                logResult(container, 'System Info Export', 'pass', 'System information exported successfully',
+                    'Downloaded JSON file with browser, device, and performance information');
+
+            } catch (error) {
+                logResult(container, 'System Info Export', 'fail', 'Error exporting system info', error.message);
+            }
+        }
+
+        function exportBasicLogs() {
+            // Fallback log export when main logger isn't available
+            const logs = {
+                timestamp: new Date().toISOString(),
+                consoleHistory: [],
+                localStorage: {},
+                errors: [],
+                warnings: []
+            };
+
+            // Collect localStorage data
+            for (let i = 0; i < localStorage.length; i++) {
+                const key = localStorage.key(i);
+                if (key && key.startsWith('fancy2048')) {
+                    try {
+                        logs.localStorage[key] = JSON.parse(localStorage.getItem(key));
+                    } catch (e) {
+                        logs.localStorage[key] = localStorage.getItem(key);
+                    }
+                }
+            }
+
+            const blob = new Blob([JSON.stringify(logs, null, 2)], { 
+                type: 'application/json' 
+            });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `fancy2048-basic-logs-${Date.now()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        function clearAllLogs() {
+            const container = 'export-results';
+            
+            if (confirm('Are you sure you want to clear all logs and debug data? This action cannot be undone.')) {
+                try {
+                    let clearedCount = 0;
+
+                    // Clear logger data
+                    if (window.gameLogger && window.gameLogger.logHistory) {
+                        window.gameLogger.logHistory = [];
+                        window.gameLogger.performanceMetrics.clear();
+                        clearedCount++;
+                    }
+
+                    // Clear localStorage debug data
+                    const keysToRemove = [];
+                    for (let i = 0; i < localStorage.length; i++) {
+                        const key = localStorage.key(i);
+                        if (key && (key.includes('debug') || key.includes('log') || key.includes('error'))) {
+                            keysToRemove.push(key);
+                        }
+                    }
+                    
+                    keysToRemove.forEach(key => {
+                        localStorage.removeItem(key);
+                        clearedCount++;
+                    });
+
+                    // Clear console (doesn't actually clear browser console, but we can note it)
+                    if (console.clear) {
+                        console.clear();
+                    }
+
+                    logResult(container, 'Clear Logs', 'pass', `Cleared ${clearedCount} log entries and debug data`,
+                        'Removed log history, performance metrics, and debug localStorage entries');
+
+                } catch (error) {
+                    logResult(container, 'Clear Logs', 'fail', 'Error clearing logs', error.message);
+                }
+            } else {
+                logResult(container, 'Clear Logs', 'warning', 'Log clearing cancelled by user');
             }
         }
 
