@@ -819,10 +819,60 @@ class Game {
       return this.enhancedAI.getBestMove();
     } else if (this.advancedAI) {
       return this.advancedAI.getBestMove();
+    } else if (this.aiLearningSystem) {
+      return this.aiLearningSystem.getBestMove(this.board);
     } else {
       console.warn('No AI available for move generation');
       return null;
     }
+  }
+
+  // Start AI auto-play
+  startAI() {
+    if (this.aiActive) return;
+    
+    this.aiActive = true;
+    this.aiSpeed = this.aiSpeed || 500; // Default 500ms between moves
+    
+    const makeAIMove = () => {
+      if (!this.aiActive || this.gameState === 'gameOver') {
+        this.stopAI();
+        return;
+      }
+      
+      const move = this.getAIMove();
+      if (move && this.canMove(move)) {
+        this.move(move);
+        setTimeout(makeAIMove, this.aiSpeed);
+      } else {
+        this.stopAI();
+        console.log('AI stopped - no valid moves');
+      }
+    };
+    
+    setTimeout(makeAIMove, this.aiSpeed);
+    console.log('AI started with speed:', this.aiSpeed);
+  }
+
+  // Stop AI auto-play
+  stopAI() {
+    this.aiActive = false;
+    console.log('AI stopped');
+  }
+
+  // Make a single AI move
+  aiMove() {
+    const move = this.getAIMove();
+    if (move && this.canMove(move)) {
+      this.move(move);
+      return true;
+    }
+    return false;
+  }
+
+  // Set AI speed (ms between moves)
+  setAISpeed(speed) {
+    this.aiSpeed = Math.max(50, speed);
   }
 
   // Storage functions

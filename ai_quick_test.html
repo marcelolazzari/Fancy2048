@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>AI Quick Test</title>
+</head>
+<body>
+    <div id="test-results"></div>
+    
+    <!-- Load AI scripts -->
+    <script src="scripts/ai_learning_system.js"></script>
+    <script src="scripts/enhanced_ai.js"></script>
+    <script src="scripts/advanced_ai_solver.js"></script>
+    <script src="scripts/game.js"></script>
+
+    <script>
+        const results = document.getElementById('test-results');
+        
+        function logResult(test, success, message) {
+            const div = document.createElement('div');
+            div.style.color = success ? 'green' : 'red';
+            div.textContent = `${test}: ${success ? '✅' : '❌'} ${message}`;
+            results.appendChild(div);
+            
+            // Also send to console
+            console.log(`${test}: ${success ? 'PASS' : 'FAIL'} - ${message}`);
+        }
+        
+        // Wait for scripts to load
+        setTimeout(() => {
+            // Test 1: Check if classes exist
+            logResult('Enhanced AI Class', typeof Enhanced2048AI === 'function', 
+                     typeof Enhanced2048AI === 'function' ? 'Class loaded' : 'Class not found');
+            
+            logResult('Advanced AI Class', typeof AdvancedAI2048Solver === 'function',
+                     typeof AdvancedAI2048Solver === 'function' ? 'Class loaded' : 'Class not found');
+            
+            logResult('Learning System Class', typeof AILearningSystem === 'function',
+                     typeof AILearningSystem === 'function' ? 'Class loaded' : 'Class not found');
+            
+            // Test 2: Try to instantiate (with mock game object)
+            const mockGame = { board: [[0,0,0,0],[0,0,0,0],[0,0,0,0],[0,0,0,0]], score: 0 };
+            
+            try {
+                if (typeof Enhanced2048AI === 'function') {
+                    const enhancedAI = new Enhanced2048AI(mockGame);
+                    const move = enhancedAI.getBestMove();
+                    logResult('Enhanced AI Function', move !== undefined, 
+                             `getBestMove returned: ${move}`);
+                } else {
+                    logResult('Enhanced AI Function', false, 'Class not available');
+                }
+            } catch (error) {
+                logResult('Enhanced AI Function', false, `Error: ${error.message}`);
+            }
+            
+            try {
+                if (typeof AdvancedAI2048Solver === 'function') {
+                    const advancedAI = new AdvancedAI2048Solver(mockGame);
+                    const move = advancedAI.getBestMove();
+                    logResult('Advanced AI Function', move !== undefined,
+                             `getBestMove returned: ${move}`);
+                } else {
+                    logResult('Advanced AI Function', false, 'Class not available');
+                }
+            } catch (error) {
+                logResult('Advanced AI Function', false, `Error: ${error.message}`);
+            }
+            
+            try {
+                if (typeof AILearningSystem === 'function') {
+                    const learningAI = new AILearningSystem();
+                    learningAI.recordMove(mockGame.board, 'right', mockGame.board, 0);
+                    logResult('Learning System Function', true, 'recordMove works');
+                } else {
+                    logResult('Learning System Function', false, 'Class not available');
+                }
+            } catch (error) {
+                logResult('Learning System Function', false, `Error: ${error.message}`);
+            }
+            
+            // Send results to parent window if available
+            const testData = {
+                timestamp: new Date().toISOString(),
+                results: Array.from(results.children).map(div => div.textContent)
+            };
+            
+            if (window.parent !== window) {
+                window.parent.postMessage(testData, '*');
+            }
+            
+        }, 1000);
+    </script>
+</body>
+</html>

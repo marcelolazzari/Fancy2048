@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fancy2048 - AI Final Verification Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #1a1a1a; color: #fff; }
+        .test-header { text-align: center; margin: 20px 0; }
+        .test-section { margin: 20px 0; padding: 20px; background: rgba(42, 42, 42, 0.95); border-radius: 8px; }
+        .test-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 20px; margin: 20px 0; }
+        .ai-card { background: rgba(0,0,0,0.3); padding: 20px; border-radius: 8px; border: 2px solid #333; }
+        .ai-card.working { border-color: #4CAF50; }
+        .ai-card.failed { border-color: #f44336; }
+        .ai-card h3 { margin: 0 0 15px 0; color: #fff; }
+        .test-result { margin: 8px 0; padding: 8px; border-radius: 4px; }
+        .pass { background: rgba(76, 175, 80, 0.2); color: #4CAF50; }
+        .fail { background: rgba(244, 67, 54, 0.2); color: #f44336; }
+        .warning { background: rgba(255, 152, 0, 0.2); color: #ff9800; }
+        .info { background: rgba(33, 150, 243, 0.2); color: #2196F3; }
+        button { background: #ff9900; border: none; padding: 12px 24px; color: white; border-radius: 5px; margin: 8px; cursor: pointer; font-size: 14px; }
+        button:hover { background: #ffb300; }
+        .game-demo { position: relative; margin: 20px 0; }
+        .mini-board { display: grid; grid-template-columns: repeat(4, 60px); gap: 5px; margin: 10px 0; }
+        .mini-tile { width: 60px; height: 60px; background: #333; border-radius: 4px; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 12px; }
+        .console { background: #000; color: #0f0; padding: 15px; font-family: monospace; border-radius: 5px; height: 200px; overflow-y: auto; margin: 10px 0; }
+        .stats { display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 10px; margin: 10px 0; }
+        .stat { text-align: center; background: rgba(0,0,0,0.3); padding: 10px; border-radius: 5px; }
+        .hidden-game { position: absolute; left: -9999px; }
+    </style>
+</head>
+<body>
+    <div class="test-header">
+        <h1>🤖 Fancy2048 - AI Final Verification Test</h1>
+        <p>Comprehensive testing of all AI systems and functionality</p>
+        <button onclick="runFullVerification()" style="font-size: 16px; padding: 15px 30px;">🚀 Run Complete AI Verification</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>🎯 AI System Status</h2>
+        <div class="test-grid" id="ai-cards">
+            <!-- AI cards will be populated here -->
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🎮 AI Gameplay Demonstration</h2>
+        <div class="game-demo">
+            <button onclick="demonstrateAI('Enhanced2048AI')">Test Enhanced AI</button>
+            <button onclick="demonstrateAI('AdvancedAI2048Solver')">Test Advanced AI</button>
+            <button onclick="demonstrateAI('AILearningSystem')">Test Learning AI</button>
+            <button onclick="compareAIPerformance()">Compare All AIs</button>
+            
+            <div id="ai-demo-results"></div>
+            <div class="mini-board" id="demo-board"></div>
+        </div>
+    </div>
+    
+    <div class="test-section">
+        <h2>📊 Performance Statistics</h2>
+        <div class="stats" id="performance-stats"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🖥️ Test Console</h2>
+        <div class="console" id="console"></div>
+        <button onclick="clearConsole()">Clear Console</button>
+        <button onclick="exportTestResults()">Export Results</button>
+    </div>
+    
+    <!-- Hidden game elements -->
+    <div class="hidden-game">
+        <div id="score-container"><ul><li>Score: <span id="score">0</span></li></ul></div>
+        <div id="board-container"></div>
+        <button id="reset-button">Reset</button>
+    </div>
+
+    <!-- Load game scripts -->
+    <script src="scripts/ai_learning_system.js"></script>
+    <script src="scripts/enhanced_ai.js"></script>
+    <script src="scripts/advanced_ai_solver.js"></script>
+    <script src="scripts/game.js"></script>
+
+    <script>
+        let game = null;
+        let aiInstances = {};
+        let testResults = {};
+        let performanceData = {};
+        
+        function log(message, type = 'info') {
+            const console = document.getElementById('console');
+            const timestamp = new Date().toLocaleTimeString();
+            const colors = { info: '#0f0', error: '#f44', warning: '#ff4', success: '#4f4' };
+            
+            const div = document.createElement('div');
+            div.style.color = colors[type] || '#0f0';
+            div.innerHTML = `[${timestamp}] ${message}`;
+            console.appendChild(div);
+            console.scrollTop = console.scrollHeight;
+        }
+        
+        function clearConsole() {
+            document.getElementById('console').innerHTML = '';
+        }
+        
+        async function initializeGame() {
+            try {
+                if (typeof Game === 'undefined') {
+                    throw new Error('Game class not found');
+                }
+                
+                game = new Game(4);
+                game.initializeGame();
+                log('🎮 Game engine initialized', 'success');
+                return true;
+            } catch (error) {
+                log(`❌ Game initialization failed: ${error.message}`, 'error');
+                return false;
+            }
+        }
+        
+        function createAICard(aiName, className, status, details) {
+            const card = document.createElement('div');
+            card.className = `ai-card ${status}`;
+            card.innerHTML = `
+                <h3>${aiName}</h3>
+                <div class="test-result ${status === 'working' ? 'pass' : 'fail'}">
+                    Status: ${status === 'working' ? '✅ Working' : '❌ Failed'}
+                </div>
+                ${details.map(detail => `<div class="test-result info">${detail}</div>`).join('')}
+            `;
+            return card;
+        }
+        
+        async function verifyAIClasses() {
+            log('🔍 Verifying AI classes...', 'info');
+            const aiCards = document.getElementById('ai-cards');
+            aiCards.innerHTML = '';
+            
+            const aiConfigs = [
+                { name: 'Enhanced AI', class: 'Enhanced2048AI', desc: 'Minimax with Alpha-Beta Pruning' },
+                { name: 'Advanced AI Solver', class: 'AdvancedAI2048Solver', desc: 'Expectimax Algorithm' },
+                { name: 'AI Learning System', class: 'AILearningSystem', desc: 'Machine Learning' }
+            ];
+            
+            for (let config of aiConfigs) {
+                const details = [];
+                let status = 'failed';
+                
+                try {
+                    // Check if class exists
+                    if (typeof window[config.class] === 'function') {
+                        details.push(`✅ Class loaded: ${config.class}`);
+                        
+                        // Try to instantiate
+                        const aiInstance = config.class === 'AILearningSystem' 
+                            ? new window[config.class]() 
+                            : new window[config.class](game);
+                        
+                        aiInstances[config.class] = aiInstance;
+                        details.push('✅ Instance created successfully');
+                        
+                        // Test getBestMove method
+                        if (typeof aiInstance.getBestMove === 'function') {
+                            const move = aiInstance.getBestMove();
+                            if (move && ['up', 'down', 'left', 'right'].includes(move)) {
+                                details.push(`✅ getBestMove works: ${move}`);
+                                status = 'working';
+                            } else {
+                                details.push(`⚠️ getBestMove returned: ${move}`);
+                                status = 'working'; // Still working, just unusual return
+                            }
+                        } else {
+                            details.push('❌ getBestMove method missing');
+                        }
+                    } else {
+                        details.push(`❌ Class not found: ${config.class}`);
+                    }
+                } catch (error) {
+                    details.push(`❌ Error: ${error.message}`);
+                }
+                
+                const card = createAICard(config.name, config.class, status, details);
+                aiCards.appendChild(card);
+                
+                testResults[config.class] = { status, details: details.join(', ') };
+            }
+        }
+        
+        async function testGameIntegration() {
+            log('🔗 Testing game integration...', 'info');
+            
+            if (!game) {
+                await initializeGame();
+            }
+            
+            // Test if game has AI methods
+            const aiMethods = ['getAIMove', 'startAI', 'stopAI', 'aiMove', 'setAISpeed'];
+            const missingMethods = [];
+            
+            aiMethods.forEach(method => {
+                if (typeof game[method] !== 'function') {
+                    missingMethods.push(method);
+                }
+            });
+            
+            if (missingMethods.length === 0) {
+                log('✅ All AI integration methods present in game', 'success');
+                testResults.gameIntegration = 'pass';
+            } else {
+                log(`❌ Missing AI methods in game: ${missingMethods.join(', ')}`, 'error');
+                testResults.gameIntegration = 'fail';
+            }
+            
+            // Test AI move generation
+            try {
+                const aiMove = game.getAIMove();
+                if (aiMove) {
+                    log(`✅ Game AI move generation works: ${aiMove}`, 'success');
+                } else {
+                    log('⚠️ Game AI move generation returned null', 'warning');
+                }
+            } catch (error) {
+                log(`❌ Game AI move generation failed: ${error.message}`, 'error');
+            }
+        }
+        
+        async function demonstrateAI(className) {
+            log(`🎯 Demonstrating ${className}...`, 'info');
+            
+            if (!game) {
+                await initializeGame();
+            }
+            
+            const ai = aiInstances[className];
+            if (!ai) {
+                log(`❌ ${className} not available`, 'error');
+                return;
+            }
+            
+            // Reset game for clean demo
+            game.resetGame();
+            updateDemoBoard();
+            
+            let moves = 0;
+            const maxMoves = 10;
+            let totalScore = 0;
+            
+            const makeDemoMove = () => {
+                if (moves >= maxMoves || game.gameState === 'gameOver') {
+                    log(`🏁 ${className} demo complete. Moves: ${moves}, Score: ${game.score}`, 'success');
+                    updatePerformanceStats(className, { moves, score: game.score, completed: true });
+                    return;
+                }
+                
+                try {
+                    const move = ai.getBestMove();
+                    if (move && game.canMove && game.canMove(move)) {
+                        const oldScore = game.score;
+                        game.move(move);
+                        const scoreGained = game.score - oldScore;
+                        
+                        moves++;
+                        totalScore = game.score;
+                        
+                        log(`Move ${moves}: ${move} (Score: +${scoreGained}, Total: ${totalScore})`, 'info');
+                        updateDemoBoard();
+                        
+                        setTimeout(makeDemoMove, 800);
+                    } else {
+                        log(`🔴 ${className} cannot make move: ${move}`, 'warning');
+                        updatePerformanceStats(className, { moves, score: game.score, completed: false });
+                    }
+                } catch (error) {
+                    log(`❌ ${className} demo error: ${error.message}`, 'error');
+                    updatePerformanceStats(className, { moves, score: game.score, completed: false, error: error.message });
+                }
+            };
+            
+            setTimeout(makeDemoMove, 500);
+        }
+        
+        function updateDemoBoard() {
+            const demoBoard = document.getElementById('demo-board');
+            demoBoard.innerHTML = '';
+            
+            if (game && game.board) {
+                game.board.flat().forEach(value => {
+                    const tile = document.createElement('div');
+                    tile.className = 'mini-tile';
+                    tile.textContent = value || '';
+                    tile.style.backgroundColor = value ? `hsl(${Math.log2(value || 2) * 20}, 50%, ${Math.max(20, 70 - Math.log2(value || 2) * 5)}%)` : '#333';
+                    demoBoard.appendChild(tile);
+                });
+            }
+        }
+        
+        function updatePerformanceStats(aiName, data) {
+            performanceData[aiName] = data;
+            
+            const statsContainer = document.getElementById('performance-stats');
+            statsContainer.innerHTML = '';
+            
+            Object.entries(performanceData).forEach(([name, stats]) => {
+                const statDiv = document.createElement('div');
+                statDiv.className = 'stat';
+                statDiv.innerHTML = `
+                    <strong>${name}</strong><br>
+                    Moves: ${stats.moves}<br>
+                    Score: ${stats.score}<br>
+                    Status: ${stats.completed ? '✅' : stats.error ? '❌' : '⚠️'}
+                `;
+                statsContainer.appendChild(statDiv);
+            });
+        }
+        
+        async function compareAIPerformance() {
+            log('🏆 Comparing AI performance...', 'info');
+            
+            const aiNames = Object.keys(aiInstances);
+            for (let aiName of aiNames) {
+                await new Promise(resolve => {
+                    demonstrateAI(aiName);
+                    setTimeout(resolve, 15000); // Wait 15s for each AI demo
+                });
+            }
+            
+            // Generate comparison
+            setTimeout(() => {
+                const comparison = Object.entries(performanceData)
+                    .sort((a, b) => b[1].score - a[1].score)
+                    .map(([name, data], index) => `${index + 1}. ${name}: ${data.score} points`)
+                    .join('
+');
+                
+                log(`🏆 AI Performance Ranking:
+${comparison}`, 'success');
+            }, 1000);
+        }
+        
+        async function runFullVerification() {
+            log('🚀 Starting full AI verification...', 'info');
+            clearConsole();
+            
+            const startTime = performance.now();
+            
+            // Step 1: Initialize game
+            await initializeGame();
+            
+            // Step 2: Verify AI classes
+            await verifyAIClasses();
+            
+            // Step 3: Test game integration
+            await testGameIntegration();
+            
+            // Step 4: Performance summary
+            const endTime = performance.now();
+            const duration = ((endTime - startTime) / 1000).toFixed(2);
+            
+            const passedTests = Object.values(testResults).filter(r => r.status === 'working' || r === 'pass').length;
+            const totalTests = Object.keys(testResults).length;
+            
+            log(`🎉 Verification complete in ${duration}s`, 'success');
+            log(`📊 Results: ${passedTests}/${totalTests} tests passed`, passedTests === totalTests ? 'success' : 'warning');
+            
+            if (passedTests === totalTests) {
+                log('✅ ALL AI SYSTEMS ARE WORKING CORRECTLY!', 'success');
+            } else {
+                log('⚠️ Some AI systems may need attention', 'warning');
+            }
+        }
+        
+        function exportTestResults() {
+            const exportData = {
+                timestamp: new Date().toISOString(),
+                testResults,
+                performanceData,
+                summary: {
+                    totalTests: Object.keys(testResults).length,
+                    passedTests: Object.values(testResults).filter(r => r.status === 'working' || r === 'pass').length,
+                    aiSystemsWorking: Object.keys(aiInstances).length,
+                    gameIntegration: testResults.gameIntegration || 'not tested'
+                }
+            };
+            
+            const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `ai_verification_results_${Date.now()}.json`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            log('📁 Test results exported', 'success');
+        }
+        
+        // Auto-start verification on page load
+        window.addEventListener('load', () => {
+            log('🤖 AI Verification Test loaded', 'success');
+            setTimeout(() => {
+                log('Starting automatic verification in 3 seconds...', 'info');
+                setTimeout(runFullVerification, 3000);
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

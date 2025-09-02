@@ -528,6 +528,37 @@ class AILearningSystem {
     this.learningData = this.loadLearningData();
     console.log('🔄 Learning data cleared');
   }
+
+  /**
+   * Get best move recommendation based on learned patterns
+   * This is the main AI method used by the game
+   */
+  getBestMove(boardState = null, possibleMoves = ['up', 'down', 'left', 'right']) {
+    try {
+      // If we have a learned recommendation, use it
+      if (boardState) {
+        const learnedMove = this.getLearnedMoveRecommendation(boardState, possibleMoves);
+        if (learnedMove) {
+          return learnedMove;
+        }
+      }
+
+      // Fallback: return best move based on learning statistics
+      const topStrategies = this.getTopStrategies();
+      if (topStrategies.length > 0) {
+        const bestStrategy = topStrategies[0];
+        if (possibleMoves.includes(bestStrategy.move)) {
+          return bestStrategy.move;
+        }
+      }
+
+      // Final fallback: return first possible move
+      return possibleMoves[0] || 'right';
+    } catch (error) {
+      console.warn('Learning AI getBestMove failed:', error);
+      return 'right';
+    }
+  }
 }
 
 // Export for use in other modules
