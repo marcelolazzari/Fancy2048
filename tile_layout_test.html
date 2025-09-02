@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tile Layout Test - Fancy2048</title>
+    <link rel="stylesheet" href="styles/main.css">
+    <style>
+        body {
+            background: #1a1a1a;
+            color: #fff;
+            padding: 20px;
+            font-family: Arial, sans-serif;
+        }
+        .test-container {
+            max-width: 600px;
+            margin: 0 auto;
+            text-align: center;
+        }
+        .status {
+            margin: 20px 0;
+            padding: 10px;
+            border-radius: 5px;
+            background: rgba(42, 42, 42, 0.9);
+        }
+        .debug-info {
+            background: rgba(0, 100, 200, 0.1);
+            border: 1px solid rgba(0, 100, 200, 0.3);
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+            text-align: left;
+            font-family: monospace;
+            font-size: 12px;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <h1>🧪 Tile Layout Test</h1>
+        <p>Testing the fixed tile positioning for Fancy2048</p>
+        
+        <div class="status" id="status">Initializing...</div>
+        
+        <div id="score-container">
+            <ul>
+                <li>Score: <span id="score">0</span></li>
+                <li>Best: <span id="best-score">0</span></li>
+                <li>Moves: <span id="moves">0</span></li>
+                <li>Time: <span id="time">00:00</span></li>
+            </ul>
+        </div>
+
+        <div id="board-container"></div>
+        
+        <div class="debug-info" id="debug-info">
+            <strong>Debug Info:</strong><br>
+            Board Size: <span id="debug-size">-</span><br>
+            Grid Cells: <span id="debug-cells">-</span><br>
+            Tiles Created: <span id="debug-tiles">-</span><br>
+            Layout Method: Grid cells with absolute positioned tiles
+        </div>
+        
+        <button onclick="testTileLayout()">🎮 Test Tile Layout</button>
+        <button onclick="testMovement()">🔄 Test Movement</button>
+        <button onclick="clearTest()">🗑️ Clear</button>
+    </div>
+
+    <script src="scripts/ai_learning_system.js"></script>
+    <script src="scripts/enhanced_ai.js"></script>
+    <script src="scripts/advanced_ai_solver.js"></script>
+    <script src="scripts/game.js"></script>
+
+    <script>
+        let testGame = null;
+        
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+        }
+        
+        function updateDebugInfo() {
+            if (testGame) {
+                document.getElementById('debug-size').textContent = `${testGame.size}x${testGame.size}`;
+                
+                const boardContainer = document.getElementById('board-container');
+                const gridCells = boardContainer?.children?.length || 0;
+                document.getElementById('debug-cells').textContent = gridCells;
+                
+                const tiles = document.querySelectorAll('.tile').length;
+                document.getElementById('debug-tiles').textContent = tiles;
+            }
+        }
+        
+        async function initializeTest() {
+            try {
+                updateStatus('Creating game instance...');
+                
+                // Create game instance
+                testGame = new Game(4);
+                
+                if (testGame) {
+                    updateStatus('✅ Game initialized successfully!');
+                    updateDebugInfo();
+                } else {
+                    updateStatus('❌ Failed to create game instance');
+                }
+                
+            } catch (error) {
+                updateStatus(`❌ Initialization failed: ${error.message}`);
+                console.error('Test initialization failed:', error);
+            }
+        }
+        
+        function testTileLayout() {
+            if (!testGame) {
+                updateStatus('❌ Game not initialized');
+                return;
+            }
+            
+            try {
+                updateStatus('Testing tile layout...');
+                
+                // Clear board first
+                testGame.board = testGame.createEmptyBoard();
+                
+                // Add some test tiles manually
+                testGame.board[0][0] = 2;
+                testGame.board[0][1] = 4;
+                testGame.board[1][0] = 8;
+                testGame.board[1][1] = 16;
+                testGame.board[2][2] = 32;
+                testGame.board[3][3] = 64;
+                
+                // Update display
+                testGame.updateBoardDisplay();
+                testGame.updateScoreDisplay();
+                
+                updateStatus('✅ Test tiles placed - check if they appear in correct positions');
+                updateDebugInfo();
+                
+            } catch (error) {
+                updateStatus(`❌ Test failed: ${error.message}`);
+                console.error('Test failed:', error);
+            }
+        }
+        
+        function testMovement() {
+            if (!testGame) {
+                updateStatus('❌ Game not initialized');
+                return;
+            }
+            
+            try {
+                updateStatus('Testing movement...');
+                
+                // Try a move
+                const moved = testGame.move('left');
+                
+                if (moved) {
+                    updateStatus('✅ Movement test successful');
+                } else {
+                    updateStatus('⚠️ No movement occurred (this might be normal)');
+                }
+                
+                updateDebugInfo();
+                
+            } catch (error) {
+                updateStatus(`❌ Movement test failed: ${error.message}`);
+                console.error('Movement test failed:', error);
+            }
+        }
+        
+        function clearTest() {
+            if (testGame) {
+                testGame.board = testGame.createEmptyBoard();
+                testGame.updateBoardDisplay();
+                updateStatus('🗑️ Board cleared');
+                updateDebugInfo();
+            }
+        }
+        
+        // Initialize when page loads
+        window.addEventListener('load', () => {
+            setTimeout(initializeTest, 1000);
+        });
+    </script>
+</body>
+</html>

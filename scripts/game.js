@@ -297,7 +297,7 @@ class Game {
         return;
       }
 
-      // Clear existing tiles
+      // Clear existing tiles from all grid cells
       const tiles = boardContainer.querySelectorAll('.tile');
       tiles.forEach(tile => tile.remove());
 
@@ -308,7 +308,7 @@ class Game {
           if (value !== 0) {
             try {
               const tileElement = this.createTileElement(row, col, value);
-              boardContainer.appendChild(tileElement);
+              // createTileElement already appends to the correct grid cell
             } catch (tileError) {
               console.warn(`⚠️ Failed to create tile at [${row},${col}]:`, tileError);
             }

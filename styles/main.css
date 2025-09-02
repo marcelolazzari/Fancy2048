@@ -659,10 +659,13 @@ main {
   justify-content: center;
   box-sizing: border-box;
   transition: background-color var(--hue-transition-duration) ease-in-out;
+  /* Ensure grid cells can contain positioned tiles */
+  overflow: hidden;
 }
 
 /* Tile Styles */
 .tile {
+  /* Position relative to fit within grid cell */
   position: absolute;
   top: 0;
   left: 0;
