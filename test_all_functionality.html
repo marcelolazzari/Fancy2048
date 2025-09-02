@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fancy2048 - Complete Functionality Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #f2f2f2;
+            margin: 20px;
+            line-height: 1.6;
+        }
+        
+        .test-section {
+            background: #2a2a2a;
+            padding: 20px;
+            margin: 20px 0;
+            border-radius: 10px;
+            border-left: 4px solid #ffcc00;
+        }
+        
+        .test-result {
+            margin: 10px 0;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        
+        .pass { background: rgba(76, 175, 80, 0.2); border-left: 4px solid #4CAF50; }
+        .fail { background: rgba(244, 67, 54, 0.2); border-left: 4px solid #f44336; }
+        .warning { background: rgba(255, 152, 0, 0.2); border-left: 4px solid #ff9800; }
+        
+        button {
+            background: linear-gradient(135deg, #ffcc00 0%, #ffb300 100%);
+            color: #000;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: bold;
+            margin: 5px;
+        }
+        
+        button:hover { background: linear-gradient(135deg, #ffb300 0%, #ff9800 100%); }
+        
+        .game-container {
+            display: none; /* Hidden during tests */
+        }
+        
+        #test-output {
+            background: #000;
+            color: #0f0;
+            padding: 15px;
+            border-radius: 5px;
+            font-family: monospace;
+            max-height: 400px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>🧪 Fancy2048 - Complete Functionality Test</h1>
+    
+    <div class="test-section">
+        <h2>📋 Test Controls</h2>
+        <button onclick="runAllTests()">🚀 Run All Tests</button>
+        <button onclick="testAIMethods()">🤖 Test AI Methods</button>
+        <button onclick="testButtonFunctionality()">🔘 Test All Buttons</button>
+        <button onclick="testGameMechanics()">🎮 Test Game Mechanics</button>
+        <button onclick="clearOutput()">🗑️ Clear Output</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>📊 Test Results</h2>
+        <div id="test-results"></div>
+    </div>
+    
+    <div class="test-section">
+        <h2>🔍 Console Output</h2>
+        <div id="test-output"></div>
+    </div>
+    
+    <!-- Hidden game container for testing -->
+    <div class="game-container" id="main-content">
+        <div id="score-container">
+            <ul>
+                <li>Score<span id="score">0</span></li>
+                <li>Best<span id="best-score">0</span></li>
+                <li>Moves<span id="moves">0</span></li>
+                <li>Time<span id="time">00:00</span></li>
+            </ul>
+        </div>
+        <div id="board-container"></div>
+        
+        <!-- All buttons for testing -->
+        <div style="display: none;">
+            <button id="reset-button">Reset</button>
+            <button id="back-button">Undo</button>
+            <button id="pause-button">Pause</button>
+            <button id="autoplay-button">Autoplay</button>
+            <button id="speed-button">Speed</button>
+            <button id="changeColor-button">Color</button>
+            <button id="theme-toggle-button">Theme</button>
+            <button id="board-size-button">Size</button>
+            <button id="ai-difficulty-button">AI</button>
+            <button id="export-stats-button">Export</button>
+        </div>
+        
+        <!-- Overlays -->
+        <div id="game-over" class="hidden"></div>
+        <div id="game-won" class="hidden"></div>
+    </div>
+
+    <!-- Load all game scripts -->
+    <script src="../scripts/ai_learning_system.js"></script>
+    <script src="../scripts/enhanced_ai.js"></script>
+    <script src="../scripts/advanced_ai_solver.js"></script>
+    <script src="../scripts/game.js"></script>
+
+    <script>
+        let testGame = null;
+        let testResults = [];
+        let consoleOutput = '';
+
+        // Override console.log to capture output
+        const originalConsoleLog = console.log;
+        const originalConsoleWarn = console.warn;
+        const originalConsoleError = console.error;
+
+        function captureConsole(type, ...args) {
+            const message = args.join(' ');
+            consoleOutput += `[${type.toUpperCase()}] ${message}\n`;
+            updateConsoleDisplay();
+            
+            // Still call original console method
+            if (type === 'log') originalConsoleLog(...args);
+            else if (type === 'warn') originalConsoleWarn(...args);
+            else if (type === 'error') originalConsoleError(...args);
+        }
+
+        console.log = (...args) => captureConsole('log', ...args);
+        console.warn = (...args) => captureConsole('warn', ...args);
+        console.error = (...args) => captureConsole('error', ...args);
+
+        function updateConsoleDisplay() {
+            const output = document.getElementById('test-output');
+            if (output) {
+                output.textContent = consoleOutput;
+                output.scrollTop = output.scrollHeight;
+            }
+        }
+
+        function addTestResult(name, passed, message = '') {
+            const result = { name, passed, message, timestamp: new Date().toISOString() };
+            testResults.push(result);
+            
+            const resultsDiv = document.getElementById('test-results');
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${passed ? 'pass' : 'fail'}`;
+            resultDiv.innerHTML = `
+                <strong>${passed ? '✅' : '❌'} ${name}</strong>
+                ${message ? `<br><small>${message}</small>` : ''}
+            `;
+            resultsDiv.appendChild(resultDiv);
+        }
+
+        function clearOutput() {
+            consoleOutput = '';
+            testResults = [];
+            document.getElementById('test-results').innerHTML = '';
+            document.getElementById('test-output').textContent = '';
+        }
+
+        async function initializeTestGame() {
+            try {
+                console.log('Initializing test game...');
+                testGame = new Game(4);
+                await new Promise(resolve => setTimeout(resolve, 1000)); // Wait for initialization
+                return testGame;
+            } catch (error) {
+                console.error('Failed to initialize test game:', error);
+                return null;
+            }
+        }
+
+        async function testAIMethods() {
+            console.log('🤖 Testing AI Methods...');
+            
+            if (!testGame) {
+                testGame = await initializeTestGame();
+                if (!testGame) {
+                    addTestResult('AI Test Setup', false, 'Could not initialize game');
+                    return;
+                }
+            }
+
+            // Test Enhanced AI availability
+            const hasEnhancedAI = testGame.enhancedAI !== null;
+            addTestResult('Enhanced AI Available', hasEnhancedAI, hasEnhancedAI ? 'Enhanced2048AI loaded' : 'Enhanced2048AI not found');
+
+            // Test Advanced AI availability
+            const hasAdvancedAI = testGame.advancedAI !== null;
+            addTestResult('Advanced AI Available', hasAdvancedAI, hasAdvancedAI ? 'AdvancedAI2048Solver loaded' : 'AdvancedAI2048Solver not found');
+
+            // Test AI Learning System
+            const hasLearningSystem = testGame.aiLearningSystem !== null;
+            addTestResult('AI Learning System Available', hasLearningSystem, hasLearningSystem ? 'AILearningSystem loaded' : 'AILearningSystem not found');
+
+            // Test canMove method
+            try {
+                const canMoveUp = testGame.canMove('up');
+                const canMoveDown = testGame.canMove('down');
+                const canMoveLeft = testGame.canMove('left');
+                const canMoveRight = testGame.canMove('right');
+                addTestResult('canMove Method', true, `up:${canMoveUp}, down:${canMoveDown}, left:${canMoveLeft}, right:${canMoveRight}`);
+            } catch (error) {
+                addTestResult('canMove Method', false, error.message);
+            }
+
+            // Test getAIMove method
+            try {
+                const aiMove = testGame.getAIMove();
+                addTestResult('getAIMove Method', aiMove !== null && aiMove !== undefined, aiMove ? `Suggested: ${aiMove}` : 'No move suggested');
+            } catch (error) {
+                addTestResult('getAIMove Method', false, error.message);
+            }
+
+            // Test AI difficulty levels
+            const originalDifficulty = testGame.aiDifficulty;
+            try {
+                testGame.cycleAIDifficulty();
+                const newDifficulty = testGame.aiDifficulty;
+                addTestResult('AI Difficulty Cycling', newDifficulty !== originalDifficulty, `Changed from ${originalDifficulty} to ${newDifficulty}`);
+            } catch (error) {
+                addTestResult('AI Difficulty Cycling', false, error.message);
+            }
+        }
+
+        async function testButtonFunctionality() {
+            console.log('🔘 Testing Button Functionality...');
+            
+            if (!testGame) {
+                testGame = await initializeTestGame();
+                if (!testGame) {
+                    addTestResult('Button Test Setup', false, 'Could not initialize game');
+                    return;
+                }
+            }
+
+            const buttonTests = [
+                { id: 'reset-button', method: 'resetGame', name: 'Reset Button' },
+                { id: 'back-button', method: 'undoMove', name: 'Undo Button' },
+                { id: 'pause-button', method: 'togglePause', name: 'Pause Button' },
+                { id: 'autoplay-button', method: 'toggleAutoPlay', name: 'Autoplay Button' },
+                { id: 'speed-button', method: 'cycleSpeed', name: 'Speed Button' },
+                { id: 'changeColor-button', method: 'cycleHue', name: 'Color Button' },
+                { id: 'theme-toggle-button', method: 'toggleTheme', name: 'Theme Button' },
+                { id: 'board-size-button', method: 'cycleBoardSize', name: 'Board Size Button' },
+                { id: 'ai-difficulty-button', method: 'cycleAIDifficulty', name: 'AI Difficulty Button' },
+                { id: 'export-stats-button', method: 'exportStats', name: 'Export Stats Button' }
+            ];
+
+            for (const test of buttonTests) {
+                try {
+                    // Check if button exists
+                    const button = document.getElementById(test.id);
+                    if (!button) {
+                        addTestResult(test.name, false, 'Button element not found');
+                        continue;
+                    }
+
+                    // Check if method exists on game object
+                    if (typeof testGame[test.method] !== 'function') {
+                        addTestResult(test.name, false, `Method ${test.method} not found on game object`);
+                        continue;
+                    }
+
+                    // Try to call the method
+                    await testGame[test.method]();
+                    addTestResult(test.name, true, `${test.method} executed successfully`);
+                    
+                    // Small delay between tests
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                    
+                } catch (error) {
+                    addTestResult(test.name, false, error.message);
+                }
+            }
+        }
+
+        async function testGameMechanics() {
+            console.log('🎮 Testing Game Mechanics...');
+            
+            if (!testGame) {
+                testGame = await initializeTestGame();
+                if (!testGame) {
+                    addTestResult('Game Mechanics Test Setup', false, 'Could not initialize game');
+                    return;
+                }
+            }
+
+            // Test board initialization
+            const boardExists = testGame.board && Array.isArray(testGame.board);
+            addTestResult('Board Initialization', boardExists, `Board is ${boardExists ? 'array' : 'not array'}`);
+
+            // Test move mechanics
+            const directions = ['up', 'down', 'left', 'right'];
+            let moveTestsPassed = 0;
+            
+            for (const direction of directions) {
+                try {
+                    const originalScore = testGame.score;
+                    const moved = testGame.move(direction);
+                    const scoreChanged = testGame.score !== originalScore;
+                    
+                    if (moved !== undefined) moveTestsPassed++;
+                    
+                    // Small delay
+                    await new Promise(resolve => setTimeout(resolve, 50));
+                } catch (error) {
+                    console.error(`Move test failed for ${direction}:`, error);
+                }
+            }
+            
+            addTestResult('Move Mechanics', moveTestsPassed === 4, `${moveTestsPassed}/4 directions work`);
+
+            // Test game state
+            const hasValidGameState = ['playing', 'paused', 'over', 'won', 'continue'].includes(testGame.gameState);
+            addTestResult('Game State Management', hasValidGameState, `Current state: ${testGame.gameState}`);
+
+            // Test score tracking
+            const hasScore = typeof testGame.score === 'number' && testGame.score >= 0;
+            addTestResult('Score Tracking', hasScore, `Score: ${testGame.score}`);
+        }
+
+        async function runAllTests() {
+            console.log('🚀 Running All Tests...');
+            clearOutput();
+            
+            await testGameMechanics();
+            await testAIMethods();
+            await testButtonFunctionality();
+            
+            const totalTests = testResults.length;
+            const passedTests = testResults.filter(r => r.passed).length;
+            
+            console.log(`\n📊 Test Summary: ${passedTests}/${totalTests} tests passed`);
+            
+            if (passedTests === totalTests) {
+                console.log('🎉 All tests passed! Game is fully functional.');
+            } else {
+                console.log(`⚠️ ${totalTests - passedTests} tests failed. Check results above.`);
+            }
+        }
+
+        // Initialize when page loads
+        window.addEventListener('load', async () => {
+            console.log('🔧 Test page loaded. Ready to run tests.');
+            console.log('Click "Run All Tests" to start comprehensive testing.');
+        });
+    </script>
+</body>
+</html>

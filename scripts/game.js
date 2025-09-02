@@ -430,6 +430,62 @@ class Game {
     return true;
   }
 
+  // Check if a move in a specific direction is possible
+  canMove(direction) {
+    const originalBoard = JSON.parse(JSON.stringify(this.board));
+    const testBoard = this.simulateMove(direction);
+    
+    // Compare boards to see if the move would change anything
+    for (let i = 0; i < this.size; i++) {
+      for (let j = 0; j < this.size; j++) {
+        if (originalBoard[i][j] !== testBoard[i][j]) {
+          return true;
+        }
+      }
+    }
+    
+    return false;
+  }
+
+  // Simulate a move without actually performing it
+  simulateMove(direction) {
+    const boardCopy = JSON.parse(JSON.stringify(this.board));
+    
+    if (direction === 'left') {
+      for (let i = 0; i < this.size; i++) {
+        boardCopy[i] = this.slideArray(boardCopy[i]);
+      }
+    } else if (direction === 'right') {
+      for (let i = 0; i < this.size; i++) {
+        boardCopy[i] = this.slideArray(boardCopy[i].slice().reverse()).reverse();
+      }
+    } else if (direction === 'up') {
+      for (let j = 0; j < this.size; j++) {
+        const column = [];
+        for (let i = 0; i < this.size; i++) {
+          column.push(boardCopy[i][j]);
+        }
+        const newColumn = this.slideArray(column);
+        for (let i = 0; i < this.size; i++) {
+          boardCopy[i][j] = newColumn[i];
+        }
+      }
+    } else if (direction === 'down') {
+      for (let j = 0; j < this.size; j++) {
+        const column = [];
+        for (let i = 0; i < this.size; i++) {
+          column.push(boardCopy[i][j]);
+        }
+        const newColumn = this.slideArray(column.slice().reverse()).reverse();
+        for (let i = 0; i < this.size; i++) {
+          boardCopy[i][j] = newColumn[i];
+        }
+      }
+    }
+    
+    return boardCopy;
+  }
+
   showWinMessage() {
     const overlay = document.getElementById('game-won');
     if (overlay) {
@@ -623,8 +679,8 @@ class Game {
   }
 
   startAutoPlay() {
-    if (!this.enhancedAI) {
-      console.warn('AI not available for autoplay');
+    if (!this.enhancedAI && !this.advancedAI) {
+      console.warn('No AI available for autoplay');
       return;
     }
 
@@ -632,6 +688,7 @@ class Game {
     const button = document.getElementById('autoplay-button');
     if (button) {
       button.innerHTML = '<i class="fas fa-stop"></i>';
+      button.title = 'Stop auto play';
     }
 
     const speed = this.speedMultipliers[this.currentSpeedIndex];
@@ -639,11 +696,12 @@ class Game {
 
     this.autoPlayInterval = setInterval(() => {
       if (this.gameState === 'playing' && !this.isPaused) {
-        const bestMove = this.enhancedAI.getBestMove();
+        const bestMove = this.getAIMove();
         if (bestMove) {
           this.move(bestMove);
         } else {
           this.stopAutoPlay();
+          console.log('AI found no valid moves - stopping autoplay');
         }
       }
     }, interval);
@@ -662,6 +720,7 @@ class Game {
     const button = document.getElementById('autoplay-button');
     if (button) {
       button.innerHTML = '<i class="fas fa-play"></i>';
+      button.title = 'Auto play';
     }
 
     console.log('Autoplay stopped');
@@ -732,14 +791,37 @@ class Game {
       if (typeof Enhanced2048AI !== 'undefined') {
         this.enhancedAI = new Enhanced2048AI(this);
         console.log('✅ Enhanced AI initialized');
+      } else {
+        console.warn('⚠️ Enhanced2048AI not available');
       }
       
       if (typeof AILearningSystem !== 'undefined') {
         this.aiLearningSystem = new AILearningSystem();
         console.log('✅ AI Learning System initialized');
+      } else {
+        console.warn('⚠️ AILearningSystem not available');
+      }
+
+      if (typeof AdvancedAI2048Solver !== 'undefined') {
+        this.advancedAI = new AdvancedAI2048Solver(this);
+        console.log('✅ Advanced AI Solver initialized');
+      } else {
+        console.warn('⚠️ AdvancedAI2048Solver not available');
       }
     } catch (error) {
       console.warn('⚠️ AI systems initialization failed:', error);
+    }
+  }
+
+  // Get best move from available AI
+  getAIMove() {
+    if (this.enhancedAI) {
+      return this.enhancedAI.getBestMove();
+    } else if (this.advancedAI) {
+      return this.advancedAI.getBestMove();
+    } else {
+      console.warn('No AI available for move generation');
+      return null;
     }
   }
 
