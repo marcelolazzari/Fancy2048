@@ -1,6 +1,6 @@
 # 🎮 Fancy2048
 
-[![Play Fancy2048](https://img.shields.io/badge/Play-Fancy2048-brightgreen?style=for-the-badge)](pages/index.html)
+[https://marcelolazzari.github.io/Fancy2048/pages/index.html](https://marcelolazzari.github.io/Fancy2048/pages/index.html)
 
 Fancy2048 is a modern, feature-rich implementation of the classic 2048 puzzle game with enhanced gameplay, AI capabilities, and responsive design.
 
