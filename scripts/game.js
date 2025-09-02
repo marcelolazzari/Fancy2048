@@ -2,6 +2,53 @@
  * Simplified Fancy2048 Game Engine - Core functionality only
  * This is a cleaned up version focusing on essential game mechanics
  */
+
+// Safe localStorage helper
+const safeStorage = {
+  getItem(key, defaultValue = null) {
+    try {
+      if (typeof Storage === 'undefined') return defaultValue;
+      return localStorage.getItem(key) || defaultValue;
+    } catch (error) {
+      console.warn(`⚠️ Failed to get localStorage item "${key}":`, error);
+      return defaultValue;
+    }
+  },
+  
+  setItem(key, value) {
+    try {
+      if (typeof Storage === 'undefined') {
+        console.warn('⚠️ localStorage not available, cannot save item:', key);
+        return false;
+      }
+      localStorage.setItem(key, value);
+      return true;
+    } catch (error) {
+      console.warn(`⚠️ Failed to set localStorage item "${key}":`, error);
+      return false;
+    }
+  },
+  
+  getJSON(key, defaultValue = null) {
+    try {
+      const item = this.getItem(key);
+      return item ? JSON.parse(item) : defaultValue;
+    } catch (error) {
+      console.warn(`⚠️ Failed to parse JSON from localStorage "${key}":`, error);
+      return defaultValue;
+    }
+  },
+  
+  setJSON(key, value) {
+    try {
+      return this.setItem(key, JSON.stringify(value));
+    } catch (error) {
+      console.warn(`⚠️ Failed to stringify JSON for localStorage "${key}":`, error);
+      return false;
+    }
+  }
+};
+
 class Game {
   constructor(size = 4) {
     console.log(`🎮 Initializing Fancy2048 with size: ${size}x${size}`);
@@ -24,8 +71,8 @@ class Game {
     this.maxUndoSteps = 10;
     
     // Visual settings
-    this.isLightMode = localStorage.getItem('isLightMode') === 'true';
-    this.hueValue = parseInt(localStorage.getItem('hueValue')) || 0;
+    this.isLightMode = safeStorage.getItem('isLightMode') === 'true';
+    this.hueValue = parseInt(safeStorage.getItem('hueValue', '0')) || 0;
     
     // Touch handling
     this.touchStartX = null;
@@ -44,7 +91,7 @@ class Game {
     // AI systems
     this.enhancedAI = null;
     this.aiLearningSystem = null;
-    this.aiDifficulty = localStorage.getItem('aiDifficulty') || 'normal';
+    this.aiDifficulty = safeStorage.getItem('aiDifficulty', 'normal');
 
     // Initialize the game
     this.initializeGame();
@@ -76,45 +123,56 @@ class Game {
   }
 
   initializeUI() {
-    console.log('Setting up UI...');
-    
-    // Set CSS custom property for board size
-    document.documentElement.style.setProperty('--size', this.size);
-    
-    // Setup board container
-    this.setupBoardContainer();
-    
-    // Update score display
-    this.updateScoreDisplay();
-    
-    console.log('✅ UI setup complete');
+    try {
+      console.log('Setting up UI...');
+      
+      // Set CSS custom property for board size
+      document.documentElement.style.setProperty('--size', this.size);
+      
+      // Setup board container
+      this.setupBoardContainer();
+      
+      // Update score display
+      this.updateScoreDisplay();
+      
+      console.log('✅ UI setup complete');
+    } catch (error) {
+      console.error('❌ UI initialization failed:', error);
+      throw new Error(`UI initialization failed: ${error.message}`);
+    }
   }
 
   setupBoardContainer() {
     const boardContainer = document.getElementById('board-container');
     if (!boardContainer) {
-      throw new Error('Board container not found!');
+      console.error('❌ Board container element not found in DOM');
+      throw new Error('Board container not found! Make sure the element with id="board-container" exists in the HTML.');
     }
     
-    // Clear existing content
-    boardContainer.innerHTML = '';
-    
-    // Update CSS for grid size
-    boardContainer.style.gridTemplateColumns = `repeat(${this.size}, 1fr)`;
-    boardContainer.style.gridTemplateRows = `repeat(${this.size}, 1fr)`;
-    
-    // Create grid cells
-    for (let i = 0; i < this.size; i++) {
-      for (let j = 0; j < this.size; j++) {
-        const gridCell = document.createElement('div');
-        gridCell.className = 'grid-cell';
-        gridCell.setAttribute('data-row', i);
-        gridCell.setAttribute('data-col', j);
-        boardContainer.appendChild(gridCell);
+    try {
+      // Clear existing content
+      boardContainer.innerHTML = '';
+      
+      // Update CSS for grid size
+      boardContainer.style.gridTemplateColumns = `repeat(${this.size}, 1fr)`;
+      boardContainer.style.gridTemplateRows = `repeat(${this.size}, 1fr)`;
+      
+      // Create grid cells
+      for (let i = 0; i < this.size; i++) {
+        for (let j = 0; j < this.size; j++) {
+          const gridCell = document.createElement('div');
+          gridCell.className = 'grid-cell';
+          gridCell.setAttribute('data-row', i);
+          gridCell.setAttribute('data-col', j);
+          boardContainer.appendChild(gridCell);
+        }
       }
+      
+      console.log(`✅ Board container setup for ${this.size}x${this.size} grid`);
+    } catch (error) {
+      console.error('❌ Failed to set up board container:', error);
+      throw new Error(`Board container setup failed: ${error.message}`);
     }
-    
-    console.log(`✅ Board container setup for ${this.size}x${this.size} grid`);
   }
 
   addEventListeners() {
@@ -199,42 +257,66 @@ class Game {
   }
 
   updateScoreDisplay() {
-    const elements = {
-      'score': this.score,
-      'best-score': this.bestScore,
-      'moves': this.moves,
-      'time': this.getFormattedTime()
-    };
+    try {
+      const elements = {
+        'score': this.score,
+        'best-score': this.bestScore,
+        'moves': this.moves,
+        'time': this.getFormattedTime()
+      };
 
-    Object.entries(elements).forEach(([id, value]) => {
-      const element = document.getElementById(id);
-      if (element) {
-        element.textContent = value;
+      let missingElements = [];
+      Object.entries(elements).forEach(([id, value]) => {
+        const element = document.getElementById(id);
+        if (element) {
+          element.textContent = value;
+        } else {
+          missingElements.push(id);
+        }
+      });
+
+      if (missingElements.length > 0) {
+        console.warn(`⚠️ Score display elements not found: ${missingElements.join(', ')}`);
       }
-    });
 
-    // Update best score if needed
-    if (this.score > this.bestScore) {
-      this.bestScore = this.score;
-      this.saveBestScore();
+      // Update best score if needed
+      if (this.score > this.bestScore) {
+        this.bestScore = this.score;
+        this.saveBestScore();
+      }
+    } catch (error) {
+      console.warn('⚠️ Failed to update score display:', error);
     }
   }
 
   updateBoardDisplay() {
-    const boardContainer = document.getElementById('board-container');
-    if (!boardContainer) return;
+    try {
+      const boardContainer = document.getElementById('board-container');
+      if (!boardContainer) {
+        console.warn('⚠️ Board container not found during display update');
+        return;
+      }
 
-    // Clear existing tiles
-    const tiles = boardContainer.querySelectorAll('.tile');
-    tiles.forEach(tile => tile.remove());
+      // Clear existing tiles
+      const tiles = boardContainer.querySelectorAll('.tile');
+      tiles.forEach(tile => tile.remove());
 
-    // Create new tiles
-    for (let i = 0; i < this.size; i++) {
-      for (let j = 0; j < this.size; j++) {
-        if (this.board[i][j] !== 0) {
-          this.createTileElement(i, j, this.board[i][j]);
+      // Create new tiles
+      for (let row = 0; row < this.size; row++) {
+        for (let col = 0; col < this.size; col++) {
+          const value = this.board[row][col];
+          if (value !== 0) {
+            try {
+              const tileElement = this.createTileElement(row, col, value);
+              boardContainer.appendChild(tileElement);
+            } catch (tileError) {
+              console.warn(`⚠️ Failed to create tile at [${row},${col}]:`, tileError);
+            }
+          }
         }
       }
+    } catch (error) {
+      console.warn('⚠️ Failed to update board display:', error);
     }
   }
 
@@ -643,13 +725,13 @@ class Game {
 
   toggleTheme() {
     this.isLightMode = !this.isLightMode;
-    localStorage.setItem('isLightMode', this.isLightMode);
+    safeStorage.setItem('isLightMode', this.isLightMode);
     this.applyTheme();
   }
 
   cycleHue() {
     this.hueValue = (this.hueValue + 30) % 360;
-    localStorage.setItem('hueValue', this.hueValue);
+    safeStorage.setItem('hueValue', this.hueValue);
     document.documentElement.style.setProperty('--hue-value', this.hueValue);
   }
 
@@ -769,7 +851,7 @@ class Game {
     const nextIndex = (currentIndex + 1) % difficulties.length;
     
     this.aiDifficulty = difficulties[nextIndex];
-    localStorage.setItem('aiDifficulty', this.aiDifficulty);
+    safeStorage.setItem('aiDifficulty', this.aiDifficulty);
     
     const button = document.getElementById('ai-difficulty-button');
     if (button) {
@@ -877,11 +959,11 @@ class Game {
 
   // Storage functions
   loadBestScore() {
-    return parseInt(localStorage.getItem('bestScore')) || 0;
+    return parseInt(safeStorage.getItem('bestScore', '0')) || 0;
   }
 
   saveBestScore() {
-    localStorage.setItem('bestScore', this.bestScore);
+    safeStorage.setItem('bestScore', this.bestScore);
   }
 
   // Stats and export
@@ -954,7 +1036,7 @@ class Game {
       
       // Save to appropriate storage based on player type
       const storageKey = this.getStorageKey();
-      let savedGames = JSON.parse(localStorage.getItem(storageKey) || '[]');
+      let savedGames = safeStorage.getJSON(storageKey, []);
       savedGames.push(gameResult);
       
       // Keep only last 100 games per category
@@ -962,7 +1044,7 @@ class Game {
         savedGames = savedGames.slice(-100);
       }
       
-      localStorage.setItem(storageKey, JSON.stringify(savedGames));
+      safeStorage.setJSON(storageKey, savedGames);
       
       // Also save to general leaderboard
       this.updateLeaderboard(gameResult);
@@ -987,14 +1069,14 @@ class Game {
   
   updateLeaderboard(gameResult) {
     try {
-      let leaderboard = JSON.parse(localStorage.getItem('leaderboard') || '[]');
+      let leaderboard = safeStorage.getJSON('leaderboard', []);
       leaderboard.push(gameResult);
       
       // Sort by score and keep top 50
       leaderboard.sort((a, b) => b.score - a.score);
       leaderboard = leaderboard.slice(0, 50);
       
-      localStorage.setItem('leaderboard', JSON.stringify(leaderboard));
+      safeStorage.setJSON('leaderboard', leaderboard);
     } catch (error) {
       console.error('Failed to update leaderboard:', error);
     }

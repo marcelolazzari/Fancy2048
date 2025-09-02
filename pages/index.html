@@ -396,11 +396,26 @@
         }
 
         function navigateToLeaderboard() {
-            const paths = ['leaderboard.html', '/Fancy2048/pages/leaderboard.html', '../pages/leaderboard.html'];
-            window.location.href = paths[0];
+            try {
+                const isGitHubPages = window.location.hostname.includes('github.io');
+                let path;
+                
+                if (isGitHubPages) {
+                    path = '/Fancy2048/pages/leaderboard.html';
+                } else {
+                    path = 'leaderboard.html';
+                }
+                
+                console.log(`🔗 Navigating to leaderboard: ${path}`);
+                window.location.href = path;
+            } catch (error) {
+                console.error('❌ Failed to navigate to leaderboard:', error);
+                // Fallback to relative path
+                window.location.href = 'leaderboard.html';
+            }
         }
 
-        // Script loading system
+        // Script loading system with improved error handling
         async function loadScript(src, name) {
             return new Promise((resolve, reject) => {
                 const script = document.createElement('script');
@@ -410,8 +425,8 @@
                     resolve();
                 };
                 script.onerror = () => {
-                    console.error(`❌ Failed to load: ${name}`);
-                    reject(new Error(`Failed to load ${name}`));
+                    console.error(`❌ Failed to load: ${name} from ${src}`);
+                    reject(new Error(`Failed to load ${name} from ${src}`));
                 };
                 document.head.appendChild(script);
             });
@@ -421,12 +436,19 @@
             try {
                 console.log('🚀 Starting Fancy2048 initialization...');
 
-                // Load all scripts
+                // Detect GitHub Pages path
+                const isGitHubPages = window.location.hostname.includes('github.io');
+                const basePath = isGitHubPages ? '/Fancy2048' : '..';
+                
+                console.log(`🔍 Detected environment: ${isGitHubPages ? 'GitHub Pages' : 'Local'}`);
+                console.log(`📁 Using base path: ${basePath}`);
+
+                // Load all scripts with multiple fallback paths
                 const scripts = [
-                    { src: '../scripts/ai_learning_system.js', name: 'AI Learning System' },
-                    { src: '../scripts/advanced_ai_solver.js', name: 'Advanced AI Solver' },
-                    { src: '../scripts/enhanced_ai.js', name: 'Enhanced AI' },
-                    { src: '../scripts/game.js', name: 'Game Engine' }
+                    { src: `${basePath}/scripts/ai_learning_system.js`, name: 'AI Learning System' },
+                    { src: `${basePath}/scripts/advanced_ai_solver.js`, name: 'Advanced AI Solver' },
+                    { src: `${basePath}/scripts/enhanced_ai.js`, name: 'Enhanced AI' },
+                    { src: `${basePath}/scripts/game.js`, name: 'Game Engine' }
                 ];
 
                 for (const script of scripts) {
@@ -434,45 +456,98 @@
                         await loadScript(script.src, script.name);
                         await new Promise(resolve => setTimeout(resolve, 100));
                     } catch (error) {
+                        console.warn(`⚠️ Primary path failed for ${script.name}, trying fallbacks...`);
+                        
                         // Try alternative paths
-                        const altPaths = [
-                            `/Fancy2048/scripts/${script.src.split('/').pop()}`,
-                            `scripts/${script.src.split('/').pop()}`
+                        const fallbackPaths = [
+                            `../scripts/${script.src.split('/').pop()}`,
+                            `scripts/${script.src.split('/').pop()}`,
+                            `./scripts/${script.src.split('/').pop()}`
                         ];
                         
                         let loaded = false;
-                        for (const altPath of altPaths) {
+                        for (const fallbackPath of fallbackPaths) {
                             try {
-                                await loadScript(altPath, script.name);
+                                await loadScript(fallbackPath, script.name + ' (fallback)');
                                 loaded = true;
+                                console.log(`✅ Successfully loaded ${script.name} from fallback: ${fallbackPath}`);
                                 break;
-                            } catch (altError) {
+                            } catch (fallbackError) {
+                                console.warn(`⚠️ Fallback path failed: ${fallbackPath}`);
                                 continue;
                             }
                         }
                         
                         if (!loaded) {
-                            throw error;
+                            console.error(`❌ All paths failed for ${script.name}`);
+                            throw new Error(`Failed to load ${script.name} from any path`);
                         }
                     }
                 }
 
                 // Wait for scripts to initialize
+                console.log('⏳ Waiting for scripts to initialize...');
                 await new Promise(resolve => setTimeout(resolve, 500));
 
-                // Check for Game class
+                // Verify class availability with better error messages
+                const requiredClasses = ['Game', 'Enhanced2048AI', 'AdvancedAI2048Solver', 'AILearningSystem'];
+                const missingClasses = [];
+                
+                requiredClasses.forEach(className => {
+                    if (typeof window[className] === 'undefined') {
+                        missingClasses.push(className);
+                        console.warn(`⚠️ ${className} class not available`);
+                    } else {
+                        console.log(`✅ ${className} class loaded successfully`);
+                    }
+                });
+
+                // Check for Game class specifically
                 if (typeof Game === 'undefined') {
-                    throw new Error('Game class not found after loading scripts');
+                    throw new Error('Game class not found after loading scripts. This is required for the game to function.');
                 }
 
                 console.log('🎮 Creating game instance...');
-                window.game = new Game(4);
-
-                if (window.game) {
-                    console.log('✅ Game initialized successfully!');
+                
+                // Verify required DOM elements exist
+                const requiredElements = ['board-container', 'score-container', 'score', 'best-score', 'moves', 'time'];
+                const missingElements = [];
+                
+                requiredElements.forEach(id => {
+                    if (!document.getElementById(id)) {
+                        missingElements.push(id);
+                    }
+                });
+                
+                if (missingElements.length > 0) {
+                    console.error('❌ Missing required DOM elements:', missingElements);
+                    throw new Error(`Missing required DOM elements: ${missingElements.join(', ')}`);
+                }
+                
+                // Create game instance with error handling
+                try {
+                    window.game = new Game(4);
+                    
+                    if (!window.game) {
+                        throw new Error('Game instance is null or undefined');
+                    }
+                    
+                    console.log('✅ Game instance created successfully!');
+                    console.log('🎯 Game state:', {
+                        size: window.game.size,
+                        score: window.game.score,
+                        gameState: window.game.gameState
+                    });
+                    
                     hideLoadingIndicator();
                     
-                    // Setup keyboard controls
+                } catch (gameError) {
+                    console.error('❌ Game instance creation failed:', gameError);
+                    throw new Error(`Game initialization error: ${gameError.message}`);
+                }
+                
+                // Setup keyboard controls with error handling
+                try {
                     document.addEventListener('keydown', (event) => {
                         if (!window.game || window.game.isPaused) return;
                         
@@ -495,18 +570,26 @@
                                 break;
                             case ' ':
                                 event.preventDefault();
-                                window.game.togglePause();
+                                if (typeof window.game.togglePause === 'function') {
+                                    window.game.togglePause();
+                                }
                                 break;
                         }
                     });
                     
-                } else {
-                    throw new Error('Game instance creation failed');
+                    console.log('✅ Keyboard controls initialized');
+                } catch (controlsError) {
+                    console.warn('⚠️ Keyboard controls setup failed:', controlsError);
                 }
 
             } catch (error) {
                 console.error('❌ Game initialization failed:', error);
-                showError(error.message);
+                console.error('Error details:', {
+                    message: error.message,
+                    stack: error.stack,
+                    url: window.location.href
+                });
+                showError(`Initialization failed: ${error.message}`);
             }
         }
 

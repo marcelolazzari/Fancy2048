@@ -25,30 +25,46 @@ class AILearningSystem {
    */
   loadLearningData() {
     try {
+      // Check if localStorage is available
+      if (typeof Storage === 'undefined') {
+        console.warn('⚠️ localStorage not available, using memory-only mode');
+        return this.getDefaultData();
+      }
+      
       const stored = localStorage.getItem(this.storageKey);
       if (stored) {
         const data = JSON.parse(stored);
-        return {
-          version: data.version || '1.0.0',
-          created: data.created || new Date().toISOString(),
-          lastUpdated: data.lastUpdated || new Date().toISOString(),
-          games: data.games || [],
-          patterns: data.patterns || {},
-          moveStats: data.moveStats || {},
-          positionWeights: data.positionWeights || {},
-          performance: data.performance || {
-            totalGames: 0,
-            averageScore: 0,
-            maxTileAchieved: 0,
-            winRate: 0
-          }
-        };
+        // Validate data structure
+        if (data && typeof data === 'object') {
+          return {
+            version: data.version || '1.0.0',
+            created: data.created || new Date().toISOString(),
+            lastUpdated: data.lastUpdated || new Date().toISOString(),
+            games: Array.isArray(data.games) ? data.games : [],
+            patterns: data.patterns && typeof data.patterns === 'object' ? data.patterns : {},
+            moveStats: data.moveStats && typeof data.moveStats === 'object' ? data.moveStats : {},
+            positionWeights: data.positionWeights && typeof data.positionWeights === 'object' ? data.positionWeights : {},
+            performance: data.performance && typeof data.performance === 'object' ? data.performance : {
+              totalGames: 0,
+              averageScore: 0,
+              maxTileAchieved: 0,
+              winRate: 0
+            }
+          };
+        }
       }
     } catch (error) {
       console.warn('⚠️ Error loading AI learning data:', error);
     }
 
     // Return default structure
+    return this.getDefaultData();
+  }
+
+  /**
+   * Get default data structure
+   */
+  getDefaultData() {
     return {
       version: '1.0.0',
       created: new Date().toISOString(),
@@ -71,11 +87,19 @@ class AILearningSystem {
    */
   saveLearningData() {
     try {
+      // Check if localStorage is available
+      if (typeof Storage === 'undefined') {
+        console.warn('⚠️ localStorage not available, cannot save learning data');
+        return false;
+      }
+      
       this.learningData.lastUpdated = new Date().toISOString();
       localStorage.setItem(this.storageKey, JSON.stringify(this.learningData));
       console.log('💾 AI learning data saved successfully');
+      return true;
     } catch (error) {
       console.error('❌ Error saving AI learning data:', error);
+      return false;
     }
   }
 

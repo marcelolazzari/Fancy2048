@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Console Error Debug - Fancy2048</title>
+    <style>
+        body { 
+            font-family: Arial, sans-serif; 
+            background: #1a1a1a; 
+            color: #fff; 
+            padding: 20px; 
+        }
+        .error { 
+            background: rgba(244, 67, 54, 0.1); 
+            border-left: 4px solid #f44336; 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 5px; 
+        }
+        .success { 
+            background: rgba(76, 175, 80, 0.1); 
+            border-left: 4px solid #4CAF50; 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 5px; 
+        }
+        .warning { 
+            background: rgba(255, 152, 0, 0.1); 
+            border-left: 4px solid #ff9800; 
+            padding: 10px; 
+            margin: 10px 0; 
+            border-radius: 5px; 
+        }
+        pre {
+            background: #2d2d2d;
+            padding: 10px;
+            border-radius: 5px;
+            overflow-x: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body>
+    <h1>🐛 Console Error Debug for Fancy2048</h1>
+    <div id="results"></div>
+    
+    <script>
+        const results = document.getElementById('results');
+        let errorCount = 0;
+        let warningCount = 0;
+        
+        function log(type, message) {
+            const div = document.createElement('div');
+            div.className = type;
+            div.innerHTML = `<strong>${type.toUpperCase()}:</strong> ${message}`;
+            results.appendChild(div);
+        }
+        
+        // Override console methods to capture output
+        const originalError = console.error;
+        const originalWarn = console.warn;
+        const originalLog = console.log;
+        
+        console.error = function(...args) {
+            errorCount++;
+            log('error', args.join(' '));
+            originalError.apply(console, args);
+        };
+        
+        console.warn = function(...args) {
+            warningCount++;
+            log('warning', args.join(' '));
+            originalWarn.apply(console, args);
+        };
+        
+        console.log = function(...args) {
+            if (args[0] && args[0].includes('✅')) {
+                log('success', args.join(' '));
+            }
+            originalLog.apply(console, args);
+        };
+        
+        // Global error handler
+        window.addEventListener('error', (event) => {
+            errorCount++;
+            log('error', `JavaScript Error: ${event.message} at ${event.filename}:${event.lineno}:${event.colno}`);
+            console.error('Stack trace:', event.error?.stack);
+        });
+        
+        // Promise rejection handler
+        window.addEventListener('unhandledrejection', (event) => {
+            errorCount++;
+            log('error', `Unhandled Promise Rejection: ${event.reason}`);
+        });
+        
+        // Load scripts and test initialization
+        async function testScriptLoading() {
+            log('success', 'Starting script loading test...');
+            
+            const scripts = [
+                '../scripts/ai_learning_system.js',
+                '../scripts/advanced_ai_solver.js', 
+                '../scripts/enhanced_ai.js',
+                '../scripts/game.js'
+            ];
+            
+            for (const src of scripts) {
+                try {
+                    await new Promise((resolve, reject) => {
+                        const script = document.createElement('script');
+                        script.src = src;
+                        script.onload = () => {
+                            log('success', `✅ Loaded: ${src}`);
+                            resolve();
+                        };
+                        script.onerror = () => {
+                            log('error', `❌ Failed to load: ${src}`);
+                            reject(new Error(`Failed to load ${src}`));
+                        };
+                        document.head.appendChild(script);
+                    });
+                    
+                    await new Promise(resolve => setTimeout(resolve, 100));
+                } catch (error) {
+                    log('error', `Script loading error: ${error.message}`);
+                }
+            }
+            
+            // Test class availability
+            setTimeout(() => {
+                const classes = ['Game', 'Enhanced2048AI', 'AdvancedAI2048Solver', 'AILearningSystem'];
+                classes.forEach(className => {
+                    if (typeof window[className] !== 'undefined') {
+                        log('success', `✅ ${className} class available`);
+                    } else {
+                        log('error', `❌ ${className} class not found`);
+                    }
+                });
+                
+                // Test game initialization
+                try {
+                    if (typeof Game !== 'undefined') {
+                        const testGame = new Game(4);
+                        log('success', '✅ Game instance created successfully');
+                        
+                        // Test a few key methods
+                        if (typeof testGame.move === 'function') {
+                            log('success', '✅ Game.move method available');
+                        } else {
+                            log('error', '❌ Game.move method not available');
+                        }
+                        
+                        if (typeof testGame.resetGame === 'function') {
+                            log('success', '✅ Game.resetGame method available');
+                        } else {
+                            log('error', '❌ Game.resetGame method not available');
+                        }
+                        
+                    } else {
+                        log('error', '❌ Cannot test game initialization - Game class not found');
+                    }
+                } catch (error) {
+                    log('error', `Game initialization error: ${error.message}`);
+                    if (error.stack) {
+                        log('error', `Stack trace: ${error.stack}`);
+                    }
+                }
+                
+                // Summary
+                setTimeout(() => {
+                    log('success', `Test completed. Errors: ${errorCount}, Warnings: ${warningCount}`);
+                }, 1000);
+                
+            }, 2000);
+        }
+        
+        testScriptLoading();
+    </script>
+</body>
+</html>
