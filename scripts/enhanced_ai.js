@@ -641,5 +641,6 @@ if (typeof module !== 'undefined' && module.exports) {
   module.exports = Enhanced2048AI;
 }
 
-// Enable AI debugging in console
+// Make available globally
+window.Enhanced2048AI = Enhanced2048AI;
 window.Enhanced2048AI = Enhanced2048AI;

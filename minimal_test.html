@@ -1,0 +1,307 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Minimal Test - Fancy2048</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #f2f2f2;
+            padding: 20px;
+        }
+        #board-container {
+            width: 400px;
+            height: 400px;
+            background: #333;
+            margin: 20px auto;
+            border-radius: 10px;
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            grid-template-rows: repeat(4, 1fr);
+            gap: 10px;
+            padding: 10px;
+        }
+        .grid-cell {
+            background: #666;
+            border-radius: 5px;
+        }
+        .tile {
+            position: absolute;
+            background: #ffcc00;
+            color: #000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            border-radius: 5px;
+        }
+        #score-container {
+            text-align: center;
+            margin: 20px;
+        }
+        #score-container ul {
+            list-style: none;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+        }
+        button {
+            background: #ffcc00;
+            color: #000;
+            border: none;
+            padding: 10px 20px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        .status {
+            text-align: center;
+            padding: 10px;
+            margin: 10px;
+            border-radius: 5px;
+            background: #2a2a2a;
+        }
+        .error { background: rgba(244, 67, 54, 0.2); }
+        .success { background: rgba(76, 175, 80, 0.2); }
+        .warning { background: rgba(255, 152, 0, 0.2); }
+    </style>
+</head>
+<body>
+    <h1>🔧 Minimal Game Test</h1>
+    
+    <div id="status" class="status">Initializing...</div>
+    
+    <div id="score-container">
+        <ul>
+            <li>Score: <span id="score">0</span></li>
+            <li>Best: <span id="best-score">0</span></li>
+            <li>Moves: <span id="moves">0</span></li>
+            <li>Time: <span id="time">00:00</span></li>
+        </ul>
+    </div>
+    
+    <div id="board-container"></div>
+    
+    <div style="text-align: center;">
+        <button onclick="initGame()">🎮 Initialize Game</button>
+        <button onclick="testMove('up')">⬆️ Up</button>
+        <button onclick="testMove('down')">⬇️ Down</button>
+        <button onclick="testMove('left')">⬅️ Left</button>
+        <button onclick="testMove('right')">➡️ Right</button>
+        <button onclick="testAI()">🤖 AI Move</button>
+    </div>
+    
+    <!-- Hidden elements needed by game -->
+    <div style="display: none;">
+        <button id="changeColor-button"></button>
+        <button id="leaderboard-button"></button>
+        <button id="export-stats-button"></button>
+        <button id="back-button"></button>
+        <button id="pause-button"></button>
+        <button id="board-size-button"></button>
+        <button id="theme-toggle-button"></button>
+        <button id="autoplay-button"></button>
+        <button id="speed-button"><span class="speed-text">1x</span></button>
+        <button id="reset-button"></button>
+        <button id="ai-difficulty-button"><span class="button-text">Normal</span></button>
+    </div>
+
+    <script>
+        let game = null;
+        
+        function updateStatus(message, type = 'info') {
+            const status = document.getElementById('status');
+            status.textContent = message;
+            status.className = `status ${type}`;
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        async function loadScript(src, name) {
+            return new Promise((resolve, reject) => {
+                const script = document.createElement('script');
+                script.src = src;
+                script.onload = () => {
+                    updateStatus(`✅ Loaded ${name}`, 'success');
+                    resolve();
+                };
+                script.onerror = () => {
+                    updateStatus(`❌ Failed to load ${name}`, 'error');
+                    reject(new Error(`Failed to load ${name}`));
+                };
+                document.head.appendChild(script);
+            });
+        }
+        
+        async function loadAllScripts() {
+            const scripts = [
+                { src: '../scripts/ai_learning_system.js', name: 'AI Learning System' },
+                { src: '../scripts/advanced_ai_solver.js', name: 'Advanced AI Solver' },
+                { src: '../scripts/enhanced_ai.js', name: 'Enhanced AI' },
+                { src: '../scripts/game.js', name: 'Game Engine' }
+            ];
+            
+            updateStatus('📦 Loading scripts...', 'info');
+            
+            for (const script of scripts) {
+                try {
+                    await loadScript(script.src, script.name);
+                    await new Promise(resolve => setTimeout(resolve, 100)); // Small delay
+                } catch (error) {
+                    updateStatus(`❌ Failed to load ${script.name}: ${error.message}`, 'error');
+                    return false;
+                }
+            }
+            
+            updateStatus('✅ All scripts loaded successfully', 'success');
+            return true;
+        }
+        
+        async function initGame() {
+            try {
+                updateStatus('🚀 Starting initialization...', 'info');
+                
+                // Load scripts first
+                const scriptsLoaded = await loadAllScripts();
+                if (!scriptsLoaded) {
+                    throw new Error('Failed to load required scripts');
+                }
+                
+                // Wait a moment for scripts to initialize
+                await new Promise(resolve => setTimeout(resolve, 500));
+                
+                // Check if Game class exists
+                if (typeof Game === 'undefined') {
+                    throw new Error('Game class not found');
+                }
+                
+                updateStatus('🎮 Creating game instance...', 'info');
+                
+                // Create game instance
+                game = new Game(4);
+                window.game = game; // Make globally available
+                
+                if (game) {
+                    updateStatus('✅ Game initialized successfully!', 'success');
+                    
+                    // Test basic functionality
+                    setTimeout(() => {
+                        testBasicFunctionality();
+                    }, 1000);
+                } else {
+                    throw new Error('Game instance creation failed');
+                }
+                
+            } catch (error) {
+                updateStatus(`❌ Initialization failed: ${error.message}`, 'error');
+                console.error('Full error:', error);
+            }
+        }
+        
+        function testBasicFunctionality() {
+            if (!game) {
+                updateStatus('❌ No game instance available', 'error');
+                return;
+            }
+            
+            try {
+                updateStatus('🔍 Testing basic functionality...', 'info');
+                
+                // Test board state
+                if (game.board && Array.isArray(game.board)) {
+                    updateStatus(`✅ Board exists: ${game.size}x${game.size}`, 'success');
+                } else {
+                    updateStatus('❌ Board is invalid', 'error');
+                    return;
+                }
+                
+                // Test move methods
+                const canMoveUp = game.canMove && game.canMove('up');
+                updateStatus(`ℹ️ Can move up: ${canMoveUp}`, canMoveUp ? 'success' : 'warning');
+                
+                // Test AI integration
+                if (game.enhancedAI) {
+                    updateStatus('✅ Enhanced AI is integrated', 'success');
+                } else {
+                    updateStatus('⚠️ Enhanced AI not integrated', 'warning');
+                }
+                
+                if (game.aiLearningSystem) {
+                    updateStatus('✅ AI Learning System is integrated', 'success');
+                } else {
+                    updateStatus('⚠️ AI Learning System not integrated', 'warning');
+                }
+                
+            } catch (error) {
+                updateStatus(`❌ Basic functionality test failed: ${error.message}`, 'error');
+                console.error('Test error:', error);
+            }
+        }
+        
+        function testMove(direction) {
+            if (!game) {
+                updateStatus('❌ No game instance', 'error');
+                return;
+            }
+            
+            try {
+                if (game.canMove(direction)) {
+                    game.move(direction);
+                    updateStatus(`✅ Moved ${direction}`, 'success');
+                } else {
+                    updateStatus(`⚠️ Cannot move ${direction}`, 'warning');
+                }
+            } catch (error) {
+                updateStatus(`❌ Move failed: ${error.message}`, 'error');
+            }
+        }
+        
+        function testAI() {
+            if (!game) {
+                updateStatus('❌ No game instance', 'error');
+                return;
+            }
+            
+            try {
+                if (game.enhancedAI && typeof game.enhancedAI.getBestMove === 'function') {
+                    const move = game.enhancedAI.getBestMove();
+                    if (move) {
+                        updateStatus(`🧠 AI suggests: ${move}`, 'info');
+                        testMove(move);
+                    } else {
+                        updateStatus('🤖 AI returned no move', 'warning');
+                    }
+                } else {
+                    updateStatus('❌ AI not available', 'error');
+                }
+            } catch (error) {
+                updateStatus(`❌ AI test failed: ${error.message}`, 'error');
+            }
+        }
+        
+        // Global error handlers
+        window.addEventListener('error', (event) => {
+            updateStatus(`🚨 JavaScript Error: ${event.message}`, 'error');
+            console.error('Error details:', {
+                message: event.message,
+                filename: event.filename,
+                lineno: event.lineno,
+                colno: event.colno,
+                error: event.error
+            });
+        });
+        
+        window.addEventListener('unhandledrejection', (event) => {
+            updateStatus(`🚨 Promise Rejection: ${event.reason}`, 'error');
+            console.error('Promise rejection:', event.reason);
+        });
+        
+        // Auto-initialize when page loads
+        window.addEventListener('load', () => {
+            setTimeout(initGame, 1000);
+        });
+    </script>
+</body>
+</html>
