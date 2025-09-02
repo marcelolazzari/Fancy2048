@@ -534,3 +534,6 @@ class AILearningSystem {
 if (typeof module !== 'undefined' && module.exports) {
   module.exports = AILearningSystem;
 }
+
+// Make available globally
+window.AILearningSystem = AILearningSystem;

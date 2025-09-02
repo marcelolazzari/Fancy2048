@@ -1,6 +1,6 @@
 # 🎮 Fancy2048
 
-[![Play Fancy2048](https://img.shields.io/badge/Play-Fancy2048-brightgreen?style=for-the-badge)](https://marcelolazzari.github.io/Fancy2048/pages/index.html)
+[![Play Fancy2048](https://img.shields.io/badge/Play-Fancy2048-brightgreen?style=for-the-badge)](pages/index.html)
 
 Fancy2048 is a modern, feature-rich implementation of the classic 2048 puzzle game with enhanced gameplay, AI capabilities, and responsive design.
 
@@ -12,30 +12,34 @@ Fancy2048 is a modern, feature-rich implementation of the classic 2048 puzzle ga
 - **Undo System**: Undo up to 10 moves with full game state restoration
 
 ### 🤖 AI Integration
-- **Advanced AI Solver**: State-of-the-art AI using Expectimax algorithm with automatic learning
+- **Advanced AI Solver**: State-of-the-art AI using Expectimax algorithm
+- **Enhanced AI**: Minimax with Alpha-Beta pruning for intelligent gameplay
 - **Auto Play**: Watch the AI solve the game automatically
-- **Speed Control**: Adjustable AI speed (1×, 1.5×, 2×, 4×, 8×)
+- **Speed Control**: Adjustable AI speed (1×, 1.5×, 2×, 4×, 8×, MAX)
 - **Difficulty Levels**: Choose from Easy, Normal, Hard, or Expert AI
-- **Automatic Learning**: AI automatically learns from each game to improve performance
-- **Human vs AI Stats**: Track and compare performance
+- **Automatic Learning**: AI automatically learns from each game to improve performance (no user intervention required)
+- **Human vs AI Stats**: Track and compare performance across different play modes
 
 ### 🎨 Visual & Accessibility
 - **Enhanced Tile Colors**: Beautiful gradient backgrounds with hue customization
 - **Light/Dark Themes**: Toggle between themes with perfect color adaptation
-- **Mobile Optimized**: Responsive design with touch-friendly controls
-- **PWA Support**: Install as a Progressive Web App
+- **Mobile Optimized**: Responsive design with enhanced touch controls
+- **Safe Area Support**: Full safe area inset support for modern devices (iPhone X+, etc.)
+- **PWA Ready**: Progressive Web App capabilities
 - **Accessibility**: Full keyboard navigation and screen reader support
 
 ### 📊 Statistics & Progress
 - **Detailed Statistics**: Track games, wins, moves, time, and scores
 - **Leaderboard**: Compare your best performances
 - **Game Mode Tracking**: Separate stats for Human, AI, and Mixed modes
+- **Data Export**: Export statistics to CSV or JSON format
 - **Persistent Storage**: All progress saved locally
 
 ### 📱 Mobile Experience
-- **Touch Gestures**: Swipe to move tiles
-- **Enhanced Game State Persistence**: Automatic game saving and restoration
-- **Viewport Optimization**: Perfect fit on all screen sizes
+- **Enhanced Touch Gestures**: Improved swipe detection with visual feedback
+- **State Persistence**: Automatic game saving and restoration
+- **No Auto-Pause**: Game continues running when switching apps (as requested)
+- **Viewport Optimization**: Perfect fit on all screen sizes with safe areas
 - **Offline Play**: Works without internet connection
 
 ## 🚀 How to Play
@@ -43,6 +47,135 @@ Fancy2048 is a modern, feature-rich implementation of the classic 2048 puzzle ga
 1. **Move tiles** using arrow keys (desktop) or swipe gestures (mobile)
 2. **Combine matching numbers** to create higher values
 3. **Reach 2048** to win (then continue for higher scores!)
+4. **Use AI assistance** or let the AI play automatically
+5. **Track your progress** with detailed statistics
+
+## 🎮 Controls
+
+### Desktop
+- **Arrow Keys**: Move tiles (Up/Down/Left/Right)
+- **Space**: Pause/Resume game
+- **Ctrl/Cmd + Z**: Undo move
+- **Ctrl/Cmd + R**: Reset game
+- **Ctrl/Cmd + A**: Toggle autoplay
+
+### Mobile
+- **Swipe**: Move tiles in desired direction
+- **Touch Controls**: All buttons are touch-optimized
+
+## 🛠 Technical Features
+
+### Architecture
+- **Modular Design**: Separate modules for game logic, AI, and learning
+- **Responsive Layout**: CSS Grid with advanced viewport handling
+- **Performance Optimized**: Efficient algorithms and memory management
+
+### AI Systems
+- **Multiple AI Implementations**: Advanced expectimax and enhanced minimax
+- **Learning System**: Automatic pattern recognition and strategy improvement
+- **Adaptive Difficulty**: AI adjusts based on board size and performance
+
+### Browser Compatibility
+- **Modern Browsers**: Chrome, Firefox, Safari, Edge
+- **Mobile Support**: iOS Safari, Android Chrome
+- **PWA Features**: Installable as a native app
+
+## 📁 Project Structure
+
+```
+Fancy2048/
+├── pages/
+│   ├── index.html          # Main game page
+│   └── leaderboard.html    # Statistics and leaderboard
+├── scripts/
+│   ├── game.js             # Core game logic
+│   ├── advanced_ai_solver.js # Expectimax AI implementation
+│   ├── enhanced_ai.js      # Minimax AI with Alpha-Beta pruning
+│   ├── ai_learning_system.js # Automatic learning system
+│   ├── statistics.js       # Statistics page logic
+│   └── leaderboard-stats.js # Leaderboard functionality
+├── styles/
+│   ├── main.css            # Core game styles
+│   └── leaderboard.css     # Statistics page styles
+└── docs/
+    ├── ai_learning_guide.md # AI learning documentation
+    └── ai_learning_format.md # Learning data format spec
+```
+
+## 🔧 Development
+
+### Local Development
+1. Serve the files from a local web server
+2. Open `pages/index.html` in your browser
+3. All features work offline
+
+### Testing
+- Use the integrity test page: `test_integrity.html`
+- Check browser console for any errors
+- Test on both desktop and mobile devices
+
+## 🎨 Customization
+
+### Themes
+- Toggle between light and dark modes
+- Customize tile colors using the palette button
+- Responsive design adapts to all screen sizes
+
+### AI Difficulty
+- Easy: Basic move selection
+- Normal: Balanced strategy
+- Hard: Advanced pattern recognition
+- Expert: Maximum depth search
+
+## 📈 Performance
+
+### Game Performance
+- Smooth animations at 60fps
+- Efficient tile rendering
+- Optimized touch handling
+
+### AI Performance
+- Expectimax algorithm for optimal play
+- Adaptive search depth based on board complexity
+- Learning system improves over time automatically
+
+## 🎯 Recent Updates
+
+### Game Logic Enhancements
+- ✅ Fixed critical move simulation logic
+- ✅ Improved game over detection
+- ✅ Enhanced merge prevention system
+- ✅ Consistent scoring across all scenarios
+
+### Mobile Improvements
+- ✅ Removed auto-pause behavior
+- ✅ Enhanced touch gesture recognition
+- ✅ Improved state persistence
+- ✅ Better safe area handling
+
+### AI Enhancements  
+- ✅ Automatic learning system (no user intervention)
+- ✅ Improved move ordering and evaluation
+- ✅ Better handling of different board sizes
+- ✅ Enhanced debug capabilities
+
+### Grid Size Updates
+- ✅ Removed 3×3 grid option
+- ✅ Added 7×7 and 9×9 grid support
+- ✅ Optimized responsive layout for all sizes
+- ✅ Updated cycling: 4×4 → 5×5 → 7×7 → 9×9
+
+## 🤝 Contributing
+
+This game is designed to be a complete, feature-rich 2048 implementation. All major features are implemented and working correctly.
+
+## 📄 License
+
+This project is open source and available under standard open source terms.
+
+---
+
+**Enjoy playing Fancy2048!** 🎉
 4. **Use AI assistance** or compete against it
 5. **Track your progress** in the statistics page
 
