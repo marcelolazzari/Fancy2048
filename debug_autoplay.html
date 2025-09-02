@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Debug Autoplay Issue</title>
+    <style>
+        body {
+            font-family: monospace;
+            padding: 20px;
+            background: #1a1a1a;
+            color: #f2f2f2;
+        }
+        .debug-log {
+            background: #2a2a2a;
+            padding: 10px;
+            margin: 10px 0;
+            border-radius: 5px;
+            white-space: pre-wrap;
+        }
+        button {
+            padding: 10px 20px;
+            margin: 5px;
+            background: #ffcc00;
+            color: #000;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+        }
+        button:hover {
+            background: #e6b800;
+        }
+    </style>
+</head>
+<body>
+    <h1>🐛 Debug Autoplay Issue</h1>
+    <button onclick="testAIAutoplay()">Test AI Autoplay (3 moves)</button>
+    <button onclick="testCanMove()">Test canMove() Methods</button>
+    <button onclick="clearDebugLog()">Clear Log</button>
+    
+    <div id="debug-log" class="debug-log">Debug output will appear here...</div>
+    
+    <!-- Load the game scripts in correct order -->
+    <script src="scripts/logger.js"></script>
+    <script src="scripts/ai_learning_system.js"></script>
+    <script src="scripts/advanced_ai_solver.js"></script>
+    <script src="scripts/enhanced_ai.js"></script>
+    
+    <!-- Minimal DOM elements needed for game -->
+    <div style="display: none;">
+        <div id="board-container"></div>
+        <span id="score">0</span>
+        <span id="best-score">0</span>
+        <span id="moves">0</span>
+        <span id="time">00:00</span>
+        <button id="changeColor-button"></button>
+        <button id="leaderboard-button"></button>
+        <button id="export-stats-button"></button>
+        <button id="back-button"></button>
+        <button id="pause-button"></button>
+        <button id="board-size-button"></button>
+        <button id="theme-toggle-button"></button>
+        <button id="autoplay-button"></button>
+        <button id="speed-button"><span class="speed-text">1x</span></button>
+        <button id="reset-button"></button>
+        <button id="ai-difficulty-button"><span class="button-text">Normal</span></button>
+    </div>
+    
+    <script src="scripts/game.js"></script>
+    
+    <script>
+        const debugLog = document.getElementById('debug-log');
+        let originalConsoleLog = console.log;
+        
+        // Capture console output
+        console.log = function(...args) {
+            originalConsoleLog.apply(console, args);
+            debugLog.textContent += args.join(' ') + '\n';
+            debugLog.scrollTop = debugLog.scrollHeight;
+        };
+        
+        function clearDebugLog() {
+            debugLog.textContent = 'Debug log cleared...\n';
+        }
+        
+        function testAIAutoplay() {
+            clearDebugLog();
+            console.log('🔧 Starting AI autoplay test...');
+            
+            if (!window.game) {
+                console.log('❌ Game not initialized');
+                return;
+            }
+            
+            // Reset the game
+            window.game.resetGame();
+            console.log('🎮 Game reset complete');
+            
+            // Log initial board state
+            console.log('📋 Initial board:');
+            for (let i = 0; i < window.game.size; i++) {
+                console.log(window.game.board[i].join('\t'));
+            }
+            
+            // Test canMove for all directions
+            console.log('🔍 Testing canMove methods:');
+            const moves = ['up', 'down', 'left', 'right'];
+            moves.forEach(move => {
+                const canMove = window.game.canMove(move);
+                console.log(`  ${move}: ${canMove}`);
+            });
+            
+            // Start autoplay with debugging
+            console.log('🤖 Starting autoplay...');
+            window.debugAI = true;
+            window.game.startAutoPlay();
+            
+            // Stop after 3 moves for testing
+            setTimeout(() => {
+                console.log('⏹️ Stopping autoplay after test period');
+                window.game.stopAutoPlay();
+                console.log('📊 Final board state:');
+                for (let i = 0; i < window.game.size; i++) {
+                    console.log(window.game.board[i].join('\t'));
+                }
+                console.log(`🎯 Moves made: ${window.game.autoPlayMoves || 0}`);
+                console.log(`🎮 Game state: ${window.game.gameState}`);
+            }, 5000);
+        }
+        
+        function testCanMove() {
+            clearDebugLog();
+            console.log('🧪 Testing canMove() methods...');
+            
+            if (!window.game) {
+                console.log('❌ Game not initialized');
+                return;
+            }
+            
+            const moves = ['up', 'down', 'left', 'right'];
+            console.log('📋 Current board:');
+            for (let i = 0; i < window.game.size; i++) {
+                console.log(window.game.board[i].join('\t'));
+            }
+            
+            console.log('🔍 Move availability:');
+            moves.forEach(move => {
+                const canMove = window.game.canMove(move);
+                console.log(`  ${move}: ${canMove ? '✅' : '❌'}`);
+            });
+            
+            // Test if any moves are available
+            const anyMoves = moves.some(move => window.game.canMove(move));
+            console.log(`🎯 Any moves available: ${anyMoves ? '✅ YES' : '❌ NO'}`);
+            
+            // Check empty cells
+            let emptyCount = 0;
+            for (let i = 0; i < window.game.size; i++) {
+                for (let j = 0; j < window.game.size; j++) {
+                    if (window.game.board[i][j] === 0) emptyCount++;
+                }
+            }
+            console.log(`📊 Empty cells: ${emptyCount}`);
+            console.log(`🎮 Current game state: ${window.game.gameState}`);
+            console.log(`🤖 Animation in progress: ${window.game.animationInProgress}`);
+        }
+        
+        // Initialize debugging on page load
+        setTimeout(() => {
+            console.log('🔧 Debug page loaded, game available for testing');
+            if (window.game) {
+                console.log('✅ Game initialized successfully');
+            } else {
+                console.log('❌ Game failed to initialize');
+            }
+        }, 1000);
+    </script>
+</body>
+</html>

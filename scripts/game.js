@@ -1090,10 +1090,8 @@ class Game {
 
   // Game mechanics with enhanced move validation
   canMove(direction) {
-    // Prevent checking moves during animations to avoid race conditions
-    if (this.animationInProgress) {
-      return false;
-    }
+    // Skip animation check in canMove for AI to avoid false negatives
+    // The startAutoPlay already checks for animations before calling AI
     
     // Simulate the move to check if anything would change
     const originalBoard = this.board.map(row => [...row]);
@@ -3449,6 +3447,8 @@ class Game {
     this.isAutoPlayedGame = true; // Track that AI was used in this game
     
     const makeMove = () => {
+      console.log(`🔄 AutoPlay Loop - Move ${this.autoPlayMoves + 1}, Game State: ${this.gameState}`);
+      
       // Check stopping conditions
       if (!this.isAutoPlaying) {
         console.log('🤖 Autoplay stopped: isAutoPlaying = false');
@@ -3474,80 +3474,74 @@ class Game {
         return;
       }
       
-      // Additional safety check: Verify moves are still possible before attempting AI move
-      const canMoveUp = this.canMove('up');
-      const canMoveDown = this.canMove('down');
-      const canMoveLeft = this.canMove('left');
-      const canMoveRight = this.canMove('right');
-      const hasAnyValidMoves = canMoveUp || canMoveDown || canMoveLeft || canMoveRight;
-      
-      // Also check if board is completely full as an additional condition
-      let emptySpaces = 0;
-      for (let i = 0; i < this.size; i++) {
-        for (let j = 0; j < this.size; j++) {
-          if (this.board[i][j] === 0) emptySpaces++;
-        }
-      }
-      
-      if (!hasAnyValidMoves || (emptySpaces === 0 && !hasAnyValidMoves)) {
-        console.log('🤖 Pre-move check: No valid moves available, triggering game over');
-        console.log('🔍 Game over conditions:', {
-          emptySpaces: emptySpaces,
-          canMove: {
-            up: canMoveUp,
-            down: canMoveDown,
-            left: canMoveLeft,
-            right: canMoveRight
-          },
-          boardFull: emptySpaces === 0
-        });
-        
-        // Set game state to over and stop autoplay
-        this.gameState = 'over';
-        this.stopAutoPlay();
-        this.showGameOver();
-        return;
-      }
+      // REMOVED: Overly aggressive pre-move validation that was causing premature game over
+      // Let the game's natural checkGameState() method handle game over detection properly
 
       try {
+        console.log('🎯 AI attempting to get best move...');
         const move = this.getBestMove();
         
         if (!move) {
           console.log('🤖 AI could not determine a move');
-          // Double-check if any moves are actually possible
+          // Only check for actual game over if AI genuinely can't find a move
           const hasValidMoves = this.canMove('up') || this.canMove('down') || 
                               this.canMove('left') || this.canMove('right');
           
+          console.log('🔍 Manual move check after AI failure:', {
+            up: this.canMove('up'),
+            down: this.canMove('down'),
+            left: this.canMove('left'),
+            right: this.canMove('right'),
+            hasAny: hasValidMoves
+          });
+          
           if (!hasValidMoves) {
             console.log('🤖 Confirmed: No valid moves available, stopping autoplay');
+            this.gameState = 'over';
             this.stopAutoPlay();
+            this.showGameOver();
           } else {
             console.log('⚠️ AI failed to find move, but moves are available. Retrying...');
-            // Try again on next interval rather than stopping immediately
           }
           return;
         }
         
+        console.log(`🎯 AI suggests move: ${move}`);
+        
         if (!this.canMove(move)) {
           console.log(`🤖 AI suggested invalid move: ${move}`);
-          // Double-check if any moves are actually possible
+          // Only check for actual game over if the suggested move is truly invalid
           const hasValidMoves = this.canMove('up') || this.canMove('down') || 
                               this.canMove('left') || this.canMove('right');
           
+          console.log('🔍 Manual move check after invalid suggestion:', {
+            up: this.canMove('up'),
+            down: this.canMove('down'),
+            left: this.canMove('left'),
+            right: this.canMove('right'),
+            hasAny: hasValidMoves
+          });
+          
           if (!hasValidMoves) {
             console.log('🤖 Confirmed: No valid moves available, stopping autoplay');
+            this.gameState = 'over';
             this.stopAutoPlay();
+            this.showGameOver();
           } else {
             console.log('⚠️ AI suggested bad move, but other moves available. Retrying...');
           }
           return;
         }
         
+        console.log(`🚀 Executing AI move: ${move}`);
+        
         // Execute the move
         const moveSuccessful = this.move(move);
         
         if (moveSuccessful) {
           this.autoPlayMoves++;
+          
+          console.log(`✅ Move ${move} successful! Total moves: ${this.autoPlayMoves}`);
           
           // Update UI
           this.updateAutoPlayButton();
@@ -3556,26 +3550,10 @@ class Game {
             console.log(`🤖 AI made move: ${move} (total moves: ${this.autoPlayMoves})`);
           }
           
-          // Check game state after move completes (AI-specific timing)
-          setTimeout(() => {
-            if (!this.animationInProgress && this.isAutoPlaying) {
-              this.checkGameState();
-              
-              // Additional safety check: If checkGameState didn't catch it, double-check
-              if (this.gameState !== 'over' && this.isAutoPlaying) {
-                const stillHasValidMoves = this.canMove('up') || this.canMove('down') || 
-                                         this.canMove('left') || this.canMove('right');
-                if (!stillHasValidMoves) {
-                  console.log('🤖 Post-move safety check: No moves available, forcing game over');
-                  this.gameState = 'over';
-                  this.stopAutoPlay();
-                  this.showGameOver();
-                }
-              }
-            }
-          }, 200); // Shorter delay for AI since it doesn't need visual feedback time
+          // Let the game's natural checkGameState() handle game over detection
+          // This is called automatically after move animations complete
         } else {
-          console.log(`🤖 Move ${move} failed to execute despite being valid`);
+          console.log(`❌ Move ${move} failed to execute despite being valid`);
         }
         
       } catch (error) {
