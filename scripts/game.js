@@ -92,6 +92,13 @@ class Game {
     this.enhancedAI = null;
     this.aiLearningSystem = null;
     this.aiDifficulty = safeStorage.getItem('aiDifficulty', 'normal');
+    this.currentAIType = null;
+    
+    // Player type tracking
+    this.currentPlayerType = 'human';
+    this.aiActive = false;
+    this.humanMovesInGame = 0;
+    this.aiMovesInGame = 0;
 
     // Initialize the game with a short delay to ensure DOM is ready
     setTimeout(() => this.initializeGame(), 50);
@@ -403,6 +410,16 @@ class Game {
     }
 
     if (moved) {
+      // Track move counts for player type determination
+      if (this.aiActive) {
+        this.aiMovesInGame++;
+      } else {
+        this.humanMovesInGame++;
+      }
+      
+      // Update player type based on move distribution
+      this.updatePlayerType();
+      
       this.score += scoreGained;
       this.moves++;
       this.addRandomTile();
@@ -541,15 +558,17 @@ class Game {
 
   // Simulate a move without actually performing it
   simulateMove(direction) {
-    const boardCopy = JSON.parse(JSON.stringify(this.board));
-    
+    const boardCopy = this.board.map(row => [...row]);
+
     if (direction === 'left') {
       for (let i = 0; i < this.size; i++) {
-        boardCopy[i] = this.slideArray(boardCopy[i]);
+        const result = this.slideArray(boardCopy[i]);
+        boardCopy[i] = result.array;
       }
     } else if (direction === 'right') {
       for (let i = 0; i < this.size; i++) {
-        boardCopy[i] = this.slideArray(boardCopy[i].slice().reverse()).reverse();
+        const result = this.slideArray(boardCopy[i].slice().reverse());
+        boardCopy[i] = result.array.slice().reverse();
       }
     } else if (direction === 'up') {
       for (let j = 0; j < this.size; j++) {
@@ -557,7 +576,8 @@ class Game {
         for (let i = 0; i < this.size; i++) {
           column.push(boardCopy[i][j]);
         }
-        const newColumn = this.slideArray(column);
+        const result = this.slideArray(column);
+        const newColumn = result.array;
         for (let i = 0; i < this.size; i++) {
           boardCopy[i][j] = newColumn[i];
         }
@@ -568,7 +588,8 @@ class Game {
         for (let i = 0; i < this.size; i++) {
           column.push(boardCopy[i][j]);
         }
-        const newColumn = this.slideArray(column.slice().reverse()).reverse();
+        const result = this.slideArray(column.slice().reverse());
+        const newColumn = result.array.slice().reverse();
         for (let i = 0; i < this.size; i++) {
           boardCopy[i][j] = newColumn[i];
         }
@@ -577,21 +598,49 @@ class Game {
     
     return boardCopy;
   }
-
+  
   showWinMessage() {
+    // Record game end for AI learning system
+    if (this.aiLearningSystem && this.aiLearningSystem.recordGameEnd) {
+      this.aiLearningSystem.recordGameEnd(
+        this.score, 
+        this.getMaxTile(), 
+        true, // won
+        this.moves
+      );
+    }
+    
+    // Save game result as won
+    this.saveGameResult(true);
+    
+    // Show win UI
     const overlay = document.getElementById('game-won');
     if (overlay) {
       overlay.classList.remove('hidden');
     }
-    console.log('🎉 Player won!');
+    console.log('🎉 Player won! Final Score:', this.score);
   }
 
   showGameOver() {
+    // Record game end for AI learning system
+    if (this.aiLearningSystem && this.aiLearningSystem.recordGameEnd) {
+      this.aiLearningSystem.recordGameEnd(
+        this.score, 
+        this.getMaxTile(), 
+        false, // not won
+        this.moves
+      );
+    }
+    
+    // Save game result before showing game over
+    this.saveGameResult(false);
+    
+    // Show game over UI
     const overlay = document.getElementById('game-over');
     if (overlay) {
       overlay.classList.remove('hidden');
     }
-    console.log('😞 Game over');
+    console.log('😞 Game Over! Final Score:', this.score);
   }
 
   continueGame() {
@@ -603,41 +652,51 @@ class Game {
   }
 
   resetGame() {
-    console.log('Resetting game...');
-    
-    // Reset game state
+    // Reset all game state
     this.board = this.createEmptyBoard();
     this.score = 0;
     this.moves = 0;
     this.gameState = 'playing';
     this.gameWon = false;
     this.isPaused = false;
-    this.startTime = Date.now();
-    
-    // Clear game state stack
     this.gameStateStack = [];
     
-    // Hide overlays
-    const overlays = ['game-over', 'game-won', 'pause-overlay'];
-    overlays.forEach(id => {
-      const overlay = document.getElementById(id);
-      if (overlay) {
-        overlay.classList.add('hidden');
-      }
-    });
+    // Reset player type tracking
+    this.humanMovesInGame = 0;
+    this.aiMovesInGame = 0;
+    this.currentPlayerType = 'human';
     
-    // Stop autoplay
-    if (this.isAutoPlaying) {
-      this.stopAutoPlay();
-    }
-    
-    // Restart game
-    this.addRandomTile();
-    this.addRandomTile();
-    this.updateUI();
+    // Reset timer
+    this.startTime = Date.now();
     this.startTimer();
     
-    console.log('✅ Game reset complete');
+    // Initialize with two random tiles
+    this.addRandomTile();
+    this.addRandomTile();
+    
+    // Update display
+    this.updateUI();
+    
+    console.log('🎮 Game reset');
+  }
+  
+  // Update player type based on move distribution
+  updatePlayerType() {
+    const totalMoves = this.humanMovesInGame + this.aiMovesInGame;
+    if (totalMoves === 0) {
+      this.currentPlayerType = 'human';
+      return;
+    }
+    
+    const aiRatio = this.aiMovesInGame / totalMoves;
+    
+    if (aiRatio >= 0.8) {
+      this.currentPlayerType = 'ai';
+    } else if (aiRatio >= 0.2) {
+      this.currentPlayerType = 'mixed';
+    } else {
+      this.currentPlayerType = 'human';
+    }
   }
 
   // Game state management
@@ -1031,6 +1090,9 @@ class Game {
   // Score tracking and saving methods
   saveGameResult(gameWon = false) {
     try {
+      // Update player type before saving
+      this.updatePlayerType();
+      
       const gameResult = {
         score: this.score || 0,
         moves: this.moves || 0,
@@ -1041,10 +1103,29 @@ class Game {
         aiType: this.currentAIType || null,
         timestamp: Date.now(),
         boardSize: this.size || 4,
-        gameId: Date.now() + '-' + Math.random().toString(36).substr(2, 9)
+        gameId: Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+        date: new Date().toISOString(),
+        bestTile: this.getMaxTile(),
+        bestScore: this.bestScore,
+        time: this.getFormattedTime(),
+        gridSize: this.size,
+        gridType: `${this.size}x${this.size}`,
+        playMode: this.getPlayModeDisplay(),
+        isAutoPlayed: this.currentPlayerType === 'ai'
       };
       
-      // Save to appropriate storage based on player type
+      // Use statistics.js saveGame function if available
+      if (typeof saveGame === 'function') {
+        const success = saveGame(gameResult);
+        if (success) {
+          console.log(`✅ Game result saved via statistics.js: ${gameResult.score} points (${gameResult.playerType})`);
+          return gameResult;
+        } else {
+          console.warn('⚠️ Statistics.js saveGame failed, using fallback storage');
+        }
+      }
+      
+      // Fallback to direct storage
       const storageKey = this.getStorageKey();
       let savedGames = safeStorage.getJSON(storageKey, []);
       savedGames.push(gameResult);
@@ -1055,26 +1136,31 @@ class Game {
       }
       
       safeStorage.setJSON(storageKey, savedGames);
-      
-      // Also save to general leaderboard
-      this.updateLeaderboard(gameResult);
-      
-      console.log(`Game result saved: ${gameResult.score} points (${gameResult.playerType})`);
+      console.log(`📁 Game result saved to ${storageKey}: ${gameResult.score} points (${gameResult.playerType})`);
       return gameResult;
       
     } catch (error) {
-      console.error('Failed to save game result:', error);
+      console.error('❌ Failed to save game result:', error);
       return null;
     }
   }
   
-  getStorageKey() {
-    if (this.currentPlayerType === 'ai') {
-      return 'aiGameStats';
-    } else if (this.currentPlayerType === 'mixed') {
-      return 'mixedGameStats';
+  getPlayModeDisplay() {
+    switch (this.currentPlayerType) {
+      case 'ai': return 'AI';
+      case 'mixed': return 'AI + Human';
+      case 'human': 
+      default: return 'Human';
     }
-    return 'gameStats';
+  }
+  
+  getStorageKey() {
+    const keys = {
+      'human': 'fancy2048_human_games',
+      'ai': 'fancy2048_ai_games',
+      'mixed': 'fancy2048_mixed_games'
+    };
+    return keys[this.currentPlayerType] || 'fancy2048_human_games';
   }
   
   updateLeaderboard(gameResult) {
@@ -1105,52 +1191,6 @@ class Game {
   setPlayerType(playerType, aiType = null) {
     this.currentPlayerType = playerType;
     this.currentAIType = aiType;
-  }
-  
-  // Override game over to save results
-  showGameOver() {
-    // Record game end for AI learning system
-    if (this.aiLearningSystem && this.aiLearningSystem.recordGameEnd) {
-      this.aiLearningSystem.recordGameEnd(
-        this.score, 
-        this.getMaxTile(), 
-        false, // not won
-        this.moves
-      );
-    }
-    
-    // Save game result before showing game over
-    this.saveGameResult(false);
-    
-    // Call original game over logic if it exists
-    if (this.originalShowGameOver) {
-      this.originalShowGameOver();
-    } else {
-      console.log('Game Over! Final Score:', this.score);
-    }
-  }
-  
-  // Override win condition to save results
-  showWinMessage() {
-    // Record game end for AI learning system
-    if (this.aiLearningSystem && this.aiLearningSystem.recordGameEnd) {
-      this.aiLearningSystem.recordGameEnd(
-        this.score, 
-        this.getMaxTile(), 
-        true, // won
-        this.moves
-      );
-    }
-    
-    // Save game result as won
-    this.saveGameResult(true);
-    
-    // Call original win logic if it exists
-    if (this.originalShowWinMessage) {
-      this.originalShowWinMessage();
-    } else {
-      console.log('You Won! Score:', this.score);
-    }
   }
 
 }
