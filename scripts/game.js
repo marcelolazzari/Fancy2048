@@ -408,6 +408,16 @@ class Game {
       this.addRandomTile();
       this.updateUI();
       
+      // Record move for AI learning system
+      if (this.aiLearningSystem && this.aiLearningSystem.learningData) {
+        this.aiLearningSystem.recordMove(
+          previousBoard, 
+          direction, 
+          this.board, 
+          scoreGained
+        );
+      }
+      
       console.log(`Move ${direction}: Score +${scoreGained}, Total: ${this.score}`);
       
       // Check win/lose conditions
@@ -829,7 +839,7 @@ class Game {
 
   // Board size cycling
   cycleBoardSize() {
-    const sizes = [3, 4, 5, 7, 9];
+    const sizes = [4, 5, 7, 9]; // As specified in README: 4×4, 5×5, 7×7, or 9×9 grids
     const currentIndex = sizes.indexOf(this.size);
     const nextIndex = (currentIndex + 1) % sizes.length;
     
@@ -1099,6 +1109,16 @@ class Game {
   
   // Override game over to save results
   showGameOver() {
+    // Record game end for AI learning system
+    if (this.aiLearningSystem && this.aiLearningSystem.recordGameEnd) {
+      this.aiLearningSystem.recordGameEnd(
+        this.score, 
+        this.getMaxTile(), 
+        false, // not won
+        this.moves
+      );
+    }
+    
     // Save game result before showing game over
     this.saveGameResult(false);
     
@@ -1112,6 +1132,16 @@ class Game {
   
   // Override win condition to save results
   showWinMessage() {
+    // Record game end for AI learning system
+    if (this.aiLearningSystem && this.aiLearningSystem.recordGameEnd) {
+      this.aiLearningSystem.recordGameEnd(
+        this.score, 
+        this.getMaxTile(), 
+        true, // won
+        this.moves
+      );
+    }
+    
     // Save game result as won
     this.saveGameResult(true);
     

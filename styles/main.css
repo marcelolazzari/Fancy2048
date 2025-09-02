@@ -911,6 +911,171 @@ main {
   display: none !important;
 }
 
+/* Message overlays and AI Learning Panel */
+.message-overlay,
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.8);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  backdrop-filter: blur(5px);
+}
+
+.message-content,
+.overlay-content {
+  background: linear-gradient(135deg, #2a2a2a 0%, #3a3a3a 100%);
+  padding: 30px;
+  border-radius: 15px;
+  text-align: center;
+  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+  border: 2px solid var(--highlight-color);
+  max-width: 90%;
+  max-height: 90%;
+  overflow-y: auto;
+  position: relative;
+}
+
+.message-content h2,
+.overlay-content h2 {
+  color: var(--highlight-color);
+  margin-bottom: 15px;
+  font-size: 1.8rem;
+}
+
+.message-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: center;
+  margin-top: 20px;
+  flex-wrap: wrap;
+}
+
+.message-buttons button,
+.overlay-content > button:not(.close-button) {
+  background: var(--highlight-color);
+  color: var(--background-color);
+  border: none;
+  padding: 12px 24px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-weight: bold;
+  transition: all 0.3s ease;
+}
+
+.message-buttons button:hover,
+.overlay-content > button:not(.close-button):hover {
+  background: #ffdb4d;
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(255, 204, 0, 0.3);
+}
+
+/* AI Learning Panel Styles */
+.ai-learning-content {
+  text-align: left;
+  margin-bottom: 20px;
+}
+
+.ai-learning-content h3 {
+  color: var(--highlight-color);
+  margin-bottom: 15px;
+  font-size: 1.3rem;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.stats-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 15px;
+  margin-bottom: 25px;
+}
+
+.stat-item {
+  background: rgba(255, 255, 255, 0.05);
+  padding: 15px;
+  border-radius: 8px;
+  border-left: 4px solid var(--highlight-color);
+}
+
+.stat-item strong {
+  color: var(--highlight-color);
+  display: block;
+  margin-bottom: 5px;
+}
+
+.control-buttons {
+  display: flex;
+  gap: 10px;
+  flex-wrap: wrap;
+  margin-bottom: 20px;
+}
+
+.learning-btn {
+  background: var(--tile-color);
+  color: var(--text-color);
+  border: 1px solid var(--highlight-color);
+  padding: 10px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.learning-btn:hover {
+  background: var(--highlight-color);
+  color: var(--background-color);
+}
+
+.learning-btn.warning {
+  border-color: #ff6b6b;
+  color: #ff6b6b;
+}
+
+.learning-btn.warning:hover {
+  background: #ff6b6b;
+  color: white;
+}
+
+.ai-insights {
+  background: rgba(255, 204, 0, 0.1);
+  padding: 15px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 204, 0, 0.3);
+}
+
+#ai-insights-content p {
+  margin: 5px 0;
+  color: var(--text-color);
+}
+
+.close-button {
+  position: absolute;
+  top: 15px;
+  right: 20px;
+  background: transparent !important;
+  color: #999 !important;
+  border: none !important;
+  font-size: 1.5rem;
+  cursor: pointer;
+  padding: 5px 10px;
+  border-radius: 4px;
+}
+
+.close-button:hover {
+  background: rgba(255, 255, 255, 0.1) !important;
+  color: var(--highlight-color) !important;
+}
+
 /* Footer */
 footer {
   width: 100%;

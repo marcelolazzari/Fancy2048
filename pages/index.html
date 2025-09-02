@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Fancy 2048</title>
     
+    <!-- PWA Meta Tags -->
+    <meta name="theme-color" content="#1a1a1a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="description" content="A modern, feature-rich implementation of the classic 2048 puzzle game with AI capabilities">
+    
+    <!-- PWA Manifest -->
+    <link rel="manifest" href="../manifest.json">
+    
     <!-- Primary CSS -->
     <link rel="stylesheet" href="../styles/main.css" onload="console.log('✅ CSS loaded')" onerror="console.error('❌ CSS failed to load')">
     
@@ -53,6 +63,7 @@
                 <li><button id="changeColor-button" title="Change colors"><i class="fas fa-palette"></i></button></li>
                 <li><button id="leaderboard-button" title="View statistics"><i class="fas fa-chart-line"></i></button></li>
                 <li><button id="export-stats-button" title="Export stats"><i class="fas fa-download"></i></button></li>
+                <li><button id="ai-learning-button" title="AI Learning Panel"><i class="fas fa-graduation-cap"></i></button></li>
                 <li><button id="back-button" title="Undo move"><i class="fas fa-undo"></i></button></li>
                 <li><button id="pause-button" title="Pause game"><i class="fas fa-pause"></i></button></li>
                 <li><button id="board-size-button" title="Board size"><i class="fas fa-th"></i></button></li>
@@ -114,6 +125,65 @@
                 <button onclick="window.game?.togglePause()" class="resume-button">▶️ Resume</button>
             </div>
         </div>
+
+        <!-- AI Learning Panel -->
+        <div id="ai-learning-panel" class="overlay hidden">
+            <div class="overlay-content" style="max-width: 600px; max-height: 80vh; overflow-y: auto;">
+                <h2>🧠 AI Learning System</h2>
+                <div class="ai-learning-content">
+                    <div class="learning-stats">
+                        <h3>📈 Learning Statistics</h3>
+                        <div class="stats-grid">
+                            <div class="stat-item">
+                                <strong>Games Played:</strong> <span id="ai-games-played">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <strong>Average Score:</strong> <span id="ai-avg-score">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <strong>Win Rate:</strong> <span id="ai-win-rate">0%</span>
+                            </div>
+                            <div class="stat-item">
+                                <strong>Best Score:</strong> <span id="ai-best-score">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <strong>Patterns Learned:</strong> <span id="ai-patterns-learned">0</span>
+                            </div>
+                            <div class="stat-item">
+                                <strong>Recent Improvement:</strong> <span id="ai-recent-improvement">N/A</span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="learning-controls">
+                        <h3>⚙️ Learning Controls</h3>
+                        <div class="control-buttons">
+                            <button id="toggle-learning-btn" class="learning-btn">
+                                <i class="fas fa-power-off"></i> Toggle Learning
+                            </button>
+                            <button id="export-learning-btn" class="learning-btn">
+                                <i class="fas fa-download"></i> Export Data
+                            </button>
+                            <button id="import-learning-btn" class="learning-btn">
+                                <i class="fas fa-upload"></i> Import Data
+                            </button>
+                            <button id="clear-learning-btn" class="learning-btn warning">
+                                <i class="fas fa-trash"></i> Clear Data
+                            </button>
+                        </div>
+                        <input type="file" id="import-learning-file" accept=".json,.2048brain" style="display: none;">
+                    </div>
+                    
+                    <div class="ai-insights">
+                        <h3>💡 AI Insights</h3>
+                        <div id="ai-insights-content">
+                            <p>AI is learning from each game to improve performance...</p>
+                        </div>
+                    </div>
+                </div>
+                <button onclick="toggleAILearningPanel()" class="close-button">✕ Close</button>
+            </div>
+        </div>
     </main>
 
     <script>
@@ -172,6 +242,43 @@
             }
         }
 
+        function toggleAILearningPanel() {
+            const panel = document.getElementById('ai-learning-panel');
+            if (panel) {
+                const isHidden = panel.classList.contains('hidden');
+                if (isHidden) {
+                    updateAILearningStats();
+                    panel.classList.remove('hidden');
+                } else {
+                    panel.classList.add('hidden');
+                }
+            }
+        }
+
+        function updateAILearningStats() {
+            if (window.game && window.game.aiLearningSystem) {
+                const stats = window.game.aiLearningSystem.getLearningStats();
+                document.getElementById('ai-games-played').textContent = stats.totalGames || 0;
+                document.getElementById('ai-avg-score').textContent = Math.round(stats.averageScore || 0);
+                document.getElementById('ai-win-rate').textContent = (stats.winRate || 0) + '%';
+                document.getElementById('ai-best-score').textContent = stats.bestScore || 0;
+                document.getElementById('ai-patterns-learned').textContent = stats.patternsLearned || 0;
+                document.getElementById('ai-recent-improvement').textContent = stats.recentImprovement || 'N/A';
+                
+                // Update insights
+                const insightsContent = document.getElementById('ai-insights-content');
+                if (stats.totalGames === 0) {
+                    insightsContent.innerHTML = '<p>No games played yet. Start playing to begin learning!</p>';
+                } else if (stats.totalGames < 10) {
+                    insightsContent.innerHTML = '<p>🎯 Early learning phase. AI is gathering initial patterns...</p>';
+                } else if (stats.recentImprovement && stats.recentImprovement !== 'N/A') {
+                    insightsContent.innerHTML = `<p>📈 Recent improvement: ${stats.recentImprovement}</p><p>💪 AI is getting stronger with each game!</p>`;
+                } else {
+                    insightsContent.innerHTML = '<p>🧠 AI is continuously learning from gameplay patterns.</p>';
+                }
+            }
+        }
+
         function setupButtonHandlers() {
             try {
                 // Setup leaderboard button
@@ -179,6 +286,13 @@
                 if (leaderboardBtn) {
                     leaderboardBtn.addEventListener('click', navigateToLeaderboard);
                     console.log('✅ Leaderboard button handler added');
+                }
+
+                // Setup AI learning button
+                const aiLearningBtn = document.getElementById('ai-learning-button');
+                if (aiLearningBtn) {
+                    aiLearningBtn.addEventListener('click', toggleAILearningPanel);
+                    console.log('✅ AI Learning button handler added');
                 }
 
                 // Setup reset button
@@ -191,6 +305,42 @@
                     });
                     console.log('✅ Reset button handler added');
                 }
+
+                // Setup AI Learning Panel controls
+                setTimeout(() => {
+                    const exportLearningBtn = document.getElementById('export-learning-btn');
+                    if (exportLearningBtn) {
+                        exportLearningBtn.addEventListener('click', () => {
+                            if (window.game && window.game.aiLearningSystem) {
+                                window.game.aiLearningSystem.exportLearningData();
+                            }
+                        });
+                    }
+
+                    const importLearningBtn = document.getElementById('import-learning-btn');
+                    const importLearningFile = document.getElementById('import-learning-file');
+                    if (importLearningBtn && importLearningFile) {
+                        importLearningBtn.addEventListener('click', () => importLearningFile.click());
+                        importLearningFile.addEventListener('change', (e) => {
+                            if (e.target.files[0] && window.game && window.game.aiLearningSystem) {
+                                window.game.aiLearningSystem.importLearningData(e.target.files[0]);
+                                updateAILearningStats();
+                            }
+                        });
+                    }
+
+                    const clearLearningBtn = document.getElementById('clear-learning-btn');
+                    if (clearLearningBtn) {
+                        clearLearningBtn.addEventListener('click', () => {
+                            if (confirm('Are you sure you want to clear all AI learning data? This cannot be undone.')) {
+                                if (window.game && window.game.aiLearningSystem) {
+                                    window.game.aiLearningSystem.clearLearningData();
+                                    updateAILearningStats();
+                                }
+                            }
+                        });
+                    }
+                }, 1000);
                 
                 // Add other button handlers as needed
                 console.log('✅ Button handlers setup complete');
@@ -274,6 +424,8 @@
                 document.addEventListener('keydown', (event) => {
                     if (!window.game || window.game.isPaused) return;
                     
+                    const isCtrlCmd = event.ctrlKey || event.metaKey;
+                    
                     switch (event.key) {
                         case 'ArrowUp':
                             event.preventDefault();
@@ -297,8 +449,55 @@
                                 window.game.togglePause();
                             }
                             break;
+                        case 'z':
+                        case 'Z':
+                            if (isCtrlCmd) {
+                                event.preventDefault();
+                                if (window.game.undoMove) {
+                                    window.game.undoMove();
+                                }
+                            }
+                            break;
+                        case 'r':
+                        case 'R':
+                            if (isCtrlCmd) {
+                                event.preventDefault();
+                                if (window.game.resetGame) {
+                                    window.game.resetGame();
+                                }
+                            }
+                            break;
+                        case 'a':
+                        case 'A':
+                            if (isCtrlCmd) {
+                                event.preventDefault();
+                                if (window.game.toggleAutoPlay) {
+                                    window.game.toggleAutoPlay();
+                                }
+                            }
+                            break;
+                        case 'p':
+                        case 'P':
+                            if (isCtrlCmd) {
+                                event.preventDefault();
+                                if (window.game.togglePause) {
+                                    window.game.togglePause();
+                                }
+                            }
+                            break;
                     }
                 });
+
+                // Register service worker for PWA functionality
+                if ('serviceWorker' in navigator) {
+                    navigator.serviceWorker.register('../service-worker.js')
+                        .then((registration) => {
+                            console.log('✅ Service Worker registered successfully:', registration);
+                        })
+                        .catch((error) => {
+                            console.log('⚠️ Service Worker registration failed:', error);
+                        });
+                }
 
             } catch (error) {
                 console.error('❌ Initialization failed:', error);

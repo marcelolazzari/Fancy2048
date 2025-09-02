@@ -8,6 +8,7 @@
     <meta name="mobile-web-app-capable" content="yes" />
     <meta name="theme-color" content="#1a1a1a" />
     <title>Fancy2048 Game Statistics</title>
+    <link rel="manifest" href="../manifest.json">
     <link rel="stylesheet" href="../styles/main.css" />
     <link rel="stylesheet" href="../styles/leaderboard.css" />
     <!-- GitHub Pages fallbacks -->
@@ -150,10 +151,10 @@
     
     let html = '<div class="score-dashboard"><h2>🏆 Score Dashboard</h2>';
     html += '<div class="score-filters">';
-    html += '<button onclick="filterByPlayerType('all')" class="filter-btn active">All Games</button>';
-    html += '<button onclick="filterByPlayerType('human')" class="filter-btn">👤 Human</button>';
-    html += '<button onclick="filterByPlayerType('ai')" class="filter-btn">🤖 AI</button>';
-    html += '<button onclick="filterByPlayerType('mixed')" class="filter-btn">🔄 Mixed</button>';
+    html += '<button onclick="filterByPlayerType(\'all\')" class="filter-btn active">All Games</button>';
+    html += '<button onclick="filterByPlayerType(\'human\')" class="filter-btn">👤 Human</button>';
+    html += '<button onclick="filterByPlayerType(\'ai\')" class="filter-btn">🤖 AI</button>';
+    html += '<button onclick="filterByPlayerType(\'mixed\')" class="filter-btn">🔄 Mixed</button>';
     html += '</div>';
     
     html += '<div class="leaderboard-table">';
