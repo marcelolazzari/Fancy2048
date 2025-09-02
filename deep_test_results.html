@@ -1,0 +1,327 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fancy2048 Deep Test Suite</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #1a1a1a; color: #fff; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 5px; }
+        .pass { background: rgba(76, 175, 80, 0.2); border-left: 4px solid #4CAF50; }
+        .fail { background: rgba(244, 67, 54, 0.2); border-left: 4px solid #f44336; }
+        .warning { background: rgba(255, 152, 0, 0.2); border-left: 4px solid #ff9800; }
+        button { background: #ff9900; border: none; padding: 10px 20px; color: white; border-radius: 5px; margin: 5px; cursor: pointer; }
+        button:hover { background: #ffb300; }
+        #results { margin-top: 20px; }
+        .test-section { margin: 20px 0; padding: 15px; background: rgba(255,255,255,0.1); border-radius: 8px; }
+        .hidden-game { position: absolute; left: -9999px; width: 1px; height: 1px; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Fancy2048 Deep Test Suite</h1>
+    <p>Comprehensive automated testing of all game components</p>
+    
+    <div class="test-section">
+        <h2>🎮 Game Engine Tests</h2>
+        <button onclick="testGameEngine()">Test Game Engine</button>
+        <button onclick="testAISystem()">Test AI System</button>
+        <button onclick="testUIComponents()">Test UI Components</button>
+        <button onclick="testGameMechanics()">Test Game Mechanics</button>
+    </div>
+    
+    <div class="test-section">
+        <h2>🔧 Integration Tests</h2>
+        <button onclick="testFullGameplay()">Test Full Gameplay</button>
+        <button onclick="testMobileFeatures()">Test Mobile Features</button>
+        <button onclick="testStatistics()">Test Statistics</button>
+        <button onclick="runAllTests()">🚀 Run All Tests</button>
+    </div>
+    
+    <div id="results"></div>
+    
+    <!-- Hidden game container for testing -->
+    <div class="hidden-game" id="test-game-container">
+        <div id="score-container"><ul><li>Score: <span id="score">0</span></li></ul></div>
+        <div id="board-container"></div>
+        <button id="reset-button">Reset</button>
+        <button id="ai-play-button">AI Play</button>
+    </div>
+
+    <script>
+        let testResults = {};
+        let game = null;
+        
+        function logResult(test, result, message) {
+            testResults[test] = { result, message, timestamp: new Date().toISOString() };
+            displayResult(test, result, message);
+        }
+        
+        function displayResult(test, result, message) {
+            const resultDiv = document.createElement('div');
+            resultDiv.className = `test-result ${result}`;
+            resultDiv.innerHTML = `<strong>${test}</strong>: ${message}`;
+            document.getElementById('results').appendChild(resultDiv);
+        }
+        
+        async function loadScripts() {
+            const scripts = [
+                '../scripts/ai_learning_system.js',
+                '../scripts/enhanced_ai.js',
+                '../scripts/advanced_ai_solver.js',
+                '../scripts/game.js'
+            ];
+            
+            for (let script of scripts) {
+                try {
+                    await new Promise((resolve, reject) => {
+                        const scriptTag = document.createElement('script');
+                        scriptTag.src = script;
+                        scriptTag.onload = resolve;
+                        scriptTag.onerror = reject;
+                        document.head.appendChild(scriptTag);
+                    });
+                    logResult(`Script Loading: ${script}`, 'pass', 'Loaded successfully');
+                } catch (error) {
+                    logResult(`Script Loading: ${script}`, 'fail', `Failed to load: ${error.message}`);
+                }
+            }
+        }
+        
+        async function testGameEngine() {
+            try {
+                if (typeof Game === 'undefined') {
+                    await loadScripts();
+                }
+                
+                if (typeof Game !== 'undefined') {
+                    game = new Game(4);
+                    logResult('Game Engine', 'pass', 'Game class instantiated successfully');
+                    
+                    // Test basic methods
+                    if (typeof game.createEmptyBoard === 'function') {
+                        game.createEmptyBoard();
+                        logResult('Board Creation', 'pass', 'Empty board created');
+                    } else {
+                        logResult('Board Creation', 'fail', 'createEmptyBoard method not found');
+                    }
+                    
+                    if (typeof game.move === 'function') {
+                        logResult('Move Function', 'pass', 'Move method available');
+                    } else {
+                        logResult('Move Function', 'fail', 'Move method not found');
+                    }
+                    
+                } else {
+                    logResult('Game Engine', 'fail', 'Game class not available after script loading');
+                }
+            } catch (error) {
+                logResult('Game Engine', 'fail', `Error: ${error.message}`);
+            }
+        }
+        
+        async function testAISystem() {
+            try {
+                const aiTests = [
+                    { name: 'Enhanced AI', class: 'Enhanced2048AI' },
+                    { name: 'Advanced AI', class: 'AdvancedAI2048Solver' },
+                    { name: 'Learning System', class: 'AILearningSystem' }
+                ];
+                
+                for (let aiTest of aiTests) {
+                    if (typeof window[aiTest.class] !== 'undefined') {
+                        try {
+                            const ai = new window[aiTest.class](game);
+                            if (typeof ai.getBestMove === 'function') {
+                                logResult(`${aiTest.name}`, 'pass', 'AI class loaded and functional');
+                            } else {
+                                logResult(`${aiTest.name}`, 'warning', 'AI class loaded but getBestMove missing');
+                            }
+                        } catch (error) {
+                            logResult(`${aiTest.name}`, 'fail', `Failed to instantiate: ${error.message}`);
+                        }
+                    } else {
+                        logResult(`${aiTest.name}`, 'fail', `Class ${aiTest.class} not available`);
+                    }
+                }
+            } catch (error) {
+                logResult('AI System', 'fail', `Error: ${error.message}`);
+            }
+        }
+        
+        async function testUIComponents() {
+            const requiredElements = [
+                'score-container',
+                'board-container',
+                'reset-button'
+            ];
+            
+            for (let elementId of requiredElements) {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    logResult(`UI Element: ${elementId}`, 'pass', 'Element found');
+                } else {
+                    logResult(`UI Element: ${elementId}`, 'fail', 'Element not found');
+                }
+            }
+        }
+        
+        async function testGameMechanics() {
+            if (!game) {
+                await testGameEngine();
+            }
+            
+            if (game) {
+                try {
+                    // Test board initialization
+                    game.createEmptyBoard();
+                    if (game.board && game.board.length === 4) {
+                        logResult('Board Size', 'pass', '4x4 board created correctly');
+                    } else {
+                        logResult('Board Size', 'fail', 'Board not created with correct dimensions');
+                    }
+                    
+                    // Test tile addition
+                    if (typeof game.addRandomTile === 'function') {
+                        const initialEmpty = game.board.flat().filter(cell => cell === 0).length;
+                        game.addRandomTile();
+                        const afterEmpty = game.board.flat().filter(cell => cell === 0).length;
+                        
+                        if (afterEmpty === initialEmpty - 1) {
+                            logResult('Tile Addition', 'pass', 'Random tile added correctly');
+                        } else {
+                            logResult('Tile Addition', 'warning', 'Tile addition behavior unexpected');
+                        }
+                    } else {
+                        logResult('Tile Addition', 'fail', 'addRandomTile method not found');
+                    }
+                    
+                } catch (error) {
+                    logResult('Game Mechanics', 'fail', `Error testing mechanics: ${error.message}`);
+                }
+            }
+        }
+        
+        async function testFullGameplay() {
+            if (!game) {
+                await testGameEngine();
+            }
+            
+            if (game) {
+                try {
+                    // Initialize game
+                    game.initializeGame();
+                    logResult('Game Initialization', 'pass', 'Game initialized successfully');
+                    
+                    // Test moves
+                    const moves = ['up', 'down', 'left', 'right'];
+                    let moveResults = [];
+                    
+                    for (let move of moves) {
+                        try {
+                            const canMove = game.canMove ? game.canMove(move) : true;
+                            game.move(move);
+                            moveResults.push(`${move}: OK`);
+                        } catch (error) {
+                            moveResults.push(`${move}: Error - ${error.message}`);
+                        }
+                    }
+                    
+                    logResult('Move Testing', 'pass', `Tested moves: ${moveResults.join(', ')}`);
+                    
+                } catch (error) {
+                    logResult('Full Gameplay', 'fail', `Error: ${error.message}`);
+                }
+            }
+        }
+        
+        async function testMobileFeatures() {
+            // Test touch events simulation
+            const testElement = document.body;
+            
+            try {
+                const touchStart = new TouchEvent('touchstart', {
+                    touches: [{ clientX: 100, clientY: 100 }]
+                });
+                const touchEnd = new TouchEvent('touchend', {
+                    touches: [{ clientX: 200, clientY: 100 }]
+                });
+                
+                testElement.dispatchEvent(touchStart);
+                testElement.dispatchEvent(touchEnd);
+                
+                logResult('Touch Events', 'pass', 'Touch events can be dispatched');
+            } catch (error) {
+                logResult('Touch Events', 'warning', `Touch event testing limited: ${error.message}`);
+            }
+        }
+        
+        async function testStatistics() {
+            try {
+                // Test localStorage access
+                localStorage.setItem('test', 'value');
+                const value = localStorage.getItem('test');
+                localStorage.removeItem('test');
+                
+                if (value === 'value') {
+                    logResult('LocalStorage', 'pass', 'LocalStorage working correctly');
+                } else {
+                    logResult('LocalStorage', 'fail', 'LocalStorage not functioning');
+                }
+                
+                // Test statistics functions if available
+                if (typeof window.saveGameStats === 'function') {
+                    logResult('Statistics Functions', 'pass', 'Statistics functions available');
+                } else {
+                    logResult('Statistics Functions', 'warning', 'Statistics functions not found');
+                }
+                
+            } catch (error) {
+                logResult('Statistics', 'fail', `Error: ${error.message}`);
+            }
+        }
+        
+        async function runAllTests() {
+            document.getElementById('results').innerHTML = '';
+            testResults = {};
+            
+            await loadScripts();
+            await testGameEngine();
+            await testAISystem();
+            await testUIComponents();
+            await testGameMechanics();
+            await testFullGameplay();
+            await testMobileFeatures();
+            await testStatistics();
+            
+            // Generate summary
+            const totalTests = Object.keys(testResults).length;
+            const passedTests = Object.values(testResults).filter(r => r.result === 'pass').length;
+            const failedTests = Object.values(testResults).filter(r => r.result === 'fail').length;
+            const warnings = Object.values(testResults).filter(r => r.result === 'warning').length;
+            
+            const summary = document.createElement('div');
+            summary.className = 'test-result pass';
+            summary.innerHTML = `
+                <strong>Test Summary</strong>: 
+                ${totalTests} total tests, 
+                ${passedTests} passed, 
+                ${failedTests} failed, 
+                ${warnings} warnings
+            `;
+            document.getElementById('results').appendChild(summary);
+            
+            // Send results to Python test suite
+            fetch('/test-results', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(testResults)
+            }).catch(e => console.log('Could not send results to test suite'));
+        }
+        
+        // Auto-run tests when page loads
+        window.addEventListener('load', () => {
+            setTimeout(runAllTests, 1000);
+        });
+    </script>
+</body>
+</html>

@@ -916,3 +916,6 @@ style.textContent = `
 document.head.appendChild(style);
 
 console.log('✅ Simplified Fancy2048 Game Engine loaded');
+
+// Make available globally
+window.Game = Game;

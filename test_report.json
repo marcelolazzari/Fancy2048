@@ -1,0 +1,55 @@
+{
+  "timestamp": "2025-09-02 18:33:24",
+  "test_results": {
+    "file_accessibility": {
+      "index.html": true,
+      "pages/index.html": true,
+      "pages/leaderboard.html": true,
+      "pages/game_fixed.html": true,
+      "styles/main.css": true,
+      "styles/leaderboard.css": true,
+      "scripts/game.js": true,
+      "scripts/enhanced_ai.js": true,
+      "scripts/advanced_ai_solver.js": true,
+      "scripts/ai_learning_system.js": true,
+      "scripts/statistics.js": true,
+      "scripts/leaderboard-stats.js": true
+    },
+    "html_structure": {
+      "pages/index.html": [
+        "Missing required element: id=\"ai-play-button\"",
+        "Missing required element: <script src=\"../scripts/game.js\"",
+        "Broken CSS link: /Fancy2048/styles/main.css",
+        "Broken CSS link: styles/main.css"
+      ],
+      "pages/leaderboard.html": [
+        "Missing required element: <div id=\"stats-section\"",
+        "Broken CSS link: /Fancy2048/styles/main.css",
+        "Broken CSS link: /Fancy2048/styles/leaderboard.css"
+      ]
+    },
+    "javascript_syntax": {
+      "scripts/game.js": true,
+      "scripts/enhanced_ai.js": true,
+      "scripts/advanced_ai_solver.js": true,
+      "scripts/ai_learning_system.js": true,
+      "scripts/statistics.js": true,
+      "scripts/leaderboard-stats.js": true
+    },
+    "css_validation": {
+      "styles/main.css": true,
+      "styles/leaderboard.css": true
+    },
+    "browser_tests": {
+      "browser_tests": "started",
+      "url": "http://localhost:8000/deep_test_results.html"
+    }
+  },
+  "errors_found": [],
+  "fixes_applied": [],
+  "summary": {
+    "total_errors": 0,
+    "fixes_applied": 0,
+    "server_url": "http://localhost:8000"
+  }
+}

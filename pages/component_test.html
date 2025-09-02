@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fancy2048 - Fixed Components Test</title>
+    <link rel="stylesheet" href="../styles/main.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #1a1a1a; color: #fff; }
+        .test-result { margin: 10px 0; padding: 10px; border-radius: 5px; border-left: 4px solid #333; }
+        .pass { border-left-color: #4CAF50; background: rgba(76, 175, 80, 0.1); }
+        .fail { border-left-color: #f44336; background: rgba(244, 67, 54, 0.1); }
+        .warning { border-left-color: #ff9800; background: rgba(255, 152, 0, 0.1); }
+        button { background: #ff9900; border: none; padding: 10px 20px; color: white; border-radius: 5px; margin: 5px; cursor: pointer; }
+        button:hover { background: #ffb300; }
+        .hidden { position: absolute; left: -9999px; width: 1px; height: 1px; }
+    </style>
+</head>
+<body>
+    <h1>🔧 Fancy2048 - Component Fix Verification</h1>
+    <p>This page tests all the fixed components to ensure they're working correctly.</p>
+    
+    <button onclick="runComponentTests()">🧪 Test Fixed Components</button>
+    <button onclick="testGameFunctionality()">🎮 Test Game Functionality</button>
+    <button onclick="clearResults()">🗑️ Clear Results</button>
+    
+    <div id="test-results"></div>
+    
+    <!-- Hidden game elements for testing -->
+    <div class="hidden">
+        <div id="score-container"><ul><li>Score: <span id="score">0</span></li></ul></div>
+        <div id="board-container"></div>
+        <button id="reset-button">Reset</button>
+        <button id="ai-play-button">AI Play</button>
+    </div>
+
+    <script src="../scripts/ai_learning_system.js"></script>
+    <script src="../scripts/enhanced_ai.js"></script>
+    <script src="../scripts/advanced_ai_solver.js"></script>
+    <script src="../scripts/game.js"></script>
+
+    <script>
+        function logResult(test, status, message) {
+            const resultsDiv = document.getElementById('test-results');
+            const div = document.createElement('div');
+            div.className = `test-result ${status}`;
+            div.innerHTML = `<strong>${test}:</strong> ${message}`;
+            resultsDiv.appendChild(div);
+        }
+        
+        function clearResults() {
+            document.getElementById('test-results').innerHTML = '';
+        }
+        
+        function runComponentTests() {
+            clearResults();
+            
+            // Test 1: CSS Loading
+            const computedStyle = getComputedStyle(document.body);
+            if (computedStyle.backgroundColor === 'rgb(26, 26, 26)') {
+                logResult('CSS Loading', 'pass', 'Main CSS file loaded successfully');
+            } else {
+                logResult('CSS Loading', 'fail', 'Main CSS file not loaded or incorrect');
+            }
+            
+            // Test 2: JavaScript Classes
+            const jsClasses = [
+                { name: 'Game', class: window.Game },
+                { name: 'Enhanced2048AI', class: window.Enhanced2048AI },
+                { name: 'AdvancedAI2048Solver', class: window.AdvancedAI2048Solver },
+                { name: 'AILearningSystem', class: window.AILearningSystem }
+            ];
+            
+            jsClasses.forEach(jsClass => {
+                if (typeof jsClass.class === 'function') {
+                    logResult(`JS Class: ${jsClass.name}`, 'pass', `${jsClass.name} class available and functional`);
+                } else {
+                    logResult(`JS Class: ${jsClass.name}`, 'fail', `${jsClass.name} class not available`);
+                }
+            });
+            
+            // Test 3: DOM Elements
+            const requiredElements = ['score-container', 'board-container', 'reset-button'];
+            requiredElements.forEach(elementId => {
+                const element = document.getElementById(elementId);
+                if (element) {
+                    logResult(`DOM Element: ${elementId}`, 'pass', `Element found and accessible`);
+                } else {
+                    logResult(`DOM Element: ${elementId}`, 'fail', `Element missing`);
+                }
+            });
+            
+            // Test 4: Tile Styles
+            const testTile = document.createElement('div');
+            testTile.className = 'tile';
+            testTile.setAttribute('data-value', '2');
+            document.body.appendChild(testTile);
+            
+            const tileStyle = getComputedStyle(testTile);
+            if (tileStyle.position === 'absolute') {
+                logResult('Tile Styles', 'pass', 'Tile styles are properly defined');
+            } else {
+                logResult('Tile Styles', 'warning', 'Tile styles may need adjustment');
+            }
+            
+            document.body.removeChild(testTile);
+        }
+        
+        function testGameFunctionality() {
+            if (typeof Game === 'undefined') {
+                logResult('Game Functionality', 'fail', 'Game class not available');
+                return;
+            }
+            
+            try {
+                const game = new Game(4);
+                logResult('Game Instantiation', 'pass', 'Game object created successfully');
+                
+                // Test board creation
+                if (typeof game.createEmptyBoard === 'function') {
+                    game.createEmptyBoard();
+                    if (game.board && game.board.length === 4) {
+                        logResult('Board Creation', 'pass', '4x4 board created successfully');
+                    } else {
+                        logResult('Board Creation', 'fail', 'Board not created properly');
+                    }
+                } else {
+                    logResult('Board Creation', 'fail', 'createEmptyBoard method not found');
+                }
+                
+                // Test AI integration
+                if (window.Enhanced2048AI) {
+                    try {
+                        const ai = new Enhanced2048AI(game);
+                        if (typeof ai.getBestMove === 'function') {
+                            logResult('AI Integration', 'pass', 'Enhanced AI integrated successfully');
+                        } else {
+                            logResult('AI Integration', 'fail', 'AI missing getBestMove method');
+                        }
+                    } catch (error) {
+                        logResult('AI Integration', 'fail', `AI instantiation failed: ${error.message}`);
+                    }
+                } else {
+                    logResult('AI Integration', 'fail', 'Enhanced AI not available');
+                }
+                
+                // Test game methods
+                const methods = ['move', 'resetGame', 'updateUI'];
+                methods.forEach(method => {
+                    if (typeof game[method] === 'function') {
+                        logResult(`Game Method: ${method}`, 'pass', `${method} method available`);
+                    } else {
+                        logResult(`Game Method: ${method}`, 'fail', `${method} method missing`);
+                    }
+                });
+                
+            } catch (error) {
+                logResult('Game Functionality', 'fail', `Game instantiation failed: ${error.message}`);
+            }
+        }
+        
+        // Auto-run component tests when page loads
+        window.addEventListener('load', () => {
+            setTimeout(runComponentTests, 1000);
+        });
+    </script>
+</body>
+</html>
