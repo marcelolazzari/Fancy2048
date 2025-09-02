@@ -293,3 +293,137 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   });
 });
+
+
+// Enhanced Score Dashboard Methods
+function saveGame(gameData) {
+  try {
+    const storageKey = getStorageKeyForGameData(gameData);
+    let games = JSON.parse(localStorage.getItem(storageKey) || '[]');
+    games.push(gameData);
+    
+    // Keep manageable size
+    if (games.length > 100) {
+      games = games.slice(-100);
+    }
+    
+    localStorage.setItem(storageKey, JSON.stringify(games));
+    console.log('✅ Game data saved to', storageKey);
+    return true;
+  } catch (error) {
+    console.error('❌ Failed to save game data:', error);
+    return false;
+  }
+}
+
+function loadStats(playerType = 'all') {
+  try {
+    if (playerType === 'all') {
+      const humanGames = JSON.parse(localStorage.getItem('fancy2048_human_games') || '[]');
+      const aiGames = JSON.parse(localStorage.getItem('fancy2048_ai_games') || '[]');
+      const mixedGames = JSON.parse(localStorage.getItem('fancy2048_mixed_games') || '[]');
+      
+      return {
+        human: humanGames,
+        ai: aiGames,
+        mixed: mixedGames,
+        total: [...humanGames, ...aiGames, ...mixedGames]
+      };
+    } else {
+      const storageKey = getStorageKeyForPlayerType(playerType);
+      return JSON.parse(localStorage.getItem(storageKey) || '[]');
+    }
+  } catch (error) {
+    console.error('❌ Failed to load stats:', error);
+    return [];
+  }
+}
+
+function updateStats(gameResult) {
+  // Save game result
+  saveGame(gameResult);
+  
+  // Update aggregated statistics
+  updateAggregatedStats(gameResult);
+}
+
+function updateAggregatedStats(gameResult) {
+  try {
+    const statsKey = 'fancy2048_aggregate_stats';
+    let stats = JSON.parse(localStorage.getItem(statsKey) || '{}');
+    
+    // Initialize stats structure
+    if (!stats.totals) {
+      stats.totals = { games: 0, totalScore: 0, totalMoves: 0, totalTime: 0 };
+    }
+    if (!stats.byPlayerType) {
+      stats.byPlayerType = { human: {}, ai: {}, mixed: {} };
+    }
+    
+    // Update totals
+    stats.totals.games += 1;
+    stats.totals.totalScore += gameResult.score || 0;
+    stats.totals.totalMoves += gameResult.moves || 0;
+    stats.totals.totalTime += gameResult.duration || 0;
+    
+    // Update by player type
+    const playerStats = stats.byPlayerType[gameResult.playerType] || 
+                       { games: 0, totalScore: 0, bestScore: 0, averageScore: 0 };
+    
+    playerStats.games += 1;
+    playerStats.totalScore += gameResult.score || 0;
+    playerStats.bestScore = Math.max(playerStats.bestScore || 0, gameResult.score || 0);
+    playerStats.averageScore = Math.round(playerStats.totalScore / playerStats.games);
+    
+    stats.byPlayerType[gameResult.playerType] = playerStats;
+    stats.lastUpdated = Date.now();
+    
+    localStorage.setItem(statsKey, JSON.stringify(stats));
+    
+  } catch (error) {
+    console.error('❌ Failed to update aggregate stats:', error);
+  }
+}
+
+function getStorageKeyForGameData(gameData) {
+  return getStorageKeyForPlayerType(gameData.playerType);
+}
+
+function getStorageKeyForPlayerType(playerType) {
+  const keys = {
+    'human': 'fancy2048_human_games',
+    'ai': 'fancy2048_ai_games',
+    'mixed': 'fancy2048_mixed_games'
+  };
+  return keys[playerType] || 'fancy2048_human_games';
+}
+
+function exportAllGameData() {
+  const allStats = loadStats('all');
+  const aggregateStats = JSON.parse(localStorage.getItem('fancy2048_aggregate_stats') || '{}');
+  
+  return {
+    gameData: allStats,
+    aggregateStats: aggregateStats,
+    exportTimestamp: new Date().toISOString(),
+    totalGames: allStats.total?.length || 0
+  };
+}
+
+function clearAllGameData() {
+  localStorage.removeItem('fancy2048_human_games');
+  localStorage.removeItem('fancy2048_ai_games');
+  localStorage.removeItem('fancy2048_mixed_games');
+  localStorage.removeItem('fancy2048_leaderboard');
+  localStorage.removeItem('fancy2048_aggregate_stats');
+  console.log('🗑️ All game data cleared');
+}
+
+// Export functions for global access
+window.gameStats = {
+  saveGame,
+  loadStats,
+  updateStats,
+  exportAllGameData,
+  clearAllGameData
+};

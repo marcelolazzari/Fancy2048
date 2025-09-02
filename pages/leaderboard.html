@@ -111,5 +111,195 @@
         loadStatisticsScript();
       }
     </script>
+  
+  <script>
+  // Enhanced Leaderboard with Score Dashboard Integration
+  document.addEventListener('DOMContentLoaded', function() {
+    loadLeaderboardData();
+    setupScoreFiltering();
+    setupDataExport();
+  });
+  
+  function loadLeaderboardData() {
+    try {
+      // Load all game data
+      const humanGames = JSON.parse(localStorage.getItem('fancy2048_human_games') || '[]');
+      const aiGames = JSON.parse(localStorage.getItem('fancy2048_ai_games') || '[]');
+      const mixedGames = JSON.parse(localStorage.getItem('fancy2048_mixed_games') || '[]');
+      
+      const allGames = [...humanGames, ...aiGames, ...mixedGames];
+      const sortedGames = allGames.sort((a, b) => b.score - a.score);
+      
+      displayLeaderboard(sortedGames);
+      updateStats(allGames);
+      
+    } catch (error) {
+      console.error('Failed to load leaderboard data:', error);
+    }
+  }
+  
+  function displayLeaderboard(games) {
+    const leaderboardContainer = document.getElementById('leaderboard-container') || 
+                                 document.querySelector('.leaderboard') ||
+                                 document.body;
+    
+    if (games.length === 0) {
+      leaderboardContainer.innerHTML = '<p>No games played yet. Start playing to see scores!</p>';
+      return;
+    }
+    
+    let html = '<div class="score-dashboard"><h2>🏆 Score Dashboard</h2>';
+    html += '<div class="score-filters">';
+    html += '<button onclick="filterByPlayerType('all')" class="filter-btn active">All Games</button>';
+    html += '<button onclick="filterByPlayerType('human')" class="filter-btn">👤 Human</button>';
+    html += '<button onclick="filterByPlayerType('ai')" class="filter-btn">🤖 AI</button>';
+    html += '<button onclick="filterByPlayerType('mixed')" class="filter-btn">🔄 Mixed</button>';
+    html += '</div>';
+    
+    html += '<div class="leaderboard-table">';
+    html += '<table><thead><tr><th>Rank</th><th>Score</th><th>Player</th><th>Moves</th><th>Time</th><th>Date</th></tr></thead><tbody>';
+    
+    games.slice(0, 50).forEach((game, index) => {
+      const playerEmoji = {'human': '👤', 'ai': '🤖', 'mixed': '🔄'}[game.playerType] || '❓';
+      const date = new Date(game.timestamp).toLocaleDateString();
+      const duration = formatDuration(game.duration || 0);
+      
+      html += `<tr class="score-row ${game.playerType}">
+        <td>${index + 1}</td>
+        <td><strong>${(game.score || 0).toLocaleString()}</strong></td>
+        <td>${playerEmoji} ${game.playerType}${game.aiType ? ` (${game.aiType})` : ''}</td>
+        <td>${game.moves || 0}</td>
+        <td>${duration}</td>
+        <td>${date}</td>
+      </tr>`;
+    });
+    
+    html += '</tbody></table></div></div>';
+    
+    leaderboardContainer.innerHTML = html;
+  }
+  
+  function filterByPlayerType(playerType) {
+    const games = getAllGames();
+    let filteredGames;
+    
+    if (playerType === 'all') {
+      filteredGames = games;
+    } else {
+      filteredGames = games.filter(g => g.playerType === playerType);
+    }
+    
+    filteredGames.sort((a, b) => b.score - a.score);
+    displayLeaderboard(filteredGames);
+    
+    // Update filter buttons
+    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
+    event.target.classList.add('active');
+  }
+  
+  function getAllGames() {
+    const humanGames = JSON.parse(localStorage.getItem('fancy2048_human_games') || '[]');
+    const aiGames = JSON.parse(localStorage.getItem('fancy2048_ai_games') || '[]');
+    const mixedGames = JSON.parse(localStorage.getItem('fancy2048_mixed_games') || '[]');
+    return [...humanGames, ...aiGames, ...mixedGames];
+  }
+  
+  function formatDuration(ms) {
+    const seconds = Math.floor(ms / 1000);
+    const minutes = Math.floor(seconds / 60);
+    const hours = Math.floor(minutes / 60);
+    
+    if (hours > 0) {
+      return `${hours}h ${minutes % 60}m`;
+    } else if (minutes > 0) {
+      return `${minutes}m ${seconds % 60}s`;
+    } else {
+      return `${seconds}s`;
+    }
+  }
+  
+  function updateStats(games) {
+    // Add stats summary if container exists
+    const statsContainer = document.getElementById('stats-summary');
+    if (!statsContainer) return;
+    
+    const totalGames = games.length;
+    const totalScore = games.reduce((sum, game) => sum + (game.score || 0), 0);
+    const avgScore = totalGames > 0 ? Math.round(totalScore / totalGames) : 0;
+    const bestScore = Math.max(...games.map(g => g.score || 0));
+    
+    const humanGames = games.filter(g => g.playerType === 'human');
+    const aiGames = games.filter(g => g.playerType === 'ai');
+    const mixedGames = games.filter(g => g.playerType === 'mixed');
+    
+    statsContainer.innerHTML = `
+      <div class="stats-grid">
+        <div class="stat-card">
+          <h3>Total Games</h3>
+          <p>${totalGames}</p>
+        </div>
+        <div class="stat-card">
+          <h3>Best Score</h3>
+          <p>${bestScore.toLocaleString()}</p>
+        </div>
+        <div class="stat-card">
+          <h3>Average Score</h3>
+          <p>${avgScore.toLocaleString()}</p>
+        </div>
+        <div class="stat-card">
+          <h3>👤 Human Games</h3>
+          <p>${humanGames.length}</p>
+        </div>
+        <div class="stat-card">
+          <h3>🤖 AI Games</h3>
+          <p>${aiGames.length}</p>
+        </div>
+        <div class="stat-card">
+          <h3>🔄 Mixed Games</h3>
+          <p>${mixedGames.length}</p>
+        </div>
+      </div>
+    `;
+  }
+  
+  function setupScoreFiltering() {
+    // Filter functionality is handled in filterByPlayerType
+  }
+  
+  function setupDataExport() {
+    const exportBtn = document.getElementById('export-data-btn');
+    if (exportBtn) {
+      exportBtn.onclick = exportScoreData;
+    }
+  }
+  
+  function exportScoreData() {
+    try {
+      const allData = {
+        humanGames: JSON.parse(localStorage.getItem('fancy2048_human_games') || '[]'),
+        aiGames: JSON.parse(localStorage.getItem('fancy2048_ai_games') || '[]'),
+        mixedGames: JSON.parse(localStorage.getItem('fancy2048_mixed_games') || '[]'),
+        aggregateStats: JSON.parse(localStorage.getItem('fancy2048_aggregate_stats') || '{}'),
+        exportDate: new Date().toISOString()
+      };
+      
+      const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `fancy2048_scores_${new Date().toISOString().split('T')[0]}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      console.log('✅ Score data exported successfully');
+      
+    } catch (error) {
+      console.error('❌ Export failed:', error);
+    }
+  }
+  </script>
   </body>
 </html>
