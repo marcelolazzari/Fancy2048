@@ -414,3 +414,175 @@ footer {
     font-size: 0.8rem;
   }
 }
+
+/* Enhanced Mobile Responsiveness for Leaderboard */
+
+/* Score Dashboard Mobile Optimizations */
+.score-dashboard {
+  padding: 10px;
+  margin: 0;
+}
+
+.score-dashboard h2 {
+  font-size: 1.4rem;
+  margin-bottom: 15px;
+  text-align: center;
+}
+
+/* Filter Buttons Mobile Layout */
+.score-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-bottom: 20px;
+  justify-content: center;
+}
+
+.filter-btn {
+  flex: 1;
+  min-width: 70px;
+  padding: 10px 8px;
+  font-size: 0.9rem;
+  border-radius: 8px;
+  background: linear-gradient(90deg, rgba(0,16,71,0.6) 60%, rgba(255,204,0,0.2) 100%);
+  color: var(--secondary-color);
+  border: none;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  text-align: center;
+  touch-action: manipulation;
+  -webkit-tap-highlight-color: rgba(255, 255, 255, 0.2);
+}
+
+.filter-btn:hover,
+.filter-btn.active {
+  background: linear-gradient(90deg, rgba(255,204,0,0.3) 40%, rgba(0,32,120,0.7) 100%);
+  color: #222;
+  transform: scale(1.05);
+}
+
+/* Leaderboard Table Mobile Optimizations */
+.leaderboard-table {
+  overflow-x: auto;
+  -webkit-overflow-scrolling: touch;
+  border-radius: 8px;
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+}
+
+.leaderboard-table table {
+  width: 100%;
+  border-collapse: collapse;
+  min-width: 100%;
+  font-size: 0.85rem;
+}
+
+.leaderboard-table th,
+.leaderboard-table td {
+  padding: 8px 4px;
+  text-align: center;
+  border: 1px solid #444;
+  white-space: nowrap;
+}
+
+.leaderboard-table th {
+  background: linear-gradient(90deg, rgba(0,0,0,0.5) 60%, rgba(255,204,0,0.2) 100%);
+  color: var(--highlight-color);
+  font-weight: bold;
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  font-size: 0.8rem;
+}
+
+.leaderboard-table tbody tr:nth-child(even) {
+  background-color: rgba(50, 50, 50, 0.5);
+}
+
+.leaderboard-table tbody tr:nth-child(odd) {
+  background-color: rgba(40, 40, 40, 0.5);
+}
+
+.leaderboard-table tbody tr:hover {
+  background-color: rgba(60, 60, 60, 0.7);
+}
+
+/* Mobile-specific media queries */
+@media (max-width: 480px) {
+  .score-filters {
+    flex-direction: column;
+    gap: 6px;
+  }
+  
+  .filter-btn {
+    width: 100%;
+    padding: 12px;
+    font-size: 1rem;
+    min-height: 44px; /* Apple recommended touch target size */
+  }
+  
+  .leaderboard-table th,
+  .leaderboard-table td {
+    padding: 6px 3px;
+    font-size: 0.75rem;
+  }
+  
+  /* Hide less important columns on very small screens */
+  .leaderboard-table th:nth-child(4), /* Moves */
+  .leaderboard-table td:nth-child(4) {
+    display: none;
+  }
+}
+
+@media (max-width: 360px) {
+  .score-dashboard h2 {
+    font-size: 1.2rem;
+    margin-bottom: 10px;
+  }
+  
+  .filter-btn {
+    font-size: 0.9rem;
+    padding: 10px;
+  }
+  
+  .leaderboard-table th,
+  .leaderboard-table td {
+    padding: 4px 2px;
+    font-size: 0.7rem;
+  }
+  
+  /* Hide more columns on extremely small screens */
+  .leaderboard-table th:nth-child(5), /* Time */
+  .leaderboard-table td:nth-child(5) {
+    display: none;
+  }
+}
+
+/* Landscape orientation optimizations for mobile */
+@media (max-width: 768px) and (orientation: landscape) and (max-height: 500px) {
+  .score-dashboard {
+    padding: 5px;
+  }
+  
+  .score-dashboard h2 {
+    font-size: 1.1rem;
+    margin-bottom: 8px;
+  }
+  
+  .score-filters {
+    flex-direction: row;
+    gap: 4px;
+    margin-bottom: 10px;
+  }
+  
+  .filter-btn {
+    padding: 6px 8px;
+    font-size: 0.8rem;
+    min-height: 36px;
+  }
+  
+  .leaderboard-table th,
+  .leaderboard-table td {
+    padding: 4px 6px;
+    font-size: 0.7rem;
+  }
+}
