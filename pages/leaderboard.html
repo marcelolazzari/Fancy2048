@@ -26,48 +26,141 @@
     </header>
     
     <main>
+      <!-- Mobile Pull-to-Refresh Indicator -->
+      <div id="pull-refresh-indicator" class="pull-refresh-indicator hidden">
+        <div class="refresh-spinner"></div>
+        <span>Release to refresh</span>
+      </div>
+      
       <section id="stats-section" class="stats-section">
         <h2><i class="fas fa-chart-line"></i> Your Game History</h2>
         
+        <!-- Mobile-Optimized Stats Summary -->
         <div class="stats-summary">
-          <div class="stats-card">
+          <div class="stats-card" data-stat="top-score">
+            <div class="stats-icon"><i class="fas fa-trophy"></i></div>
             <h3>Top Score</h3>
             <p id="top-score">0</p>
+            <div class="stats-progress"><div class="progress-bar"></div></div>
           </div>
-          <div class="stats-card">
+          <div class="stats-card" data-stat="best-tile">
+            <div class="stats-icon"><i class="fas fa-star"></i></div>
             <h3>Best Tile</h3>
             <p id="best-tile">0</p>
+            <div class="stats-progress"><div class="progress-bar"></div></div>
           </div>
-          <div class="stats-card">
+          <div class="stats-card" data-stat="games-played">
+            <div class="stats-icon"><i class="fas fa-gamepad"></i></div>
             <h3>Games Played</h3>
             <p id="games-played">0</p>
+            <div class="stats-progress"><div class="progress-bar"></div></div>
           </div>
         </div>
         
-        <div class="button-container">
-          <button type="button" id="save-csv-button" aria-label="Export statistics to CSV" tabindex="0"><i class="fas fa-download" aria-hidden="true"></i> Export to CSV</button>
-          <button type="button" id="save-json-button" aria-label="Export statistics to JSON" tabindex="0"><i class="fas fa-file-code" aria-hidden="true"></i> Export to JSON</button>
-          <button type="button" id="reset-data-button" class="warning-button" aria-label="Reset all statistics" tabindex="0"><i class="fas fa-trash-alt" aria-hidden="true"></i> Reset Data</button>
+        <!-- Mobile-First Filter Controls -->
+        <div class="mobile-filter-section">
+          <div class="filter-tabs" role="tablist">
+            <button class="filter-tab active" data-filter="all" role="tab" aria-selected="true">
+              <i class="fas fa-th-list"></i>
+              <span>All</span>
+              <div class="tab-indicator"></div>
+            </button>
+            <button class="filter-tab" data-filter="human" role="tab">
+              <i class="fas fa-user"></i>
+              <span>Human</span>
+              <div class="tab-indicator"></div>
+            </button>
+            <button class="filter-tab" data-filter="ai" role="tab">
+              <i class="fas fa-robot"></i>
+              <span>AI</span>
+              <div class="tab-indicator"></div>
+            </button>
+            <button class="filter-tab" data-filter="mixed" role="tab">
+              <i class="fas fa-shuffle"></i>
+              <span>Mixed</span>
+              <div class="tab-indicator"></div>
+            </button>
+          </div>
+          
+          <!-- Mobile Sort Controls -->
+          <div class="sort-controls">
+            <button class="sort-btn" data-sort="score" aria-label="Sort by score">
+              <i class="fas fa-sort-amount-down"></i>
+              Score
+            </button>
+            <button class="sort-btn" data-sort="date" aria-label="Sort by date">
+              <i class="fas fa-calendar"></i>
+              Date
+            </button>
+            <button class="sort-btn" data-sort="time" aria-label="Sort by duration">
+              <i class="fas fa-clock"></i>
+              Time
+            </button>
+          </div>
         </div>
         
-        <div class="table-container">
-          <table id="statsTable" aria-label="Game statistics table" role="table">
-            <thead>
-              <tr role="row">
-                <th role="columnheader">Date</th>
-                <th role="columnheader">Grid Size</th>
-                <th role="columnheader">Best Tile</th>
-                <th role="columnheader">Score</th>
-                <th role="columnheader">Best Score</th>
-                <th role="columnheader">Duration</th>
-                <th role="columnheader">Moves</th>
-                <th role="columnheader">Mode</th>
-              </tr>
-            </thead>
-            <tbody>
-              <!-- Stats will be dynamically inserted here -->
-            </tbody>
-          </table>
+        <!-- Action Buttons with Better Mobile UX -->
+        <div class="button-container">
+          <button type="button" id="save-csv-button" class="action-btn primary" aria-label="Export statistics to CSV" tabindex="0">
+            <i class="fas fa-download" aria-hidden="true"></i>
+            <span>Export CSV</span>
+            <div class="button-ripple"></div>
+          </button>
+          <button type="button" id="save-json-button" class="action-btn secondary" aria-label="Export statistics to JSON" tabindex="0">
+            <i class="fas fa-file-code" aria-hidden="true"></i>
+            <span>Export JSON</span>
+            <div class="button-ripple"></div>
+          </button>
+          <button type="button" id="reset-data-button" class="action-btn warning" aria-label="Reset all statistics" tabindex="0">
+            <i class="fas fa-trash-alt" aria-hidden="true"></i>
+            <span>Reset Data</span>
+            <div class="button-ripple"></div>
+          </button>
+        </div>
+        
+        <!-- Responsive Table/Card Container -->
+        <div class="data-container">
+          <!-- Desktop Table View -->
+          <div class="table-container desktop-only">
+            <table id="statsTable" aria-label="Game statistics table" role="table">
+              <thead>
+                <tr role="row">
+                  <th role="columnheader" class="sortable" data-sort="rank">
+                    <span>Rank</span>
+                    <i class="fas fa-sort"></i>
+                  </th>
+                  <th role="columnheader" class="sortable" data-sort="score">
+                    <span>Score</span>
+                    <i class="fas fa-sort"></i>
+                  </th>
+                  <th role="columnheader" class="sortable" data-sort="player">
+                    <span>Player</span>
+                    <i class="fas fa-sort"></i>
+                  </th>
+                  <th role="columnheader" class="sortable" data-sort="moves">
+                    <span>Moves</span>
+                    <i class="fas fa-sort"></i>
+                  </th>
+                  <th role="columnheader" class="sortable" data-sort="duration">
+                    <span>Time</span>
+                    <i class="fas fa-sort"></i>
+                  </th>
+                  <th role="columnheader" class="sortable" data-sort="date">
+                    <span>Date</span>
+                    <i class="fas fa-sort"></i>
+                  </th>
+                </tr>
+              </thead>
+              <tbody id="desktop-stats-body">
+                <!-- Desktop stats will be inserted here -->
+              </tbody>
+            </table>
+          </div>
+          
+          <!-- Mobile Card View -->
+          <div class="mobile-cards-container mobile-only" id="mobile-stats-container">
+            <!-- Mobile cards will be inserted here -->
+          </div>
         </div>
         
         <div id="no-stats-message" class="message-container" style="display:none;" role="status" aria-live="polite">
@@ -78,7 +171,21 @@
     </main>
     
     <footer>
-      <button type="button" onclick="navigateToGame()" aria-label="Back to Game" tabindex="0"><i class="fas fa-arrow-left" aria-hidden="true"></i> Back to Game</button>
+      <div class="footer-content">
+        <button type="button" onclick="navigateToGame()" class="back-btn" aria-label="Back to Game" tabindex="0">
+          <i class="fas fa-arrow-left" aria-hidden="true"></i>
+          <span>Back to Game</span>
+          <div class="button-ripple"></div>
+        </button>
+        
+        <!-- Mobile Share Actions -->
+        <div class="share-actions mobile-only">
+          <button type="button" id="share-stats-btn" class="share-btn" aria-label="Share Statistics">
+            <i class="fas fa-share-alt"></i>
+            <span>Share</span>
+          </button>
+        </div>
+      </div>
     </footer>
     
     <script>
@@ -117,12 +224,292 @@
     </script>
   
   <script>
-  // Enhanced Leaderboard with Score Dashboard Integration
+  // Enhanced Mobile Leaderboard with Advanced UX
+  let currentSort = 'score';
+  let currentFilter = 'all';
+  let allGamesData = [];
+  let isRefreshing = false;
+  
   document.addEventListener('DOMContentLoaded', function() {
+    initializeMobileFeatures();
     loadLeaderboardData();
-    setupScoreFiltering();
+    setupMobileInteractions();
     setupDataExport();
+    setupPullToRefresh();
   });
+  
+  // Initialize mobile-specific features
+  function initializeMobileFeatures() {
+    // Add mobile detection
+    const isMobile = window.innerWidth <= 768 || /Android|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
+    document.body.classList.toggle('mobile-device', isMobile);
+    
+    // Setup responsive behavior
+    window.addEventListener('resize', handleResize);
+    handleResize();
+    
+    // Setup haptic feedback for supported devices
+    if ('vibrate' in navigator) {
+      document.body.classList.add('haptic-supported');
+    }
+  }
+  
+  function handleResize() {
+    const isMobile = window.innerWidth <= 768;
+    document.body.classList.toggle('mobile-view', isMobile);
+    
+    // Re-render data in appropriate format
+    if (allGamesData.length > 0) {
+      displayLeaderboard(allGamesData);
+    }
+  }
+  
+  // Setup mobile interactions
+  function setupMobileInteractions() {
+    // Filter tabs
+    document.querySelectorAll('.filter-tab').forEach(tab => {
+      tab.addEventListener('click', handleFilterChange);
+      tab.addEventListener('touchstart', addRippleEffect);
+    });
+    
+    // Sort buttons
+    document.querySelectorAll('.sort-btn').forEach(btn => {
+      btn.addEventListener('click', handleSortChange);
+      btn.addEventListener('touchstart', addRippleEffect);
+    });
+    
+    // Action buttons
+    document.querySelectorAll('.action-btn').forEach(btn => {
+      btn.addEventListener('touchstart', addRippleEffect);
+    });
+    
+    // Share functionality
+    const shareBtn = document.getElementById('share-stats-btn');
+    if (shareBtn && navigator.share) {
+      shareBtn.addEventListener('click', shareStats);
+    } else if (shareBtn) {
+      shareBtn.style.display = 'none';
+    }
+    
+    // Stats cards interaction
+    document.querySelectorAll('.stats-card').forEach(card => {
+      card.addEventListener('click', highlightRelatedData);
+      card.addEventListener('touchstart', addRippleEffect);
+    });
+  }
+  
+  // Pull to refresh functionality
+  function setupPullToRefresh() {
+    let startY = 0;
+    let currentY = 0;
+    let isPulling = false;
+    const threshold = 100;
+    const indicator = document.getElementById('pull-refresh-indicator');
+    
+    document.addEventListener('touchstart', (e) => {
+      if (window.scrollY === 0) {
+        startY = e.touches[0].pageY;
+        isPulling = true;
+      }
+    });
+    
+    document.addEventListener('touchmove', (e) => {
+      if (!isPulling) return;
+      
+      currentY = e.touches[0].pageY;
+      const pullDistance = currentY - startY;
+      
+      if (pullDistance > 0 && window.scrollY === 0) {
+        e.preventDefault();
+        
+        if (pullDistance > threshold) {
+          indicator.classList.remove('hidden');
+          indicator.classList.add('ready');
+        } else {
+          indicator.classList.remove('ready');
+        }
+        
+        const opacity = Math.min(pullDistance / threshold, 1);
+        indicator.style.opacity = opacity;
+      }
+    });
+    
+    document.addEventListener('touchend', (e) => {
+      if (!isPulling) return;
+      
+      const pullDistance = currentY - startY;
+      
+      if (pullDistance > threshold && !isRefreshing) {
+        refreshData();
+      } else {
+        indicator.classList.add('hidden');
+        indicator.style.opacity = '0';
+      }
+      
+      isPulling = false;
+      startY = 0;
+      currentY = 0;
+    });
+  }
+  
+  // Handle filter changes with animations
+  function handleFilterChange(e) {
+    if (isRefreshing) return;
+    
+    const tab = e.currentTarget;
+    const filter = tab.dataset.filter;
+    
+    // Haptic feedback
+    if (navigator.vibrate) {
+      navigator.vibrate(10);
+    }
+    
+    // Update active state
+    document.querySelectorAll('.filter-tab').forEach(t => {
+      t.classList.remove('active');
+      t.setAttribute('aria-selected', 'false');
+    });
+    tab.classList.add('active');
+    tab.setAttribute('aria-selected', 'true');
+    
+    currentFilter = filter;
+    applyFiltersAndSort();
+  }
+  
+  // Handle sort changes
+  function handleSortChange(e) {
+    if (isRefreshing) return;
+    
+    const btn = e.currentTarget;
+    const sort = btn.dataset.sort;
+    
+    // Haptic feedback
+    if (navigator.vibrate) {
+      navigator.vibrate(10);
+    }
+    
+    // Toggle sort direction if same sort
+    if (currentSort === sort) {
+      btn.classList.toggle('desc');
+    } else {
+      document.querySelectorAll('.sort-btn').forEach(b => b.classList.remove('active', 'desc'));
+      btn.classList.add('active');
+      currentSort = sort;
+    }
+    
+    applyFiltersAndSort();
+  }
+  
+  // Add ripple effect for touch feedback
+  function addRippleEffect(e) {
+    const button = e.currentTarget;
+    const ripple = button.querySelector('.button-ripple') || document.createElement('div');
+    
+    if (!button.querySelector('.button-ripple')) {
+      ripple.className = 'button-ripple';
+      button.appendChild(ripple);
+    }
+    
+    const rect = button.getBoundingClientRect();
+    const size = Math.max(rect.width, rect.height);
+    const x = e.touches ? e.touches[0].clientX - rect.left : e.clientX - rect.left;
+    const y = e.touches ? e.touches[0].clientY - rect.top : e.clientY - rect.top;
+    
+    ripple.style.width = ripple.style.height = size + 'px';
+    ripple.style.left = (x - size / 2) + 'px';
+    ripple.style.top = (y - size / 2) + 'px';
+    ripple.classList.add('ripple-animate');
+    
+    setTimeout(() => {
+      ripple.classList.remove('ripple-animate');
+    }, 600);
+  }
+  
+  // Share stats functionality
+  async function shareStats() {
+    const totalGames = allGamesData.length;
+    const bestScore = Math.max(...allGamesData.map(g => g.score || 0));
+    const avgScore = totalGames > 0 ? Math.round(allGamesData.reduce((sum, game) => sum + (game.score || 0), 0) / totalGames) : 0;
+    
+    const shareData = {
+      title: 'My Fancy2048 Stats',
+      text: `🎮 Fancy2048 Stats:\\n🎯 Games: ${totalGames}\\n🏆 Best: ${bestScore.toLocaleString()}\\n📊 Average: ${avgScore.toLocaleString()}`,
+      url: window.location.href
+    };
+    
+    try {
+      await navigator.share(shareData);
+    } catch (err) {
+      // Fallback to copying to clipboard
+      navigator.clipboard.writeText(shareData.text).then(() => {
+        showToast('Stats copied to clipboard!');
+      });
+    }
+  }
+  
+  // Highlight related data when stats card is clicked
+  function highlightRelatedData(e) {
+    const card = e.currentTarget;
+    const statType = card.dataset.stat;
+    
+    // Haptic feedback
+    if (navigator.vibrate) {
+      navigator.vibrate(15);
+    }
+    
+    // Add highlight animation
+    card.classList.add('highlighted');
+    setTimeout(() => card.classList.remove('highlighted'), 1000);
+    
+    // Could add specific filtering/highlighting based on stat type
+    showToast(`Viewing ${statType.replace('-', ' ')} details`);
+  }
+  
+  // Refresh data with animation
+  async function refreshData() {
+    if (isRefreshing) return;
+    
+    isRefreshing = true;
+    const indicator = document.getElementById('pull-refresh-indicator');
+    
+    indicator.classList.add('refreshing');
+    indicator.innerHTML = '<div class=\"refresh-spinner active\"></div><span>Refreshing...</span>';
+    
+    // Simulate refresh delay
+    await new Promise(resolve => setTimeout(resolve, 1000));
+    
+    // Reload data
+    loadLeaderboardData();
+    
+    // Reset indicator
+    setTimeout(() => {
+      indicator.classList.remove('refreshing', 'ready');
+      indicator.classList.add('hidden');
+      indicator.style.opacity = '0';
+      indicator.innerHTML = '<div class=\"refresh-spinner\"></div><span>Release to refresh</span>';
+      isRefreshing = false;
+      
+      showToast('Data refreshed!');
+    }, 500);
+  }
+  
+  // Show toast notifications
+  function showToast(message, duration = 3000) {
+    const toast = document.createElement('div');
+    toast.className = 'toast-notification';
+    toast.textContent = message;
+    
+    document.body.appendChild(toast);
+    
+    // Trigger animation
+    setTimeout(() => toast.classList.add('show'), 100);
+    
+    // Remove toast
+    setTimeout(() => {
+      toast.classList.remove('show');
+      setTimeout(() => document.body.removeChild(toast), 300);
+    }, duration);
+  }
   
   function loadLeaderboardData() {
     try {
@@ -131,177 +518,468 @@
       const aiGames = JSON.parse(localStorage.getItem('fancy2048_ai_games') || '[]');
       const mixedGames = JSON.parse(localStorage.getItem('fancy2048_mixed_games') || '[]');
       
-      const allGames = [...humanGames, ...aiGames, ...mixedGames];
-      const sortedGames = allGames.sort((a, b) => b.score - a.score);
-      
-      displayLeaderboard(sortedGames);
-      updateStats(allGames);
+      allGamesData = [...humanGames, ...aiGames, ...mixedGames];
+      applyFiltersAndSort();
+      updateStats(allGamesData);
       
     } catch (error) {
       console.error('Failed to load leaderboard data:', error);
+      showToast('Failed to load data', 3000);
     }
+  }
+  
+  function applyFiltersAndSort() {
+    let filteredGames = [...allGamesData];
+    
+    // Apply filter
+    if (currentFilter !== 'all') {
+      filteredGames = filteredGames.filter(game => game.playerType === currentFilter);
+    }
+    
+    // Apply sort
+    filteredGames.sort((a, b) => {
+      let aVal, bVal;
+      const isDesc = document.querySelector('.sort-btn.active')?.classList.contains('desc') || currentSort === 'score';
+      
+      switch (currentSort) {
+        case 'score':
+          aVal = a.score || 0;
+          bVal = b.score || 0;
+          break;
+        case 'date':
+          aVal = new Date(a.timestamp || 0);
+          bVal = new Date(b.timestamp || 0);
+          break;
+        case 'time':
+          aVal = a.duration || 0;
+          bVal = b.duration || 0;
+          break;
+        case 'moves':
+          aVal = a.moves || 0;
+          bVal = b.moves || 0;
+          break;
+        default:
+          aVal = a.score || 0;
+          bVal = b.score || 0;
+      }
+      
+      return isDesc ? bVal - aVal : aVal - bVal;
+    });
+    
+    displayLeaderboard(filteredGames);
   }
   
   function displayLeaderboard(games) {
-    const leaderboardContainer = document.getElementById('leaderboard-container') || 
-                                 document.querySelector('.leaderboard') ||
-                                 document.body;
+    const isMobile = window.innerWidth <= 768;
     
     if (games.length === 0) {
-      leaderboardContainer.innerHTML = '<p>No games played yet. Start playing to see scores!</p>';
+      const noDataMsg = `
+        <div class="no-data-message">
+          <i class="fas fa-gamepad"></i>
+          <h3>No games found</h3>
+          <p>Start playing to see your statistics!</p>
+          <button onclick="navigateToGame()" class="play-now-btn">
+            <i class="fas fa-play"></i> Play Now
+          </button>
+        </div>
+      `;
+      
+      if (isMobile) {
+        document.getElementById('mobile-stats-container').innerHTML = noDataMsg;
+      } else {
+        document.getElementById('desktop-stats-body').innerHTML = '<tr><td colspan="6">' + noDataMsg + '</td></tr>';
+      }
       return;
     }
     
-    let html = '<div class="score-dashboard"><h2>🏆 Score Dashboard</h2>';
-    html += '<div class="score-filters">';
-    html += '<button onclick="filterByPlayerType(\'all\')" class="filter-btn active">All Games</button>';
-    html += '<button onclick="filterByPlayerType(\'human\')" class="filter-btn">👤 Human</button>';
-    html += '<button onclick="filterByPlayerType(\'ai\')" class="filter-btn">🤖 AI</button>';
-    html += '<button onclick="filterByPlayerType(\'mixed\')" class="filter-btn">🔄 Mixed</button>';
-    html += '</div>';
+    if (isMobile) {
+      displayMobileCards(games);
+    } else {
+      displayDesktopTable(games);
+    }
+  }
+  
+  function displayMobileCards(games) {
+    const container = document.getElementById('mobile-stats-container');
     
-    html += '<div class="leaderboard-table">';
-    html += '<table><thead><tr><th>Rank</th><th>Score</th><th>Player</th><th>Moves</th><th>Time</th><th>Date</th></tr></thead><tbody>';
-    
-    games.slice(0, 50).forEach((game, index) => {
+    const cardsHtml = games.slice(0, 50).map((game, index) => {
       const playerEmoji = {'human': '👤', 'ai': '🤖', 'mixed': '🔄'}[game.playerType] || '❓';
-      const date = new Date(game.timestamp).toLocaleDateString();
+      const date = new Date(game.timestamp || Date.now()).toLocaleDateString();
       const duration = formatDuration(game.duration || 0);
+      const score = (game.score || 0).toLocaleString();
       
-      html += `<tr class="score-row ${game.playerType}">
-        <td>${index + 1}</td>
-        <td><strong>${(game.score || 0).toLocaleString()}</strong></td>
-        <td>${playerEmoji} ${game.playerType}${game.aiType ? ` (${game.aiType})` : ''}</td>
-        <td>${game.moves || 0}</td>
-        <td>${duration}</td>
-        <td>${date}</td>
-      </tr>`;
-    });
+      return `
+        <div class="mobile-stat-card" data-rank="${index + 1}" data-player="${game.playerType}">
+          <div class="card-header">
+            <div class="rank-badge">#${index + 1}</div>
+            <div class="player-badge ${game.playerType}">
+              <span class="player-emoji">${playerEmoji}</span>
+              <span class="player-type">${game.playerType}</span>
+            </div>
+          </div>
+          
+          <div class="card-main">
+            <div class="score-display">
+              <div class="score-label">Score</div>
+              <div class="score-value">${score}</div>
+            </div>
+            
+            <div class="game-details">
+              <div class="detail-item">
+                <i class="fas fa-mouse-pointer"></i>
+                <span>${game.moves || 0} moves</span>
+              </div>
+              <div class="detail-item">
+                <i class="fas fa-clock"></i>
+                <span>${duration}</span>
+              </div>
+              <div class="detail-item">
+                <i class="fas fa-calendar"></i>
+                <span>${date}</span>
+              </div>
+            </div>
+          </div>
+          
+          <div class="card-footer">
+            <button class="card-action-btn" onclick="showGameDetails(${index})" aria-label="View game details">
+              <i class="fas fa-info-circle"></i>
+              Details
+            </button>
+            <button class="card-action-btn share" onclick="shareGame(${index})" aria-label="Share game result">
+              <i class="fas fa-share-alt"></i>
+              Share
+            </button>
+          </div>
+        </div>
+      `;
+    }).join('');
     
-    html += '</tbody></table></div></div>';
+    container.innerHTML = cardsHtml;
     
-    leaderboardContainer.innerHTML = html;
+    // Add intersection observer for scroll animations
+    if ('IntersectionObserver' in window) {
+      const observer = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate-in');
+          }
+        });
+      }, { threshold: 0.1 });
+      
+      container.querySelectorAll('.mobile-stat-card').forEach(card => {
+        observer.observe(card);
+      });
+    }
   }
   
-  function filterByPlayerType(playerType) {
-    const games = getAllGames();
-    let filteredGames;
+  function displayDesktopTable(games) {
+    const tbody = document.getElementById('desktop-stats-body');
     
-    if (playerType === 'all') {
-      filteredGames = games;
-    } else {
-      filteredGames = games.filter(g => g.playerType === playerType);
+    const rowsHtml = games.slice(0, 50).map((game, index) => {
+      const playerEmoji = {'human': '👤', 'ai': '🤖', 'mixed': '🔄'}[game.playerType] || '❓';
+      const date = new Date(game.timestamp || Date.now()).toLocaleDateString();
+      const duration = formatDuration(game.duration || 0);
+      const score = (game.score || 0).toLocaleString();
+      
+      return `
+        <tr class="score-row ${game.playerType}" data-rank="${index + 1}">
+          <td class="rank-cell">#${index + 1}</td>
+          <td class="score-cell"><strong>${score}</strong></td>
+          <td class="player-cell">
+            <span class="player-badge ${game.playerType}">
+              ${playerEmoji} ${game.playerType}
+            </span>
+          </td>
+          <td class="moves-cell">${game.moves || 0}</td>
+          <td class="duration-cell">${duration}</td>
+          <td class="date-cell">${date}</td>
+        </tr>
+      `;
+    }).join('');
+    
+    tbody.innerHTML = rowsHtml;
+  }
+  
+  // Helper functions for mobile features
+  function showGameDetails(index) {
+    const game = allGamesData[index];
+    if (!game) return;
+    
+    const modal = createGameDetailsModal(game);
+    document.body.appendChild(modal);
+    
+    // Haptic feedback
+    if (navigator.vibrate) {
+      navigator.vibrate(20);
     }
     
-    filteredGames.sort((a, b) => b.score - a.score);
-    displayLeaderboard(filteredGames);
-    
-    // Update filter buttons
-    document.querySelectorAll('.filter-btn').forEach(btn => btn.classList.remove('active'));
-    event.target.classList.add('active');
+    setTimeout(() => modal.classList.add('show'), 100);
   }
   
-  function getAllGames() {
-    const humanGames = JSON.parse(localStorage.getItem('fancy2048_human_games') || '[]');
-    const aiGames = JSON.parse(localStorage.getItem('fancy2048_ai_games') || '[]');
-    const mixedGames = JSON.parse(localStorage.getItem('fancy2048_mixed_games') || '[]');
-    return [...humanGames, ...aiGames, ...mixedGames];
-  }
-  
-  function formatDuration(ms) {
-    const seconds = Math.floor(ms / 1000);
-    const minutes = Math.floor(seconds / 60);
-    const hours = Math.floor(minutes / 60);
+  function createGameDetailsModal(game) {
+    const modal = document.createElement('div');
+    modal.className = 'game-details-modal';
     
-    if (hours > 0) {
-      return `${hours}h ${minutes % 60}m`;
-    } else if (minutes > 0) {
-      return `${minutes}m ${seconds % 60}s`;
-    } else {
-      return `${seconds}s`;
-    }
-  }
-  
-  function updateStats(games) {
-    // Add stats summary if container exists
-    const statsContainer = document.getElementById('stats-summary');
-    if (!statsContainer) return;
+    const playerEmoji = {'human': '👤', 'ai': '🤖', 'mixed': '🔄'}[game.playerType] || '❓';
+    const date = new Date(game.timestamp || Date.now()).toLocaleDateString();
+    const duration = formatDuration(game.duration || 0);
     
-    const totalGames = games.length;
-    const totalScore = games.reduce((sum, game) => sum + (game.score || 0), 0);
-    const avgScore = totalGames > 0 ? Math.round(totalScore / totalGames) : 0;
-    const bestScore = Math.max(...games.map(g => g.score || 0));
-    
-    const humanGames = games.filter(g => g.playerType === 'human');
-    const aiGames = games.filter(g => g.playerType === 'ai');
-    const mixedGames = games.filter(g => g.playerType === 'mixed');
-    
-    statsContainer.innerHTML = `
-      <div class="stats-grid">
-        <div class="stat-card">
-          <h3>Total Games</h3>
-          <p>${totalGames}</p>
+    modal.innerHTML = `
+      <div class="modal-backdrop" onclick="closeModal(this.parentElement)"></div>
+      <div class="modal-content">
+        <div class="modal-header">
+          <h3>Game Details</h3>
+          <button class="modal-close" onclick="closeModal(this.closest('.game-details-modal'))">&times;</button>
         </div>
-        <div class="stat-card">
-          <h3>Best Score</h3>
-          <p>${bestScore.toLocaleString()}</p>
+        
+        <div class="modal-body">
+          <div class="detail-grid">
+            <div class="detail-item">
+              <div class="detail-icon"><i class="fas fa-trophy"></i></div>
+              <div class="detail-content">
+                <div class="detail-label">Final Score</div>
+                <div class="detail-value">${(game.score || 0).toLocaleString()}</div>
+              </div>
+            </div>
+            
+            <div class="detail-item">
+              <div class="detail-icon"><i class="fas fa-user"></i></div>
+              <div class="detail-content">
+                <div class="detail-label">Player Type</div>
+                <div class="detail-value">${playerEmoji} ${game.playerType}</div>
+              </div>
+            </div>
+            
+            <div class="detail-item">
+              <div class="detail-icon"><i class="fas fa-mouse-pointer"></i></div>
+              <div class="detail-content">
+                <div class="detail-label">Total Moves</div>
+                <div class="detail-value">${game.moves || 0}</div>
+              </div>
+            </div>
+            
+            <div class="detail-item">
+              <div class="detail-icon"><i class="fas fa-clock"></i></div>
+              <div class="detail-content">
+                <div class="detail-label">Duration</div>
+                <div class="detail-value">${duration}</div>
+              </div>
+            </div>
+            
+            <div class="detail-item">
+              <div class="detail-icon"><i class="fas fa-calendar"></i></div>
+              <div class="detail-content">
+                <div class="detail-label">Date Played</div>
+                <div class="detail-value">${date}</div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div class="stat-card">
-          <h3>Average Score</h3>
-          <p>${avgScore.toLocaleString()}</p>
-        </div>
-        <div class="stat-card">
-          <h3>👤 Human Games</h3>
-          <p>${humanGames.length}</p>
-        </div>
-        <div class="stat-card">
-          <h3>🤖 AI Games</h3>
-          <p>${aiGames.length}</p>
-        </div>
-        <div class="stat-card">
-          <h3>🔄 Mixed Games</h3>
-          <p>${mixedGames.length}</p>
+        
+        <div class="modal-footer">
+          <button class="modal-btn secondary" onclick="closeModal(this.closest('.game-details-modal'))">
+            <i class="fas fa-times"></i> Close
+          </button>
+          <button class="modal-btn primary" onclick="shareGameFromModal(${JSON.stringify(game).replace(/"/g, '&quot;')})">
+            <i class="fas fa-share-alt"></i> Share
+          </button>
         </div>
       </div>
     `;
+    
+    return modal;
   }
   
-  function setupScoreFiltering() {
-    // Filter functionality is handled in filterByPlayerType
+  function closeModal(modal) {
+    modal.classList.remove('show');
+    setTimeout(() => {
+      if (modal.parentElement) {
+        modal.parentElement.removeChild(modal);
+      }
+    }, 300);
   }
   
-  function setupDataExport() {
-    const exportBtn = document.getElementById('export-data-btn');
-    if (exportBtn) {
-      exportBtn.onclick = exportScoreData;
+  async function shareGame(index) {
+    const game = allGamesData[index];
+    if (!game) return;
+    
+    const shareData = {
+      title: 'My Fancy2048 Game',
+      text: `🎮 Just scored ${(game.score || 0).toLocaleString()} points in Fancy2048! 🏆\\nMoves: ${game.moves || 0} | Time: ${formatDuration(game.duration || 0)}`,
+      url: window.location.origin
+    };
+    
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        await navigator.clipboard.writeText(shareData.text);
+        showToast('Game result copied to clipboard!');
+      }
+    } catch (err) {
+      console.log('Share failed:', err);
     }
   }
   
-  function exportScoreData() {
+  async function shareGameFromModal(game) {
+    await shareGame(allGamesData.indexOf(game));
+    closeModal(document.querySelector('.game-details-modal'));
+  }
+  
+  // Legacy filter function for backward compatibility
+  function filterByPlayerType(playerType) {
+    currentFilter = playerType;
+    applyFiltersAndSort();
+    
+    // Update filter buttons
+    document.querySelectorAll('.filter-tab').forEach(btn => {
+      btn.classList.remove('active');
+      btn.setAttribute('aria-selected', 'false');
+    });
+    
+    const activeTab = document.querySelector(`[data-filter="${playerType}"]`);
+    if (activeTab) {
+      activeTab.classList.add('active');
+      activeTab.setAttribute('aria-selected', 'true');
+    }
+  }
+  
+  
+  function updateStats(games) {
+    // Update basic stats elements if they exist
+    const topScoreEl = document.getElementById('top-score');
+    const bestTileEl = document.getElementById('best-tile');
+    const gamesPlayedEl = document.getElementById('games-played');
+    
+    if (games.length === 0) {
+      if (topScoreEl) topScoreEl.textContent = '0';
+      if (bestTileEl) bestTileEl.textContent = '0';
+      if (gamesPlayedEl) gamesPlayedEl.textContent = '0';
+      return;
+    }
+    
+    const bestScore = Math.max(...games.map(g => g.score || 0));
+    const bestTile = Math.max(...games.map(g => g.bestTile || 0));
+    
+    if (topScoreEl) topScoreEl.textContent = bestScore.toLocaleString();
+    if (bestTileEl) bestTileEl.textContent = bestTile;
+    if (gamesPlayedEl) gamesPlayedEl.textContent = games.length;
+    
+    // Animate progress bars
+    animateProgressBars(games);
+  }
+  
+  function animateProgressBars(games) {
+    const maxScore = Math.max(...games.map(g => g.score || 0));
+    const progressBars = document.querySelectorAll('.progress-bar');
+    
+    progressBars.forEach((bar, index) => {
+      setTimeout(() => {
+        const percentage = index === 0 ? 100 : Math.random() * 80 + 20;
+        bar.style.width = percentage + '%';
+      }, index * 100);
+    });
+  }
+  
+  // Setup data export functionality
+  function setupDataExport() {
+    const csvBtn = document.getElementById('save-csv-button');
+    const jsonBtn = document.getElementById('save-json-button');
+    const resetBtn = document.getElementById('reset-data-button');
+    
+    if (csvBtn) {
+      csvBtn.addEventListener('click', exportToCSV);
+    }
+    
+    if (jsonBtn) {
+      jsonBtn.addEventListener('click', exportToJSON);
+    }
+    
+    if (resetBtn) {
+      resetBtn.addEventListener('click', resetAllData);
+    }
+  }
+  
+  function exportToCSV() {
     try {
-      const allData = {
-        humanGames: JSON.parse(localStorage.getItem('fancy2048_human_games') || '[]'),
-        aiGames: JSON.parse(localStorage.getItem('fancy2048_ai_games') || '[]'),
-        mixedGames: JSON.parse(localStorage.getItem('fancy2048_mixed_games') || '[]'),
-        aggregateStats: JSON.parse(localStorage.getItem('fancy2048_aggregate_stats') || '{}'),
-        exportDate: new Date().toISOString()
-      };
+      const headers = ['Date', 'Score', 'Player Type', 'Moves', 'Duration', 'Best Tile'];
+      let csvContent = headers.join(',') + '\n';
       
-      const blob = new Blob([JSON.stringify(allData, null, 2)], { type: 'application/json' });
+      allGamesData.forEach(game => {
+        const row = [
+          new Date(game.timestamp || Date.now()).toLocaleDateString(),
+          game.score || 0,
+          game.playerType || 'unknown',
+          game.moves || 0,
+          game.duration || 0,
+          game.bestTile || 0
+        ];
+        csvContent += row.join(',') + '\n';
+      });
+      
+      const blob = new Blob([csvContent], { type: 'text/csv' });
       const url = URL.createObjectURL(blob);
-      
       const a = document.createElement('a');
       a.href = url;
-      a.download = `fancy2048_scores_${new Date().toISOString().split('T')[0]}.json`;
+      a.download = `fancy2048-stats-${Date.now()}.csv`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
       URL.revokeObjectURL(url);
       
-      console.log('✅ Score data exported successfully');
-      
+      showToast('CSV exported successfully!');
     } catch (error) {
-      console.error('❌ Export failed:', error);
+      console.error('CSV export failed:', error);
+      showToast('Export failed', 3000);
+    }
+  }
+  
+  function exportToJSON() {
+    try {
+      const exportData = {
+        timestamp: new Date().toISOString(),
+        games: allGamesData,
+        summary: {
+          totalGames: allGamesData.length,
+          bestScore: Math.max(...allGamesData.map(g => g.score || 0)),
+          averageScore: allGamesData.reduce((sum, g) => sum + (g.score || 0), 0) / allGamesData.length || 0
+        }
+      };
+      
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `fancy2048-stats-${Date.now()}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      
+      showToast('JSON exported successfully!');
+    } catch (error) {
+      console.error('JSON export failed:', error);
+      showToast('Export failed', 3000);
+    }
+  }
+  
+  function resetAllData() {
+    if (confirm('Are you sure you want to reset all statistics? This action cannot be undone.')) {
+      try {
+        localStorage.removeItem('fancy2048_human_games');
+        localStorage.removeItem('fancy2048_ai_games');
+        localStorage.removeItem('fancy2048_mixed_games');
+        localStorage.removeItem('fancy2048_aggregate_stats');
+        
+        allGamesData = [];
+        applyFiltersAndSort();
+        updateStats([]);
+        
+        showToast('All data has been reset');
+      } catch (error) {
+        console.error('Reset failed:', error);
+        showToast('Reset failed', 3000);
+      }
     }
   }
   </script>
