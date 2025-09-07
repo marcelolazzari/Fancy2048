@@ -104,6 +104,7 @@
                 <p>No more moves possible.</p>
                 <div class="message-buttons">
                     <button onclick="window.game?.resetGame()" class="restart-button">🔄 Try Again</button>
+                    <button onclick="refreshPage()" class="refresh-button">🔄 Refresh Page</button>
                     <button onclick="navigateToLeaderboard()" class="stats-button">📊 View Stats</button>
                 </div>
             </div>
@@ -244,6 +245,11 @@
                 // Fallback to relative path
                 window.location.href = 'leaderboard.html';
             }
+        }
+
+        function refreshPage() {
+            console.log('🔄 Refreshing the page...');
+            window.location.reload();
         }
 
         function toggleAILearningPanel() {

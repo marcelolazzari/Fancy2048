@@ -60,6 +60,7 @@ class Game {
     this.bestScore = this.loadBestScore();
     this.moves = 0;
     this.startTime = Date.now();
+    this.sessionId = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
 
     // Game states
     this.gameState = 'playing';
@@ -276,6 +277,15 @@ class Game {
       Object.entries(elements).forEach(([id, value]) => {
         const element = document.getElementById(id);
         if (element) {
+          // Add animation when score changes
+          if (id === 'score' && element.textContent !== value.toString()) {
+            element.style.transform = 'scale(1.1)';
+            element.style.textShadow = '0 2px 15px rgba(255, 204, 0, 0.6)';
+            setTimeout(() => {
+              element.style.transform = 'scale(1)';
+              element.style.textShadow = '0 2px 8px rgba(255, 204, 0, 0.3)';
+            }, 300);
+          }
           element.textContent = value;
         } else {
           missingElements.push(id);
@@ -290,6 +300,15 @@ class Game {
       if (this.score > this.bestScore) {
         this.bestScore = this.score;
         this.saveBestScore();
+        
+        // Add celebration animation for new best score
+        const bestScoreElement = document.getElementById('best-score');
+        if (bestScoreElement) {
+          bestScoreElement.style.animation = 'titleGlow 1s ease-in-out';
+          setTimeout(() => {
+            bestScoreElement.style.animation = '';
+          }, 1000);
+        }
       }
     } catch (error) {
       console.warn('⚠️ Failed to update score display:', error);
@@ -666,8 +685,9 @@ class Game {
     this.aiMovesInGame = 0;
     this.currentPlayerType = 'human';
     
-    // Reset timer
+    // Reset timer and session
     this.startTime = Date.now();
+    this.sessionId = Date.now() + '-' + Math.random().toString(36).substr(2, 9);
     this.startTimer();
     
     // Initialize with two random tiles
@@ -1093,32 +1113,73 @@ class Game {
       // Update player type before saving
       this.updatePlayerType();
       
+      // Calculate additional metrics
+      const gameEndTime = Date.now();
+      const totalGameDuration = gameEndTime - this.startTime;
+      const averageTimePerMove = this.moves > 0 ? totalGameDuration / this.moves : 0;
+      const scorePerMove = this.moves > 0 ? this.score / this.moves : 0;
+      const scoreEfficiency = this.score > 0 ? (this.getMaxTile() / this.score) * 1000 : 0;
+      
       const gameResult = {
+        // Core game data
         score: this.score || 0,
         moves: this.moves || 0,
-        duration: this.gameTime || 0,
+        duration: totalGameDuration || 0,
         maxTile: this.getMaxTile(),
         won: gameWon,
+        
+        // Player and game mode information
         playerType: this.currentPlayerType || 'human',
         aiType: this.currentAIType || null,
-        timestamp: Date.now(),
-        boardSize: this.size || 4,
-        gameId: Date.now() + '-' + Math.random().toString(36).substr(2, 9),
+        playMode: this.getPlayModeDisplay(),
+        isAutoPlayed: this.currentPlayerType === 'ai',
+        
+        // Timing information
+        timestamp: gameEndTime,
         date: new Date().toISOString(),
-        bestTile: this.getMaxTile(),
-        bestScore: this.bestScore,
         time: this.getFormattedTime(),
+        gameStartTime: this.startTime,
+        gameEndTime: gameEndTime,
+        
+        // Board and configuration
+        boardSize: this.size || 4,
         gridSize: this.size,
         gridType: `${this.size}x${this.size}`,
-        playMode: this.getPlayModeDisplay(),
-        isAutoPlayed: this.currentPlayerType === 'ai'
+        
+        // Performance metrics
+        bestScore: this.bestScore,
+        bestTile: this.getMaxTile(),
+        averageTimePerMove: Math.round(averageTimePerMove),
+        scorePerMove: Math.round(scorePerMove * 100) / 100,
+        scoreEfficiency: Math.round(scoreEfficiency * 100) / 100,
+        
+        // Game tracking
+        gameId: gameEndTime + '-' + Math.random().toString(36).substr(2, 9),
+        sessionId: this.sessionId || 'unknown',
+        
+        // Move distribution for mixed games
+        humanMoves: this.humanMovesInGame,
+        aiMoves: this.aiMovesInGame,
+        totalMoves: this.humanMovesInGame + this.aiMovesInGame,
+        
+        // Additional game state
+        gameState: this.gameState,
+        finalBoard: JSON.parse(JSON.stringify(this.board)),
+        
+        // Theme and visual settings
+        theme: this.isLightMode ? 'light' : 'dark',
+        hueValue: this.hueValue || 0,
+        
+        // Version tracking
+        gameVersion: '2.0',
+        dataVersion: '1.1'
       };
       
       // Use statistics.js saveGame function if available
       if (typeof saveGame === 'function') {
         const success = saveGame(gameResult);
         if (success) {
-          console.log(`✅ Game result saved via statistics.js: ${gameResult.score} points (${gameResult.playerType})`);
+          console.log(`✅ Enhanced game result saved via statistics.js: ${gameResult.score} points (${gameResult.playerType})`);
           return gameResult;
         } else {
           console.warn('⚠️ Statistics.js saveGame failed, using fallback storage');
@@ -1136,7 +1197,7 @@ class Game {
       }
       
       safeStorage.setJSON(storageKey, savedGames);
-      console.log(`📁 Game result saved to ${storageKey}: ${gameResult.score} points (${gameResult.playerType})`);
+      console.log(`📁 Enhanced game result saved to ${storageKey}: ${gameResult.score} points (${gameResult.playerType})`);
       return gameResult;
       
     } catch (error) {
