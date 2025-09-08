@@ -9,6 +9,12 @@
 
 Built with vanilla JavaScript and modern web standards, Fancy 2048 delivers smooth performance, intelligent AI assistance, comprehensive statistics, and an elegant user interface that works seamlessly across all devices.
 
+> **📝 Latest Updates (Sept 2025)**  
+> ✅ Fixed initialization errors and storage issues  
+> ✅ Improved mobile performance and touch handling  
+> ✅ Enhanced PWA capabilities with better offline support  
+> ✅ Restructured for optimal GitHub Pages deployment
+
 ## ✨ Features Overview
 
 <table>
@@ -572,14 +578,54 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 - Built with modern web standards and best practices
 - Thanks to the open-source community for tools and inspiration
 
-## 📞 Support
+## 🆘 Troubleshooting
 
-If you encounter any issues or have questions:
-1. Check the browser console for error messages
-2. Verify localStorage is enabled in your browser
-3. Try clearing the app cache and refreshing
-4. Open an issue on GitHub with details
+### Common Issues
+
+**🔧 JavaScript Errors**
+- **Clear browser cache** and refresh the page
+- **Enable JavaScript** in your browser settings
+- **Check browser console** for specific error messages
+- **Try incognito/private browsing** mode
+
+**💾 Storage Issues**
+- **Enable localStorage** in browser settings
+- **Clear site data** if corruption is suspected
+- **Check available storage** quota
+- **Try a different browser** if persistent
+
+**📱 Mobile Problems**
+- **Update your browser** to the latest version
+- **Enable touch gestures** and JavaScript
+- **Clear mobile browser cache**
+- **Try landscape/portrait** orientation
+
+**🤖 AI Not Working**
+- **Refresh the page** to reload AI components
+- **Check browser compatibility** (modern browsers required)
+- **Lower AI difficulty** if performance issues occur
+
+### 📞 **Getting Help**
+
+If problems persist:
+
+1. 📋 **Check Console**: Open Developer Tools → Console for errors
+2. 🔄 **Hard Refresh**: Ctrl+F5 (Windows) / Cmd+Shift+R (Mac)  
+3. 🗑️ **Clear Data**: Reset all game data in Settings
+4. 🌐 **Try Different Browser**: Test in Chrome, Firefox, or Safari
+5. 🐛 **Report Bug**: Open an issue on [GitHub](https://github.com/marcelolazzari/Fancy2048/issues)
+
+### 📊 **Browser Support**
+
+| Feature | Chrome | Firefox | Safari | Edge |
+|---------|--------|---------|--------|------|
+| **Core Game** | ✅ All | ✅ All | ✅ All | ✅ All |
+| **PWA Install** | ✅ 80+ | ✅ 85+ | ✅ 13+ | ✅ 80+ |
+| **Touch Gestures** | ✅ All | ✅ All | ✅ All | ✅ All |
+| **AI Solver** | ✅ 80+ | ✅ 75+ | ✅ 13+ | ✅ 80+ |
 
 ---
 
-**Fancy 2048** - Where classic gameplay meets modern technology! 🎮✨
+**🎮 Fancy 2048** - Where classic gameplay meets modern technology! ✨
+
+**Made with ❤️ by developers, for puzzle enthusiasts worldwide** �
