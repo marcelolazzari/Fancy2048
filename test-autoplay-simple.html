@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Simple Autoplay Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        button { padding: 10px 20px; margin: 10px; font-size: 16px; }
+        .status { margin: 20px 0; padding: 10px; background: #f0f0f0; }
+        .log { background: #000; color: #00ff00; padding: 10px; font-family: monospace; height: 200px; overflow-y: scroll; }
+    </style>
+</head>
+<body>
+    <h1>Autoplay Test</h1>
+    <button id="start-autoplay">Start Autoplay</button>
+    <button id="stop-autoplay">Stop Autoplay</button>
+    <button id="new-game">New Game</button>
+    
+    <div class="status" id="status">Initializing...</div>
+    <div class="log" id="log"></div>
+
+    <!-- Game Scripts -->
+    <script src="src/js/utils.js"></script>
+    <script src="src/js/storage.js"></script>
+    <script src="src/js/game-engine.js"></script>
+    <script src="src/js/ai-solver.js"></script>
+    
+    <script>
+        let gameEngine = null;
+        let aiSolver = null;
+        let autoplayActive = false;
+        let autoplayInterval = null;
+        
+        function log(message) {
+            const logDiv = document.getElementById('log');
+            const timestamp = new Date().toLocaleTimeString();
+            logDiv.innerHTML += `[${timestamp}] ${message}\n`;
+            logDiv.scrollTop = logDiv.scrollHeight;
+            console.log(message);
+        }
+        
+        function updateStatus(message) {
+            document.getElementById('status').textContent = message;
+            log(`STATUS: ${message}`);
+        }
+        
+        async function initialize() {
+            try {
+                log('Initializing game engine...');
+                gameEngine = new GameEngine();
+                gameEngine.newGame();
+                
+                log('Initializing AI solver...');
+                aiSolver = new AISolver(gameEngine);
+                aiSolver.setDifficulty('hard');
+                
+                updateStatus('Ready - Game initialized');
+                
+                // Log initial game state
+                const state = gameEngine.getGameState();
+                log(`Initial state: Score=${state.score}, Moves=${state.moves}, GameOver=${state.isGameOver}`);
+                
+            } catch (error) {
+                updateStatus('Initialization failed: ' + error.message);
+                log('ERROR: ' + error.message);
+            }
+        }
+        
+        async function startAutoplay() {
+            if (!gameEngine || !aiSolver) {
+                updateStatus('Game not initialized');
+                return;
+            }
+            
+            if (autoplayActive) {
+                updateStatus('Autoplay already active');
+                return;
+            }
+            
+            if (gameEngine.isGameOver) {
+                updateStatus('Game is over - start a new game first');
+                return;
+            }
+            
+            autoplayActive = true;
+            updateStatus('Autoplay started');
+            
+            const playMove = async () => {
+                if (!autoplayActive || gameEngine.isGameOver) {
+                    stopAutoplay();
+                    return;
+                }
+                
+                try {
+                    log('Getting best move from AI...');
+                    const bestMove = await aiSolver.getBestMove();
+                    log(`AI suggested move: ${bestMove}`);
+                    
+                    if (bestMove && autoplayActive) {
+                        const success = gameEngine.move(bestMove);
+                        const state = gameEngine.getGameState();
+                        log(`Move result: ${success}, Score: ${state.score}, Moves: ${state.moves}, GameOver: ${state.isGameOver}`);
+                        
+                        if (success) {
+                            // Schedule next move
+                            autoplayInterval = setTimeout(playMove, 500);
+                        } else {
+                            log('Move failed - stopping autoplay');
+                            stopAutoplay();
+                        }
+                    } else {
+                        log('No best move available - stopping autoplay');
+                        stopAutoplay();
+                    }
+                } catch (error) {
+                    log('ERROR in autoplay: ' + error.message);
+                    stopAutoplay();
+                }
+            };
+            
+            // Start first move
+            setTimeout(playMove, 100);
+        }
+        
+        function stopAutoplay() {
+            if (autoplayInterval) {
+                clearTimeout(autoplayInterval);
+                autoplayInterval = null;
+            }
+            
+            autoplayActive = false;
+            
+            const state = gameEngine ? gameEngine.getGameState() : null;
+            if (state) {
+                if (state.isGameOver) {
+                    updateStatus(`Game Over! Final Score: ${state.score}, Moves: ${state.moves}`);
+                } else {
+                    updateStatus(`Autoplay stopped. Score: ${state.score}, Moves: ${state.moves}`);
+                }
+            } else {
+                updateStatus('Autoplay stopped');
+            }
+        }
+        
+        function newGame() {
+            stopAutoplay();
+            if (gameEngine) {
+                gameEngine.newGame();
+                updateStatus('New game started');
+                const state = gameEngine.getGameState();
+                log(`New game: Score=${state.score}, Moves=${state.moves}`);
+            }
+        }
+        
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('start-autoplay').addEventListener('click', startAutoplay);
+            document.getElementById('stop-autoplay').addEventListener('click', stopAutoplay);
+            document.getElementById('new-game').addEventListener('click', newGame);
+            
+            initialize();
+        });
+    </script>
+</body>
+</html>
