@@ -471,15 +471,47 @@ class UIController {
   /**
    * Toggle auto play
    */
-  toggleAutoPlay() {
-    // This would be implemented with the AI auto-play system
+  async toggleAutoPlay() {
+    // Get reference to the app instance
+    const app = window.fancy2048App;
+    if (!app) {
+      this.showNotification('Auto-play system not available', 'error');
+      return;
+    }
+    
     const isActive = this.elements.aiAutoButton.classList.contains('active');
-    this.elements.aiAutoButton.classList.toggle('active');
     
     if (isActive) {
+      // Stop autoplay
+      app.stopAutoPlay();
+      this.elements.aiAutoButton.classList.remove('active');
       this.showNotification('Auto-play disabled', 'info');
     } else {
-      this.showNotification('Auto-play enabled', 'info');
+      // Check if AI solver is available
+      if (!app.aiSolver) {
+        this.showNotification('AI solver not available', 'error');
+        return;
+      }
+      
+      // Check if game is not over
+      if (app.gameEngine && app.gameEngine.isGameOver) {
+        this.showNotification('Cannot start auto-play - game is over', 'error');
+        return;
+      }
+      
+      // Start autoplay
+      try {
+        const success = await app.startAutoPlay();
+        if (success) {
+          this.elements.aiAutoButton.classList.add('active');
+          this.showNotification('Auto-play enabled', 'info');
+        } else {
+          this.showNotification('Cannot start auto-play', 'error');
+        }
+      } catch (error) {
+        Utils.handleError(error, 'toggleAutoPlay');
+        this.showNotification('Auto-play failed to start', 'error');
+      }
     }
     
     Utils.log('ui', `Auto-play ${isActive ? 'disabled' : 'enabled'}`);
@@ -489,7 +521,16 @@ class UIController {
    * Set AI difficulty
    */
   setAIDifficulty(difficulty) {
+    // Update storage setting
     Storage.updateSetting('aiDifficulty', difficulty);
+    
+    // Apply to AI solver if available
+    const app = window.fancy2048App;
+    if (app && app.aiSolver) {
+      app.aiSolver.setDifficulty(difficulty);
+      Utils.log('ui', `AI difficulty applied to solver: ${difficulty}`);
+    }
+    
     this.showNotification(`AI difficulty: ${difficulty}`, 'info');
     
     Utils.log('ui', `AI difficulty set to: ${difficulty}`);

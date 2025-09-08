@@ -12,10 +12,10 @@ class AISolver {
     
     // Difficulty settings
     this.difficultySettings = {
-      easy: { depth: 2, randomness: 0.3 },
-      medium: { depth: 4, randomness: 0.15 },
-      hard: { depth: 6, randomness: 0.05 },
-      expert: { depth: 8, randomness: 0.01 }
+      easy: { depth: 3, randomness: 0.2 },
+      medium: { depth: 5, randomness: 0.08 },
+      hard: { depth: 7, randomness: 0.03 },
+      expert: { depth: 9, randomness: 0.005 }
     };
     
     // Precomputed weights for position evaluation
@@ -47,10 +47,21 @@ class AISolver {
     
     try {
       const board = this.gameEngine.board;
+      
+      // Check if game is over
+      if (this.gameEngine.isGameOver) {
+        return null;
+      }
+      
       const possibleMoves = this.getPossibleMoves(board);
       
       if (possibleMoves.length === 0) {
         return null;
+      }
+      
+      // If only one move available, return it immediately
+      if (possibleMoves.length === 1) {
+        return possibleMoves[0].direction;
       }
       
       let bestMove = null;
@@ -68,9 +79,23 @@ class AISolver {
           bestScore = adjustedScore;
           bestMove = move.direction;
         }
+        
+        // Yield control periodically
+        if (possibleMoves.indexOf(move) % 2 === 0) {
+          await Utils.sleep(1);
+        }
       }
       
-      return bestMove;
+      // Fallback to first available move if no best move found
+      return bestMove || possibleMoves[0].direction;
+    } catch (error) {
+      Utils.handleError(error, 'getBestMove');
+      // Return a random valid move as fallback
+      const possibleMoves = this.getPossibleMoves(this.gameEngine.board);
+      if (possibleMoves.length > 0) {
+        return possibleMoves[Math.floor(Math.random() * possibleMoves.length)].direction;
+      }
+      return null;
     } finally {
       this.isThinking = false;
     }
@@ -146,19 +171,19 @@ class AISolver {
     let score = 0;
     
     // 1. Weighted position score (corner strategy)
-    score += this.evaluatePositions(board) * 1.0;
+    score += this.evaluatePositions(board) * 1.5;
     
     // 2. Monotonicity (tiles should be arranged in order)
-    score += this.evaluateMonotonicity(board) * 1.2;
+    score += this.evaluateMonotonicity(board) * 2.0;
     
     // 3. Smoothness (adjacent tiles should be similar)
-    score += this.evaluateSmoothness(board) * 0.1;
+    score += this.evaluateSmoothness(board) * 0.2;
     
     // 4. Empty cells (more empty cells = better)
-    score += this.evaluateEmptyCells(board) * 2.7;
+    score += this.evaluateEmptyCells(board) * 4.0;
     
     // 5. Max tile position (prefer corners)
-    score += this.evaluateMaxTilePosition(board) * 1.0;
+    score += this.evaluateMaxTilePosition(board) * 1.8;
     
     // Cache the result
     if (this.evaluationCache.size >= this.maxCacheSize) {

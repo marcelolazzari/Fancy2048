@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fancy2048 Autoplay Test</title>
+    <link rel="stylesheet" href="src/css/main.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Fancy2048 - Autoplay Test</h1>
+            <div class="controls">
+                <button id="test-autoplay" class="button">Test Autoplay</button>
+                <button id="stop-autoplay" class="button">Stop Autoplay</button>
+                <span id="status">Ready</span>
+            </div>
+        </header>
+        
+        <main>
+            <div class="game-container">
+                <div class="score-container">
+                    <div class="score-box">
+                        <div class="score-label">Score</div>
+                        <div class="score-value" id="score">0</div>
+                    </div>
+                    <div class="score-box">
+                        <div class="score-label">Best</div>
+                        <div class="score-value" id="best-score">0</div>
+                    </div>
+                </div>
+                
+                <div class="board-container">
+                    <div class="grid-container" id="grid-container">
+                        <!-- Grid cells will be generated here -->
+                    </div>
+                    <div class="tile-container" id="tile-container">
+                        <!-- Tiles will be generated here -->
+                    </div>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <!-- Game Scripts -->
+    <script src="src/js/utils.js"></script>
+    <script src="src/js/storage.js"></script>
+    <script src="src/js/game-engine.js"></script>
+    <script src="src/js/ai-solver.js"></script>
+    <script src="src/js/ui-controller.js"></script>
+    <script src="src/js/touch-handler.js"></script>
+    <script src="src/js/app.js"></script>
+    
+    <script>
+        // Test autoplay functionality
+        document.addEventListener('DOMContentLoaded', () => {
+            const testButton = document.getElementById('test-autoplay');
+            const stopButton = document.getElementById('stop-autoplay');
+            const status = document.getElementById('status');
+            
+            testButton.addEventListener('click', () => {
+                if (window.fancy2048App && window.fancy2048App.aiSolver) {
+                    status.textContent = 'Starting autoplay...';
+                    const success = window.fancy2048App.startAutoPlay();
+                    if (success) {
+                        status.textContent = 'Autoplay active';
+                    } else {
+                        status.textContent = 'Failed to start autoplay';
+                    }
+                } else {
+                    status.textContent = 'AI not available';
+                }
+            });
+            
+            stopButton.addEventListener('click', () => {
+                if (window.fancy2048App) {
+                    window.fancy2048App.stopAutoPlay();
+                    status.textContent = 'Autoplay stopped';
+                }
+            });
+            
+            // Monitor game state
+            setInterval(() => {
+                if (window.fancy2048App && window.fancy2048App.gameEngine) {
+                    const gameState = window.fancy2048App.gameEngine.getGameState();
+                    if (gameState.isGameOver) {
+                        status.textContent = 'Game Over - Score: ' + gameState.score;
+                    } else if (window.fancy2048App.autoPlayActive) {
+                        status.textContent = 'Autoplay running - Score: ' + gameState.score;
+                    }
+                }
+            }, 1000);
+        });
+    </script>
+</body>
+</html>

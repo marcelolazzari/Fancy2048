@@ -120,7 +120,9 @@ class Fancy2048App {
     // Initialize AI solver (if available)
     if (typeof AISolver !== 'undefined') {
       this.aiSolver = new AISolver(this.gameEngine);
-      Utils.log('app', 'AI Solver initialized');
+      // Set AI to hard difficulty for better performance
+      this.aiSolver.setDifficulty('hard');
+      Utils.log('app', 'AI Solver initialized with hard difficulty');
     } else {
       Utils.log('app', 'AI Solver not available');
     }
@@ -272,7 +274,18 @@ class Fancy2048App {
    * Start auto-play
    */
   async startAutoPlay() {
-    if (!this.aiSolver || this.autoPlayActive || this.gameEngine.isGameOver) {
+    if (!this.aiSolver) {
+      Utils.log('app', 'Cannot start autoplay: AI solver not available');
+      return false;
+    }
+    
+    if (this.autoPlayActive) {
+      Utils.log('app', 'Cannot start autoplay: already active');
+      return false;
+    }
+    
+    if (this.gameEngine.isGameOver) {
+      Utils.log('app', 'Cannot start autoplay: game is over');
       return false;
     }
     
@@ -287,19 +300,26 @@ class Fancy2048App {
       }
       
       try {
+        Utils.log('app', 'Getting best move from AI...');
         const bestMove = await this.aiSolver.getBestMove();
+        Utils.log('app', 'AI suggested move:', bestMove);
         
         if (bestMove && this.autoPlayActive) {
           const success = this.gameEngine.move(bestMove);
+          Utils.log('app', 'Move execution result:', success);
           
           if (success) {
-            // Schedule next move
-            this.autoPlayInterval = setTimeout(playMove, 500);
+            // Update UI
+            this.uiController.updateDisplay();
+            // Schedule next move (faster for better gameplay)
+            this.autoPlayInterval = setTimeout(playMove, 200);
           } else {
             // No valid moves, stop auto-play
+            Utils.log('app', 'Move failed, stopping autoplay');
             this.stopAutoPlay();
           }
         } else {
+          Utils.log('app', 'No best move available, stopping autoplay');
           this.stopAutoPlay();
         }
       } catch (error) {
@@ -324,6 +344,12 @@ class Fancy2048App {
     }
     
     this.autoPlayActive = false;
+    
+    // Update UI button state
+    if (this.uiController && this.uiController.elements && this.uiController.elements.aiAutoButton) {
+      this.uiController.elements.aiAutoButton.classList.remove('active');
+    }
+    
     Utils.log('app', 'Auto-play stopped');
   }
 
