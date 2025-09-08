@@ -34,9 +34,20 @@ class StorageManager {
       localStorage.removeItem(test);
       return true;
     } catch (e) {
-      Utils.log('storage', 'localStorage not available, using memory fallback');
+      if (typeof Utils !== 'undefined' && Utils.log) {
+        Utils.log('storage', 'localStorage not available, using memory fallback');
+      } else {
+        console.log('Storage: localStorage not available, using memory fallback');
+      }
       return false;
     }
+  }
+
+  /**
+   * Public method to check storage availability
+   */
+  isStorageAvailable() {
+    return this.isAvailable;
   }
 
   /**
@@ -82,7 +93,11 @@ class StorageManager {
       
       return value;
     } catch (error) {
-      Utils.handleError(error, `Storage.get(${key})`);
+      if (typeof Utils !== 'undefined' && Utils.handleError) {
+        Utils.handleError(error, `Storage.get(${key})`);
+      } else {
+        console.error(`Storage.get(${key}) error:`, error);
+      }
       return defaultValue;
     }
   }
@@ -103,7 +118,11 @@ class StorageManager {
       
       return true;
     } catch (error) {
-      Utils.handleError(error, `Storage.set(${key})`);
+      if (typeof Utils !== 'undefined' && Utils.handleError) {
+        Utils.handleError(error, `Storage.set(${key})`);
+      } else {
+        console.error(`Storage.set(${key}) error:`, error);
+      }
       return false;
     }
   }
@@ -124,7 +143,11 @@ class StorageManager {
       
       return true;
     } catch (error) {
-      Utils.handleError(error, `Storage.remove(${key})`);
+      if (typeof Utils !== 'undefined' && Utils.handleError) {
+        Utils.handleError(error, `Storage.remove(${key})`);
+      } else {
+        console.error(`Storage.remove(${key}) error:`, error);
+      }
       return false;
     }
   }
@@ -155,7 +178,11 @@ class StorageManager {
       
       return true;
     } catch (error) {
-      Utils.handleError(error, 'Storage.clear');
+      if (typeof Utils !== 'undefined' && Utils.handleError) {
+        Utils.handleError(error, 'Storage.clear');
+      } else {
+        console.error('Storage.clear error:', error);
+      }
       return false;
     }
   }
@@ -259,7 +286,7 @@ class StorageManager {
     const games = this.getGameHistory();
     games.unshift({
       ...result,
-      id: Utils.generateId(),
+      id: (typeof Utils !== 'undefined' && Utils.generateId) ? Utils.generateId() : Date.now().toString(),
       timestamp: Date.now()
     });
     
@@ -411,7 +438,11 @@ class StorageManager {
       
       return true;
     } catch (error) {
-      Utils.handleError(error, 'Storage.importData');
+      if (typeof Utils !== 'undefined' && Utils.handleError) {
+        Utils.handleError(error, 'Storage.importData');
+      } else {
+        console.error('Storage.importData error:', error);
+      }
       return false;
     }
   }
