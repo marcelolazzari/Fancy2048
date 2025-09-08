@@ -2,213 +2,74 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>Fancy2048 - Modern AI-Powered Puzzle Game</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fancy2048 - Redirecting...</title>
+    <meta http-equiv="refresh" content="0; url=./pages/index.html">
+    <link rel="canonical" href="./pages/index.html">
     
     <!-- SEO Meta Tags -->
     <meta name="description" content="Experience the ultimate 2048 puzzle game with AI assistance, multiple grid sizes, dark/light themes, and advanced statistics tracking. Play online for free!">
     <meta name="keywords" content="2048, puzzle game, AI game, brain training, number puzzle, mobile game, web game">
     <meta name="author" content="Fancy2048">
     <meta name="robots" content="index, follow">
-    
-    <!-- Open Graph Meta Tags -->
-    <meta property="og:title" content="Fancy2048 - Modern AI-Powered Puzzle Game">
-    <meta property="og:description" content="Experience the ultimate 2048 puzzle game with AI assistance, multiple grid sizes, and advanced features. Play online for free!">
-    <meta property="og:type" content="website">
-    <meta property="og:image" content="./src/assets/icon-512.png">
-    <meta property="og:site_name" content="Fancy2048">
-    
-    <!-- Twitter Card Meta Tags -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="Fancy2048 - Modern AI-Powered Puzzle Game">
-    <meta name="twitter:description" content="Experience the ultimate 2048 puzzle game with AI assistance and advanced features!">
-    <meta name="twitter:image" content="./src/assets/icon-512.png">
-    
-    <!-- Theme and App Meta Tags -->
-    <meta name="theme-color" content="#1a1a1a">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="Fancy2048">
-    
     <!-- Icons -->
     <link rel="icon" type="image/svg+xml" href="./src/assets/favicon.svg">
-    <link rel="apple-touch-icon" href="./src/assets/icon-192.png">
     
-    <!-- PWA Manifest -->
-    <link rel="manifest" href="./manifest.json">
-    
-    <!-- Styles -->
-    <link rel="stylesheet" href="./src/css/main.css">
-    
-    <!-- Preconnect for performance -->
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            padding: 50px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0;
+        }
+        .redirect-message {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            backdrop-filter: blur(10px);
+            box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+        }
+        .spinner {
+            border: 4px solid rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            border-top: 4px solid white;
+            width: 40px;
+            height: 40px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        a {
+            color: #ffd700;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
 <body>
-    <!-- Skip to main content for accessibility -->
-    <a href="#main-content" class="skip-link">Skip to main content</a>
-    
-    <!-- Header -->
-    <header class="header">
-        <div class="container">
-            <h1 class="game-title">
-                <span class="title-text">Fancy2048</span>
-                <span class="title-subtitle">AI-Powered</span>
-            </h1>
-            
-            <nav class="header-nav">
-                <button id="theme-toggle" class="nav-button" aria-label="Toggle theme">
-                    <span class="icon">🌙</span>
-                </button>
-                <button id="stats-button" class="nav-button" aria-label="View statistics">
-                    <span class="icon">📊</span>
-                </button>
-                <button id="settings-button" class="nav-button" aria-label="Game settings">
-                    <span class="icon">⚙️</span>
-                </button>
-            </nav>
-        </div>
-    </header>
-
-    <!-- Main Game Content -->
-    <main id="main-content" class="main-content">
-        <div class="container">
-            <!-- Game Info Panel -->
-            <section class="game-info" aria-label="Game information">
-                <div class="score-panel">
-                    <div class="score-item">
-                        <div class="score-label">Score</div>
-                        <div id="current-score" class="score-value">0</div>
-                    </div>
-                    <div class="score-item">
-                        <div class="score-label">Best</div>
-                        <div id="best-score" class="score-value">0</div>
-                    </div>
-                    <div class="score-item">
-                        <div class="score-label">Moves</div>
-                        <div id="move-count" class="score-value">0</div>
-                    </div>
-                </div>
-                
-                <div class="game-controls">
-                    <button id="new-game" class="control-button primary">New Game</button>
-                    <button id="undo-move" class="control-button secondary" disabled>Undo</button>
-                </div>
-            </section>
-
-            <!-- Game Board Container -->
-            <section class="game-container" aria-label="Game board">
-                <div id="game-board" class="game-board" role="grid" aria-label="2048 game board">
-                    <!-- Game tiles will be generated here -->
-                </div>
-                
-                <!-- Game Over Overlay -->
-                <div id="game-over-overlay" class="game-overlay hidden" role="dialog" aria-labelledby="game-over-title">
-                    <div class="overlay-content">
-                        <h2 id="game-over-title" class="overlay-title">Game Over!</h2>
-                        <p class="overlay-message">No more moves available</p>
-                        <div class="overlay-score">
-                            <span>Final Score: </span>
-                            <span id="final-score" class="score-highlight">0</span>
-                        </div>
-                        <button id="restart-game" class="overlay-button">Try Again</button>
-                    </div>
-                </div>
-                
-                <!-- Victory Overlay -->
-                <div id="victory-overlay" class="game-overlay hidden" role="dialog" aria-labelledby="victory-title">
-                    <div class="overlay-content">
-                        <h2 id="victory-title" class="overlay-title">🎉 You Win!</h2>
-                        <p class="overlay-message">You reached 2048!</p>
-                        <div class="overlay-actions">
-                            <button id="continue-game" class="overlay-button secondary">Keep Playing</button>
-                            <button id="new-game-victory" class="overlay-button primary">New Game</button>
-                        </div>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Game Options -->
-            <section class="game-options" aria-label="Game options">
-                <div class="option-group">
-                    <label class="option-label">Board Size:</label>
-                    <div class="size-buttons" role="group" aria-label="Board size selection">
-                        <button class="size-button" data-size="3">3×3</button>
-                        <button class="size-button active" data-size="4">4×4</button>
-                        <button class="size-button" data-size="5">5×5</button>
-                        <button class="size-button" data-size="6">6×6</button>
-                    </div>
-                </div>
-                
-                <div class="option-group">
-                    <label class="option-label">AI Mode:</label>
-                    <div class="ai-controls" role="group" aria-label="AI controls">
-                        <button id="ai-hint" class="ai-button">Get Hint</button>
-                        <button id="ai-auto" class="ai-button toggle">Auto Play</button>
-                        <select id="ai-difficulty" class="ai-select" aria-label="AI difficulty">
-                            <option value="easy">Easy</option>
-                            <option value="medium" selected>Medium</option>
-                            <option value="hard">Hard</option>
-                            <option value="expert">Expert</option>
-                        </select>
-                    </div>
-                </div>
-            </section>
-
-            <!-- Mobile Instructions -->
-            <section class="mobile-instructions" aria-label="Game instructions">
-                <p class="instruction-text">
-                    <span class="desktop-only">Use arrow keys to move tiles. </span>
-                    <span class="mobile-only">Swipe to move tiles. </span>
-                    Combine tiles with the same number to reach 2048!
-                </p>
-            </section>
-        </div>
-    </main>
-
-    <!-- Footer -->
-    <footer class="footer">
-        <div class="container">
-            <p class="footer-text">
-                © 2025 Fancy2048. Built with ❤️ for puzzle enthusiasts.
-                <a href="./stats.html" class="footer-link">Statistics</a> |
-                <a href="https://github.com/marcelolazzari/Fancy2048" class="footer-link" target="_blank" rel="noopener">GitHub</a>
-            </p>
-        </div>
-    </footer>
-
-    <!-- Loading Screen -->
-    <div id="loading-screen" class="loading-screen">
-        <div class="loading-content">
-            <div class="loading-logo">2048</div>
-            <div class="loading-spinner"></div>
-            <div class="loading-text">Loading Fancy2048...</div>
-        </div>
+    <div class="redirect-message">
+        <h1>🎮 Fancy2048</h1>
+        <div class="spinner"></div>
+        <p>Redirecting to game...</p>
+        <p>If you are not redirected automatically, <a href="./pages/index.html">click here to play</a>.</p>
     </div>
-
-    <!-- Scripts -->
-    <script src="./src/js/error-handler.js"></script>
-    <script src="./src/js/utils.js"></script>
-    <script src="./src/js/storage.js"></script>
-    <script src="./src/js/ai-solver.js"></script>
-    <script src="./src/js/touch-handler.js"></script>
-    <script src="./src/js/game-engine.js"></script>
-    <script src="./src/js/ui-controller.js"></script>
-    <script src="./src/js/app.js"></script>
     
-    <!-- Service Worker Registration -->
     <script>
-        if ('serviceWorker' in navigator) {
-            window.addEventListener('load', () => {
-                navigator.serviceWorker.register('./service-worker.js')
-                    .then(registration => {
-                        console.log('SW registered: ', registration);
-                    })
-                    .catch(registrationError => {
-                        console.log('SW registration failed: ', registrationError);
-                    });
-            });
-        }
+        // Fallback redirect for browsers that don't support meta refresh
+        setTimeout(() => {
+            window.location.href = './pages/index.html';
+        }, 1000);
     </script>
 </body>
 </html>

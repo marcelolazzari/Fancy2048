@@ -16,6 +16,8 @@ const CACHE_STRATEGY = {
 const CORE_ASSETS = [
   './',
   './index.html',
+  './pages/',
+  './pages/index.html',
   './stats.html',
   './manifest.json',
   './src/css/main.css',
@@ -330,9 +332,12 @@ async function getOfflineFallback(request) {
     return cachedResponse;
   }
   
-  // For HTML requests, return the main page
+  // For HTML requests, return the main game page
   if (request.destination === 'document') {
-    const mainPage = await cache.match('./') || await cache.match('./index.html');
+    const mainPage = await cache.match('./pages/index.html') || 
+                     await cache.match('./pages/') || 
+                     await cache.match('./index.html') || 
+                     await cache.match('./');
     if (mainPage) {
       return mainPage;
     }
