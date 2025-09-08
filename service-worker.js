@@ -18,7 +18,7 @@ const CORE_ASSETS = [
   './index.html',
   './pages/',
   './pages/index.html',
-  './stats.html',
+  './pages/stats.html',
   './manifest.json',
   './src/css/main.css',
   './src/css/stats.css',

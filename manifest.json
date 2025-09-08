@@ -75,7 +75,7 @@
       "name": "Statistics",
       "short_name": "Stats",
       "description": "View game statistics and achievements",
-      "url": "/stats.html",
+      "url": "./pages/stats.html",
       "icons": [
         {
           "src": "src/assets/icon-192.svg",

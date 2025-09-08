@@ -13,7 +13,7 @@
         <priority>1.0</priority>
     </url>
     <url>
-        <loc>https://marcelolazzari.github.io/Fancy2048/stats.html</loc>
+        <loc>https://marcelolazzari.github.io/Fancy2048/pages/stats.html</loc>
         <lastmod>2025-09-08</lastmod>
         <changefreq>monthly</changefreq>
         <priority>0.8</priority>
