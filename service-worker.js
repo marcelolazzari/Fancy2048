@@ -20,6 +20,7 @@ const CORE_ASSETS = [
   './manifest.json',
   './src/css/main.css',
   './src/css/stats.css',
+  './src/js/error-handler.js',
   './src/js/app.js',
   './src/js/utils.js',
   './src/js/storage.js',
