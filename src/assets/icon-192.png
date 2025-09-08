@@ -1,0 +1,48 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="512" height="512" rx="64" fill="#1a1a1a"/>
+  
+  <!-- Main container -->
+  <rect x="32" y="32" width="448" height="448" rx="32" fill="#ffcc00"/>
+  
+  <!-- Grid background -->
+  <rect x="64" y="64" width="384" height="384" rx="16" fill="#1a1a1a" fill-opacity="0.1"/>
+  
+  <!-- Tiles -->
+  <!-- Row 1 -->
+  <rect x="80" y="80" width="80" height="80" rx="8" fill="#1a1a1a" fill-opacity="0.3"/>
+  <rect x="176" y="80" width="80" height="80" rx="8" fill="#1a1a1a" fill-opacity="0.5"/>
+  <rect x="272" y="80" width="80" height="80" rx="8" fill="#1a1a1a" fill-opacity="0.7"/>
+  <rect x="368" y="80" width="80" height="80" rx="8" fill="#1a1a1a" fill-opacity="0.9"/>
+  
+  <!-- Row 2 -->
+  <rect x="80" y="176" width="80" height="80" rx="8" fill="#1a1a1a" fill-opacity="0.5"/>
+  <rect x="176" y="176" width="80" height="80" rx="8" fill="#1a1a1a" fill-opacity="0.9"/>
+  <text x="216" y="226" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif" font-size="32" font-weight="bold" fill="#ffcc00" text-anchor="middle" dominant-baseline="middle">2</text>
+  <rect x="272" y="176" width="80" height="80" rx="8" fill="#1a1a1a" fill-opacity="0.7"/>
+  <rect x="368" y="176" width="80" height="80" rx="8" fill="#1a1a1a" fill-opacity="0.3"/>
+  
+  <!-- Row 3 -->
+  <rect x="80" y="272" width="80" height="80" rx="8" fill="#1a1a1a" fill-opacity="0.7"/>
+  <rect x="176" y="272" width="80" height="80" rx="8" fill="#1a1a1a" fill-opacity="0.95"/>
+  <text x="216" y="312" font-family="-apple-system, BlinkMacSystemFont, 'Segoe UI', Arial, sans-serif" font-size="20" font-weight="bold" fill="#ffcc00" text-anchor="middle" dominant-baseline="middle">2048</text>
+  <rect x="272" y="272" width="80" height="80" rx="8" fill="#1a1a1a" fill-opacity="0.5"/>
+  <rect x="368" y="272" width="80" height="80" rx="8" fill="#1a1a1a" fill-opacity="0.3"/>
+  
+  <!-- Row 4 -->
+  <rect x="80" y="368" width="80" height="80" rx="8" fill="#1a1a1a" fill-opacity="0.9"/>
+  <rect x="176" y="368" width="80" height="80" rx="8" fill="#1a1a1a" fill-opacity="0.7"/>
+  <rect x="272" y="368" width="80" height="80" rx="8" fill="#1a1a1a" fill-opacity="0.5"/>
+  <rect x="368" y="368" width="80" height="80" rx="8" fill="#1a1a1a" fill-opacity="0.3"/>
+  
+  <!-- Decorative elements -->
+  <circle cx="96" cy="96" r="4" fill="#ffcc00" opacity="0.5"/>
+  <circle cx="416" cy="416" r="4" fill="#ffcc00" opacity="0.5"/>
+  
+  <!-- Shine effect -->
+  <linearGradient id="shine" x1="0%" y1="0%" x2="100%" y2="100%">
+    <stop offset="0%" style="stop-color:#ffffff;stop-opacity:0.2" />
+    <stop offset="100%" style="stop-color:#ffffff;stop-opacity:0" />
+  </linearGradient>
+  <rect x="32" y="32" width="448" height="448" rx="32" fill="url(#shine)"/>
+</svg>
