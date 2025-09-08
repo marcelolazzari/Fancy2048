@@ -14,29 +14,29 @@ const CACHE_STRATEGY = {
 
 // Core app resources that should be cached
 const CORE_ASSETS = [
-  '/',
-  '/index.html',
-  '/stats.html',
-  '/manifest.json',
-  '/src/css/main.css',
-  '/src/css/stats.css',
-  '/src/js/app.js',
-  '/src/js/utils.js',
-  '/src/js/storage.js',
-  '/src/js/game-engine.js',
-  '/src/js/ai-solver.js',
-  '/src/js/touch-handler.js',
-  '/src/js/ui-controller.js',
-  '/src/js/stats.js',
-  '/src/assets/icon-192.svg',
-  '/src/assets/icon-512.svg',
-  '/src/assets/favicon.svg'
+  './',
+  './index.html',
+  './stats.html',
+  './manifest.json',
+  './src/css/main.css',
+  './src/css/stats.css',
+  './src/js/app.js',
+  './src/js/utils.js',
+  './src/js/storage.js',
+  './src/js/game-engine.js',
+  './src/js/ai-solver.js',
+  './src/js/touch-handler.js',
+  './src/js/ui-controller.js',
+  './src/js/stats.js',
+  './src/assets/icon-192.svg',
+  './src/assets/icon-512.svg',
+  './src/assets/favicon.svg'
 ];
 
 // Resources that can be cached opportunistically
 const OPTIONAL_ASSETS = [
-  '/robots.txt',
-  '/sitemap.xml',
+  './robots.txt',
+  './sitemap.xml',
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap'
 ];
 
@@ -331,7 +331,7 @@ async function getOfflineFallback(request) {
   
   // For HTML requests, return the main page
   if (request.destination === 'document') {
-    const mainPage = await cache.match('/');
+    const mainPage = await cache.match('./') || await cache.match('./index.html');
     if (mainPage) {
       return mainPage;
     }
@@ -387,7 +387,7 @@ self.addEventListener('push', event => {
     badge: '/src/assets/favicon.svg',
     vibrate: [200, 100, 200],
     data: {
-      url: '/'
+      url: './'
     },
     actions: [
       {
@@ -416,7 +416,7 @@ self.addEventListener('notificationclick', event => {
   
   if (event.action === 'open' || !event.action) {
     event.waitUntil(
-      self.clients.openWindow(event.notification.data.url || '/')
+      self.clients.openWindow(event.notification.data.url || './')
     );
   }
 });
@@ -461,7 +461,7 @@ async function cacheGameData(data) {
       }
     });
     
-    await cache.put('/game-data', response);
+    await cache.put('./game-data', response);
     console.log('[ServiceWorker] Game data cached');
   } catch (error) {
     console.error('[ServiceWorker] Failed to cache game data:', error);

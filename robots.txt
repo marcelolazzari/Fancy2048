@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://marcelolazzari.github.io/Fancy2048/sitemap.xml
