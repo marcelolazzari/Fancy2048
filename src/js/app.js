@@ -15,10 +15,27 @@ class Fancy2048App {
     this.autoPlayInterval = null;
     
     // Initialize when DOM is ready
+    this.waitForReadyState();
+  }
+  
+  /**
+   * Wait for DOM and all scripts to be ready
+   */
+  waitForReadyState() {
+    const checkReady = () => {
+      if (document.readyState === 'complete' || 
+          (document.readyState === 'interactive' && document.getElementById('game-board'))) {
+        // Add a small delay to ensure all scripts have executed
+        setTimeout(() => this.initialize(), 100);
+      } else {
+        setTimeout(checkReady, 50);
+      }
+    };
+    
     if (document.readyState === 'loading') {
-      document.addEventListener('DOMContentLoaded', () => this.initialize());
+      document.addEventListener('DOMContentLoaded', checkReady);
     } else {
-      this.initialize();
+      checkReady();
     }
   }
 
@@ -27,6 +44,33 @@ class Fancy2048App {
    */
   async initialize() {
     try {
+      console.log('Fancy2048: Starting initialization...');
+      
+      // Check if DOM is ready
+      if (document.readyState === 'loading') {
+        throw new Error('DOM not ready - this should not happen');
+      }
+      
+      // Check if required classes are available
+      if (typeof Utils === 'undefined') {
+        throw new Error('Utils class not available - script load order issue');
+      }
+      if (typeof GameEngine === 'undefined') {
+        throw new Error('GameEngine class not available - script load order issue');
+      }
+      if (typeof UIController === 'undefined') {
+        throw new Error('UIController class not available - script load order issue');
+      }
+      if (typeof TouchHandler === 'undefined') {
+        throw new Error('TouchHandler class not available - script load order issue');
+      }
+      
+      // Check if required DOM elements exist
+      const gameBoard = document.getElementById('game-board');
+      if (!gameBoard) {
+        throw new Error('Game board element not found');
+      }
+      
       Utils.log('app', 'Initializing Fancy2048...');
       
       // Show loading screen
@@ -52,8 +96,11 @@ class Fancy2048App {
       this.announceReady();
       
     } catch (error) {
-      Utils.handleError(error, 'App initialization');
-      this.showInitializationError();
+      console.error('Fancy2048 initialization error:', error);
+      if (typeof Utils !== 'undefined' && Utils.handleError) {
+        Utils.handleError(error, 'App initialization');
+      }
+      this.showInitializationError(error);
     }
   }
 
@@ -359,13 +406,20 @@ class Fancy2048App {
   /**
    * Show initialization error
    */
-  showInitializationError() {
+  showInitializationError(error) {
+    // Hide loading screen if it's still visible
+    const loadingScreen = document.getElementById('loading-screen');
+    if (loadingScreen) {
+      loadingScreen.style.display = 'none';
+    }
+    
     const errorMessage = document.createElement('div');
     errorMessage.className = 'initialization-error';
     errorMessage.innerHTML = `
       <div class="error-content">
         <h2>⚠️ Initialization Error</h2>
         <p>Failed to load Fancy2048. Please try refreshing the page.</p>
+        ${error ? `<p class="error-details">Error: ${error.message || error}</p>` : ''}
         <button onclick="window.location.reload()" class="retry-button">
           Retry
         </button>
@@ -378,12 +432,51 @@ class Fancy2048App {
       left: 0;
       right: 0;
       bottom: 0;
-      background: var(--background-color);
+      background: #1a1a1a;
+      color: #ffffff;
       display: flex;
       align-items: center;
       justify-content: center;
       z-index: 10000;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
     `;
+    
+    // Style the content
+    const style = document.createElement('style');
+    style.textContent = `
+      .error-content {
+        text-align: center;
+        padding: 2rem;
+        background: #2d2d2d;
+        border-radius: 8px;
+        max-width: 500px;
+        margin: 1rem;
+      }
+      .error-details {
+        background: #3d1a00;
+        color: #ffaa88;
+        padding: 1rem;
+        border-radius: 4px;
+        margin: 1rem 0;
+        font-family: monospace;
+        font-size: 0.9rem;
+        overflow-wrap: break-word;
+      }
+      .retry-button {
+        background: #ffcc00;
+        color: #1a1a1a;
+        border: none;
+        padding: 0.75rem 2rem;
+        border-radius: 4px;
+        font-size: 1rem;
+        cursor: pointer;
+        margin-top: 1rem;
+      }
+      .retry-button:hover {
+        background: #e6b800;
+      }
+    `;
+    document.head.appendChild(style);
     
     document.body.appendChild(errorMessage);
   }
