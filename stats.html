@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Statistics - Fancy2048</title>
+    <meta name="description" content="View your Fancy2048 game statistics, progress tracking, and performance analytics.">
+    
+    <!-- Icons -->
+    <link rel="icon" type="image/svg+xml" href="./src/assets/favicon.svg">
+    
+    <!-- Styles -->
+    <link rel="stylesheet" href="./src/css/main.css">
+    <link rel="stylesheet" href="./src/css/stats.css">
+</head>
+<body class="stats-page">
+    <!-- Header -->
+    <header class="header">
+        <div class="container">
+            <h1 class="page-title">
+                <a href="./index.html" class="back-link" aria-label="Back to game">←</a>
+                Statistics
+            </h1>
+            
+            <nav class="header-nav">
+                <button id="export-stats" class="nav-button" aria-label="Export statistics">
+                    <span class="icon">📤</span>
+                </button>
+                <button id="clear-stats" class="nav-button danger" aria-label="Clear all statistics">
+                    <span class="icon">🗑️</span>
+                </button>
+            </nav>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="container">
+            <!-- Stats Overview -->
+            <section class="stats-overview">
+                <div class="stat-card">
+                    <div class="stat-icon">🎮</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="total-games">0</div>
+                        <div class="stat-label">Total Games</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">🏆</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="games-won">0</div>
+                        <div class="stat-label">Games Won</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">⭐</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="best-score">0</div>
+                        <div class="stat-label">Best Score</div>
+                    </div>
+                </div>
+                
+                <div class="stat-card">
+                    <div class="stat-icon">🎯</div>
+                    <div class="stat-info">
+                        <div class="stat-value" id="win-rate">0%</div>
+                        <div class="stat-label">Win Rate</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Detailed Statistics -->
+            <section class="stats-details">
+                <div class="stats-section">
+                    <h2>Performance Analytics</h2>
+                    <div class="performance-grid">
+                        <div class="performance-item">
+                            <span class="performance-label">Average Score:</span>
+                            <span class="performance-value" id="avg-score">0</span>
+                        </div>
+                        <div class="performance-item">
+                            <span class="performance-label">Average Moves:</span>
+                            <span class="performance-value" id="avg-moves">0</span>
+                        </div>
+                        <div class="performance-item">
+                            <span class="performance-label">Best Time:</span>
+                            <span class="performance-value" id="best-time">--:--</span>
+                        </div>
+                        <div class="performance-item">
+                            <span class="performance-label">Highest Tile:</span>
+                            <span class="performance-value" id="highest-tile">0</span>
+                        </div>
+                        <div class="performance-item">
+                            <span class="performance-label">Total Playing Time:</span>
+                            <span class="performance-value" id="total-time">0min</span>
+                        </div>
+                        <div class="performance-item">
+                            <span class="performance-label">AI Games:</span>
+                            <span class="performance-value" id="ai-games">0</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Games -->
+                <div class="stats-section">
+                    <h2>Recent Games</h2>
+                    <div class="recent-games">
+                        <div id="recent-games-list" class="games-list">
+                            <!-- Recent games will be populated here -->
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Board Size Statistics -->
+                <div class="stats-section">
+                    <h2>Board Size Performance</h2>
+                    <div class="board-stats">
+                        <div id="board-size-stats" class="board-size-grid">
+                            <!-- Board size stats will be populated here -->
+                        </div>
+                    </div>
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Scripts -->
+    <script src="./src/js/utils.js"></script>
+    <script src="./src/js/storage.js"></script>
+    <script src="./src/js/stats.js"></script>
+</body>
+</html>
