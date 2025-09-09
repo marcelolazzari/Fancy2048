@@ -15,7 +15,6 @@ const CACHE_STRATEGY = {
 // Core app resources that should be cached
 const CORE_ASSETS = [
   './',
-  './index.html',
   './pages/',
   './pages/index.html',
   './pages/stats.html',
@@ -38,8 +37,6 @@ const CORE_ASSETS = [
 
 // Resources that can be cached opportunistically
 const OPTIONAL_ASSETS = [
-  './robots.txt',
-  './sitemap.xml',
   'https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap'
 ];
 
