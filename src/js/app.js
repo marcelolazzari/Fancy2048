@@ -292,6 +292,11 @@ class Fancy2048App {
     
     this.autoPlayActive = true;
     Utils.log('app', 'Auto-play started');
+
+    // Ensure UI reflects autoplay state when started programmatically
+    if (this.uiController && this.uiController.elements && this.uiController.elements.aiAutoButton) {
+      this.uiController.elements.aiAutoButton.classList.add('active');
+    }
     
     // Auto-play loop
     const playMove = async () => {

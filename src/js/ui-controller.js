@@ -483,13 +483,14 @@ class UIController {
       this.showNotification('Auto-play system not available', 'error');
       return;
     }
-    
-    const isActive = this.elements.aiAutoButton.classList.contains('active');
-    
+    // Use app.autoPlayActive as authoritative state
+    const isActive = !!app.autoPlayActive;
+
     if (isActive) {
-      // Stop autoplay
+      // Stop autoplay via app
       app.stopAutoPlay();
-      this.elements.aiAutoButton.classList.remove('active');
+      // Reflect UI state
+      if (this.elements.aiAutoButton) this.elements.aiAutoButton.classList.remove('active');
       this.showNotification('Auto-play disabled', 'info');
     } else {
       // Check if AI solver is available
@@ -508,9 +509,11 @@ class UIController {
       try {
         const success = await app.startAutoPlay();
         if (success) {
-          this.elements.aiAutoButton.classList.add('active');
+          if (this.elements.aiAutoButton) this.elements.aiAutoButton.classList.add('active');
           this.showNotification('Auto-play enabled', 'info');
         } else {
+          // Ensure UI is not left active
+          if (this.elements.aiAutoButton) this.elements.aiAutoButton.classList.remove('active');
           this.showNotification('Cannot start auto-play', 'error');
         }
       } catch (error) {
