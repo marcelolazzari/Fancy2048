@@ -1,7 +1,12 @@
 # Fancy 2048 🎮
 
-[![Live Demo](https://img.shields.io/badge/🎮_Live_Demo-Play_Now-4CAF50?style=for-the-badge&labelColor=1a1a1a)](https://marcelolazzari.github.io/Fancy2048/pages/index.html)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
+[![Live Demo](https://img.shields.io/badge/🎮_Live_Demo-Play_Now-4CAF50?style=for-the-badge&labelColor=1a1a1a)](https://marcelolazzari.github.io/Fancy2048/)
+[![License: MIT](h```
+Fancy2048/
+├── 📄 index.html              # Redirect page to /pages/
+├── 📁 pages/
+│   └── 📄 index.html          # Main game application
+├── 📄 stats.html              # Statistics & analytics page//img.shields.io/badge/License-MIT-yellow.svg?style=for-the-badge)](https://opensource.org/licenses/MIT)
 [![PWA Ready](https://img.shields.io/badge/PWA-Ready-orange.svg?style=for-the-badge)](https://web.dev/progressive-web-apps/)
 [![Mobile Friendly](https://img.shields.io/badge/Mobile-Friendly-blue.svg?style=for-the-badge)](https://search.google.com/test/mobile-friendly)
 
@@ -60,12 +65,12 @@ Built with vanilla JavaScript and modern web standards, Fancy 2048 delivers smoo
 ## � Quick Start
 
 ### 🌐 **Play Online** (Recommended)
-**[🎮 Start Playing Now →](https://marcelolazzari.github.io/Fancy2048/pages/index.html)**
+**[🎮 Start Playing Now →](https://marcelolazzari.github.io/Fancy2048/)**
 
 The game runs directly in your browser - no downloads needed! For the best experience:
 1. **📱 Install as PWA**: Click the "Install" button in your browser
 2. **🔄 Enable Offline Mode**: The service worker caches everything automatically
-3. **🎯 Bookmark**: Save `https://marcelolazzari.github.io/Fancy2048/pages/index.html` for quick access
+3. **🎯 Bookmark**: Save `https://marcelolazzari.github.io/Fancy2048/` for quick access
 
 ### 💻 **Local Development**
 ```bash
@@ -84,14 +89,14 @@ npx http-server -p 8080
 php -S localhost:8080
 
 # 3️⃣ Open in browser
-open http://localhost:8080/pages/index.html
+open http://localhost:8080/
 ```
 
 ### 📦 **Installation Options**
 
 | Platform | Method | Command/Link |
 |----------|--------|--------------|
-| **🌐 Web Browser** | Direct Play | [Open Game](https://marcelolazzari.github.io/Fancy2048/pages/index.html) |
+| **🌐 Web Browser** | Direct Play | [Open Game](https://marcelolazzari.github.io/Fancy2048/) |
 | **📱 Mobile PWA** | Add to Home Screen | Visit site → "Install App" |
 | **💻 Desktop PWA** | Install from Browser | Chrome/Edge → ⋮ → "Install Fancy2048" |
 | **👨‍💻 Development** | Local Setup | `git clone` + local server |
@@ -192,8 +197,7 @@ Our AI uses advanced **Expectimax decision-making** with probabilistic evaluatio
 ### 📁 **Project Structure**
 ```
 Fancy2048/
-├── 📄 index.html              # Redirect page to /pages/
-├── 📁 pages/
+├──  pages/
 │   └── 📄 index.html          # Main game application
 ├── 📄 stats.html              # Statistics & analytics page
 ├── ⚙️ manifest.json           # PWA configuration
@@ -413,9 +417,8 @@ npx http-server -p 8080          # Node.js
 php -S localhost:8080            # PHP
 
 # 🔍 Development URLs
-http://localhost:8080/pages/index.html  # Main game
-http://localhost:8080/stats.html       # Statistics page
-http://localhost:8080/               # Redirect page
+http://localhost:8080/               # Main game
+http://localhost:8080/pages/stats.html  # Statistics page
 ```
 
 ## 📊 Analytics & Statistics

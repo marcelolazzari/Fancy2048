@@ -336,7 +336,6 @@ async function getOfflineFallback(request) {
   if (request.destination === 'document') {
     const mainPage = await cache.match('./pages/index.html') || 
                      await cache.match('./pages/') || 
-                     await cache.match('./index.html') || 
                      await cache.match('./');
     if (mainPage) {
       return mainPage;

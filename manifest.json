@@ -2,7 +2,7 @@
   "name": "Fancy 2048",
   "short_name": "Fancy2048",
   "description": "A modern, polished version of the classic 2048 puzzle game with AI solver, touch controls, and progressive web app features.",
-  "start_url": "./pages/index.html",
+  "start_url": "./",
   "display": "standalone",
   "background_color": "#1a1a1a",
   "theme_color": "#ffcc00",
@@ -63,7 +63,7 @@
       "name": "New Game",
       "short_name": "New",
       "description": "Start a new 2048 game",
-      "url": "./pages/index.html?action=new",
+      "url": "./?action=new",
       "icons": [
         {
           "src": "src/assets/icon-192.svg",
