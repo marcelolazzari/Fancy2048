@@ -1,4 +1,0 @@
-# Fancy2048 Python Backend Dependencies
-flask==3.1.2
-flask-cors==6.0.1
-gunicorn==21.2.0

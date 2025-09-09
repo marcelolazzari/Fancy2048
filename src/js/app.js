@@ -514,7 +514,7 @@ class Fancy2048App {
     // Dispatch ready event
     const readyEvent = new CustomEvent('fancy2048Ready', {
       detail: {
-        version: '2.0.0',
+        version: '2.0.1-js',
         features: {
           aiSolver: !!this.aiSolver,
           touchSupport: !!this.touchHandler,
@@ -527,7 +527,7 @@ class Fancy2048App {
     
     // Global accessibility
     window.fancy2048 = {
-      version: '2.0.0',
+      version: '2.0.1-js',
       newGame: () => this.newGame(),
       getHint: () => this.getAIHint(),
       toggleAutoPlay: () => this.toggleAutoPlay(),
