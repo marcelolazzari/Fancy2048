@@ -444,6 +444,81 @@ body {
 /* Dark theme tile placeholders */
 [data-theme="dark"] .tile-placeholder {
   background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+/* Dark theme tile colors for better contrast */
+[data-theme="dark"] .tile[data-value="2"] { 
+  background: #3a3a3a; 
+  color: #ffffff; 
+}
+
+[data-theme="dark"] .tile[data-value="4"] { 
+  background: #4a4a4a; 
+  color: #ffffff; 
+}
+
+[data-theme="dark"] .tile[data-value="8"] { 
+  background: #f2b179; 
+  color: #000000; 
+}
+
+[data-theme="dark"] .tile[data-value="16"] { 
+  background: #f59563; 
+  color: #000000; 
+}
+
+[data-theme="dark"] .tile[data-value="32"] { 
+  background: #f67c5f; 
+  color: #ffffff; 
+}
+
+[data-theme="dark"] .tile[data-value="64"] { 
+  background: #f65e3b; 
+  color: #ffffff; 
+}
+
+[data-theme="dark"] .tile[data-value="128"] { 
+  background: #edcf72; 
+  color: #000000; 
+  font-size: 0.9em; 
+}
+
+[data-theme="dark"] .tile[data-value="256"] { 
+  background: #edcc61; 
+  color: #000000; 
+  font-size: 0.9em; 
+}
+
+[data-theme="dark"] .tile[data-value="512"] { 
+  background: #edc850; 
+  color: #000000; 
+  font-size: 0.9em; 
+}
+
+[data-theme="dark"] .tile[data-value="1024"] { 
+  background: #edc53f; 
+  color: #000000; 
+  font-size: 0.8em; 
+}
+
+[data-theme="dark"] .tile[data-value="2048"] { 
+  background: #edc22e; 
+  color: #000000; 
+  font-size: 0.8em; 
+  box-shadow: 0 0 20px rgba(237, 194, 46, 0.7); 
+}
+
+[data-theme="dark"] .tile[data-value="4096"] { 
+  background: #ff6b6b; 
+  color: #ffffff; 
+  font-size: 0.7em; 
+}
+
+[data-theme="dark"] .tile[data-value="8192"] { 
+  background: #4ecdc4; 
+  color: #000000; 
+  font-size: 0.7em; 
 }
 
 /* Dark theme button improvements */
@@ -496,10 +571,35 @@ body {
   color: var(--dark-text-primary);
 }
 
-/* Dark theme speed button */
+/* Dark theme speed button and all variants */
 [data-theme="dark"] .speed-button[data-speed="1x"] {
   background: var(--dark-surface);
   color: var(--dark-text-secondary);
+  border-color: var(--dark-border);
+}
+
+[data-theme="dark"] .speed-button[data-speed="2x"] {
+  background: #4caf50;
+  color: white;
+  border-color: #4caf50;
+}
+
+[data-theme="dark"] .speed-button[data-speed="4x"] {
+  background: #ff9800;
+  color: white;
+  border-color: #ff9800;
+}
+
+[data-theme="dark"] .speed-button[data-speed="8x"] {
+  background: #f44336;
+  color: white;
+  border-color: #f44336;
+}
+
+[data-theme="dark"] .speed-button[data-speed="MAX"] {
+  background: linear-gradient(45deg, #e91e63, #9c27b0);
+  color: white;
+  border-color: transparent;
 }
 
 /* Light theme improvements for better contrast */
@@ -540,6 +640,143 @@ body {
 
 [data-theme="dark"] .score-label {
   color: var(--dark-text-secondary);
+}
+
+/* Dark theme for game options section */
+[data-theme="dark"] .game-options {
+  background: var(--dark-surface);
+  border-color: var(--dark-border);
+}
+
+[data-theme="dark"] .option-label {
+  color: var(--dark-text-primary);
+}
+
+/* Dark theme for overlays */
+[data-theme="dark"] .overlay-content {
+  background: var(--dark-surface);
+  border-color: var(--dark-border);
+}
+
+[data-theme="dark"] .overlay-title {
+  color: var(--dark-text-primary);
+}
+
+[data-theme="dark"] .overlay-message {
+  color: var(--dark-text-secondary);
+}
+
+[data-theme="dark"] .overlay-button.primary {
+  background: #ffffff;
+  color: #000000;
+}
+
+[data-theme="dark"] .overlay-button.primary:hover {
+  background: #f0f0f0;
+  color: #000000;
+}
+
+[data-theme="dark"] .overlay-button.secondary {
+  background: transparent;
+  border-color: var(--dark-border);
+  color: var(--dark-text-primary);
+}
+
+[data-theme="dark"] .overlay-button.secondary:hover {
+  background: var(--dark-border);
+  color: var(--dark-text-primary);
+}
+
+/* Dark theme for header elements */
+[data-theme="dark"] .header {
+  background: var(--dark-surface);
+  border-bottom-color: var(--dark-border);
+}
+
+[data-theme="dark"] .title-text {
+  color: var(--dark-text-primary);
+}
+
+[data-theme="dark"] .title-subtitle {
+  color: var(--dark-text-secondary);
+}
+
+/* Dark theme for footer */
+[data-theme="dark"] .footer {
+  background: var(--dark-surface);
+  border-top-color: var(--dark-border);
+}
+
+[data-theme="dark"] .footer-text {
+  color: var(--dark-text-secondary);
+}
+
+[data-theme="dark"] .footer-link {
+  color: var(--dark-text-primary);
+}
+
+[data-theme="dark"] .footer-link:hover {
+  color: var(--secondary-color);
+}
+
+/* Dark theme for loading screen */
+[data-theme="dark"] .loading-screen {
+  background: var(--dark-background);
+}
+
+[data-theme="dark"] .loading-logo {
+  color: var(--dark-text-primary);
+}
+
+[data-theme="dark"] .loading-spinner {
+  border-color: var(--dark-border);
+  border-top-color: var(--secondary-color);
+}
+
+[data-theme="dark"] .loading-text {
+  color: var(--dark-text-secondary);
+}
+
+/* Dark theme for mobile instructions */
+[data-theme="dark"] .mobile-instructions {
+  color: var(--dark-text-secondary);
+}
+
+/* Dark theme for size buttons active state */
+[data-theme="dark"] .size-button.active {
+  background: #ffffff;
+  color: #000000;
+  border-color: #ffffff;
+}
+
+/* Dark theme for AI button active state */
+[data-theme="dark"] .ai-button.active {
+  background: var(--secondary-color);
+  color: #000000;
+  border-color: var(--secondary-color);
+}
+
+/* Dark theme for score highlight */
+[data-theme="dark"] .score-highlight {
+  color: var(--secondary-color);
+}
+
+/* Dark theme for skip link accessibility */
+[data-theme="dark"] .skip-link {
+  background: var(--dark-text-primary);
+  color: var(--dark-background);
+}
+
+/* Dark theme focus styles */
+[data-theme="dark"] button:focus,
+[data-theme="dark"] select:focus,
+[data-theme="dark"] .nav-button:focus {
+  box-shadow: 0 0 0 3px rgba(255, 204, 0, 0.4);
+}
+
+/* Dark theme for game overlay backdrop */
+[data-theme="dark"] .game-overlay {
+  background: rgba(0, 0, 0, 0.9);
 }
 
 /* Game Overlays */
@@ -950,6 +1187,7 @@ body {
   }
 }
 
+/* Automatic dark mode based on system preference */
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
     --primary-color: var(--dark-primary);
@@ -959,6 +1197,33 @@ body {
     --text-secondary: var(--dark-text-secondary);
     --border-color: var(--dark-border);
     --shadow-color: var(--dark-shadow);
+  }
+  
+  /* Apply all dark theme styles when system prefers dark */
+  :root:not([data-theme]) .tile-placeholder {
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+  }
+  
+  :root:not([data-theme]) .control-button.primary {
+    background: #ffffff;
+    color: #000000;
+  }
+  
+  :root:not([data-theme]) .control-button.primary:hover {
+    background: #f0f0f0;
+    color: #000000;
+  }
+  
+  :root:not([data-theme]) .control-button.secondary {
+    background: var(--dark-surface);
+    border-color: var(--dark-border);
+    color: var(--dark-text-primary);
+  }
+  
+  :root:not([data-theme]) .control-button.secondary:hover:not(:disabled) {
+    background: var(--dark-border);
+    border-color: var(--dark-text-secondary);
   }
 }
 
