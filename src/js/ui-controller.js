@@ -55,6 +55,7 @@ class UIController {
       loadingScreen: document.getElementById('loading-screen'),
       aiHintButton: document.getElementById('ai-hint'),
       aiAutoButton: document.getElementById('ai-auto'),
+      speedButton: document.getElementById('ai-speed'),
       aiDifficultySelect: document.getElementById('ai-difficulty')
     };
 
@@ -114,6 +115,10 @@ class UIController {
     
     if (this.elements.aiAutoButton) {
       this.elements.aiAutoButton.addEventListener('click', () => this.toggleAutoPlay());
+    }
+    
+    if (this.elements.speedButton) {
+      this.elements.speedButton.addEventListener('click', () => this.cycleSpeed());
     }
     
     if (this.elements.aiDifficultySelect) {
@@ -515,6 +520,18 @@ class UIController {
     }
     
     Utils.log('ui', `Auto-play ${isActive ? 'disabled' : 'enabled'}`);
+  }
+
+  /**
+   * Cycle autoplay speed
+   */
+  cycleSpeed() {
+    if (!window.fancy2048App) {
+      return;
+    }
+    
+    const newSpeed = window.fancy2048App.cycleAutoPlaySpeed();
+    this.showNotification(`Speed set to ${newSpeed === 'MAX' ? 'MAX' : newSpeed + 'x'}`, 'info', 1000);
   }
 
   /**

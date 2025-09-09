@@ -314,11 +314,23 @@ body {
 .control-button.primary {
   background: var(--primary-color);
   color: white;
+  font-weight: 600;
 }
 
 .control-button.primary:hover {
   background: color-mix(in srgb, var(--primary-color) 90%, white);
   transform: translateY(-1px);
+}
+
+/* Dark theme primary button fix */
+[data-theme="dark"] .control-button.primary {
+  background: #ffffff;
+  color: #000000;
+}
+
+[data-theme="dark"] .control-button.primary:hover {
+  background: #f0f0f0;
+  color: #000000;
 }
 
 .control-button.secondary {
@@ -482,6 +494,12 @@ body {
 [data-theme="dark"] .nav-button:hover {
   background: var(--dark-border);
   color: var(--dark-text-primary);
+}
+
+/* Dark theme speed button */
+[data-theme="dark"] .speed-button[data-speed="1x"] {
+  background: var(--dark-surface);
+  color: var(--dark-text-secondary);
 }
 
 /* Light theme improvements for better contrast */
@@ -669,6 +687,44 @@ body {
   background: var(--secondary-color);
   color: var(--primary-color);
   border-color: var(--secondary-color);
+}
+
+.speed-button {
+  min-width: 50px;
+  font-family: var(--font-family-mono);
+  font-weight: 600;
+  position: relative;
+}
+
+.speed-button[data-speed="1x"] {
+  background: var(--surface-color);
+  color: var(--text-secondary);
+}
+
+.speed-button[data-speed="2x"] {
+  background: #4caf50;
+  color: white;
+}
+
+.speed-button[data-speed="4x"] {
+  background: #ff9800;
+  color: white;
+}
+
+.speed-button[data-speed="8x"] {
+  background: #f44336;
+  color: white;
+}
+
+.speed-button[data-speed="MAX"] {
+  background: linear-gradient(45deg, #e91e63, #9c27b0);
+  color: white;
+  animation: pulse-speed 1s ease-in-out infinite alternate;
+}
+
+@keyframes pulse-speed {
+  0% { transform: scale(1); }
+  100% { transform: scale(1.05); }
 }
 
 .ai-select {

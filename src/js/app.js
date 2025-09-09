@@ -13,6 +13,7 @@ class Fancy2048App {
     this.isInitialized = false;
     this.autoPlayActive = false;
     this.autoPlayInterval = null;
+    this.autoPlaySpeed = 1; // Speed multiplier (1x, 2x, 4x, 8x, MAX)
     
     // Initialize when DOM is ready
     this.waitForReadyState();
@@ -311,8 +312,10 @@ class Fancy2048App {
           if (success) {
             // Update UI
             this.uiController.updateDisplay();
-            // Schedule next move (faster for better gameplay)
-            this.autoPlayInterval = setTimeout(playMove, 200);
+            // Schedule next move with speed control
+            const baseDelay = 200;
+            const delay = this.autoPlaySpeed === 'MAX' ? 0 : Math.max(25, baseDelay / this.autoPlaySpeed);
+            this.autoPlayInterval = setTimeout(playMove, delay);
           } else {
             // No valid moves, stop auto-play
             Utils.log('app', 'Move failed, stopping autoplay');
@@ -351,6 +354,26 @@ class Fancy2048App {
     }
     
     Utils.log('app', 'Auto-play stopped');
+  }
+
+  /**
+   * Cycle through autoplay speeds
+   */
+  cycleAutoPlaySpeed() {
+    const speeds = [1, 2, 4, 8, 'MAX'];
+    const currentIndex = speeds.indexOf(this.autoPlaySpeed);
+    const nextIndex = (currentIndex + 1) % speeds.length;
+    this.autoPlaySpeed = speeds[nextIndex];
+    
+    // Update speed button display
+    if (this.uiController && this.uiController.elements && this.uiController.elements.speedButton) {
+      const speedText = this.autoPlaySpeed === 'MAX' ? 'MAX' : `${this.autoPlaySpeed}x`;
+      this.uiController.elements.speedButton.textContent = speedText;
+      this.uiController.elements.speedButton.setAttribute('data-speed', speedText);
+    }
+    
+    Utils.log('app', `Auto-play speed changed to: ${this.autoPlaySpeed}`);
+    return this.autoPlaySpeed;
   }
 
   /**
@@ -531,6 +554,7 @@ class Fancy2048App {
       newGame: () => this.newGame(),
       getHint: () => this.getAIHint(),
       toggleAutoPlay: () => this.toggleAutoPlay(),
+      cycleSpeed: () => this.cycleAutoPlaySpeed(),
       exportStats: () => Storage.exportData(),
       getStats: () => ({
         game: this.gameEngine.getGameState(),
@@ -558,6 +582,10 @@ class Fancy2048App {
         case 'Space':
           event.preventDefault();
           this.toggleAutoPlay();
+          break;
+        case 'KeyS':
+          event.preventDefault();
+          this.cycleAutoPlaySpeed();
           break;
       }
     }
