@@ -125,11 +125,7 @@ class UIController {
       this.elements.aiDifficultySelect.addEventListener('change', (e) => this.setAIDifficulty(e.target.value));
     }
     
-    // Vision mode button
-    const visionModeButton = document.getElementById('vision-mode-btn');
-    if (visionModeButton) {
-      visionModeButton.addEventListener('click', () => this.openVisionMode());
-    }
+
     
     // Keyboard controls
     document.addEventListener('keydown', (e) => this.handleKeyPress(e));
@@ -735,12 +731,7 @@ class UIController {
     window.location.href = './stats.html';
   }
 
-  /**
-   * Open Vision2048 page
-   */
-  openVisionMode() {
-    window.location.href = './vision2048.html';
-  }
+
 
   /**
    * Show settings (could be modal or separate page)

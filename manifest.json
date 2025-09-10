@@ -86,8 +86,7 @@
   ],
   "features": [
     "Cross Platform",
-    "Offline",
-    "VR"
+    "Offline"
   ],
   "edge_side_panel": {
     "preferred_width": 400
