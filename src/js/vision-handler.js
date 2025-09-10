@@ -19,9 +19,9 @@ class VisionHandler {
     this.gestureConfidence = 0;
     this.minConfidence = 0.7;
     
-    // Gesture cooldown to prevent rapid fire
+    // Gesture cooldown to prevent rapid fire (reduced for finger tracking)
     this.lastGestureTime = 0;
-    this.gestureCooldown = 1500; // 1.5 seconds between gestures
+    this.gestureCooldown = 800; // 0.8 seconds between gestures for more responsive control
     
     // Hand tracking data
     this.handLandmarks = null;
@@ -111,26 +111,25 @@ class VisionHandler {
   }
 
   /**
-   * Draw hand landmarks on canvas
+   * Draw simplified hand visualization focusing on index finger
    */
   drawHandLandmarks(landmarks) {
     const ctx = this.ctx;
     const canvas = this.canvas;
 
-    // Draw connections
-    ctx.strokeStyle = 'rgba(40, 167, 69, 0.6)';
+    // Draw only index finger line for reference
+    ctx.strokeStyle = 'rgba(40, 167, 69, 0.4)';
     ctx.lineWidth = 2;
 
-    // Hand connections (simplified)
-    const connections = [
-      [0, 1], [1, 2], [2, 3], [3, 4],  // Thumb
-      [0, 5], [5, 6], [6, 7], [7, 8],  // Index
-      [5, 9], [9, 10], [10, 11], [11, 12],  // Middle
-      [9, 13], [13, 14], [14, 15], [15, 16],  // Ring
-      [13, 17], [17, 18], [18, 19], [19, 20]   // Pinky
+    // Index finger connections: wrist -> mcp -> pip -> dip -> tip
+    const indexConnections = [
+      [0, 5], // wrist to mcp
+      [5, 6], // mcp to pip  
+      [6, 7], // pip to dip
+      [7, 8]  // dip to tip
     ];
 
-    connections.forEach(([start, end]) => {
+    indexConnections.forEach(([start, end]) => {
       const startPoint = landmarks[start];
       const endPoint = landmarks[end];
       
@@ -140,53 +139,281 @@ class VisionHandler {
       ctx.stroke();
     });
 
-    // Draw landmarks
-    ctx.fillStyle = 'rgba(40, 167, 69, 0.8)';
-    landmarks.forEach((landmark, index) => {
+    // Draw only key landmarks with different sizes
+    const keyLandmarks = [
+      { index: 0, size: 4, color: 'rgba(40, 167, 69, 0.6)' },   // wrist
+      { index: 5, size: 5, color: 'rgba(40, 167, 69, 0.7)' },   // index mcp
+      { index: 8, size: 10, color: 'rgba(255, 193, 7, 0.9)' }   // index tip (highlighted)
+    ];
+
+    keyLandmarks.forEach(({ index, size, color }) => {
+      const landmark = landmarks[index];
+      ctx.fillStyle = color;
       ctx.beginPath();
       ctx.arc(
         landmark.x * canvas.width, 
         landmark.y * canvas.height, 
-        index === 8 ? 8 : 4, // Larger dot for index fingertip
+        size,
         0, 
         2 * Math.PI
       );
       ctx.fill();
     });
+
+    // Add text label for index finger tip
+    const indexTip = landmarks[8];
+    ctx.fillStyle = 'rgba(255, 255, 255, 0.9)';
+    ctx.font = 'bold 14px Arial';
+    ctx.textAlign = 'center';
+    ctx.fillText(
+      'INDEX', 
+      indexTip.x * canvas.width, 
+      indexTip.y * canvas.height - 20
+    );
   }
 
   /**
-   * Classify gesture from hand landmarks
+   * Track finger position and detect movement gestures
    */
   classifyGestureFromLandmarks(landmarks) {
-    // Get key landmarks
+    // Get index finger tip position (landmark 8)
     const indexTip = landmarks[8];
-    const indexPip = landmarks[6];
-    const middleTip = landmarks[12];
-    const ringTip = landmarks[16];
-    const pinkyTip = landmarks[20];
-    const wrist = landmarks[0];
-
-    // Check if index finger is extended (pointing)
-    const indexExtended = indexTip.y < indexPip.y;
-    const middleFolded = middleTip.y > landmarks[10].y;
-    const ringFolded = ringTip.y > landmarks[14].y;
-    const pinkyFolded = pinkyTip.y > landmarks[18].y;
-
-    // If only index finger is extended, determine direction
-    if (indexExtended && middleFolded && ringFolded && pinkyFolded) {
-      const deltaX = indexTip.x - wrist.x;
-      const deltaY = indexTip.y - wrist.y;
+    const currentTime = Date.now();
+    
+    // Store finger position history
+    if (!this.fingerHistory) {
+      this.fingerHistory = [];
+    }
+    
+    // Add current position
+    this.fingerHistory.push({
+      x: indexTip.x,
+      y: indexTip.y,
+      timestamp: currentTime
+    });
+    
+    // Keep only recent positions (last 800ms for more responsive tracking)
+    const historyDuration = 800;
+    this.fingerHistory = this.fingerHistory.filter(
+      pos => currentTime - pos.timestamp < historyDuration
+    );
+    
+    // Draw finger tracking indicator
+    this.drawFingerTracker(indexTip);
+    
+    // Need at least 8 positions for movement detection (more responsive)
+    if (this.fingerHistory.length < 8) {
+      return null;
+    }
+    
+    // Analyze movement pattern
+    return this.detectMovementFromHistory();
+  }
+  
+  /**
+   * Draw finger tracking indicator on canvas
+   */
+  drawFingerTracker(indexTip) {
+    if (!this.ctx || !this.canvas) return;
+    
+    const x = indexTip.x * this.canvas.width;
+    const y = indexTip.y * this.canvas.height;
+    
+    // Clear previous drawings
+    this.ctx.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    
+    // Draw finger position indicator
+    this.ctx.fillStyle = 'rgba(40, 167, 69, 0.8)';
+    this.ctx.strokeStyle = 'rgba(40, 167, 69, 1)';
+    this.ctx.lineWidth = 3;
+    
+    // Draw main tracking circle with pulsing effect
+    const pulseScale = 1 + 0.3 * Math.sin(Date.now() * 0.01);
+    const radius = 18 * pulseScale;
+    
+    this.ctx.beginPath();
+    this.ctx.arc(x, y, radius, 0, 2 * Math.PI);
+    this.ctx.fill();
+    this.ctx.stroke();
+    
+    // Draw inner dot
+    this.ctx.fillStyle = 'white';
+    this.ctx.beginPath();
+    this.ctx.arc(x, y, 6, 0, 2 * Math.PI);
+    this.ctx.fill();
+    
+    // Draw crosshair for precise positioning
+    this.ctx.strokeStyle = 'white';
+    this.ctx.lineWidth = 2;
+    this.ctx.beginPath();
+    this.ctx.moveTo(x - 12, y);
+    this.ctx.lineTo(x + 12, y);
+    this.ctx.moveTo(x, y - 12);
+    this.ctx.lineTo(x, y + 12);
+    this.ctx.stroke();
+    
+    // Draw movement trail if available
+    if (this.fingerHistory && this.fingerHistory.length > 5) {
+      this.drawMovementTrail();
+    }
+    
+    // Draw directional indicator
+    this.drawDirectionalIndicator(x, y);
+  }
+  
+  /**
+   * Draw movement trail
+   */
+  drawMovementTrail() {
+    if (this.fingerHistory.length < 2) return;
+    
+    this.ctx.strokeStyle = 'rgba(40, 167, 69, 0.6)';
+    this.ctx.lineWidth = 2;
+    this.ctx.beginPath();
+    
+    const recentPoints = this.fingerHistory.slice(-10);
+    const firstPoint = recentPoints[0];
+    this.ctx.moveTo(
+      firstPoint.x * this.canvas.width,
+      firstPoint.y * this.canvas.height
+    );
+    
+    for (let i = 1; i < recentPoints.length; i++) {
+      const point = recentPoints[i];
+      this.ctx.lineTo(
+        point.x * this.canvas.width,
+        point.y * this.canvas.height
+      );
+    }
+    
+    this.ctx.stroke();
+  }
+  
+  /**
+   * Draw directional indicator around finger
+   */
+  drawDirectionalIndicator(x, y) {
+    if (!this.lastDetectedDirection) return;
+    
+    this.ctx.strokeStyle = 'rgba(255, 255, 255, 0.9)';
+    this.ctx.lineWidth = 3;
+    this.ctx.beginPath();
+    
+    const arrowLength = 30;
+    let endX = x, endY = y;
+    
+    switch (this.lastDetectedDirection) {
+      case 'up':
+        endX = x;
+        endY = y - arrowLength;
+        break;
+      case 'down':
+        endX = x;
+        endY = y + arrowLength;
+        break;
+      case 'left':
+        endX = x - arrowLength;
+        endY = y;
+        break;
+      case 'right':
+        endX = x + arrowLength;
+        endY = y;
+        break;
+    }
+    
+    // Draw arrow
+    this.ctx.moveTo(x, y);
+    this.ctx.lineTo(endX, endY);
+    
+    // Draw arrowhead
+    const headSize = 10;
+    const angle = Math.atan2(endY - y, endX - x);
+    this.ctx.lineTo(
+      endX - headSize * Math.cos(angle - Math.PI / 6),
+      endY - headSize * Math.sin(angle - Math.PI / 6)
+    );
+    this.ctx.moveTo(endX, endY);
+    this.ctx.lineTo(
+      endX - headSize * Math.cos(angle + Math.PI / 6),
+      endY - headSize * Math.sin(angle + Math.PI / 6)
+    );
+    
+    this.ctx.stroke();
+  }
+  
+  /**
+   * Detect movement direction from finger position history
+   */
+  detectMovementFromHistory() {
+    if (this.fingerHistory.length < 10) return null;
+    
+    // Get recent positions for analysis
+    const recentPoints = this.fingerHistory.slice(-10);
+    const startPoint = recentPoints[0];
+    const endPoint = recentPoints[recentPoints.length - 1];
+    
+    // Calculate movement vector
+    const deltaX = endPoint.x - startPoint.x;
+    const deltaY = endPoint.y - startPoint.y;
+    const distance = Math.sqrt(deltaX * deltaX + deltaY * deltaY);
+    
+    // Minimum movement threshold (more sensitive for finger tracking)
+    const minMovement = 0.03; // 3% of screen dimension
+    
+    if (distance < minMovement) {
+      return null;
+    }
+    
+    // Determine primary direction
+    let direction = null;
+    if (Math.abs(deltaX) > Math.abs(deltaY)) {
+      direction = deltaX > 0 ? 'right' : 'left';
+    } else {
+      direction = deltaY > 0 ? 'down' : 'up';
+    }
+    
+    // Store for visual indicator
+    this.lastDetectedDirection = direction;
+    
+    // Check for consistent movement in the same direction
+    const consistency = this.checkMovementConsistency(direction);
+    
+    if (consistency > 0.6) { // 60% consistency required (more forgiving)
+      return direction;
+    }
+    
+    return null;
+  }
+  
+  /**
+   * Check movement consistency in detected direction
+   */
+  checkMovementConsistency(direction) {
+    if (this.fingerHistory.length < 8) return 0;
+    
+    const points = this.fingerHistory.slice(-8);
+    let consistentMoves = 0;
+    
+    for (let i = 1; i < points.length; i++) {
+      const prev = points[i - 1];
+      const curr = points[i];
       
-      // Determine primary direction
-      if (Math.abs(deltaX) > Math.abs(deltaY)) {
-        return deltaX > 0 ? 'right' : 'left';
+      const dx = curr.x - prev.x;
+      const dy = curr.y - prev.y;
+      
+      let moveDirection = null;
+      if (Math.abs(dx) > Math.abs(dy)) {
+        moveDirection = dx > 0 ? 'right' : 'left';
       } else {
-        return deltaY < 0 ? 'up' : 'down';
+        moveDirection = dy > 0 ? 'down' : 'up';
+      }
+      
+      if (moveDirection === direction) {
+        consistentMoves++;
       }
     }
-
-    return null;
+    
+    return consistentMoves / (points.length - 1);
   }
 
   /**
@@ -515,8 +742,9 @@ class VisionHandler {
     instructionsDiv.className = 'click-instructions';
     instructionsDiv.innerHTML = `
       <div class="click-instruction-content">
-        <p><strong>Testing Mode:</strong> Click on the camera view to simulate gestures</p>
-        <p>Gestures cycle: Up → Right → Down → Left</p>
+        <p><strong>Finger Tracking Active!</strong></p>
+        <p>Hold up your index finger and move it to control the game</p>
+        <p><em>Testing: Click camera to simulate movements (Up → Right → Down → Left)</em></p>
       </div>
     `;
 
