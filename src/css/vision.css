@@ -1,0 +1,416 @@
+/* Vision2048 - Specific styles for hand gesture controls */
+
+/* Page-specific adjustments */
+[data-page="vision"] {
+  --primary-accent: #4a90e2;
+  --vision-primary: #667eea;
+  --vision-secondary: #764ba2;
+  --camera-bg: #f8f9fa;
+  --gesture-active: #28a745;
+  --status-inactive: #6c757d;
+}
+
+[data-theme="dark"][data-page="vision"] {
+  --camera-bg: #2c2c2c;
+}
+
+/* Vision Main Layout */
+.vision-main {
+  padding: var(--spacing-lg) 0;
+}
+
+/* Camera Section */
+.camera-section {
+  margin-bottom: var(--spacing-2xl);
+  background: var(--surface-color);
+  border-radius: 16px;
+  padding: var(--spacing-xl);
+  box-shadow: 0 8px 32px var(--shadow-color);
+  border: 1px solid var(--border-color);
+}
+
+.camera-container {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-lg);
+}
+
+/* Camera Video */
+.camera-video {
+  width: 100%;
+  max-width: 640px;
+  height: 480px;
+  border-radius: 12px;
+  background: var(--camera-bg);
+  object-fit: cover;
+  border: 2px solid var(--border-color);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+/* Gesture Canvas Overlay */
+.gesture-canvas {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 100%;
+  max-width: 640px;
+  height: 480px;
+  border-radius: 12px;
+  pointer-events: none;
+  z-index: 10;
+}
+
+/* Camera Status */
+.camera-status {
+  display: flex;
+  gap: var(--spacing-lg);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-sm) var(--spacing-md);
+  background: var(--surface-color);
+  border-radius: 20px;
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-base);
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: var(--status-inactive);
+  transition: background-color var(--transition-base);
+}
+
+.status-indicator.active .status-dot {
+  background: var(--gesture-active);
+  animation: pulse-dot 1.5s infinite;
+}
+
+.status-text {
+  font-size: var(--font-size-sm);
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.status-indicator.active .status-text {
+  color: var(--gesture-active);
+}
+
+@keyframes pulse-dot {
+  0%, 100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+  50% {
+    opacity: 0.7;
+    transform: scale(1.2);
+  }
+}
+
+/* Camera Controls */
+.camera-controls {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+  justify-content: center;
+}
+
+.camera-button {
+  display: flex;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border: none;
+  border-radius: 12px;
+  font-family: var(--font-family-primary);
+  font-weight: 600;
+  font-size: var(--font-size-base);
+  cursor: pointer;
+  transition: all var(--transition-base);
+  position: relative;
+  overflow: hidden;
+}
+
+.camera-button.primary {
+  background: linear-gradient(135deg, var(--vision-primary), var(--vision-secondary));
+  color: white;
+  box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+}
+
+.camera-button.primary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 6px 20px rgba(102, 126, 234, 0.4);
+}
+
+.camera-button.secondary {
+  background: var(--surface-color);
+  color: var(--text-primary);
+  border: 2px solid var(--border-color);
+}
+
+.camera-button.secondary:hover:not(:disabled) {
+  background: var(--border-color);
+  border-color: var(--text-secondary);
+}
+
+.camera-button:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+  transform: none !important;
+}
+
+.button-icon {
+  font-size: var(--font-size-lg);
+}
+
+/* Game Section Adjustments */
+.game-section {
+  background: var(--surface-color);
+  border-radius: 16px;
+  padding: var(--spacing-xl);
+  box-shadow: 0 8px 32px var(--shadow-color);
+  border: 1px solid var(--border-color);
+  margin-bottom: var(--spacing-2xl);
+}
+
+.game-info {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: var(--spacing-xl);
+  flex-wrap: wrap;
+  gap: var(--spacing-md);
+}
+
+.game-stats {
+  display: flex;
+  gap: var(--spacing-lg);
+  flex-wrap: wrap;
+}
+
+.stat-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-xs);
+  padding: var(--spacing-md);
+  background: var(--background-color);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  min-width: 80px;
+}
+
+.stat-label {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: var(--font-size-xl);
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.game-controls {
+  display: flex;
+  gap: var(--spacing-md);
+  flex-wrap: wrap;
+}
+
+/* Instructions Section */
+.instructions-section {
+  background: var(--surface-color);
+  border-radius: 16px;
+  padding: var(--spacing-xl);
+  box-shadow: 0 8px 32px var(--shadow-color);
+  border: 1px solid var(--border-color);
+}
+
+.instructions-title {
+  text-align: center;
+  margin-bottom: var(--spacing-xl);
+  color: var(--text-primary);
+  font-size: var(--font-size-2xl);
+  font-weight: 700;
+}
+
+.gesture-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: var(--spacing-lg);
+  margin-bottom: var(--spacing-xl);
+}
+
+.gesture-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: var(--spacing-sm);
+  padding: var(--spacing-lg);
+  background: var(--background-color);
+  border-radius: 12px;
+  border: 1px solid var(--border-color);
+  transition: all var(--transition-base);
+}
+
+.gesture-item:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px var(--shadow-color);
+  border-color: var(--vision-primary);
+}
+
+.gesture-icon {
+  font-size: var(--font-size-4xl);
+  margin-bottom: var(--spacing-sm);
+}
+
+.gesture-label {
+  font-weight: 600;
+  font-size: var(--font-size-lg);
+  color: var(--text-primary);
+}
+
+.gesture-description {
+  font-size: var(--font-size-sm);
+  color: var(--text-secondary);
+  text-align: center;
+}
+
+.instructions-note {
+  background: linear-gradient(135deg, rgba(102, 126, 234, 0.1), rgba(118, 75, 162, 0.1));
+  border: 1px solid rgba(102, 126, 234, 0.2);
+  border-radius: 12px;
+  padding: var(--spacing-lg);
+}
+
+.instructions-note p {
+  margin: 0;
+  color: var(--text-secondary);
+  line-height: 1.6;
+}
+
+/* Navigation adjustments for vision page */
+[data-page="vision"] .nav-brand .logo {
+  background: linear-gradient(135deg, var(--vision-primary), var(--vision-secondary));
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* Gesture Detection Visual Effects */
+.gesture-detected {
+  animation: gesture-flash 0.3s ease-out;
+}
+
+@keyframes gesture-flash {
+  0% {
+    background: rgba(40, 167, 69, 0.1);
+    transform: scale(1);
+  }
+  50% {
+    background: rgba(40, 167, 69, 0.2);
+    transform: scale(1.02);
+  }
+  100% {
+    background: transparent;
+    transform: scale(1);
+  }
+}
+
+/* Mobile Responsiveness */
+@media (max-width: 768px) {
+  .camera-video,
+  .gesture-canvas {
+    height: 360px;
+  }
+  
+  .game-info {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  
+  .game-stats {
+    justify-content: center;
+  }
+  
+  .game-controls {
+    justify-content: center;
+  }
+  
+  .gesture-grid {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .camera-section,
+  .game-section,
+  .instructions-section {
+    padding: var(--spacing-md);
+  }
+}
+
+@media (max-width: 480px) {
+  .camera-video,
+  .gesture-canvas {
+    height: 280px;
+  }
+  
+  .gesture-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .camera-status {
+    flex-direction: column;
+    align-items: center;
+  }
+  
+  .camera-controls {
+    flex-direction: column;
+    width: 100%;
+  }
+  
+  .camera-button {
+    width: 100%;
+    justify-content: center;
+  }
+}
+
+/* Accessibility enhancements */
+@media (prefers-reduced-motion: reduce) {
+  .gesture-item:hover {
+    transform: none;
+  }
+  
+  .camera-button.primary:hover:not(:disabled) {
+    transform: none;
+  }
+  
+  .status-dot,
+  .gesture-detected {
+    animation: none;
+  }
+}
+
+/* High contrast mode */
+@media (prefers-contrast: high) {
+  .camera-video {
+    border-width: 3px;
+  }
+  
+  .status-indicator {
+    border-width: 2px;
+  }
+  
+  .gesture-item {
+    border-width: 2px;
+  }
+}
