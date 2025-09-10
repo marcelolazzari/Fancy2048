@@ -23,7 +23,7 @@
 
   // Simple fallback error display
   function showFallbackError() {
-    if (window.fancy2048App || document.querySelector('.initialization-error')) {
+    if (window.fancy2048App || window.vision2048App || document.querySelector('.initialization-error')) {
       return; // App loaded successfully or error already shown
     }
 
@@ -33,6 +33,7 @@
     }
 
     const errorDiv = document.createElement('div');
+    errorDiv.className = 'initialization-error';
     errorDiv.innerHTML = `
       <div style="
         position: fixed;

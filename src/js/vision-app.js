@@ -45,21 +45,42 @@ class Vision2048App {
       
       // Check if DOM is ready
       if (document.readyState === 'loading') {
-        throw new Error('DOM not ready - this should not happen');
+        console.warn('DOM still loading, waiting for readyState change...');
+        await new Promise(resolve => {
+          const checkReady = () => {
+            if (document.readyState !== 'loading') {
+              resolve();
+            } else {
+              setTimeout(checkReady, 10);
+            }
+          };
+          checkReady();
+        });
       }
       
-      // Check if required classes are available
-      if (typeof Utils === 'undefined') {
-        throw new Error('Utils class not available - script load order issue');
-      }
-      if (typeof GameEngine === 'undefined') {
-        throw new Error('GameEngine class not available - script load order issue');
-      }
-      if (typeof UIController === 'undefined') {
-        throw new Error('UIController class not available - script load order issue');
-      }
-      if (typeof VisionHandler === 'undefined') {
-        throw new Error('VisionHandler class not available - script load order issue');
+      // Check if required classes are available with retries
+      const maxRetries = 10;
+      let retries = 0;
+      
+      while (retries < maxRetries) {
+        const missingClasses = [];
+        
+        if (typeof Utils === 'undefined') missingClasses.push('Utils');
+        if (typeof GameEngine === 'undefined') missingClasses.push('GameEngine');
+        if (typeof UIController === 'undefined') missingClasses.push('UIController');
+        if (typeof VisionHandler === 'undefined') missingClasses.push('VisionHandler');
+        
+        if (missingClasses.length === 0) {
+          break; // All classes available
+        }
+        
+        if (retries === maxRetries - 1) {
+          throw new Error(`Required classes not available: ${missingClasses.join(', ')} - script load order issue`);
+        }
+        
+        console.log(`Waiting for classes to load... Missing: ${missingClasses.join(', ')} (attempt ${retries + 1}/${maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, 100));
+        retries++;
       }
       
       // Check if required DOM elements exist
@@ -112,20 +133,27 @@ class Vision2048App {
    * Initialize game systems
    */
   async initializeGameSystems() {
-    // Initialize game engine (4x4 board only for vision mode)
-    this.gameEngine = new GameEngine();
-    this.gameEngine.setBoardSize(4); // Fixed 4x4 for vision mode
-    
-    // Initialize UI controller with vision-specific settings
-    this.uiController = new VisionUIController(this.gameEngine);
-    
-    // Initialize vision handler
-    this.visionHandler = new VisionHandler();
-    
-    Utils.log('vision-app', 'Game systems initialized');
-    
-    // Small delay to ensure everything is ready
-    await Utils.sleep(100);
+    try {
+      // Initialize game engine (4x4 board only for vision mode)
+      this.gameEngine = new GameEngine();
+      if (typeof this.gameEngine.setBoardSize === 'function') {
+        this.gameEngine.setBoardSize(4); // Fixed 4x4 for vision mode
+      }
+      
+      // Initialize UI controller with vision-specific settings
+      this.uiController = new VisionUIController(this.gameEngine);
+      
+      // Initialize vision handler
+      this.visionHandler = new VisionHandler();
+      
+      console.log('Vision2048: Game systems initialized successfully');
+      
+      // Small delay to ensure everything is ready
+      await new Promise(resolve => setTimeout(resolve, 100));
+    } catch (error) {
+      console.error('Vision2048: Error initializing game systems:', error);
+      throw error;
+    }
   }
 
   /**

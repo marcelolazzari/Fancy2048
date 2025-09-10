@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Algorithm Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; background: #1a1a1a; color: #fff; }
+        .test-board { display: inline-block; margin: 10px; }
+        .board { display: grid; grid-template-columns: repeat(4, 60px); gap: 5px; margin: 10px 0; }
+        .cell { width: 60px; height: 60px; background: #333; display: flex; align-items: center; justify-content: center; border-radius: 4px; }
+        .cell:not(:empty) { background: #666; }
+        .results { margin: 20px 0; padding: 20px; background: #333; border-radius: 8px; }
+        .algorithm { margin: 15px 0; padding: 15px; background: #444; border-radius: 4px; }
+        .difficulty { margin: 5px 0; padding: 5px 10px; background: #555; border-radius: 2px; }
+        button { padding: 10px 20px; background: #666; color: #fff; border: none; border-radius: 4px; cursor: pointer; margin: 5px; }
+        button:hover { background: #777; }
+        .stats { font-size: 12px; color: #aaa; }
+        .error { color: #f44; }
+        .success { color: #4f4; }
+    </style>
+</head>
+<body>
+    <h1>AI Algorithm Performance Test</h1>
+    
+    <div class="test-board">
+        <h3>Test Board</h3>
+        <div class="board" id="test-board"></div>
+    </div>
+    
+    <button onclick="startTest()">Run AI Tests</button>
+    <button onclick="clearResults()">Clear Results</button>
+    
+    <div class="results" id="results">
+        <p>Click "Run AI Tests" to test all algorithms with different difficulty levels.</p>
+    </div>
+
+    <!-- Load AI Solver -->
+    <script src="src/js/ai-solver.js"></script>
+    
+    <script>
+        // Test board configuration
+        const testBoard = [
+            [2, 4, 8, 16],
+            [0, 2, 4, 8],
+            [0, 0, 2, 4],
+            [0, 0, 0, 2]
+        ];
+
+        // Mock GameEngine for testing
+        class MockGameEngine {
+            constructor() {
+                this.board = testBoard;
+            }
+        }
+
+        // Display the test board
+        function displayBoard() {
+            const boardElement = document.getElementById('test-board');
+            boardElement.innerHTML = '';
+            
+            for (let i = 0; i < 4; i++) {
+                for (let j = 0; j < 4; j++) {
+                    const cell = document.createElement('div');
+                    cell.className = 'cell';
+                    cell.textContent = testBoard[i][j] || '';
+                    boardElement.appendChild(cell);
+                }
+            }
+        }
+
+        // Test all algorithms
+        async function startTest() {
+            const resultsDiv = document.getElementById('results');
+            resultsDiv.innerHTML = '<p>Testing AI algorithms...</p>';
+            
+            try {
+                const gameEngine = new MockGameEngine();
+                const ai = new AISolver(gameEngine);
+                
+                let html = '<h3>AI Algorithm Test Results</h3>';
+                
+                // Test Expectimax
+                html += '<div class="algorithm"><h4>Expectimax Algorithm</h4>';
+                ai.setAlgorithm('expectimax');
+                for (const difficulty of ['easy', 'medium', 'hard', 'expert']) {
+                    ai.setDifficulty(difficulty);
+                    const start = Date.now();
+                    const move = await ai.getBestMove();
+                    const time = Date.now() - start;
+                    html += `<div class="difficulty">${difficulty}: <strong>${move}</strong> (${time}ms)</div>`;
+                }
+                html += '</div>';
+                
+                // Test Monte Carlo
+                html += '<div class="algorithm"><h4>Monte Carlo Algorithm</h4>';
+                ai.setAlgorithm('montecarlo');
+                for (const difficulty of ['easy', 'medium', 'hard']) {
+                    ai.setDifficulty(difficulty);
+                    const start = Date.now();
+                    const move = await ai.getBestMove();
+                    const time = Date.now() - start;
+                    html += `<div class="difficulty">${difficulty}: <strong>${move}</strong> (${time}ms)</div>`;
+                }
+                html += '</div>';
+                
+                // Test Priority-based
+                html += '<div class="algorithm"><h4>Priority-based Algorithm</h4>';
+                ai.setAlgorithm('priority');
+                for (const difficulty of ['easy', 'medium', 'hard', 'expert']) {
+                    ai.setDifficulty(difficulty);
+                    const start = Date.now();
+                    const move = await ai.getBestMove();
+                    const time = Date.now() - start;
+                    html += `<div class="difficulty">${difficulty}: <strong>${move}</strong> (${time}ms)</div>`;
+                }
+                html += '</div>';
+                
+                // Test Smart Hybrid
+                html += '<div class="algorithm"><h4>Smart Hybrid Algorithm</h4>';
+                ai.setAlgorithm('smart');
+                for (const difficulty of ['easy', 'medium', 'hard']) {
+                    ai.setDifficulty(difficulty);
+                    const start = Date.now();
+                    const move = await ai.getBestMove();
+                    const time = Date.now() - start;
+                    html += `<div class="difficulty">${difficulty}: <strong>${move}</strong> (${time}ms)</div>`;
+                }
+                html += '</div>';
+                
+                // Show final statistics
+                const stats = ai.getStats();
+                html += `<div class="stats">
+                    <h4>AI Statistics</h4>
+                    <p>Algorithm: ${stats.algorithm}</p>
+                    <p>Difficulty: ${stats.difficulty}</p>
+                    <p>Cache Size: ${stats.cacheSize}</p>
+                    <p>Evaluations: ${stats.evaluations}</p>
+                    <p>Cache Hit Rate: ${stats.cacheHitRate}</p>
+                    <p>Average Thinking Time: ${stats.averageThinkingTime}</p>
+                </div>`;
+                
+                html += '<p class="success">✓ All algorithms tested successfully!</p>';
+                resultsDiv.innerHTML = html;
+                
+            } catch (error) {
+                resultsDiv.innerHTML = `<p class="error">✗ Error testing AI: ${error.message}</p>`;
+                console.error('AI Test Error:', error);
+            }
+        }
+
+        function clearResults() {
+            document.getElementById('results').innerHTML = '<p>Click "Run AI Tests" to test all algorithms.</p>';
+        }
+
+        // Initialize
+        window.addEventListener('load', () => {
+            displayBoard();
+        });
+    </script>
+</body>
+</html>
