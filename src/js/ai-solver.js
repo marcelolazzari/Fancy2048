@@ -373,7 +373,7 @@ class AISolver {
   }
 
   /**
-   * Initialize evaluation weights
+   * Initialize evaluation weights (dynamic based on game phase)
    */
   initializeWeights() {
     this.weights = {
@@ -382,7 +382,9 @@ class AISolver {
       monotonicity: 5.0,
       smoothness: 3.0,
       emptySpaces: 15.0,
-      mergePotential: 4.0
+      mergePotential: 4.0,
+      clusteringPenalty: 6.0,
+      chainReaction: 5.0
     };
   }
 
@@ -390,32 +392,92 @@ class AISolver {
    * Generate snake pattern weights for optimal tile arrangement
    */
   generateSnakeWeights() {
-    return {
-      topLeft: [
-        [15, 14, 13, 12],
-        [8,  9,  10, 11],
-        [7,  6,  5,  4],
-        [0,  1,  2,  3]
-      ],
-      topRight: [
-        [12, 13, 14, 15],
-        [11, 10, 9,  8],
-        [4,  5,  6,  7],
-        [3,  2,  1,  0]
-      ],
-      bottomLeft: [
-        [0,  1,  2,  3],
-        [7,  6,  5,  4],
-        [8,  9,  10, 11],
-        [15, 14, 13, 12]
-      ],
-      bottomRight: [
-        [3,  2,  1,  0],
-        [4,  5,  6,  7],
-        [11, 10, 9,  8],
-        [12, 13, 14, 15]
-      ]
-    };
+    // ...existing code...
+  }
+
+  /**
+   * Board evaluation using advanced heuristics and dynamic weights
+   */
+  evaluateBoard(board) {
+    let score = 0;
+    let phase = this.getGamePhase(board);
+    // Dynamic weighting based on phase
+    let w = { ...this.weights };
+    if (phase === 'early') {
+      w.emptySpaces += 5;
+      w.snakePattern -= 2;
+      w.cornerGradient -= 2;
+    } else if (phase === 'mid') {
+      w.snakePattern += 2;
+        w.monotonicity += 2;
+      } else if (phase === 'late') {
+        w.snakePattern += 4;
+        w.cornerGradient += 4;
+        w.clusteringPenalty += 4;
+        w.chainReaction += 4;
+      }
+      // 1. Snake pattern evaluation (heavily weighted)
+      score += this.evaluateSnakePattern(board) * w.snakePattern;
+      // 2. Corner strategy with gradient
+      score += this.evaluateCornerGradient(board) * w.cornerGradient;
+      // 3. Monotonicity in multiple directions
+      score += this.evaluateMonotonicity(board) * w.monotonicity;
+      // 4. Smoothness
+      score += this.evaluateSmoothness(board) * w.smoothness;
+      // 5. Empty cells with exponential reward
+      score += this.evaluateEmptySpaces(board) * w.emptySpaces;
+      // 6. Merge potential
+      score += this.evaluateMergePotential(board) * w.mergePotential;
+      // 7. Tile clustering penalty
+      score -= this.evaluateClusteringPenalty(board) * w.clusteringPenalty;
+      // 8. Chain reaction pattern recognition
+      score += this.evaluateChainReaction(board) * w.chainReaction;
+      return score;
+    }
+  /**
+   * Determine game phase for dynamic weighting
+  let maxTile = Math.max(...board.flat());
+  let empty = this.getEmptyCells(board).length;
+    if (maxTile < 128) return 'early';
+    if (maxTile < 1024) return empty > 4 ? 'mid' : 'late';
+    return empty > 2 ? 'late' : 'end';
+  }
+
+  /**
+   * Penalize clustering of high-value tiles (prefer grouping)
+   */
+  evaluateClusteringPenalty(board) {
+    let size = board.length;
+    let penalty = 0;
+    // Find all high tiles
+    let highTiles = [];
+    for (let i = 0; i < size; i++) {
+      for (let j = 0; j < size; j++) {
+        if (board[i][j] >= 128) highTiles.push([i, j]);
+      }
+    }
+    // Penalize distance between high tiles
+    for (let a = 0; a < highTiles.length; a++) {
+      for (let b = a + 1; b < highTiles.length; b++) {
+        let i1 = highTiles[a][0], j1 = highTiles[a][1];
+        let i2 = highTiles[b][0], j2 = highTiles[b][1];
+        penalty += Math.abs(i1 - i2) + Math.abs(j1 - j2);
+      }
+    }
+    return penalty;
+  }
+
+  /**
+   * Pattern recognition for chain reactions (lookahead for merges)
+   */
+  evaluateChainReaction(board) {
+    // Simulate next move merges
+    let moves = this.getPossibleMoves(board);
+    let bestMerge = 0;
+    for (let move of moves) {
+      bestMerge = Math.max(bestMerge, this.evaluateMergePotential(move.board));
+    }
+    return bestMerge;
   }
 
   /**
