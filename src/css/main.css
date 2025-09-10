@@ -53,9 +53,10 @@
   --bp-xl: 1280px;
   
   /* Animation */
-  --transition-fast: 0.15s ease;
-  --transition-base: 0.25s ease;
-  --transition-slow: 0.35s ease;
+  --transition-fast: 0.15s ease-out;
+  --transition-base: 0.25s ease-out;
+  --transition-slow: 0.35s ease-out;
+  --transition-smooth: 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   --transition-bounce: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   
   /* Board */
@@ -383,22 +384,26 @@ body {
   font-weight: 700;
   font-family: var(--font-family-mono);
   position: relative;
-  transition: all var(--transition-base);
+  transition: all var(--transition-smooth);
   transform-origin: center;
 }
 
 .tile.new-tile {
-  animation: tileAppear var(--transition-bounce);
+  animation: tileAppear var(--transition-smooth);
 }
 
 .tile.merged-tile {
-  animation: tileMerge var(--transition-bounce);
+  animation: tileMerge var(--transition-smooth);
 }
 
 @keyframes tileAppear {
   0% {
-    transform: scale(0);
+    transform: scale(0.8);
     opacity: 0;
+  }
+  60% {
+    transform: scale(1.02);
+    opacity: 0.8;
   }
   100% {
     transform: scale(1);
@@ -410,8 +415,8 @@ body {
   0% {
     transform: scale(1);
   }
-  50% {
-    transform: scale(1.1);
+  40% {
+    transform: scale(1.05);
   }
   100% {
     transform: scale(1);
@@ -808,7 +813,7 @@ body {
   text-align: center;
   box-shadow: 0 20px 40px var(--shadow-color);
   transform: scale(0.9);
-  transition: transform var(--transition-bounce);
+  transition: transform var(--transition-smooth);
   border: 1px solid var(--border-color);
 }
 
