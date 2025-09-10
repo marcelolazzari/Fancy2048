@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Autoplay Test</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; }
+        #game-board { width: 300px; height: 300px; background: #f0f0f0; border: 1px solid #ccc; margin: 20px 0; }
+        .log { margin: 5px 0; }
+        .success { color: green; }
+        .error { color: red; }
+        .info { color: blue; }
+        button { padding: 10px; margin: 5px; }
+    </style>
+</head>
+<body>
+    <h1>Autoplay Test</h1>
+    <div id="game-board"></div>
+    <button id="ai-auto">Auto Play</button>
+    <div id="current-score">0</div>
+    <div id="best-score">0</div>
+    <div id="move-count">0</div>
+    
+    <h2>Test Log:</h2>
+    <div id="log"></div>
+
+    <!-- Load all required scripts -->
+    <script src="src/js/error-handler.js"></script>
+    <script src="src/js/utils.js"></script>
+    <script src="src/js/storage.js"></script>
+    <script src="src/js/ai-solver.js"></script>
+    <script src="src/js/touch-handler.js"></script>
+    <script src="src/js/game-engine.js"></script>
+    <script src="src/js/ui-controller.js"></script>
+    <script src="src/js/app.js"></script>
+
+    <script>
+        function log(message, type = 'info') {
+            const logDiv = document.getElementById('log');
+            const div = document.createElement('div');
+            div.className = `log ${type}`;
+            div.textContent = new Date().toLocaleTimeString() + ': ' + message;
+            logDiv.appendChild(div);
+            console.log(message);
+        }
+
+        // Wait for everything to load
+        window.addEventListener('load', () => {
+            log('Page loaded, waiting for app initialization...', 'info');
+            
+            // Give the app time to initialize
+            setTimeout(() => {
+                testAutoplay();
+            }, 2000);
+        });
+
+        function testAutoplay() {
+            log('Starting autoplay test...', 'info');
+            
+            if (typeof window.fancy2048App === 'undefined') {
+                log('ERROR: fancy2048App not found', 'error');
+                return;
+            }
+            
+            const app = window.fancy2048App;
+            log('App instance found', 'success');
+            
+            log('App initialized: ' + app.isInitialized, 'info');
+            log('Has game engine: ' + !!app.gameEngine, 'info');
+            log('Has AI solver: ' + !!app.aiSolver, 'info');
+            
+            if (!app.aiSolver) {
+                log('ERROR: AI solver not available', 'error');
+                return;
+            }
+            
+            if (!app.gameEngine) {
+                log('ERROR: Game engine not available', 'error');
+                return;
+            }
+            
+            // Test AI move first
+            log('Testing AI move generation...', 'info');
+            app.aiSolver.getBestMove().then(move => {
+                log('AI suggested move: ' + move, move ? 'success' : 'error');
+                
+                if (move) {
+                    // Now test autoplay
+                    log('Testing autoplay start...', 'info');
+                    app.startAutoPlay().then(result => {
+                        log('Autoplay result: ' + result, result ? 'success' : 'error');
+                        
+                        if (result) {
+                            log('SUCCESS: Autoplay is working!', 'success');
+                            log('Autoplay active: ' + app.autoPlayActive, 'info');
+                            
+                            // Let it run for a few seconds
+                            setTimeout(() => {
+                                log('Stopping autoplay...', 'info');
+                                app.stopAutoPlay();
+                                log('Autoplay stopped. Final state:', 'info');
+                                log('- Autoplay active: ' + app.autoPlayActive, 'info');
+                                log('- Current score: ' + app.gameEngine.score, 'info');
+                                log('- Moves made: ' + app.gameEngine.moves, 'info');
+                            }, 5000);
+                        } else {
+                            log('ERROR: Autoplay failed to start', 'error');
+                        }
+                    }).catch(error => {
+                        log('ERROR: Autoplay start failed: ' + error.message, 'error');
+                    });
+                } else {
+                    log('WARNING: No AI move available, checking game state...', 'error');
+                    log('Game over: ' + app.gameEngine.isGameOver, 'info');
+                    log('Board state: ' + JSON.stringify(app.gameEngine.board), 'info');
+                }
+            }).catch(error => {
+                log('ERROR: AI move failed: ' + error.message, 'error');
+            });
+        }
+
+        // Add manual test button
+        document.addEventListener('DOMContentLoaded', () => {
+            const button = document.getElementById('ai-auto');
+            if (button) {
+                button.addEventListener('click', () => {
+                    log('Manual autoplay button clicked', 'info');
+                    testAutoplay();
+                });
+            }
+        });
+    </script>
+</body>
+</html>

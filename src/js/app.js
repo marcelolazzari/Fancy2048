@@ -24,8 +24,14 @@ class Fancy2048App {
    */
   waitForReadyState() {
     const checkReady = () => {
-      if (document.readyState === 'complete' || 
-          (document.readyState === 'interactive' && document.getElementById('game-board'))) {
+      const hasRequiredClasses = typeof Utils !== 'undefined' && 
+                                 typeof GameEngine !== 'undefined' && 
+                                 typeof UIController !== 'undefined' && 
+                                 typeof TouchHandler !== 'undefined';
+      
+      if ((document.readyState === 'complete' || 
+           (document.readyState === 'interactive' && document.getElementById('game-board'))) &&
+          hasRequiredClasses) {
         // Add a small delay to ensure all scripts have executed
         setTimeout(() => this.initialize(), 100);
       } else {

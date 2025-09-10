@@ -1,0 +1,78 @@
+// Simple standalone test for autoplay functionality
+console.log('Starting autoplay test...');
+
+// Create a minimal DOM structure for testing
+const gameBoard = document.createElement('div');
+gameBoard.id = 'game-board';
+document.body.appendChild(gameBoard);
+
+const autoButton = document.createElement('button');
+autoButton.id = 'ai-auto';
+autoButton.textContent = 'Auto Play';
+document.body.appendChild(autoButton);
+
+// Add score elements
+const currentScore = document.createElement('div');
+currentScore.id = 'current-score';
+currentScore.textContent = '0';
+document.body.appendChild(currentScore);
+
+const bestScore = document.createElement('div');
+bestScore.id = 'best-score';
+bestScore.textContent = '0';
+document.body.appendChild(bestScore);
+
+const moveCount = document.createElement('div');
+moveCount.id = 'move-count';
+moveCount.textContent = '0';
+document.body.appendChild(moveCount);
+
+// Wait for scripts to load and test
+setTimeout(() => {
+    console.log('Checking if fancy2048App is available:', typeof window.fancy2048App);
+    
+    if (window.fancy2048App) {
+        const app = window.fancy2048App;
+        console.log('App found, checking AI solver:', !!app.aiSolver);
+        console.log('App initialized:', app.isInitialized);
+        console.log('Game engine:', !!app.gameEngine);
+        
+        if (app.aiSolver && app.gameEngine) {
+            console.log('Testing AI move...');
+            app.aiSolver.getBestMove().then(move => {
+                console.log('AI suggested move:', move);
+                
+                if (move) {
+                    console.log('Starting autoplay test...');
+                    app.startAutoPlay().then(result => {
+                        console.log('Autoplay started:', result);
+                        
+                        if (result) {
+                            console.log('SUCCESS: Autoplay is working!');
+                            
+                            // Stop after 2 seconds for testing
+                            setTimeout(() => {
+                                app.stopAutoPlay();
+                                console.log('Autoplay stopped for test');
+                            }, 2000);
+                        } else {
+                            console.log('ERROR: Autoplay failed to start');
+                        }
+                    }).catch(error => {
+                        console.error('ERROR: Autoplay start failed:', error);
+                    });
+                } else {
+                    console.log('WARNING: No AI move available');
+                }
+            }).catch(error => {
+                console.error('ERROR: AI move failed:', error);
+            });
+        } else {
+            console.log('ERROR: Required components not available');
+            console.log('- AI Solver:', !!app.aiSolver);
+            console.log('- Game Engine:', !!app.gameEngine);
+        }
+    } else {
+        console.log('ERROR: fancy2048App not found');
+    }
+}, 2000);
