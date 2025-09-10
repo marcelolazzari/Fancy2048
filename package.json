@@ -1,5 +1,28 @@
 {
+  "name": "fancy2048",
+  "version": "1.0.0",
+  "description": "Modern AI-powered 2048 puzzle game",
+  "main": "pages/index.html",
+  "scripts": {
+    "test": "node test/autoplay-test.js",
+    "start": "http-server pages/ -p 8080 -o",
+    "build": "echo 'Build complete - this is a client-side app'",
+    "lint": "echo 'Linting...'",
+    "dev": "http-server pages/ -p 8080 -o --cors"
+  },
+  "keywords": [
+    "2048",
+    "puzzle",
+    "game",
+    "ai",
+    "javascript"
+  ],
+  "author": "Fancy2048 Team",
+  "license": "MIT",
   "dependencies": {
     "jsdom": "^20.0.3"
+  },
+  "devDependencies": {
+    "http-server": "^14.1.1"
   }
 }

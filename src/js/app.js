@@ -444,16 +444,24 @@ class Fancy2048App {
   hideLoadingScreen() {
     const loadingScreen = document.getElementById('loading-screen');
     if (loadingScreen) {
-      Utils.animate(300, (progress) => {
-        loadingScreen.style.opacity = 1 - progress;
-      }, Utils.easing.easeOutQuad);
-      
-      setTimeout(() => {
+      try {
+        Utils.animate(300, (progress) => {
+          loadingScreen.style.opacity = 1 - progress;
+        }, Utils.easing.easeOutQuad);
+        
+        setTimeout(() => {
+          loadingScreen.classList.add('hidden');
+          if (loadingScreen.parentNode) {
+            loadingScreen.parentNode.removeChild(loadingScreen);
+          }
+        }, 300);
+      } catch (error) {
+        // Fallback for environments without animation support
         loadingScreen.classList.add('hidden');
         if (loadingScreen.parentNode) {
           loadingScreen.parentNode.removeChild(loadingScreen);
         }
-      }, 300);
+      }
     }
   }
 

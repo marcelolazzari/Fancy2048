@@ -164,6 +164,13 @@ const Utils = {
    * Animate a value over time using requestAnimationFrame
    */
   animate(duration, callback, easing = t => t) {
+    // Check if we're in a browser environment
+    if (typeof window === 'undefined' || typeof requestAnimationFrame === 'undefined') {
+      // In Node.js environment, just call the callback immediately with completion
+      callback(1);
+      return;
+    }
+    
     const start = performance.now();
     
     const frame = (now) => {
