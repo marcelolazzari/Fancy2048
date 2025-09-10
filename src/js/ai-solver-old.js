@@ -42,6 +42,9 @@ class AISolver {
       }
     };
     
+    // Precomputed position weights optimized for snake pattern
+    this.positionWeights = this.generateAdvancedPositionWeights();
+    
     // Enhanced caching system
     this.evaluationCache = new Map();
     this.moveCache = new Map();
@@ -58,8 +61,8 @@ class AISolver {
     // Snake pattern weights for monotonicity
     this.snakeWeights = this.generateSnakeWeights();
     
-    // Initialize evaluation weights
-    this.initializeWeights();
+    // Tile merge probability lookup
+    this.mergeProbabilities = this.precomputeMergeProbabilities();
   }
 
   /**
@@ -261,7 +264,7 @@ class AISolver {
     let maxDepth = Math.min(settings.depth, 4); // Start conservative
     
     const startTime = Date.now();
-    const timeLimit = 3000; // 3 seconds max thinking time
+    const timeLimit = 5000; // 5 seconds max thinking time
     
     for (let depth = 1; depth <= maxDepth; depth++) {
       if (Date.now() - startTime > timeLimit) break;
@@ -293,18 +296,17 @@ class AISolver {
    */
   async monteCarloEvaluation(board, trials) {
     let totalScore = 0;
-    const maxTrials = Math.min(trials, 50); // Limit for performance
     
-    for (let i = 0; i < maxTrials; i++) {
+    for (let i = 0; i < trials; i++) {
       totalScore += await this.simulateRandomGame(board);
       
       // Yield occasionally
-      if (i % 10 === 0) {
+      if (i % 20 === 0) {
         await Utils.sleep(0);
       }
     }
     
-    return totalScore / maxTrials;
+    return totalScore / trials;
   }
 
   /**
@@ -312,8 +314,9 @@ class AISolver {
    */
   async simulateRandomGame(initialBoard) {
     let board = initialBoard.map(row => [...row]);
+    let score = 0;
     let moves = 0;
-    const maxMoves = 50; // Limit for performance
+    const maxMoves = 100; // Prevent infinite games
     
     while (moves < maxMoves) {
       const possibleMoves = this.getPossibleMoves(board);
@@ -340,22 +343,22 @@ class AISolver {
     let score = 0;
     
     // 1. Snake pattern evaluation (heavily weighted)
-    score += this.evaluateSnakePattern(board) * 12.0;
+    score += this.evaluateSnakePattern(board) * 10.0;
     
     // 2. Corner strategy with gradient (prefers highest tile in corner)
-    score += this.evaluateCornerGradient(board) * 10.0;
+    score += this.evaluateCornerGradient(board) * 8.0;
     
     // 3. Monotonicity in multiple directions
-    score += this.evaluateAdvancedMonotonicity(board) * 8.0;
+    score += this.evaluateAdvancedMonotonicity(board) * 5.0;
     
     // 4. Smoothness with logarithmic scaling
-    score += this.evaluateLogSmoothness(board) * 4.0;
+    score += this.evaluateLogSmoothness(board) * 3.0;
     
     // 5. Empty cells with exponential reward
-    score += this.evaluateEmptySpaces(board) * 18.0;
+    score += this.evaluateEmptySpaces(board) * 15.0;
     
     // 6. Merge potential (ability to create large merges)
-    score += this.evaluateMergePotential(board) * 8.0;
+    score += this.evaluateMergePotential(board) * 4.0;
     
     // 7. Tile clustering penalty
     score -= this.evaluateClustering(board) * 2.0;
@@ -373,60 +376,11 @@ class AISolver {
   }
 
   /**
-   * Initialize evaluation weights
-   */
-  initializeWeights() {
-    this.weights = {
-      snakePattern: 10.0,
-      cornerGradient: 8.0,
-      monotonicity: 5.0,
-      smoothness: 3.0,
-      emptySpaces: 15.0,
-      mergePotential: 4.0,
-      clustering: -2.0,
-      edgePreference: 3.0,
-      compactness: 2.0,
-      survival: 6.0
-    };
-  }
-
-  /**
-   * Generate snake pattern weights for optimal tile arrangement
-   */
-  generateSnakeWeights() {
-    return {
-      topLeft: [
-        [15, 14, 13, 12],
-        [8,  9,  10, 11],
-        [7,  6,  5,  4],
-        [0,  1,  2,  3]
-      ],
-      topRight: [
-        [12, 13, 14, 15],
-        [11, 10, 9,  8],
-        [4,  5,  6,  7],
-        [3,  2,  1,  0]
-      ],
-      bottomLeft: [
-        [0,  1,  2,  3],
-        [7,  6,  5,  4],
-        [8,  9,  10, 11],
-        [15, 14, 13, 12]
-      ],
-      bottomRight: [
-        [3,  2,  1,  0],
-        [4,  5,  6,  7],
-        [11, 10, 9,  8],
-        [12, 13, 14, 15]
-      ]
-    };
-  }
-
-  /**
    * Evaluate snake pattern (optimal tile arrangement)
    */
   evaluateSnakePattern(board) {
     const size = board.length;
+    let score = 0;
     
     // Check multiple snake patterns
     const patterns = [
@@ -475,39 +429,15 @@ class AISolver {
     
     // Calculate gradient from max tile position
     let gradientScore = 0;
-    
-    // Specific corner preferences (top-left is best)
-    const isTopLeft = maxPos.row === 0 && maxPos.col === 0;
-    const isTopRight = maxPos.row === 0 && maxPos.col === size - 1;
-    const isBottomLeft = maxPos.row === size - 1 && maxPos.col === 0;
-    const isBottomRight = maxPos.row === size - 1 && maxPos.col === size - 1;
-    const isCorner = isTopLeft || isTopRight || isBottomLeft || isBottomRight;
+    const isCorner = (maxPos.row === 0 || maxPos.row === size - 1) && 
+                     (maxPos.col === 0 || maxPos.col === size - 1);
     const isEdge = maxPos.row === 0 || maxPos.row === size - 1 || 
                    maxPos.col === 0 || maxPos.col === size - 1;
     
-    // Reward corner placement with preference for top-left
-    if (isTopLeft) {
-      gradientScore += maxTile * 10; // Best position
-    } else if (isBottomLeft) {
-      gradientScore += maxTile * 8; // Second best
-    } else if (isTopRight) {
-      gradientScore += maxTile * 6; // Third best
-    } else if (isBottomRight) {
-      gradientScore += maxTile * 4; // Fourth best
+    if (isCorner) {
+      gradientScore += maxTile * 3;
     } else if (isEdge) {
-      gradientScore += maxTile * 2;
-    } else {
-      // Penalty for high tiles not on edges
-      gradientScore -= maxTile * 1;
-    }
-    
-    // Extra bonus for keeping very high tiles in preferred corners
-    if (maxTile >= 512) {
-      if (isTopLeft) {
-        gradientScore += maxTile * 5;
-      } else if (isBottomLeft) {
-        gradientScore += maxTile * 3;
-      }
+      gradientScore += maxTile * 1.5;
     }
     
     // Bonus for gradient emanating from max tile
@@ -568,6 +498,76 @@ class AISolver {
     }
     
     return Math.max(increasing, decreasing);
+  }
+
+  /**
+   * Generate advanced position weights for snake patterns
+   */
+  generateAdvancedPositionWeights() {
+    return {
+      corner: this.generateCornerWeights(),
+      edge: this.generateEdgeWeights(),
+      center: this.generateCenterWeights()
+    };
+  }
+
+  /**
+   * Generate snake pattern weights for optimal tile arrangement
+   */
+  generateSnakeWeights() {
+    const size = 4;
+    
+    return {
+      topLeft: [
+        [15, 14, 13, 12],
+        [8,  9,  10, 11],
+        [7,  6,  5,  4],
+        [0,  1,  2,  3]
+      ],
+      topRight: [
+        [12, 13, 14, 15],
+        [11, 10, 9,  8],
+        [4,  5,  6,  7],
+        [3,  2,  1,  0]
+      ],
+      bottomLeft: [
+        [0,  1,  2,  3],
+        [7,  6,  5,  4],
+        [8,  9,  10, 11],
+        [15, 14, 13, 12]
+      ],
+      bottomRight: [
+        [3,  2,  1,  0],
+        [4,  5,  6,  7],
+        [11, 10, 9,  8],
+        [12, 13, 14, 15]
+      ]
+    };
+  }
+
+  /**
+   * Precompute merge probabilities for better evaluation
+   */
+  precomputeMergeProbabilities() {
+    const probabilities = new Map();
+    
+    // Cache common merge scenarios
+    for (let value = 2; value <= 2048; value *= 2) {
+      probabilities.set(value, {
+        mergeValue: value * 2,
+        probability: this.calculateMergeProbability(value)
+      });
+    }
+    
+    return probabilities;
+  }
+
+  /**
+   * Calculate merge probability for a given tile value
+   */
+  calculateMergeProbability(value) {
+    // Higher probability for merging smaller tiles
+    return Math.max(0.1, 1.0 - Math.log2(value) / 20);
   }
 
   /**
@@ -640,36 +640,6 @@ class AISolver {
     }
     
     return mergePotential;
-  }
-
-  /**
-   * Evaluate chain potential for a tile
-   */
-  evaluateChainPotential(board, row, col, value) {
-    const size = board.length;
-    let chainScore = 0;
-    
-    // Look for potential merge chains
-    const directions = [[0, 1], [1, 0], [0, -1], [-1, 0]];
-    
-    for (const [dr, dc] of directions) {
-      let chainLength = 1;
-      let r = row + dr;
-      let c = col + dc;
-      
-      // Count consecutive tiles of same value
-      while (r >= 0 && r < size && c >= 0 && c < size && board[r][c] === value) {
-        chainLength++;
-        r += dr;
-        c += dc;
-      }
-      
-      if (chainLength > 1) {
-        chainScore += value * chainLength * chainLength;
-      }
-    }
-    
-    return chainScore;
   }
 
   /**
@@ -793,96 +763,63 @@ class AISolver {
     
     return survivalScore;
   }
-
-  /**
-   * Sort moves by potential for better pruning
-   */
-  sortMovesByPotential(possibleMoves) {
-    return possibleMoves.sort((a, b) => {
-      const scoreA = this.quickEvaluateMove(a.board);
-      const scoreB = this.quickEvaluateMove(b.board);
-      return scoreB - scoreA;
-    });
-  }
-
-  /**
-   * Quick evaluation for move sorting
-   */
-  quickEvaluateMove(board) {
-    const emptyCells = this.getEmptyCells(board);
-    const cornerScore = this.evaluateCornerGradient(board);
-    return emptyCells.length * 100 + cornerScore * 0.1;
-  }
-
-  /**
-   * Select strategic cells for tile placement consideration
-   */
-  selectStrategicCells(emptyCells, board, maxCells) {
-    if (emptyCells.length <= maxCells) {
-      return emptyCells;
-    }
-    
-    // Prioritize cells based on strategic importance
-    const scoredCells = emptyCells.map(cell => {
-      let score = 0;
-      
-      // Prefer corner and edge cells
-      const isCorner = (cell.row === 0 || cell.row === 3) && (cell.col === 0 || cell.col === 3);
-      const isEdge = cell.row === 0 || cell.row === 3 || cell.col === 0 || cell.col === 3;
-      
-      if (isCorner) score += 100;
-      else if (isEdge) score += 50;
-      
-      // Prefer cells near high-value tiles
-      const neighbors = [
-        [cell.row-1, cell.col], [cell.row+1, cell.col],
-        [cell.row, cell.col-1], [cell.row, cell.col+1]
-      ];
-      
-      for (const [nr, nc] of neighbors) {
-        if (nr >= 0 && nr < 4 && nc >= 0 && nc < 4 && board[nr][nc] > 0) {
-          score += Math.log2(board[nr][nc]);
+          
+          // Check bottom neighbor
+          if (i < size - 1 && board[i + 1][j] > 0) {
+            const bottomLog = Math.log2(board[i + 1][j]);
+            smoothness -= Math.abs(currentLog - bottomLog);
+          }
         }
       }
-      
-      return { cell, score };
-    });
+    }
     
-    // Sort by score and take top cells
-    scoredCells.sort((a, b) => b.score - a.score);
-    return scoredCells.slice(0, maxCells).map(item => item.cell);
+    return smoothness;
   }
 
   /**
-   * Strategic fallback move selection
+   * Evaluate empty cells (more empty cells = better)
    */
-  getStrategicFallbackMove(possibleMoves) {
-    // Evaluate each move for corner strategy preservation
-    let bestMove = possibleMoves[0];
-    let bestScore = -Infinity;
+  evaluateEmptyCells(board) {
+    const emptyCells = this.getEmptyCells(board);
+    return Math.pow(emptyCells.length, 2);
+  }
+
+  /**
+   * Evaluate max tile position (prefer corners for highest tile)
+   */
+  evaluateMaxTilePosition(board) {
+    const size = board.length;
+    let maxTile = 0;
+    let maxRow = -1;
+    let maxCol = -1;
     
-    for (const move of possibleMoves) {
-      const score = this.evaluateCornerGradient(move.board);
-      if (score > bestScore) {
-        bestScore = score;
-        bestMove = move;
+    // Find the maximum tile
+    for (let i = 0; i < size; i++) {
+      for (let j = 0; j < size; j++) {
+        if (board[i][j] > maxTile) {
+          maxTile = board[i][j];
+          maxRow = i;
+          maxCol = j;
+        }
       }
     }
     
-    return bestMove.direction;
-  }
-
-  /**
-   * Add random tile to board (utility function)
-   */
-  addRandomTileToBoard(board) {
-    const emptyCells = this.getEmptyCells(board);
-    if (emptyCells.length === 0) return false;
+    if (maxTile === 0) return 0;
     
-    const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-    const value = Math.random() < 0.9 ? 2 : 4;
-    board[randomCell.row][randomCell.col] = value;
-    return true;
+    // Reward corner positions for max tile
+    const isCorner = (maxRow === 0 || maxRow === size - 1) && 
+                     (maxCol === 0 || maxCol === size - 1);
+    
+    const isEdge = maxRow === 0 || maxRow === size - 1 || 
+                   maxCol === 0 || maxCol === size - 1;
+    
+    if (isCorner) {
+      return maxTile * 2;
+    } else if (isEdge) {
+      return maxTile;
+    } else {
+      return 0;
+    }
   }
 
   /**
@@ -1070,14 +1007,6 @@ class AISolver {
   }
 
   /**
-   * Clear evaluation cache
-   */
-  clearCache() {
-    this.evaluationCache.clear();
-    this.moveCache.clear();
-  }
-
-  /**
    * Get hint for next best move
    */
   async getHint() {
@@ -1086,19 +1015,21 @@ class AISolver {
   }
 
   /**
+   * Clear evaluation cache
+   */
+  clearCache() {
+    this.evaluationCache.clear();
+  }
+
+  /**
    * Get AI statistics
    */
   getStats() {
     return {
       difficulty: this.difficulty,
-      maxDepth: this.difficultySettings[this.difficulty].depth,
+      maxDepth: this.maxDepth,
       cacheSize: this.evaluationCache.size,
-      moveCacheSize: this.moveCache.size,
-      isThinking: this.isThinking,
-      evaluations: this.stats.evaluations,
-      cacheHits: this.stats.cacheHits,
-      averageThinkingTime: this.stats.movesCalculated > 0 ? 
-        this.stats.totalThinkingTime / this.stats.movesCalculated : 0
+      isThinking: this.isThinking
     };
   }
 }

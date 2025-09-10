@@ -340,22 +340,22 @@ class AISolver {
     let score = 0;
     
     // 1. Snake pattern evaluation (heavily weighted)
-    score += this.evaluateSnakePattern(board) * 12.0;
+    score += this.evaluateSnakePattern(board) * 10.0;
     
     // 2. Corner strategy with gradient (prefers highest tile in corner)
-    score += this.evaluateCornerGradient(board) * 10.0;
+    score += this.evaluateCornerGradient(board) * 8.0;
     
     // 3. Monotonicity in multiple directions
-    score += this.evaluateAdvancedMonotonicity(board) * 8.0;
+    score += this.evaluateAdvancedMonotonicity(board) * 5.0;
     
     // 4. Smoothness with logarithmic scaling
-    score += this.evaluateLogSmoothness(board) * 4.0;
+    score += this.evaluateLogSmoothness(board) * 3.0;
     
     // 5. Empty cells with exponential reward
-    score += this.evaluateEmptySpaces(board) * 18.0;
+    score += this.evaluateEmptySpaces(board) * 15.0;
     
     // 6. Merge potential (ability to create large merges)
-    score += this.evaluateMergePotential(board) * 8.0;
+    score += this.evaluateMergePotential(board) * 4.0;
     
     // 7. Tile clustering penalty
     score -= this.evaluateClustering(board) * 2.0;
@@ -475,39 +475,15 @@ class AISolver {
     
     // Calculate gradient from max tile position
     let gradientScore = 0;
-    
-    // Specific corner preferences (top-left is best)
-    const isTopLeft = maxPos.row === 0 && maxPos.col === 0;
-    const isTopRight = maxPos.row === 0 && maxPos.col === size - 1;
-    const isBottomLeft = maxPos.row === size - 1 && maxPos.col === 0;
-    const isBottomRight = maxPos.row === size - 1 && maxPos.col === size - 1;
-    const isCorner = isTopLeft || isTopRight || isBottomLeft || isBottomRight;
+    const isCorner = (maxPos.row === 0 || maxPos.row === size - 1) && 
+                     (maxPos.col === 0 || maxPos.col === size - 1);
     const isEdge = maxPos.row === 0 || maxPos.row === size - 1 || 
                    maxPos.col === 0 || maxPos.col === size - 1;
     
-    // Reward corner placement with preference for top-left
-    if (isTopLeft) {
-      gradientScore += maxTile * 10; // Best position
-    } else if (isBottomLeft) {
-      gradientScore += maxTile * 8; // Second best
-    } else if (isTopRight) {
-      gradientScore += maxTile * 6; // Third best
-    } else if (isBottomRight) {
-      gradientScore += maxTile * 4; // Fourth best
+    if (isCorner) {
+      gradientScore += maxTile * 3;
     } else if (isEdge) {
-      gradientScore += maxTile * 2;
-    } else {
-      // Penalty for high tiles not on edges
-      gradientScore -= maxTile * 1;
-    }
-    
-    // Extra bonus for keeping very high tiles in preferred corners
-    if (maxTile >= 512) {
-      if (isTopLeft) {
-        gradientScore += maxTile * 5;
-      } else if (isBottomLeft) {
-        gradientScore += maxTile * 3;
-      }
+      gradientScore += maxTile * 1.5;
     }
     
     // Bonus for gradient emanating from max tile
@@ -857,19 +833,15 @@ class AISolver {
    * Strategic fallback move selection
    */
   getStrategicFallbackMove(possibleMoves) {
-    // Evaluate each move for corner strategy preservation
-    let bestMove = possibleMoves[0];
-    let bestScore = -Infinity;
+    // Prefer moves that maintain corner strategy
+    const priorities = ['down', 'right', 'left', 'up'];
     
-    for (const move of possibleMoves) {
-      const score = this.evaluateCornerGradient(move.board);
-      if (score > bestScore) {
-        bestScore = score;
-        bestMove = move;
-      }
+    for (const direction of priorities) {
+      const move = possibleMoves.find(m => m.direction === direction);
+      if (move) return move.direction;
     }
     
-    return bestMove.direction;
+    return possibleMoves[0].direction;
   }
 
   /**
