@@ -16,7 +16,10 @@ class UIController {
     // Animation queue for smooth updates
     this.animationQueue = [];
     this.isAnimating = false;
-    
+
+    // Snapshot of the previous board, used to animate only changed tiles
+    this.previousBoard = null;
+
     this.initialize();
   }
 
@@ -236,80 +239,73 @@ class UIController {
    */
   updateBoard() {
     if (!this.elements.gameBoard) return;
-    
+
     const board = this.gameEngine.board;
     const size = this.gameEngine.size;
-    
-    // Update CSS grid template
+    const prev = this.previousBoard;
+    const sameAsPrev = !!prev && prev.length === size;
+
+    // Drive grid layout and cell-relative font sizing from the board size
+    this.elements.gameBoard.style.setProperty('--size', size);
     this.elements.gameBoard.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
     this.elements.gameBoard.style.gridTemplateRows = `repeat(${size}, 1fr)`;
     this.elements.gameBoard.className = `game-board board-size-${size}`;
-    
+
     // Clear existing tiles
     this.elements.gameBoard.innerHTML = '';
-    
-    // Create tile placeholders first
+
+    // Create the static background cells
     for (let i = 0; i < size * size; i++) {
       const placeholder = document.createElement('div');
       placeholder.className = 'tile-placeholder';
       this.elements.gameBoard.appendChild(placeholder);
     }
-    
-    // Create tiles
+
+    // Create tiles, animating only what changed since the previous render
     for (let row = 0; row < size; row++) {
       for (let col = 0; col < size; col++) {
         const value = board[row][col];
-        if (value > 0) {
-          this.createTile(value, row, col, size);
+        if (value <= 0) continue;
+
+        let animation = null;
+        if (this.animations) {
+          if (!sameAsPrev) {
+            // Fresh board (new game / size change / load): gently appear
+            animation = 'new';
+          } else if (prev[row][col] > 0 && value > prev[row][col]) {
+            // A tile grew here -> a merge happened: pop it
+            animation = 'merged';
+          }
         }
+
+        this.createTile(value, row, col, animation);
       }
     }
+
+    // Remember this board so the next render can diff against it
+    this.previousBoard = board.map(rowArr => [...rowArr]);
   }
 
   /**
-   * Create tile element
+   * Create tile element. `animation` is one of 'new', 'merged' or null.
    */
-  createTile(value, row, col, size) {
+  createTile(value, row, col, animation = null) {
     const tile = document.createElement('div');
     tile.className = 'tile';
     tile.setAttribute('data-value', value);
     tile.textContent = Utils.formatNumber(value);
-    
-    // Position tile
+
+    // Position the tile within the CSS grid (1-based lines)
     tile.style.gridRow = row + 1;
     tile.style.gridColumn = col + 1;
-    
-    // Add animation class for new tiles
-    if (this.animations) {
-      tile.classList.add('new-tile');
-    }
-    
-    // Calculate font size based on value
-    this.updateTileFont(tile, value);
-    
-    this.elements.gameBoard.appendChild(tile);
-  }
 
-  /**
-   * Update tile font size based on value
-   */
-  updateTileFont(tile, value) {
-    const digits = value.toString().length;
-    let fontSize = '1.5em';
-    
-    if (digits <= 2) {
-      fontSize = '1.8em';
-    } else if (digits <= 3) {
-      fontSize = '1.5em';
-    } else if (digits <= 4) {
-      fontSize = '1.2em';
-    } else if (digits <= 5) {
-      fontSize = '1em';
-    } else {
-      fontSize = '0.8em';
+    if (animation === 'new') {
+      tile.classList.add('new-tile');
+    } else if (animation === 'merged') {
+      tile.classList.add('merged-tile');
     }
-    
-    tile.style.fontSize = fontSize;
+
+    this.elements.gameBoard.appendChild(tile);
   }
 
   /**
@@ -388,6 +384,8 @@ class UIController {
   newGame() {
     this.gameEngine.newGame();
     this.hideOverlays();
+    // Start from a clean slate so the opening tiles animate in
+    this.previousBoard = null;
     this.updateDisplay();
     
     // Play sound
@@ -431,8 +429,10 @@ class UIController {
    */
   changeBoardSize(size) {
     if (size === this.gameEngine.size) return;
-    
+
     this.gameEngine.setBoardSize(size);
+    // Board dimensions changed; avoid diffing against the old size
+    this.previousBoard = null;
     this.updateDisplay();
     
     // Save preference
@@ -795,6 +795,7 @@ class UIController {
     const gameState = Storage.loadGameState();
     if (gameState && gameState.board) {
       this.gameEngine.loadGameState(gameState);
+      this.previousBoard = null;
       this.updateDisplay();
       
       Utils.log('ui', 'Game state loaded');

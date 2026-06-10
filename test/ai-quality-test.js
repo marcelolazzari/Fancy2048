@@ -76,6 +76,11 @@ function assert(condition, message) {
   const aiSolver = new window.AISolver(gameEngine);
   aiSolver.setDifficulty('easy'); // Use easy for faster testing
 
+  // Decision-quality assertions check strategic choices, not the small random
+  // tie-breaking that lower difficulties add for variety. Disable that
+  // randomness so the AI deterministically picks its highest-scoring move.
+  Object.values(aiSolver.algorithms.expectimax).forEach(cfg => { cfg.randomness = 0; });
+
   log('Environment setup complete. Starting decision quality tests...');
 
   // === Quality Test 1: Obvious Merge Opportunities ===

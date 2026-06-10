@@ -24,7 +24,9 @@
   --dark-text-primary: #ffffff;
   --dark-text-secondary: #cccccc;
   --dark-border: #404040;
-  --dark-shadow: rgba(255, 255, 255, 0.15);
+  --dark-shadow: rgba(0, 0, 0, 0.5);
+  --dark-board-bg: #241f1b;
+  --dark-placeholder-bg: rgba(255, 255, 255, 0.06);
   
   /* Typography */
   --font-family-primary: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -60,10 +62,13 @@
   --transition-bounce: 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   
   /* Board */
-  --board-size: min(400px, 90vw);
-  --tile-size: calc((var(--board-size) - 60px) / 4);
-  --tile-gap: 12px;
+  --size: 4;
+  --board-max: 480px;
+  --board-size: min(var(--board-max), 92vw);
+  --tile-gap: clamp(6px, 1.6vw, 12px);
   --tile-radius: 8px;
+  --board-bg: #bbada0;
+  --placeholder-bg: rgba(238, 228, 218, 0.35);
   
   /* Z-indexes */
   --z-dropdown: 1000;
@@ -84,6 +89,8 @@
   --text-secondary: var(--dark-text-secondary);
   --border-color: var(--dark-border);
   --shadow-color: var(--dark-shadow);
+  --board-bg: var(--dark-board-bg);
+  --placeholder-bg: var(--dark-placeholder-bg);
 }
 
 /* Reset and base styles */
@@ -109,6 +116,8 @@ body {
   line-height: 1.6;
   color: var(--text-primary);
   background-color: var(--background-color);
+  background-image: radial-gradient(circle at 50% -10%, color-mix(in srgb, var(--secondary-color) 12%, transparent), transparent 55%);
+  background-attachment: fixed;
   transition: background-color var(--transition-base), color var(--transition-base);
   min-height: 100vh;
   display: flex;
@@ -360,40 +369,52 @@ body {
 
 .game-board {
   width: var(--board-size);
-  height: var(--board-size);
-  background: var(--surface-color);
-  border-radius: calc(var(--tile-radius) * 2);
+  max-width: 100%;
+  aspect-ratio: 1 / 1;
+  background: var(--board-bg);
+  border-radius: calc(var(--tile-radius) * 1.5);
   padding: var(--tile-gap);
-  box-shadow: 0 8px 16px var(--shadow-color);
+  box-shadow: 0 10px 30px var(--shadow-color);
   position: relative;
   display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  grid-template-rows: repeat(4, 1fr);
+  grid-template-columns: repeat(var(--size, 4), 1fr);
+  grid-template-rows: repeat(var(--size, 4), 1fr);
   gap: var(--tile-gap);
-  border: 1px solid var(--border-color);
+  /* Prevent the page from scrolling while swiping on the board */
+  touch-action: none;
 }
 
-/* Tiles */
+/* Tiles fill their grid cell, so they can never overflow the board. */
 .tile {
-  width: var(--tile-size);
-  height: var(--tile-size);
+  width: 100%;
+  height: 100%;
+  min-width: 0;
+  min-height: 0;
   border-radius: var(--tile-radius);
   display: flex;
   align-items: center;
   justify-content: center;
   font-weight: 700;
   font-family: var(--font-family-mono);
+  /* Font scales with the cell size for every board dimension (3x3 - 6x6). */
+  font-size: clamp(0.85rem, calc(var(--board-size) / var(--size, 4) * 0.4), 2.4rem);
+  line-height: 1;
+  overflow: hidden;
   position: relative;
-  transition: all var(--transition-smooth);
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.18);
+  transition: transform var(--transition-fast);
   transform-origin: center;
+  user-select: none;
+  -webkit-user-select: none;
 }
 
 .tile.new-tile {
-  animation: tileAppear var(--transition-smooth);
+  animation: tileAppear var(--transition-bounce);
 }
 
 .tile.merged-tile {
   animation: tileMerge var(--transition-smooth);
+  z-index: 2;
 }
 
 @keyframes tileAppear {
@@ -415,8 +436,8 @@ body {
   0% {
     transform: scale(1);
   }
-  40% {
-    transform: scale(1.05);
+  50% {
+    transform: scale(1.18);
   }
   100% {
     transform: scale(1);
@@ -442,14 +463,8 @@ body {
 
 /* Empty tile placeholder */
 .tile-placeholder {
-  background: rgba(238, 228, 218, 0.35);
+  background: var(--placeholder-bg);
   border-radius: var(--tile-radius);
-}
-
-/* Dark theme tile placeholders */
-[data-theme="dark"] .tile-placeholder {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.05);
 }
 
 /* Dark theme tile colors for better contrast */
@@ -608,18 +623,6 @@ body {
 }
 
 /* Light theme improvements for better contrast */
-[data-theme="light"] .tile-placeholder,
-:root .tile-placeholder {
-  background: rgba(0, 0, 0, 0.08);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-}
-
-[data-theme="light"] .game-board,
-:root .game-board {
-  background: #fafafa;
-  border: 1px solid #e0e0e0;
-}
-
 [data-theme="light"] .control-button.secondary,
 :root .control-button.secondary {
   background: #ffffff;
@@ -1087,12 +1090,15 @@ body {
 /* Responsive Design */
 @media (max-width: 768px) {
   :root {
-    --board-size: min(350px, 90vw);
     --spacing-md: 0.75rem;
     --spacing-lg: 1rem;
     --spacing-xl: 1.5rem;
   }
-  
+
+  .main-content {
+    padding: var(--spacing-md) 0;
+  }
+
   .header .container {
     padding: var(--spacing-sm) var(--spacing-md);
   }
@@ -1140,45 +1146,61 @@ body {
 
 @media (max-width: 480px) {
   :root {
-    --board-size: min(300px, 85vw);
+    --tile-gap: clamp(5px, 2vw, 10px);
   }
-  
+
   .container {
     padding: 0 var(--spacing-sm);
   }
-  
+
+  .game-info {
+    margin-bottom: var(--spacing-md);
+  }
+
+  .score-panel {
+    flex: 1;
+    justify-content: space-between;
+  }
+
   .score-item {
-    min-width: 60px;
+    flex: 1;
+    min-width: 0;
     padding: var(--spacing-sm);
   }
-  
+
   .score-value {
     font-size: var(--font-size-lg);
   }
-  
-  .control-button {
-    padding: 8px 16px;
+
+  .control-button,
+  .ai-button,
+  .size-button {
+    padding: 10px 16px;
     font-size: var(--font-size-sm);
+  }
+
+  /* Comfortable tap targets for game options on phones */
+  .size-button {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .game-options {
+    padding: var(--spacing-md);
   }
 }
 
-/* Board size variations */
+/* Board size variations (grid template + --size are also set inline by JS) */
 .board-size-3 {
-  --board-size: min(300px, 90vw);
-  grid-template-columns: repeat(3, 1fr);
-  grid-template-rows: repeat(3, 1fr);
+  --board-size: min(400px, 88vw);
 }
 
 .board-size-5 {
-  --board-size: min(450px, 90vw);
-  grid-template-columns: repeat(5, 1fr);
-  grid-template-rows: repeat(5, 1fr);
+  --board-size: min(500px, 94vw);
 }
 
 .board-size-6 {
-  --board-size: min(500px, 90vw);
-  grid-template-columns: repeat(6, 1fr);
-  grid-template-rows: repeat(6, 1fr);
+  --board-size: min(540px, 96vw);
 }
 
 /* Accessibility improvements */
@@ -1202,14 +1224,10 @@ body {
     --text-secondary: var(--dark-text-secondary);
     --border-color: var(--dark-border);
     --shadow-color: var(--dark-shadow);
+    --board-bg: var(--dark-board-bg);
+    --placeholder-bg: var(--dark-placeholder-bg);
   }
-  
-  /* Apply all dark theme styles when system prefers dark */
-  :root:not([data-theme]) .tile-placeholder {
-    background: rgba(255, 255, 255, 0.1);
-    border: 1px solid rgba(255, 255, 255, 0.05);
-  }
-  
+
   :root:not([data-theme]) .control-button.primary {
     background: #ffffff;
     color: #000000;
