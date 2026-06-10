@@ -668,9 +668,10 @@ body {
   color: var(--dark-text-primary);
 }
 
-/* Dark theme for overlays */
+/* Dark theme for overlays (keep the translucent + blurred look) */
 [data-theme="dark"] .overlay-content {
   background: var(--dark-surface);
+  background: color-mix(in srgb, var(--dark-surface) 86%, transparent);
   border-color: var(--dark-border);
 }
 
@@ -791,61 +792,67 @@ body {
 }
 
 /* Dark theme for game overlay backdrop */
-[data-theme="dark"] .game-overlay {
-  background: rgba(0, 0, 0, 0.9);
-}
-
-/* Game Overlays */
+/* Game Overlays
+   A compact card anchored near the bottom of the board so the board stays
+   visible behind it, rather than a full-board scrim that hides everything. */
 .game-overlay {
   position: absolute;
-  top: 0;
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(0, 0, 0, 0.8);
+  top: auto;
   display: flex;
-  align-items: center;
   justify-content: center;
-  border-radius: calc(var(--tile-radius) * 2);
+  padding: var(--tile-gap);
   z-index: var(--z-modal);
-  backdrop-filter: blur(4px);
-  transition: all var(--transition-base);
+  /* The container never blocks the board; only the card is interactive. */
+  pointer-events: none;
+  transition: opacity var(--transition-base);
 }
 
 .game-overlay.hidden {
   opacity: 0;
-  pointer-events: none;
 }
 
 .overlay-content {
+  width: min(340px, 100%);
+  /* Solid fallback first, then a translucent + blurred surface so the board
+     remains faintly visible through the card on modern browsers. */
   background: var(--surface-color);
-  padding: var(--spacing-2xl);
-  border-radius: calc(var(--tile-radius) * 2);
+  background: color-mix(in srgb, var(--surface-color) 88%, transparent);
+  -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
+  padding: var(--spacing-md) var(--spacing-lg);
+  border-radius: calc(var(--tile-radius) * 1.5);
   text-align: center;
-  box-shadow: 0 20px 40px var(--shadow-color);
-  transform: scale(0.9);
-  transition: transform var(--transition-smooth);
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.4);
   border: 1px solid var(--border-color);
+  transform: translateY(12px);
+  opacity: 0;
+  transition: transform var(--transition-smooth), opacity var(--transition-smooth);
 }
 
 .game-overlay:not(.hidden) .overlay-content {
-  transform: scale(1);
+  transform: translateY(0);
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .overlay-title {
-  margin: 0 0 var(--spacing-md);
-  font-size: var(--font-size-3xl);
+  margin: 0 0 var(--spacing-xs);
+  font-size: var(--font-size-xl);
   color: var(--primary-color);
 }
 
 .overlay-message {
-  margin: 0 0 var(--spacing-lg);
+  margin: 0;
+  font-size: var(--font-size-sm);
   color: var(--text-secondary);
 }
 
 .overlay-score {
-  margin: var(--spacing-lg) 0;
-  font-size: var(--font-size-xl);
+  margin: var(--spacing-sm) 0;
+  font-size: var(--font-size-base);
 }
 
 .score-highlight {
@@ -856,8 +863,13 @@ body {
 
 .overlay-actions {
   display: flex;
-  gap: var(--spacing-md);
+  gap: var(--spacing-sm);
   justify-content: center;
+}
+
+.overlay-content .overlay-button {
+  padding: 8px 18px;
+  font-size: var(--font-size-sm);
 }
 
 .overlay-button.primary {
@@ -1135,9 +1147,9 @@ body {
   }
   
   .overlay-actions {
-    flex-direction: column;
+    flex-wrap: wrap;
   }
-  
+
   .desktop-only {
     display: none;
   }
