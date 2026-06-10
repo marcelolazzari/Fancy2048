@@ -6,7 +6,7 @@
 // Bump this version on every deploy to purge stale caches. Combined with the
 // network-first strategy for the app shell below, returning visitors always
 // receive the latest version when online (and the cache serves them offline).
-const CACHE_NAME = 'fancy2048-v1.1.4';
+const CACHE_NAME = 'fancy2048-v1.2.0';
 const CACHE_STRATEGY = {
   STALE_WHILE_REVALIDATE: 'stale-while-revalidate',
   CACHE_FIRST: 'cache-first',
@@ -30,6 +30,7 @@ const CORE_ASSETS = [
   './src/js/storage.js',
   './src/js/game-engine.js',
   './src/js/ai-solver.js',
+  './src/js/ai-learner.js',
   './src/js/touch-handler.js',
   './src/js/ui-controller.js',
   './src/js/stats.js',

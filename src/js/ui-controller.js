@@ -393,6 +393,8 @@ class UIController {
     // A fresh game should never keep the AI playing the previous one
     if (window.fancy2048App) window.fancy2048App.stopAutoPlay();
     this.gameEngine.newGame();
+    // Apply the AI's learned weights for the new game
+    if (window.fancy2048App) window.fancy2048App.prepareLearningForGame();
     this.hideOverlays();
     // Start from a clean slate so the opening tiles animate in
     this.previousBoard = null;
@@ -443,6 +445,8 @@ class UIController {
     // Changing the board mid auto-play would leave it running on a new grid
     if (window.fancy2048App) window.fancy2048App.stopAutoPlay();
     this.gameEngine.setBoardSize(size);
+    // Load the learned weights for the new board size
+    if (window.fancy2048App) window.fancy2048App.prepareLearningForGame();
     // Board dimensions changed; avoid diffing against the old size
     this.previousBoard = null;
     this.updateDisplay();

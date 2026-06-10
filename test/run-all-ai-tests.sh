@@ -48,6 +48,9 @@ run_test "AI Performance Test" "timeout 120s node test/ai-performance-test.js"
 # Test 4: AI Decision Quality Test
 run_test "AI Decision Quality Test" "timeout 60s node test/ai-quality-test.js"
 
+# Test 5: AI Learning / Self-improvement Test
+run_test "AI Learning Test" "timeout 60s node test/ai-learning-test.js"
+
 # Summary
 echo ""
 echo "=============================================================="

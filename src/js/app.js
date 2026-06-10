@@ -103,7 +103,10 @@ class Fancy2048App {
       
       // Load saved game state if available
       this.loadSavedGame();
-      
+
+      // Seed the solver with the learned weights for this board size
+      this.prepareLearningForGame();
+
       // Hide loading screen
       this.hideLoadingScreen();
       
@@ -142,15 +145,35 @@ class Fancy2048App {
       // Set AI to hard difficulty for better performance
       this.aiSolver.setDifficulty('hard');
       Utils.log('app', 'AI Solver initialized with hard difficulty');
+
+      // Self-improvement: load learned heuristic weights and keep tuning them
+      // from the AI's own games (per board size, shared across difficulties).
+      if (typeof AILearner !== 'undefined') {
+        this.aiLearner = new AILearner({ defaultWeights: this.aiSolver.weights });
+        this.gameAiMoves = 0;
+        Utils.log('app', 'AI Learner enabled');
+      }
     } else {
       Utils.log('app', 'AI Solver not available');
     }
-    
+
     // Apply saved settings
     this.applySettings();
-    
+
     // Small delay to ensure everything is ready
     await Utils.sleep(100);
+  }
+
+  /**
+   * Apply the weights for the upcoming game and reset per-game learning
+   * counters. The learner returns the current best weights (or a mutated
+   * candidate it is currently evaluating).
+   */
+  prepareLearningForGame() {
+    this.gameAiMoves = 0;
+    if (!this.aiLearner || !this.aiSolver) return;
+    const size = this.gameEngine.size;
+    this.aiSolver.weights = this.aiLearner.beginGame(size);
   }
 
   /**
@@ -224,15 +247,43 @@ class Fancy2048App {
    * Handle game over
    */
   handleGameOver(result) {
+    // Was the AI driving this game? (used for both learning and self-play)
+    const wasAutoPlaying = this.autoPlayActive;
+    const totalMoves = this.gameEngine.moves || 0;
+    const aiDriven = this.aiLearner &&
+      this.gameAiMoves >= 10 &&
+      this.gameAiMoves >= 0.6 * totalMoves;
+
     // Stop auto-play if active
     this.stopAutoPlay();
-    
+
     // Show game over UI
     this.uiController.showGameOver(result);
-    
+
     // Auto-save game state
     this.saveGameState();
-    
+
+    // Learn from the AI's own play
+    if (aiDriven) {
+      const event = this.aiLearner.recordResult(result.boardSize || this.gameEngine.size, result);
+      Utils.log('app', 'AI learning', event);
+      if (event.type === 'improved') {
+        this.uiController.showNotification(
+          `AI improved itself (gen ${event.generation})`, 'success', 2500);
+      }
+    }
+
+    // Continuous self-play: if the AI was auto-playing, start a fresh game and
+    // keep going so it trains across many games. The brief delay lets the
+    // game-over card be seen first.
+    if (wasAutoPlaying) {
+      this.selfPlayTimer = setTimeout(() => {
+        if (!this.isInitialized) return;
+        this.newGame();
+        this.startAutoPlay();
+      }, 1400);
+    }
+
     Utils.log('app', 'Game over', result);
   }
 
@@ -323,6 +374,7 @@ class Fancy2048App {
       return false;
     }
 
+    this.clearSelfPlayTimer();
     this.autoPlayActive = true;
     this.syncAutoPlayUI();
     Utils.log('app', 'Auto-play started');
@@ -333,13 +385,14 @@ class Fancy2048App {
   }
 
   /**
-   * Stop auto-play
+   * Stop auto-play (also cancels any pending self-play restart)
    */
   stopAutoPlay() {
     if (this.autoPlayTimer) {
       clearTimeout(this.autoPlayTimer);
       this.autoPlayTimer = null;
     }
+    this.clearSelfPlayTimer();
 
     const wasActive = this.autoPlayActive;
     this.autoPlayActive = false;
@@ -347,6 +400,16 @@ class Fancy2048App {
 
     if (wasActive) {
       Utils.log('app', 'Auto-play stopped');
+    }
+  }
+
+  /**
+   * Cancel a pending continuous-self-play restart, if any.
+   */
+  clearSelfPlayTimer() {
+    if (this.selfPlayTimer) {
+      clearTimeout(this.selfPlayTimer);
+      this.selfPlayTimer = null;
     }
   }
 
@@ -389,7 +452,14 @@ class Fancy2048App {
         return;
       }
 
+      // Count moves the AI actually made (used to learn only from self-play).
+      this.gameAiMoves = (this.gameAiMoves || 0) + 1;
       this.uiController.updateDisplay();
+
+      // The move may have ended the game; handleGameOver owns what happens next
+      // (learning + self-play restart), so don't schedule another move here.
+      if (this.gameEngine.isGameOver) return;
+
       // Schedule the next move using the latest speed setting
       this.scheduleAutoMove(this.autoPlayMoveDelay);
     } catch (error) {
@@ -446,9 +516,10 @@ class Fancy2048App {
   newGame() {
     this.stopAutoPlay();
     this.gameEngine.newGame();
+    this.prepareLearningForGame();
     this.uiController.updateDisplay();
     this.saveGameState();
-    
+
     Utils.log('app', 'New game started');
   }
 
@@ -628,12 +699,15 @@ class Fancy2048App {
       toggleAutoPlay: () => this.toggleAutoPlay(),
       cycleSpeed: () => this.cycleAutoPlaySpeed(),
       exportStats: () => Storage.exportData(),
+      resetLearning: () => this.aiLearner?.reset(),
+      getLearning: () => this.aiLearner?.getStats(this.gameEngine.size),
       getStats: () => ({
         game: this.gameEngine.getGameState(),
         storage: Storage.getStatistics(),
         ui: this.uiController.getStats(),
         touch: this.touchHandler?.getStats(),
-        ai: this.aiSolver?.getStats()
+        ai: this.aiSolver?.getStats(),
+        learning: this.aiLearner?.getStats(this.gameEngine.size)
       })
     };
     
