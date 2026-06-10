@@ -3,7 +3,10 @@
  * Progressive Web App functionality with advanced caching strategies
  */
 
-const CACHE_NAME = 'fancy2048-v1.0.0';
+// Bump this version on every deploy to purge stale caches. Combined with the
+// network-first strategy for the app shell below, returning visitors always
+// receive the latest version when online (and the cache serves them offline).
+const CACHE_NAME = 'fancy2048-v1.1.0';
 const CACHE_STRATEGY = {
   STALE_WHILE_REVALIDATE: 'stale-while-revalidate',
   CACHE_FIRST: 'cache-first',
@@ -48,12 +51,16 @@ const CACHE_CONFIG = {
     maxEntries: 10
   },
   css: {
-    strategy: CACHE_STRATEGY.STALE_WHILE_REVALIDATE,
+    // Network-first so a fresh deploy is served immediately when online,
+    // falling back to cache when offline.
+    strategy: CACHE_STRATEGY.NETWORK_FIRST,
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     maxEntries: 20
   },
   js: {
-    strategy: CACHE_STRATEGY.STALE_WHILE_REVALIDATE,
+    // Network-first so a fresh deploy is served immediately when online,
+    // falling back to cache when offline.
+    strategy: CACHE_STRATEGY.NETWORK_FIRST,
     maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
     maxEntries: 30
   },
