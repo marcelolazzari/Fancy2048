@@ -1,69 +1,77 @@
 /**
- * Fancy2048 - Advanced AI Solver
- * Implementation based on state-of-the-art 2048 AI algorithms
- * References:
- * - https://maartenbaert.github.io/2048/ (Expectimax with optimizations)
- * - https://aj-r.github.io/2048-AI/ (Multiple algorithms comparison)
- * - https://www.game-2048.com/ai-2048 (Monte Carlo approach)
+ * Fancy2048 - AI Solver
+ *
+ * Expectimax search with:
+ *  - Iterative deepening bounded by a hard per-move time budget, so a move is
+ *    always returned quickly and the UI thread never freezes (the previous
+ *    fixed-depth search could block for seconds on near-empty boards).
+ *  - In-place chance-node expansion (mutate/undo) to avoid allocating a board
+ *    per empty cell.
+ *  - A transposition table (cleared each move) to skip repeated states.
+ *  - A cheap positional heuristic (no per-leaf move generation).
  */
 
 class AISolver {
   constructor(gameEngine) {
     this.gameEngine = gameEngine;
     this.difficulty = 'medium';
-    this.algorithm = 'expectimax'; // expectimax, montecarlo, priority, smart
+    this.algorithm = 'expectimax';
     this.isThinking = false;
-    
-    // Algorithm-specific settings optimized for performance
+
+    // Per-difficulty limits. `depth` caps search depth; `timeBudget` (ms) hard
+    // caps thinking time so the UI never locks up; `randomness` adds a little
+    // variety to the chosen move at lower difficulties.
     this.algorithms = {
       expectimax: {
-        easy: { depth: 4, randomness: 0.1, cacheSize: 10000 },
-        medium: { depth: 5, randomness: 0.05, cacheSize: 25000 },
-        hard: { depth: 6, randomness: 0.02, cacheSize: 50000 },
-        expert: { depth: 7, randomness: 0.01, cacheSize: 100000 }
-      },
-      montecarlo: {
-        easy: { trials: 50, depth: 8, randomness: 0.2 },
-        medium: { trials: 100, depth: 10, randomness: 0.1 },
-        hard: { trials: 200, depth: 12, randomness: 0.05 },
-        expert: { trials: 500, depth: 15, randomness: 0.02 }
-      },
-      priority: {
-        easy: { lookahead: 2, cornerWeight: 1.0 },
-        medium: { lookahead: 3, cornerWeight: 1.2 },
-        hard: { lookahead: 4, cornerWeight: 1.5 },
-        expert: { lookahead: 5, cornerWeight: 2.0 }
-      },
-      smart: {
-        easy: { depth: 3, mcTrials: 25, hybridWeight: 0.3 },
-        medium: { depth: 4, mcTrials: 50, hybridWeight: 0.4 },
-        hard: { depth: 5, mcTrials: 100, hybridWeight: 0.5 },
-        expert: { depth: 6, mcTrials: 200, hybridWeight: 0.6 }
+        easy:   { depth: 3, timeBudget: 45,  randomness: 0.22 },
+        medium: { depth: 6, timeBudget: 110, randomness: 0.05 },
+        hard:   { depth: 8, timeBudget: 220, randomness: 0 },
+        expert: { depth: 10, timeBudget: 450, randomness: 0 }
       }
     };
-    
-    // Caching system
+
+    // Transposition table (board+depth+node-type -> score), cleared each move.
     this.evaluationCache = new Map();
-    this.moveCache = new Map();
-    this.maxCacheSize = 50000;
-    
-    // Performance tracking and statistics
+    this.maxCacheSize = 200000;
+
+    // Heuristic weights. Raw positional terms (snake/corner) are scaled down so
+    // the log-space terms (monotonicity/smoothness) still influence the score.
+    this.weights = {
+      snakePattern: 0.018,
+      cornerGradient: 0.06,
+      monotonicity: 6.0,
+      smoothness: 3.5,
+      emptySpaces: 14.0,
+      mergePotential: 0.4,
+      clusteringPenalty: 1.2
+    };
+
+    // Snake weights are generated lazily per board size and cached.
+    this.snakeWeightCache = {};
+
+    // Performance / quality statistics.
     this.stats = {
       evaluations: 0,
       cacheHits: 0,
       totalThinkingTime: 0,
-      movesCalculated: 0
+      movesCalculated: 0,
+      lastDepth: 0
     };
-    
-    // Snake pattern weights for monotonicity (generated lazily per board size)
-    this.snakeWeightCache = {};
 
-    // Initialize evaluation weights
-    this.initializeWeights();
+    // Internal search state.
+    this._deadline = 0;
+    this._timedOut = false;
   }
 
   /**
-   * Set AI difficulty and optimize parameters
+   * Settings for the active difficulty.
+   */
+  get settings() {
+    return this.algorithms.expectimax[this.difficulty];
+  }
+
+  /**
+   * Set AI difficulty.
    */
   setDifficulty(difficulty) {
     if (this.algorithms.expectimax[difficulty]) {
@@ -73,319 +81,217 @@ class AISolver {
   }
 
   /**
-   * Get the best move using current algorithm and difficulty
+   * Compute the best move for the current game board.
+   * Always resolves quickly (bounded by the difficulty's time budget).
    */
   async getBestMove() {
-    if (this.isThinking) {
-      return null;
-    }
-
-    // Nothing to do once the game is over.
-    if (this.gameEngine && this.gameEngine.isGameOver) {
-      return null;
-    }
+    if (this.isThinking) return null;
+    if (this.gameEngine && this.gameEngine.isGameOver) return null;
 
     this.isThinking = true;
-    const startTime = Date.now();
-    
+    const start = Date.now();
+
     try {
       const board = this.gameEngine.board;
-      
-      // Quick validation
-      if (!board || !Array.isArray(board)) {
+      if (!Array.isArray(board)) {
         throw new Error('Invalid board state');
       }
-      
-      // Get possible moves
-      const possibleMoves = this.getPossibleMoves(board);
-      
-      if (possibleMoves.length === 0) {
-        return null;
+
+      const moves = this.getPossibleMoves(board);
+      if (moves.length === 0) return null;
+      if (moves.length === 1) return moves[0].direction;
+
+      const settings = this.settings;
+      this._deadline = start + settings.timeBudget;
+      this.evaluationCache.clear();
+
+      // Iterative deepening: keep the best move from the deepest depth that
+      // completed before the deadline. Depth 1 is cheap and always completes,
+      // guaranteeing a sensible move even under a tiny budget.
+      let bestMove = moves[0].direction;
+      let completedDepth = 0;
+
+      for (let depth = 1; depth <= settings.depth; depth++) {
+        this._timedOut = false;
+        const result = this.searchRoot(moves, depth, settings.randomness);
+
+        if (this._timedOut) break; // discard this incomplete depth
+        bestMove = result.move;
+        completedDepth = depth;
+
+        if (Date.now() >= this._deadline) break;
+        // Let the UI thread breathe between depths.
+        await this.yieldControl();
       }
-      
-      // Single move optimization
-      if (possibleMoves.length === 1) {
-        return possibleMoves[0].direction;
-      }
-      
-      let bestMove = null;
-      
-      // Use the selected algorithm
-      switch (this.algorithm) {
-        case 'expectimax':
-          bestMove = await this.expectimaxSearch(possibleMoves);
-          break;
-        case 'montecarlo':
-          bestMove = await this.monteCarloSearch(possibleMoves);
-          break;
-        case 'priority':
-          bestMove = await this.priorityBasedSearch(possibleMoves);
-          break;
-        case 'smart':
-          bestMove = await this.smartHybridSearch(possibleMoves);
-          break;
-        default:
-          bestMove = await this.expectimaxSearch(possibleMoves);
-      }
-      
-      // Cache the result
-      const settings = this.algorithms[this.algorithm][this.difficulty];
-      if (settings.cacheSize && this.moveCache.size < settings.cacheSize) {
-        const boardKey = this.getBoardKey(board);
-        this.moveCache.set(boardKey, bestMove);
-      }
-      
-      // Update stats
+
       this.stats.movesCalculated++;
-      this.stats.totalThinkingTime += Date.now() - startTime;
-      
-      return bestMove || possibleMoves[0].direction;
-      
+      this.stats.totalThinkingTime += Date.now() - start;
+      this.stats.lastDepth = completedDepth;
+
+      return bestMove;
     } catch (error) {
       console.error('AI Error:', error);
-      // Intelligent fallback based on corner strategy
-      const possibleMoves = this.getPossibleMoves(this.gameEngine.board);
-      if (possibleMoves.length > 0) {
-        return this.getCornerBasedMove(possibleMoves);
-      }
-      return null;
+      const moves = this.getPossibleMoves(this.gameEngine.board);
+      return moves.length > 0 ? this.getCornerBasedMove(moves) : null;
     } finally {
       this.isThinking = false;
     }
   }
 
   /**
-   * Expectimax search algorithm - based on Maarten Baert's implementation
+   * Evaluate every root move at the given depth and return the best one.
    */
-  async expectimaxSearch(possibleMoves) {
-    const settings = this.algorithms.expectimax[this.difficulty];
-    let bestMove = null;
+  searchRoot(moves, depth, randomness) {
     let bestScore = -Infinity;
-    
-    for (const move of possibleMoves) {
-      const score = await this.expectimax(move.board, settings.depth, false);
-      
-      // Add small randomness for variety
-      const randomizedScore = score + (Math.random() - 0.5) * settings.randomness * score;
-      
-      if (randomizedScore > bestScore) {
-        bestScore = randomizedScore;
-        bestMove = move.direction;
-      }
-      
-      // Yield control periodically
-      await this.yieldControl();
-    }
-    
-    return bestMove;
-  }
+    let bestMove = moves[0].direction;
 
-  /**
-   * Core Expectimax algorithm with alpha-beta pruning
-   */
-  async expectimax(board, depth, isPlayerTurn, alpha = -Infinity, beta = Infinity) {
-    this.stats.evaluations++;
-    
-    // Base case
-    if (depth === 0) {
-      return this.evaluateBoard(board);
-    }
-    
-    // Check cache
-    const cacheKey = this.getBoardKey(board) + '_' + depth + '_' + isPlayerTurn;
-    if (this.evaluationCache.has(cacheKey)) {
-      this.stats.cacheHits++;
-      return this.evaluationCache.get(cacheKey);
-    }
-    
-    let result;
-    
-    if (isPlayerTurn) {
-      // Player's turn - maximize
-      result = -Infinity;
-      const moves = this.getPossibleMoves(board);
-      
-      if (moves.length === 0) {
-        result = this.evaluateBoard(board); // Game over
-      } else {
-        for (const move of moves) {
-          const score = await this.expectimax(move.board, depth - 1, false, alpha, beta);
-          result = Math.max(result, score);
-          alpha = Math.max(alpha, result);
-          
-          if (beta <= alpha) {
-            break; // Alpha-beta pruning
-          }
-        }
+    for (const move of moves) {
+      let score = this.expectimax(move.board, depth - 1, false);
+      if (this._timedOut) {
+        return { move: bestMove, score: bestScore };
       }
-    } else {
-      // Computer's turn - calculate expectation
-      result = 0;
-      const emptyCells = this.getEmptyCells(board);
-      
-      if (emptyCells.length === 0) {
-        result = this.evaluateBoard(board); // Board full
-      } else {
-        for (const cell of emptyCells) {
-          // 90% chance of 2, 10% chance of 4
-          const board2 = this.copyBoard(board);
-          const board4 = this.copyBoard(board);
-          
-          board2[cell.row][cell.col] = 2;
-          board4[cell.row][cell.col] = 4;
-          
-          const score2 = await this.expectimax(board2, depth - 1, true, alpha, beta);
-          const score4 = await this.expectimax(board4, depth - 1, true, alpha, beta);
-          
-          result += (0.9 * score2 + 0.1 * score4) / emptyCells.length;
-        }
-      }
-    }
-    
-    // Cache result
-    if (this.evaluationCache.size < this.algorithms.expectimax[this.difficulty].cacheSize) {
-      this.evaluationCache.set(cacheKey, result);
-    }
-    
-    return result;
-  }
 
-  /**
-   * Monte Carlo search algorithm
-   */
-  async monteCarloSearch(possibleMoves) {
-    const settings = this.algorithms.montecarlo[this.difficulty];
-    let bestMove = null;
-    let bestScore = -Infinity;
-    
-    for (const move of possibleMoves) {
-      let totalScore = 0;
-      
-      for (let trial = 0; trial < settings.trials; trial++) {
-        const score = await this.simulateRandomGame(move.board, settings.depth);
-        totalScore += score;
-        
-        if (trial % 10 === 0) await this.yieldControl();
+      if (randomness > 0) {
+        score += (Math.random() - 0.5) * randomness * Math.abs(score);
       }
-      
-      const averageScore = totalScore / settings.trials;
-      
-      if (averageScore > bestScore) {
-        bestScore = averageScore;
-        bestMove = move.direction;
-      }
-    }
-    
-    return bestMove;
-  }
 
-  /**
-   * Priority-based search algorithm
-   */
-  async priorityBasedSearch(possibleMoves) {
-    const settings = this.algorithms.priority[this.difficulty];
-    let bestMove = null;
-    let bestScore = -Infinity;
-    
-    for (const move of possibleMoves) {
-      const score = this.evaluateBoard(move.board) * settings.cornerWeight;
-      
       if (score > bestScore) {
         bestScore = score;
         bestMove = move.direction;
       }
     }
-    
-    return bestMove;
+
+    return { move: bestMove, score: bestScore };
   }
 
   /**
-   * Smart hybrid search combining multiple approaches
+   * Expectimax with alternating max (player) and chance (random tile) nodes.
+   * Aborts cooperatively once the deadline passes (sets `_timedOut`).
    */
-  async smartHybridSearch(possibleMoves) {
-    const settings = this.algorithms.smart[this.difficulty];
-    let bestMove = null;
-    let bestScore = -Infinity;
-    
-    for (const move of possibleMoves) {
-      // Combine expectimax and monte carlo
-      const expectimaxScore = await this.expectimax(move.board, settings.depth, false);
-      const mcScore = await this.simulateRandomGame(move.board, settings.depth);
-      
-      const hybridScore = expectimaxScore * settings.hybridWeight + 
-                         mcScore * (1 - settings.hybridWeight);
-      
-      if (hybridScore > bestScore) {
-        bestScore = hybridScore;
-        bestMove = move.direction;
+  expectimax(board, depth, isChance) {
+    if (this._timedOut) return 0;
+    if (Date.now() >= this._deadline) {
+      this._timedOut = true;
+      return 0;
+    }
+
+    if (depth <= 0) {
+      this.stats.evaluations++;
+      return this.evaluateBoard(board);
+    }
+
+    const cacheKey = this.getBoardKey(board) + '|' + depth + '|' + (isChance ? 'c' : 'm');
+    const cached = this.evaluationCache.get(cacheKey);
+    if (cached !== undefined) {
+      this.stats.cacheHits++;
+      return cached;
+    }
+
+    let result;
+
+    if (isChance) {
+      // Computer's turn: expected value over each empty cell getting a 2 (90%)
+      // or 4 (10%). Mutate the board in place and undo to avoid allocations.
+      const emptyCells = this.getEmptyCells(board);
+      if (emptyCells.length === 0) {
+        result = this.evaluateBoard(board);
+      } else {
+        let sum = 0;
+        for (const cell of emptyCells) {
+          board[cell.row][cell.col] = 2;
+          const score2 = this.expectimax(board, depth - 1, false);
+          board[cell.row][cell.col] = 4;
+          const score4 = this.expectimax(board, depth - 1, false);
+          board[cell.row][cell.col] = 0;
+
+          if (this._timedOut) return 0;
+          sum += 0.9 * score2 + 0.1 * score4;
+        }
+        result = sum / emptyCells.length;
       }
-      
-      await this.yieldControl();
+    } else {
+      // Player's turn: maximize over the available moves.
+      const moves = this.getPossibleMoves(board);
+      if (moves.length === 0) {
+        result = this.evaluateBoard(board); // no moves available
+      } else {
+        result = -Infinity;
+        for (const move of moves) {
+          const score = this.expectimax(move.board, depth - 1, true);
+          if (this._timedOut) return 0;
+          if (score > result) result = score;
+        }
+      }
     }
-    
-    return bestMove;
-  }
 
-  /**
-   * Simulate a random game from the given position
-   */
-  async simulateRandomGame(board, maxMoves = 50) {
-    let currentBoard = this.copyBoard(board);
-    let moves = 0;
-    
-    while (moves < maxMoves) {
-      const possibleMoves = this.getPossibleMoves(currentBoard);
-      if (possibleMoves.length === 0) break;
-      
-      // Choose random move
-      const randomMove = possibleMoves[Math.floor(Math.random() * possibleMoves.length)];
-      currentBoard = randomMove.board;
-      
-      // Add random tile
-      if (!this.addRandomTileToBoard(currentBoard)) break;
-      
-      moves++;
+    if (this.evaluationCache.size < this.maxCacheSize) {
+      this.evaluationCache.set(cacheKey, result);
     }
-    
-    return this.evaluateBoard(currentBoard);
+    return result;
   }
 
   /**
-   * Initialize evaluation weights (dynamic based on game phase)
+   * Static positional evaluation of a board (higher is better).
+   *
+   * Combines a snake gradient + corner anchoring (which force a monotonic
+   * chain toward one corner), monotonicity and smoothness (in log2 space),
+   * open space, ready merges, and a clustering penalty. Weights keep the
+   * positional and log-space terms on a comparable scale so each matters.
    */
-  initializeWeights() {
-    this.weights = {
-      snakePattern: 10.0,
-      cornerGradient: 8.0,
-      monotonicity: 5.0,
-      smoothness: 3.0,
-      emptySpaces: 15.0,
-      mergePotential: 4.0,
-      clusteringPenalty: 6.0,
-      chainReaction: 5.0
-    };
+  evaluateBoard(board) {
+    const phase = this.getGamePhase(board);
+
+    // Phase-aware weighting: value open space early, structure late.
+    const w = { ...this.weights };
+    if (phase === 'early') {
+      w.emptySpaces += 6;
+    } else if (phase === 'mid') {
+      w.monotonicity += 2;
+    } else { // late / end
+      w.monotonicity += 3;
+      w.snakePattern += 0.01;
+      w.cornerGradient += 0.04;
+    }
+
+    let score = 0;
+    score += this.evaluateSnakePattern(board) * w.snakePattern;
+    score += this.evaluateCornerGradient(board) * w.cornerGradient;
+    score += this.evaluateMonotonicity(board) * w.monotonicity;
+    score += this.evaluateSmoothness(board) * w.smoothness;
+    score += this.evaluateEmptySpaces(board) * w.emptySpaces;
+    score += this.evaluateMergePotential(board) * w.mergePotential;
+    score -= this.evaluateClusteringPenalty(board) * w.clusteringPenalty;
+    return score;
   }
 
   /**
-   * Generate snake (boustrophedon) pattern weights for any board size.
+   * Determine game phase for dynamic weighting.
+   */
+  getGamePhase(board) {
+    const maxTile = Math.max(...board.flat());
+    const empty = this.getEmptyCells(board).length;
+    if (maxTile < 128) return 'early';
+    if (maxTile < 1024) return empty > 4 ? 'mid' : 'late';
+    return empty > 2 ? 'late' : 'end';
+  }
+
+  /**
+   * Generate snake (boustrophedon) weights for any board size, cached per size.
    * The maximum weight sits in a corner and decreases along a snake path,
-   * which encourages the AI to build a monotonic chain toward that corner.
-   * Results are cached per board size. Returns all four corner orientations.
+   * encouraging a monotonic chain toward that corner. Returns all four
+   * corner orientations.
    */
   generateSnakeWeights(size = 4) {
-    this.snakeWeightCache = this.snakeWeightCache || {};
     if (this.snakeWeightCache[size]) {
       return this.snakeWeightCache[size];
     }
 
-    // Base pattern with the maximum weight in the top-left corner.
     const topLeft = [];
     for (let i = 0; i < size; i++) {
       const row = [];
       const rowFromBottom = size - 1 - i;
       const base = size * rowFromBottom;
       for (let j = 0; j < size; j++) {
-        // Alternate direction on each row to form a continuous snake path.
         row.push(rowFromBottom % 2 === 0 ? base + j : base + (size - 1 - j));
       }
       topLeft.push(row);
@@ -406,103 +312,10 @@ class AISolver {
   }
 
   /**
-   * Board evaluation using advanced heuristics and dynamic weights
-   */
-  evaluateBoard(board) {
-    const phase = this.getGamePhase(board);
-
-    // Dynamic weighting based on game phase.
-    const w = { ...this.weights };
-    if (phase === 'early') {
-      w.emptySpaces += 5;
-      w.snakePattern -= 2;
-      w.cornerGradient -= 2;
-    } else if (phase === 'mid') {
-      w.snakePattern += 2;
-      w.monotonicity += 2;
-    } else if (phase === 'late' || phase === 'end') {
-      w.snakePattern += 4;
-      w.cornerGradient += 4;
-      w.clusteringPenalty += 4;
-      w.chainReaction += 4;
-    }
-
-    let score = 0;
-    // 1. Snake pattern evaluation (heavily weighted)
-    score += this.evaluateSnakePattern(board) * w.snakePattern;
-    // 2. Corner strategy with gradient
-    score += this.evaluateCornerGradient(board) * w.cornerGradient;
-    // 3. Monotonicity in multiple directions
-    score += this.evaluateMonotonicity(board) * w.monotonicity;
-    // 4. Smoothness
-    score += this.evaluateSmoothness(board) * w.smoothness;
-    // 5. Empty cells with exponential reward
-    score += this.evaluateEmptySpaces(board) * w.emptySpaces;
-    // 6. Merge potential
-    score += this.evaluateMergePotential(board) * w.mergePotential;
-    // 7. Tile clustering penalty
-    score -= this.evaluateClusteringPenalty(board) * w.clusteringPenalty;
-    // 8. Chain reaction pattern recognition
-    score += this.evaluateChainReaction(board) * w.chainReaction;
-
-    return score;
-  }
-
-  /**
-   * Determine game phase for dynamic weighting
-   */
-  getGamePhase(board) {
-    const maxTile = Math.max(...board.flat());
-    const empty = this.getEmptyCells(board).length;
-    if (maxTile < 128) return 'early';
-    if (maxTile < 1024) return empty > 4 ? 'mid' : 'late';
-    return empty > 2 ? 'late' : 'end';
-  }
-
-  /**
-   * Penalize clustering of high-value tiles (prefer grouping)
-   */
-  evaluateClusteringPenalty(board) {
-    let size = board.length;
-    let penalty = 0;
-    // Find all high tiles
-    let highTiles = [];
-    for (let i = 0; i < size; i++) {
-      for (let j = 0; j < size; j++) {
-        if (board[i][j] >= 128) highTiles.push([i, j]);
-      }
-    }
-    // Penalize distance between high tiles
-    for (let a = 0; a < highTiles.length; a++) {
-      for (let b = a + 1; b < highTiles.length; b++) {
-        let i1 = highTiles[a][0], j1 = highTiles[a][1];
-        let i2 = highTiles[b][0], j2 = highTiles[b][1];
-        penalty += Math.abs(i1 - i2) + Math.abs(j1 - j2);
-      }
-    }
-    return penalty;
-  }
-
-  /**
-   * Pattern recognition for chain reactions (lookahead for merges)
-   */
-  evaluateChainReaction(board) {
-    // Simulate next move merges
-    let moves = this.getPossibleMoves(board);
-    let bestMerge = 0;
-    for (let move of moves) {
-      bestMerge = Math.max(bestMerge, this.evaluateMergePotential(move.board));
-    }
-    return bestMerge;
-  }
-
-  /**
-   * Evaluate snake pattern (optimal tile arrangement)
+   * Reward tiles arranged along a snake path toward a corner.
    */
   evaluateSnakePattern(board) {
     const size = board.length;
-
-    // Use snake weights matching the current board size (3x3 through 6x6).
     const snakeWeights = this.generateSnakeWeights(size);
     const patterns = [
       snakeWeights.topLeft,
@@ -510,9 +323,8 @@ class AISolver {
       snakeWeights.bottomLeft,
       snakeWeights.bottomRight
     ];
-    
+
     let bestPatternScore = -Infinity;
-    
     for (const pattern of patterns) {
       let patternScore = 0;
       for (let i = 0; i < size; i++) {
@@ -522,21 +334,20 @@ class AISolver {
           }
         }
       }
-      bestPatternScore = Math.max(bestPatternScore, patternScore);
+      if (patternScore > bestPatternScore) bestPatternScore = patternScore;
     }
-    
+
     return bestPatternScore;
   }
 
   /**
-   * Evaluate corner gradient (highest tiles should be in corners/edges)
+   * Reward keeping the maximum tile in a corner (or at least on an edge).
    */
   evaluateCornerGradient(board) {
     const size = board.length;
     let maxTile = 0;
     let maxPos = { row: -1, col: -1 };
-    
-    // Find maximum tile
+
     for (let i = 0; i < size; i++) {
       for (let j = 0; j < size; j++) {
         if (board[i][j] > maxTile) {
@@ -545,264 +356,216 @@ class AISolver {
         }
       }
     }
-    
+
     if (maxTile === 0) return 0;
-    
-    // Calculate gradient from max tile position
-    let gradientScore = 0;
-    
-    // Prefer corners
-    const isCorner = (maxPos.row === 0 || maxPos.row === size - 1) && 
-                     (maxPos.col === 0 || maxPos.col === size - 1);
-    const isEdge = maxPos.row === 0 || maxPos.row === size - 1 || 
-                   maxPos.col === 0 || maxPos.col === size - 1;
-    
-    if (isCorner) {
-      gradientScore += maxTile * 10;
-    } else if (isEdge) {
-      gradientScore += maxTile * 5;
-    }
-    
-    return gradientScore;
+
+    const onTopOrBottom = maxPos.row === 0 || maxPos.row === size - 1;
+    const onLeftOrRight = maxPos.col === 0 || maxPos.col === size - 1;
+
+    if (onTopOrBottom && onLeftOrRight) return maxTile * 10; // corner
+    if (onTopOrBottom || onLeftOrRight) return maxTile * 5;  // edge
+    return 0;
   }
 
   /**
-   * Evaluate monotonicity
+   * Reward monotonic (ordered) rows and columns.
    */
   evaluateMonotonicity(board) {
     const size = board.length;
-    let totalMono = 0;
-    
-    // Horizontal monotonicity
+    let total = 0;
+
     for (let i = 0; i < size; i++) {
-      totalMono += this.calculateDirectionalMonotonicity(board[i]);
+      total += this.calculateDirectionalMonotonicity(board[i]);
     }
-    
-    // Vertical monotonicity
     for (let j = 0; j < size; j++) {
       const column = board.map(row => row[j]);
-      totalMono += this.calculateDirectionalMonotonicity(column);
+      total += this.calculateDirectionalMonotonicity(column);
     }
-    
-    return totalMono;
+
+    return total;
   }
 
-  /**
-   * Calculate monotonicity in one direction
-   */
   calculateDirectionalMonotonicity(array) {
     let increasing = 0;
     let decreasing = 0;
-    
+
     for (let i = 0; i < array.length - 1; i++) {
       const current = array[i] > 0 ? Math.log2(array[i]) : 0;
       const next = array[i + 1] > 0 ? Math.log2(array[i + 1]) : 0;
-      
-      if (current > next) {
-        decreasing += current - next;
-      } else if (current < next) {
-        increasing += next - current;
-      }
+
+      if (current > next) decreasing += current - next;
+      else if (current < next) increasing += next - current;
     }
-    
+
     return Math.max(increasing, decreasing);
   }
 
   /**
-   * Evaluate smoothness
+   * Reward neighbouring tiles with similar values (easier merges). Returned as
+   * a non-negative "smoothness" value (higher is smoother).
    */
   evaluateSmoothness(board) {
     const size = board.length;
-    let smoothness = 0;
-    
+    let penalty = 0;
+
     for (let i = 0; i < size; i++) {
       for (let j = 0; j < size; j++) {
-        if (board[i][j] > 0) {
-          const currentLog = Math.log2(board[i][j]);
-          
-          // Check right neighbor
-          if (j < size - 1 && board[i][j + 1] > 0) {
-            const rightLog = Math.log2(board[i][j + 1]);
-            smoothness -= Math.abs(currentLog - rightLog);
-          }
-          
-          // Check bottom neighbor
-          if (i < size - 1 && board[i + 1][j] > 0) {
-            const bottomLog = Math.log2(board[i + 1][j]);
-            smoothness -= Math.abs(currentLog - bottomLog);
-          }
+        if (board[i][j] <= 0) continue;
+        const currentLog = Math.log2(board[i][j]);
+
+        if (j < size - 1 && board[i][j + 1] > 0) {
+          penalty += Math.abs(currentLog - Math.log2(board[i][j + 1]));
+        }
+        if (i < size - 1 && board[i + 1][j] > 0) {
+          penalty += Math.abs(currentLog - Math.log2(board[i + 1][j]));
         }
       }
     }
-    
-    return smoothness;
+
+    // Higher = smoother. Negative penalty offset so smoother boards score more.
+    return -penalty;
   }
 
   /**
-   * Evaluate empty spaces
+   * Reward open space (quadratic so the difference grows as the board fills).
    */
   evaluateEmptySpaces(board) {
-    const emptyCells = this.getEmptyCells(board);
-    return Math.pow(emptyCells.length, 2);
+    const empty = this.getEmptyCells(board).length;
+    return empty * empty;
   }
 
   /**
-   * Evaluate merge potential
+   * Reward adjacent equal tiles (immediate merge potential).
    */
   evaluateMergePotential(board) {
     const size = board.length;
     let mergePotential = 0;
-    
+
     for (let i = 0; i < size; i++) {
       for (let j = 0; j < size; j++) {
-        if (board[i][j] > 0) {
-          const value = board[i][j];
-          
-          // Check for adjacent identical tiles
-          const neighbors = [[i-1, j], [i+1, j], [i, j-1], [i, j+1]];
-          
-          for (const [ni, nj] of neighbors) {
-            if (ni >= 0 && ni < size && nj >= 0 && nj < size && board[ni][nj] === value) {
-              mergePotential += value;
-            }
-          }
-        }
+        const value = board[i][j];
+        if (value <= 0) continue;
+        if (j < size - 1 && board[i][j + 1] === value) mergePotential += value;
+        if (i < size - 1 && board[i + 1][j] === value) mergePotential += value;
       }
     }
-    
+
     return mergePotential;
   }
 
   /**
-   * Get corner-based move as fallback
+   * Penalize spreading high-value tiles apart (prefer keeping them grouped).
+   */
+  evaluateClusteringPenalty(board) {
+    const size = board.length;
+    const highTiles = [];
+
+    for (let i = 0; i < size; i++) {
+      for (let j = 0; j < size; j++) {
+        if (board[i][j] >= 128) highTiles.push([i, j]);
+      }
+    }
+
+    let penalty = 0;
+    for (let a = 0; a < highTiles.length; a++) {
+      for (let b = a + 1; b < highTiles.length; b++) {
+        penalty += Math.abs(highTiles[a][0] - highTiles[b][0]) +
+                   Math.abs(highTiles[a][1] - highTiles[b][1]);
+      }
+    }
+
+    return penalty;
+  }
+
+  /**
+   * Fallback move favouring a stable corner strategy.
    */
   getCornerBasedMove(possibleMoves) {
-    // Simple corner strategy: prefer keeping high tiles in corners
-    const priorities = ['left', 'up', 'right', 'down'];
-    
+    const priorities = ['down', 'left', 'right', 'up'];
     for (const direction of priorities) {
       const found = possibleMoves.find(move => move.direction === direction);
       if (found) return found.direction;
     }
-    
     return possibleMoves[0].direction;
   }
 
   /**
-   * Get all possible moves from current board state
+   * Every move that actually changes the board, with the resulting board.
    */
   getPossibleMoves(board) {
     const moves = [];
     const directions = ['up', 'down', 'left', 'right'];
-    
+
     for (const direction of directions) {
       const newBoard = this.simulateMove(board, direction);
       if (!this.boardsEqual(board, newBoard)) {
-        moves.push({
-          direction,
-          board: newBoard
-        });
+        moves.push({ direction, board: newBoard });
       }
     }
-    
+
     return moves;
   }
 
   /**
-   * Simulate a move without affecting the actual game
+   * Simulate a move without touching the live game, returning a new board.
    */
   simulateMove(board, direction) {
     const newBoard = this.copyBoard(board);
-    
     switch (direction) {
-      case 'up':
-        return this.simulateMoveUp(newBoard);
-      case 'down':
-        return this.simulateMoveDown(newBoard);
-      case 'left':
-        return this.simulateMoveLeft(newBoard);
-      case 'right':
-        return this.simulateMoveRight(newBoard);
-      default:
-        return newBoard;
+      case 'up': return this.simulateMoveUp(newBoard);
+      case 'down': return this.simulateMoveDown(newBoard);
+      case 'left': return this.simulateMoveLeft(newBoard);
+      case 'right': return this.simulateMoveRight(newBoard);
+      default: return newBoard;
     }
   }
 
-  /**
-   * Simulate move up
-   */
   simulateMoveUp(board) {
     const size = board.length;
-    
     for (let col = 0; col < size; col++) {
       const column = board.map(row => row[col]);
       const newColumn = this.moveAndMergeArray(column);
-      
-      for (let row = 0; row < size; row++) {
-        board[row][col] = newColumn[row];
-      }
+      for (let row = 0; row < size; row++) board[row][col] = newColumn[row];
     }
-    
     return board;
   }
 
-  /**
-   * Simulate move down
-   */
   simulateMoveDown(board) {
     const size = board.length;
-    
     for (let col = 0; col < size; col++) {
-      const column = board.map(row => row[col]);
-      const reversedColumn = [...column].reverse();
-      const newReversedColumn = this.moveAndMergeArray(reversedColumn);
-      const newColumn = [...newReversedColumn].reverse();
-      
-      for (let row = 0; row < size; row++) {
-        board[row][col] = newColumn[row];
-      }
+      const column = board.map(row => row[col]).reverse();
+      const newColumn = this.moveAndMergeArray(column).reverse();
+      for (let row = 0; row < size; row++) board[row][col] = newColumn[row];
     }
-    
     return board;
   }
 
-  /**
-   * Simulate move left
-   */
   simulateMoveLeft(board) {
     const size = board.length;
-    
     for (let row = 0; row < size; row++) {
       board[row] = this.moveAndMergeArray([...board[row]]);
     }
-    
     return board;
   }
 
-  /**
-   * Simulate move right
-   */
   simulateMoveRight(board) {
     const size = board.length;
-    
     for (let row = 0; row < size; row++) {
-      const reversedRow = [...board[row]].reverse();
-      const newReversedRow = this.moveAndMergeArray(reversedRow);
-      board[row] = [...newReversedRow].reverse();
+      const reversed = [...board[row]].reverse();
+      board[row] = this.moveAndMergeArray(reversed).reverse();
     }
-    
     return board;
   }
 
   /**
-   * Move and merge array (same algorithm as GameEngine)
+   * Slide and merge a single line toward index 0 (same rules as the engine).
    */
   moveAndMergeArray(array) {
     const size = array.length;
     const filtered = array.filter(val => val !== 0);
     const result = [];
     let i = 0;
-    
+
     while (i < filtered.length) {
       if (i < filtered.length - 1 && filtered[i] === filtered[i + 1]) {
         result.push(filtered[i] * 2);
@@ -812,115 +575,76 @@ class AISolver {
         i++;
       }
     }
-    
-    while (result.length < size) {
-      result.push(0);
-    }
-    
+
+    while (result.length < size) result.push(0);
     return result;
   }
 
-  /**
-   * Copy board
-   */
   copyBoard(board) {
     return board.map(row => [...row]);
   }
 
-  /**
-   * Get empty cells from board
-   */
   getEmptyCells(board) {
     const emptyCells = [];
     const size = board.length;
-    
     for (let i = 0; i < size; i++) {
       for (let j = 0; j < size; j++) {
-        if (board[i][j] === 0) {
-          emptyCells.push({ row: i, col: j });
-        }
+        if (board[i][j] === 0) emptyCells.push({ row: i, col: j });
       }
     }
-    
     return emptyCells;
   }
 
-  /**
-   * Add random tile to board (utility function)
-   */
-  addRandomTileToBoard(board) {
-    const emptyCells = this.getEmptyCells(board);
-    if (emptyCells.length === 0) return false;
-    
-    const randomCell = emptyCells[Math.floor(Math.random() * emptyCells.length)];
-    const value = Math.random() < 0.9 ? 2 : 4;
-    board[randomCell.row][randomCell.col] = value;
-    return true;
-  }
-
-  /**
-   * Check if two boards are equal
-   */
   boardsEqual(board1, board2) {
     const size = board1.length;
-    
     for (let i = 0; i < size; i++) {
       for (let j = 0; j < size; j++) {
-        if (board1[i][j] !== board2[i][j]) {
-          return false;
-        }
+        if (board1[i][j] !== board2[i][j]) return false;
       }
     }
-    
     return true;
   }
 
-  /**
-   * Generate unique key for board state (for caching)
-   */
   getBoardKey(board) {
     return board.map(row => row.join(',')).join(';');
   }
 
-  /**
-   * Clear evaluation cache
-   */
   clearCache() {
     this.evaluationCache.clear();
-    this.moveCache.clear();
   }
 
   /**
-   * Yield control to prevent blocking
+   * Yield to the event loop so the UI can update between search depths.
    */
-  async yieldControl() {
+  yieldControl() {
     return new Promise(resolve => setTimeout(resolve, 0));
   }
 
   /**
-   * Get hint for next best move
+   * Best move as a hint (same computation as auto-play).
    */
   async getHint() {
-    const bestMove = await this.getBestMove();
-    return bestMove;
+    return this.getBestMove();
   }
 
   /**
-   * Get AI statistics
+   * Solver statistics.
    */
   getStats() {
     return {
       difficulty: this.difficulty,
       algorithm: this.algorithm,
+      depth: this.settings.depth,
+      timeBudget: this.settings.timeBudget,
+      lastDepth: this.stats.lastDepth,
       cacheSize: this.evaluationCache.size,
-      moveCacheSize: this.moveCache.size,
       isThinking: this.isThinking,
       evaluations: this.stats.evaluations,
       cacheHits: this.stats.cacheHits,
-      averageThinkingTime: this.stats.movesCalculated > 0 ? 
-        this.stats.totalThinkingTime / this.stats.movesCalculated : 0,
-      cacheHitRate: this.stats.evaluations > 0 ? 
-        (this.stats.cacheHits / this.stats.evaluations * 100).toFixed(1) + '%' : '0%'
+      averageThinkingTime: this.stats.movesCalculated > 0
+        ? this.stats.totalThinkingTime / this.stats.movesCalculated : 0,
+      cacheHitRate: this.stats.evaluations > 0
+        ? (this.stats.cacheHits / this.stats.evaluations * 100).toFixed(1) + '%' : '0%'
     };
   }
 }

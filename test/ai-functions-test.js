@@ -95,7 +95,7 @@ function assertClose(actual, expected, tolerance, message) {
   assert(aiSolver instanceof window.AISolver, 'AI Solver instance created');
   assert(aiSolver.gameEngine === gameEngine, 'Game engine reference set');
   assert(aiSolver.difficulty === 'medium', 'Default difficulty is medium');
-  assert(aiSolver.algorithms.expectimax.medium.depth === 5, 'Default search depth is 5 for medium');
+  assert(aiSolver.algorithms.expectimax.medium.depth === 6, 'Default search depth is 6 for medium');
   assert(!aiSolver.isThinking, 'Initially not thinking');
   // Duck-typed check: jsdom runs the solver in a separate realm, so a direct
   // `instanceof Map` against the test realm's Map would be unreliable.
@@ -108,7 +108,7 @@ function assertClose(actual, expected, tolerance, message) {
   log('\n=== Test 2: Difficulty Settings ===');
 
   const difficulties = ['easy', 'medium', 'hard', 'expert'];
-  const expectedDepths = [4, 5, 6, 7];
+  const expectedDepths = [3, 6, 8, 10];
 
   for (let i = 0; i < difficulties.length; i++) {
     aiSolver.setDifficulty(difficulties[i]);
@@ -165,8 +165,23 @@ function assertClose(actual, expected, tolerance, message) {
     [0, 0, 0, 0]
   ];
 
-  const testBoard1Score = aiSolver.evaluateBoard(testBoard1);
-  assert(testBoard1Score > emptyScore, 'Board with tiles has higher score than empty');
+  // A monotonic (ordered) arrangement should score higher than the same tiles
+  // scattered. (An empty board legitimately scores well in 2048 thanks to all
+  // the open space, so we compare two equally-full boards instead.)
+  const orderedBoard = [
+    [16, 8, 4, 2],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0]
+  ];
+  const scatteredBoard = [
+    [2, 16, 4, 8],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0],
+    [0, 0, 0, 0]
+  ];
+  assert(aiSolver.evaluateBoard(orderedBoard) > aiSolver.evaluateBoard(scatteredBoard),
+         'Monotonic arrangement scores higher than a scattered one');
 
   // Test corner preference
   const cornerBoard = [
