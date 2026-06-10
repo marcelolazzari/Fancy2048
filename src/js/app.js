@@ -257,8 +257,11 @@ class Fancy2048App {
     // Stop auto-play if active
     this.stopAutoPlay();
 
-    // Show game over UI
-    this.uiController.showGameOver(result);
+    // Show the game-over card only for human play. In AI auto mode we don't
+    // interrupt with an overlay; we just roll into the next training game.
+    if (!wasAutoPlaying) {
+      this.uiController.showGameOver(result);
+    }
 
     // Auto-save game state
     this.saveGameState();
@@ -274,14 +277,13 @@ class Fancy2048App {
     }
 
     // Continuous self-play: if the AI was auto-playing, start a fresh game and
-    // keep going so it trains across many games. The brief delay lets the
-    // game-over card be seen first.
+    // keep going so it trains across many games (no game-over card shown).
     if (wasAutoPlaying) {
       this.selfPlayTimer = setTimeout(() => {
         if (!this.isInitialized) return;
         this.newGame();
         this.startAutoPlay();
-      }, 1400);
+      }, 600);
     }
 
     Utils.log('app', 'Game over', result);
@@ -291,12 +293,14 @@ class Fancy2048App {
    * Handle game win
    */
   handleGameWin(result) {
-    // Show victory UI
-    this.uiController.showVictory(result);
-    
+    // Don't interrupt AI auto mode with a victory card; it keeps playing.
+    if (!this.autoPlayActive) {
+      this.uiController.showVictory(result);
+    }
+
     // Auto-save game state
     this.saveGameState();
-    
+
     Utils.log('app', 'Game won', result);
   }
 
@@ -375,6 +379,8 @@ class Fancy2048App {
     }
 
     this.clearSelfPlayTimer();
+    // No overlays should linger while the AI is auto-playing
+    if (this.uiController) this.uiController.hideOverlays();
     this.autoPlayActive = true;
     this.syncAutoPlayUI();
     Utils.log('app', 'Auto-play started');
@@ -517,6 +523,7 @@ class Fancy2048App {
     this.stopAutoPlay();
     this.gameEngine.newGame();
     this.prepareLearningForGame();
+    this.uiController.hideOverlays();
     this.uiController.updateDisplay();
     this.saveGameState();
 
