@@ -1,28 +1,32 @@
 {
   "name": "fancy2048",
   "version": "1.0.0",
-  "description": "Modern AI-powered 2048 puzzle game",
+  "description": "Modern AI-powered 2048 puzzle game built with vanilla JavaScript",
   "main": "pages/index.html",
   "scripts": {
     "test": "node test/autoplay-test.js",
-    "start": "http-server pages/ -p 8080 -o",
-    "build": "echo 'Build complete - this is a client-side app'",
-    "lint": "echo 'Linting...'",
-    "dev": "http-server pages/ -p 8080 -o --cors"
+    "start": "http-server . -p 8080 -o /pages/index.html",
+    "dev": "http-server . -p 8080 -o /pages/index.html --cors",
+    "build": "echo 'No build step required - this is a static client-side app'"
   },
   "keywords": [
     "2048",
     "puzzle",
     "game",
     "ai",
-    "javascript"
+    "expectimax",
+    "javascript",
+    "pwa"
   ],
   "author": "Fancy2048 Team",
   "license": "MIT",
-  "dependencies": {
-    "jsdom": "^20.0.3"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/marcelolazzari/Fancy2048.git"
   },
+  "homepage": "https://marcelolazzari.github.io/Fancy2048/pages/index.html",
   "devDependencies": {
-    "http-server": "^14.1.1"
+    "http-server": "^14.1.1",
+    "jsdom": "^20.0.3"
   }
 }

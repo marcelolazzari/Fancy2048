@@ -52,10 +52,11 @@ const { JSDOM } = require('jsdom');
   const gameEngine = new window.GameEngine();
   const aiSolver = new window.AISolver(gameEngine);
 
-  // Debug issue 1: maxDepth
+  // Debug issue 1: search depth
   console.log('AI difficulty:', aiSolver.difficulty);
-  console.log('AI maxDepth (actual):', aiSolver.maxDepth);
-  console.log('Expected maxDepth for medium:', aiSolver.difficultySettings.medium.depth);
+  console.log('AI search depth for current difficulty:',
+    aiSolver.algorithms.expectimax[aiSolver.difficulty].depth);
+  console.log('Search depth for medium:', aiSolver.algorithms.expectimax.medium.depth);
 
   // Debug issue 2: evaluationCache type
   console.log('evaluationCache type:', typeof aiSolver.evaluationCache);
@@ -77,7 +78,9 @@ const { JSDOM } = require('jsdom');
   console.log('Down move result:');
   console.log(downResult);
 
-  console.log('Expected: bottom row should have [2, 2, 0, 0], actual bottom row:', downResult[3]);
+  // Column [2, 4] settles to the bottom as [.., 2, 4] (no merge), so the
+  // bottom row should be [4, 4, 0, 0].
+  console.log('Expected bottom row [4, 4, 0, 0], actual bottom row:', downResult[3]);
 })().catch(error => {
   console.error('Debug error:', error);
 });

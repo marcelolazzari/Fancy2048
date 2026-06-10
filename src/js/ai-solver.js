@@ -55,9 +55,9 @@ class AISolver {
       movesCalculated: 0
     };
     
-    // Snake pattern weights for monotonicity
-    this.snakeWeights = this.generateSnakeWeights();
-    
+    // Snake pattern weights for monotonicity (generated lazily per board size)
+    this.snakeWeightCache = {};
+
     // Initialize evaluation weights
     this.initializeWeights();
   }
@@ -79,7 +79,12 @@ class AISolver {
     if (this.isThinking) {
       return null;
     }
-    
+
+    // Nothing to do once the game is over.
+    if (this.gameEngine && this.gameEngine.isGameOver) {
+      return null;
+    }
+
     this.isThinking = true;
     const startTime = Date.now();
     
@@ -346,33 +351,6 @@ class AISolver {
   }
 
   /**
-   * Board evaluation using advanced heuristics
-   */
-  evaluateBoard(board) {
-    let score = 0;
-    
-    // 1. Snake pattern evaluation (heavily weighted)
-    score += this.evaluateSnakePattern(board) * this.weights.snakePattern;
-    
-    // 2. Corner strategy with gradient
-    score += this.evaluateCornerGradient(board) * this.weights.cornerGradient;
-    
-    // 3. Monotonicity in multiple directions
-    score += this.evaluateMonotonicity(board) * this.weights.monotonicity;
-    
-    // 4. Smoothness
-    score += this.evaluateSmoothness(board) * this.weights.smoothness;
-    
-    // 5. Empty cells with exponential reward
-    score += this.evaluateEmptySpaces(board) * this.weights.emptySpaces;
-    
-    // 6. Merge potential
-    score += this.evaluateMergePotential(board) * this.weights.mergePotential;
-    
-    return score;
-  }
-
-  /**
    * Initialize evaluation weights (dynamic based on game phase)
    */
   initializeWeights() {
@@ -389,55 +367,93 @@ class AISolver {
   }
 
   /**
-   * Generate snake pattern weights for optimal tile arrangement
+   * Generate snake (boustrophedon) pattern weights for any board size.
+   * The maximum weight sits in a corner and decreases along a snake path,
+   * which encourages the AI to build a monotonic chain toward that corner.
+   * Results are cached per board size. Returns all four corner orientations.
    */
-  generateSnakeWeights() {
-    // ...existing code...
+  generateSnakeWeights(size = 4) {
+    this.snakeWeightCache = this.snakeWeightCache || {};
+    if (this.snakeWeightCache[size]) {
+      return this.snakeWeightCache[size];
+    }
+
+    // Base pattern with the maximum weight in the top-left corner.
+    const topLeft = [];
+    for (let i = 0; i < size; i++) {
+      const row = [];
+      const rowFromBottom = size - 1 - i;
+      const base = size * rowFromBottom;
+      for (let j = 0; j < size; j++) {
+        // Alternate direction on each row to form a continuous snake path.
+        row.push(rowFromBottom % 2 === 0 ? base + j : base + (size - 1 - j));
+      }
+      topLeft.push(row);
+    }
+
+    const mirrorCols = grid => grid.map(row => [...row].reverse());
+    const mirrorRows = grid => [...grid].reverse();
+
+    const weights = {
+      topLeft,
+      topRight: mirrorCols(topLeft),
+      bottomLeft: mirrorRows(topLeft),
+      bottomRight: mirrorRows(mirrorCols(topLeft))
+    };
+
+    this.snakeWeightCache[size] = weights;
+    return weights;
   }
 
   /**
    * Board evaluation using advanced heuristics and dynamic weights
    */
   evaluateBoard(board) {
-    let score = 0;
-    let phase = this.getGamePhase(board);
-    // Dynamic weighting based on phase
-    let w = { ...this.weights };
+    const phase = this.getGamePhase(board);
+
+    // Dynamic weighting based on game phase.
+    const w = { ...this.weights };
     if (phase === 'early') {
       w.emptySpaces += 5;
       w.snakePattern -= 2;
       w.cornerGradient -= 2;
     } else if (phase === 'mid') {
       w.snakePattern += 2;
-        w.monotonicity += 2;
-      } else if (phase === 'late') {
-        w.snakePattern += 4;
-        w.cornerGradient += 4;
-        w.clusteringPenalty += 4;
-        w.chainReaction += 4;
-      }
-      // 1. Snake pattern evaluation (heavily weighted)
-      score += this.evaluateSnakePattern(board) * w.snakePattern;
-      // 2. Corner strategy with gradient
-      score += this.evaluateCornerGradient(board) * w.cornerGradient;
-      // 3. Monotonicity in multiple directions
-      score += this.evaluateMonotonicity(board) * w.monotonicity;
-      // 4. Smoothness
-      score += this.evaluateSmoothness(board) * w.smoothness;
-      // 5. Empty cells with exponential reward
-      score += this.evaluateEmptySpaces(board) * w.emptySpaces;
-      // 6. Merge potential
-      score += this.evaluateMergePotential(board) * w.mergePotential;
-      // 7. Tile clustering penalty
-      score -= this.evaluateClusteringPenalty(board) * w.clusteringPenalty;
-      // 8. Chain reaction pattern recognition
-      score += this.evaluateChainReaction(board) * w.chainReaction;
-      return score;
+      w.monotonicity += 2;
+    } else if (phase === 'late' || phase === 'end') {
+      w.snakePattern += 4;
+      w.cornerGradient += 4;
+      w.clusteringPenalty += 4;
+      w.chainReaction += 4;
     }
+
+    let score = 0;
+    // 1. Snake pattern evaluation (heavily weighted)
+    score += this.evaluateSnakePattern(board) * w.snakePattern;
+    // 2. Corner strategy with gradient
+    score += this.evaluateCornerGradient(board) * w.cornerGradient;
+    // 3. Monotonicity in multiple directions
+    score += this.evaluateMonotonicity(board) * w.monotonicity;
+    // 4. Smoothness
+    score += this.evaluateSmoothness(board) * w.smoothness;
+    // 5. Empty cells with exponential reward
+    score += this.evaluateEmptySpaces(board) * w.emptySpaces;
+    // 6. Merge potential
+    score += this.evaluateMergePotential(board) * w.mergePotential;
+    // 7. Tile clustering penalty
+    score -= this.evaluateClusteringPenalty(board) * w.clusteringPenalty;
+    // 8. Chain reaction pattern recognition
+    score += this.evaluateChainReaction(board) * w.chainReaction;
+
+    return score;
+  }
+
   /**
    * Determine game phase for dynamic weighting
-  let maxTile = Math.max(...board.flat());
-  let empty = this.getEmptyCells(board).length;
+   */
+  getGamePhase(board) {
+    const maxTile = Math.max(...board.flat());
+    const empty = this.getEmptyCells(board).length;
     if (maxTile < 128) return 'early';
     if (maxTile < 1024) return empty > 4 ? 'mid' : 'late';
     return empty > 2 ? 'late' : 'end';
@@ -485,13 +501,14 @@ class AISolver {
    */
   evaluateSnakePattern(board) {
     const size = board.length;
-    
-    // Check multiple snake patterns
+
+    // Use snake weights matching the current board size (3x3 through 6x6).
+    const snakeWeights = this.generateSnakeWeights(size);
     const patterns = [
-      this.snakeWeights.topLeft,
-      this.snakeWeights.topRight,
-      this.snakeWeights.bottomLeft,
-      this.snakeWeights.bottomRight
+      snakeWeights.topLeft,
+      snakeWeights.topRight,
+      snakeWeights.bottomLeft,
+      snakeWeights.bottomRight
     ];
     
     let bestPatternScore = -Infinity;

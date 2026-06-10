@@ -87,7 +87,7 @@ function log(message) {
     const endTime = Date.now();
     const thinkingTime = endTime - startTime;
     
-    log(`${difficulty.toUpperCase()}: Move=${move}, Time=${thinkingTime}ms, Depth=${aiSolver.difficultySettings[difficulty].depth}`);
+    log(`${difficulty.toUpperCase()}: Move=${move}, Time=${thinkingTime}ms, Depth=${aiSolver.algorithms.expectimax[difficulty].depth}`);
     
     totalMoves++;
     totalThinkingTime += thinkingTime;
@@ -116,8 +116,8 @@ function log(message) {
     const endTime = Date.now();
     
     if (move) {
-      const moveResult = gameEngine.move(move);
-      if (moveResult.moved) {
+      const moved = gameEngine.move(move);
+      if (moved) {
         gameScore = gameEngine.score;
         moveCount++;
         
@@ -224,7 +224,7 @@ function log(message) {
       }
     }
     
-    const score = aiSolver.evaluateBoardAdvanced(randomBoard);
+    const score = aiSolver.evaluateBoard(randomBoard);
     if (i % 200 === 0) {
       log(`Evaluation ${i}: Score=${score.toFixed(2)}`);
     }
@@ -247,12 +247,12 @@ function log(message) {
 
   // First evaluation (should cache)
   const firstEvalStart = Date.now();
-  const firstScore = aiSolver.evaluateBoardAdvanced(testBoardForCache);
+  const firstScore = aiSolver.evaluateBoard(testBoardForCache);
   const firstEvalTime = Date.now() - firstEvalStart;
 
   // Second evaluation (should use cache)
   const secondEvalStart = Date.now();
-  const secondScore = aiSolver.evaluateBoardAdvanced(testBoardForCache);
+  const secondScore = aiSolver.evaluateBoard(testBoardForCache);
   const secondEvalTime = Date.now() - secondEvalStart;
 
   log(`First evaluation: ${firstEvalTime}ms, Score: ${firstScore.toFixed(2)}`);
@@ -272,7 +272,7 @@ function log(message) {
         randomBoard[row][col] = Math.random() < 0.5 ? 0 : Math.pow(2, Math.floor(Math.random() * 5) + 1);
       }
     }
-    aiSolver.evaluateBoardAdvanced(randomBoard);
+    aiSolver.evaluateBoard(randomBoard);
   }
 
   log(`Cache size after stress test: ${aiSolver.evaluationCache.size}`);
@@ -287,7 +287,7 @@ function log(message) {
   log(`Slowest move: ${worstMoveTime}ms`);
 
   const aiStats = aiSolver.getStats();
-  log(`Final AI state: Difficulty=${aiStats.difficulty}, Depth=${aiStats.maxDepth}, CacheSize=${aiStats.cacheSize}`);
+  log(`Final AI state: Difficulty=${aiStats.difficulty}, Algorithm=${aiStats.algorithm}, CacheSize=${aiStats.cacheSize}`);
 
   log('\n🎯 AI Performance test completed successfully!');
 })().catch(error => {
