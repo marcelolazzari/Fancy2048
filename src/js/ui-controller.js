@@ -390,6 +390,8 @@ class UIController {
    * New game
    */
   newGame() {
+    // A fresh game should never keep the AI playing the previous one
+    if (window.fancy2048App) window.fancy2048App.stopAutoPlay();
     this.gameEngine.newGame();
     this.hideOverlays();
     // Start from a clean slate so the opening tiles animate in
@@ -438,6 +440,8 @@ class UIController {
   changeBoardSize(size) {
     if (size === this.gameEngine.size) return;
 
+    // Changing the board mid auto-play would leave it running on a new grid
+    if (window.fancy2048App) window.fancy2048App.stopAutoPlay();
     this.gameEngine.setBoardSize(size);
     // Board dimensions changed; avoid diffing against the old size
     this.previousBoard = null;
@@ -486,65 +490,47 @@ class UIController {
   /**
    * Toggle auto play
    */
-  async toggleAutoPlay() {
-    // Get reference to the app instance
+  toggleAutoPlay() {
+    // The app owns auto-play state; the UI just delegates and reports.
     const app = window.fancy2048App;
     if (!app) {
       this.showNotification('Auto-play system not available', 'error');
       return;
     }
-    // Use app.autoPlayActive as authoritative state
-    const isActive = !!app.autoPlayActive;
-
-    if (isActive) {
-      // Stop autoplay via app
-      app.stopAutoPlay();
-      // Reflect UI state
-      if (this.elements.aiAutoButton) this.elements.aiAutoButton.classList.remove('active');
-      this.showNotification('Auto-play disabled', 'info');
-    } else {
-      // Check if AI solver is available
-      if (!app.aiSolver) {
-        this.showNotification('AI solver not available', 'error');
-        return;
-      }
-      
-      // Check if game is not over
-      if (app.gameEngine && app.gameEngine.isGameOver) {
-        this.showNotification('Cannot start auto-play - game is over', 'error');
-        return;
-      }
-      
-      // Start autoplay
-      try {
-        const success = await app.startAutoPlay();
-        if (success) {
-          if (this.elements.aiAutoButton) this.elements.aiAutoButton.classList.add('active');
-          this.showNotification('Auto-play enabled', 'info');
-        } else {
-          // Ensure UI is not left active
-          if (this.elements.aiAutoButton) this.elements.aiAutoButton.classList.remove('active');
-          this.showNotification('Cannot start auto-play', 'error');
-        }
-      } catch (error) {
-        Utils.handleError(error, 'toggleAutoPlay');
-        this.showNotification('Auto-play failed to start', 'error');
-      }
+    if (!app.aiSolver) {
+      this.showNotification('AI solver not available', 'error');
+      return;
     }
-    
-    Utils.log('ui', `Auto-play ${isActive ? 'disabled' : 'enabled'}`);
+
+    if (app.autoPlayActive) {
+      app.stopAutoPlay();
+      this.showNotification('Auto-play stopped', 'info', 1200);
+      return;
+    }
+
+    if (app.gameEngine && app.gameEngine.isGameOver) {
+      this.showNotification('Cannot start auto-play - game is over', 'error');
+      return;
+    }
+
+    const started = app.startAutoPlay();
+    this.showNotification(
+      started ? `Auto-play running (${app.autoPlaySpeedLabel})` : 'Cannot start auto-play',
+      started ? 'success' : 'error',
+      1200
+    );
+    Utils.log('ui', `Auto-play ${app.autoPlayActive ? 'enabled' : 'disabled'}`);
   }
 
   /**
    * Cycle autoplay speed
    */
   cycleSpeed() {
-    if (!window.fancy2048App) {
-      return;
-    }
-    
-    const newSpeed = window.fancy2048App.cycleAutoPlaySpeed();
-    this.showNotification(`Speed set to ${newSpeed === 'MAX' ? 'MAX' : newSpeed + 'x'}`, 'info', 1000);
+    const app = window.fancy2048App;
+    if (!app) return;
+
+    const label = app.cycleAutoPlaySpeed();
+    this.showNotification(`Speed: ${label}`, 'info', 1000);
   }
 
   /**
@@ -687,7 +673,7 @@ class UIController {
   /**
    * Show notification
    */
-  showNotification(message, type = 'info') {
+  showNotification(message, type = 'info', duration = 3000) {
     const notification = document.createElement('div');
     notification.className = `notification notification-${type}`;
     notification.textContent = message;
@@ -718,8 +704,8 @@ class UIController {
     }
     
     document.body.appendChild(notification);
-    
-    // Auto remove after 3 seconds
+
+    // Auto remove after the requested duration
     setTimeout(() => {
       if (notification.parentNode) {
         notification.style.animation = 'slideOut 0.3s ease';
@@ -729,7 +715,7 @@ class UIController {
           }
         }, 300);
       }
-    }, 3000);
+    }, duration);
   }
 
   /**

@@ -11,10 +11,22 @@ class Fancy2048App {
     this.aiSolver = null;
     
     this.isInitialized = false;
+
+    // --- Auto-play state (single source of truth) ---
     this.autoPlayActive = false;
-    this.autoPlayInterval = null;
-    this.autoPlaySpeed = 1; // Speed multiplier (1x, 2x, 4x, 8x, MAX)
-    
+    this.autoPlayTimer = null;
+    this.isAutoMoving = false; // true while the AI is computing a move
+    // Ordered speed steps; `delay` is the pause (ms) between moves. MAX = run
+    // as fast as the AI can compute.
+    this.autoPlaySpeeds = [
+      { label: '1x', delay: 350 },
+      { label: '2x', delay: 180 },
+      { label: '4x', delay: 90 },
+      { label: '8x', delay: 35 },
+      { label: 'MAX', delay: 0 }
+    ];
+    this.autoPlaySpeedIndex = 0;
+
     // Initialize when DOM is ready
     this.waitForReadyState();
   }
@@ -187,9 +199,14 @@ class Fancy2048App {
       this.uiController.setTheme(settings.theme);
     }
     
-    // Apply AI difficulty
-    if (this.aiSolver && settings.aiDifficulty) {
-      this.aiSolver.setDifficulty(settings.aiDifficulty);
+    // Apply AI difficulty and keep the difficulty selector in sync with it
+    if (this.aiSolver) {
+      const difficulty = settings.aiDifficulty || this.aiSolver.difficulty;
+      this.aiSolver.setDifficulty(difficulty);
+      const select = this.uiController?.elements?.aiDifficultySelect;
+      if (select) {
+        select.value = difficulty;
+      }
     }
     
     // Apply touch settings
@@ -267,84 +284,51 @@ class Fancy2048App {
   }
 
   /**
-   * Toggle auto-play
+   * Current speed label (e.g. '2x', 'MAX')
+   */
+  get autoPlaySpeedLabel() {
+    return this.autoPlaySpeeds[this.autoPlaySpeedIndex].label;
+  }
+
+  /**
+   * Delay (ms) between auto-play moves for the current speed
+   */
+  get autoPlayMoveDelay() {
+    return this.autoPlaySpeeds[this.autoPlaySpeedIndex].delay;
+  }
+
+  /**
+   * Toggle auto-play on/off
    */
   toggleAutoPlay() {
     if (this.autoPlayActive) {
       this.stopAutoPlay();
-    } else {
-      this.startAutoPlay();
+      return false;
     }
+    return this.startAutoPlay();
   }
 
   /**
-   * Start auto-play
+   * Start auto-play. Returns true if it actually started.
    */
-  async startAutoPlay() {
+  startAutoPlay() {
+    if (this.autoPlayActive) return true;
+
     if (!this.aiSolver) {
       Utils.log('app', 'Cannot start autoplay: AI solver not available');
       return false;
     }
-    
-    if (this.autoPlayActive) {
-      Utils.log('app', 'Cannot start autoplay: already active');
-      return false;
-    }
-    
     if (this.gameEngine.isGameOver) {
       Utils.log('app', 'Cannot start autoplay: game is over');
       return false;
     }
-    
+
     this.autoPlayActive = true;
+    this.syncAutoPlayUI();
     Utils.log('app', 'Auto-play started');
 
-    // Ensure UI reflects autoplay state when started programmatically
-    if (this.uiController && this.uiController.elements && this.uiController.elements.aiAutoButton) {
-      this.uiController.elements.aiAutoButton.classList.add('active');
-    }
-    
-    // Auto-play loop
-    const playMove = async () => {
-      if (!this.autoPlayActive || this.gameEngine.isGameOver) {
-        this.stopAutoPlay();
-        return;
-      }
-      
-      try {
-        Utils.log('app', 'Getting best move from AI...');
-        const bestMove = await this.aiSolver.getBestMove();
-        Utils.log('app', 'AI suggested move:', bestMove);
-        
-        if (bestMove && this.autoPlayActive) {
-          const success = this.gameEngine.move(bestMove);
-          Utils.log('app', 'Move execution result:', success);
-          
-          if (success) {
-            // Update UI
-            this.uiController.updateDisplay();
-            // Schedule next move with speed control
-            const baseDelay = 200;
-            const delay = this.autoPlaySpeed === 'MAX' ? 0 : Math.max(25, baseDelay / this.autoPlaySpeed);
-            this.autoPlayInterval = setTimeout(playMove, delay);
-          } else {
-            // No valid moves, stop auto-play
-            Utils.log('app', 'Move failed, stopping autoplay');
-            this.stopAutoPlay();
-          }
-        } else {
-          Utils.log('app', 'No best move available, stopping autoplay');
-          this.stopAutoPlay();
-        }
-      } catch (error) {
-        Utils.handleError(error, 'Auto-play move');
-        this.stopAutoPlay();
-      }
-    };
-    
-    // Start the first move
-    setTimeout(playMove, 100);
-    
+    // Kick off the loop (small initial delay so the UI updates first)
+    this.scheduleAutoMove(80);
     return true;
   }
 
@@ -352,39 +336,108 @@ class Fancy2048App {
    * Stop auto-play
    */
   stopAutoPlay() {
-    if (this.autoPlayInterval) {
-      clearTimeout(this.autoPlayInterval);
-      this.autoPlayInterval = null;
+    if (this.autoPlayTimer) {
+      clearTimeout(this.autoPlayTimer);
+      this.autoPlayTimer = null;
     }
-    
+
+    const wasActive = this.autoPlayActive;
     this.autoPlayActive = false;
-    
-    // Update UI button state
-    if (this.uiController && this.uiController.elements && this.uiController.elements.aiAutoButton) {
-      this.uiController.elements.aiAutoButton.classList.remove('active');
+    this.syncAutoPlayUI();
+
+    if (wasActive) {
+      Utils.log('app', 'Auto-play stopped');
     }
-    
-    Utils.log('app', 'Auto-play stopped');
   }
 
   /**
-   * Cycle through autoplay speeds
+   * Schedule the next auto-play move after `delay` ms (clears any pending one)
+   */
+  scheduleAutoMove(delay) {
+    if (!this.autoPlayActive) return;
+    if (this.autoPlayTimer) {
+      clearTimeout(this.autoPlayTimer);
+    }
+    this.autoPlayTimer = setTimeout(() => this.autoMoveStep(), Math.max(0, delay));
+  }
+
+  /**
+   * Perform a single auto-play move, then schedule the next using the current
+   * speed. Reading the speed each tick means changes apply on the very next
+   * move with no restart needed.
+   */
+  async autoMoveStep() {
+    this.autoPlayTimer = null;
+
+    if (!this.autoPlayActive) return;
+    if (this.isAutoMoving) return; // a previous step is still computing
+    if (this.gameEngine.isGameOver) {
+      this.stopAutoPlay();
+      return;
+    }
+
+    this.isAutoMoving = true;
+    try {
+      const move = await this.aiSolver.getBestMove();
+
+      // The user may have stopped auto-play while the AI was thinking
+      if (!this.autoPlayActive) return;
+
+      if (!move || !this.gameEngine.move(move)) {
+        Utils.log('app', 'No further moves available, stopping autoplay');
+        this.stopAutoPlay();
+        return;
+      }
+
+      this.uiController.updateDisplay();
+      // Schedule the next move using the latest speed setting
+      this.scheduleAutoMove(this.autoPlayMoveDelay);
+    } catch (error) {
+      Utils.handleError(error, 'Auto-play move');
+      this.stopAutoPlay();
+    } finally {
+      this.isAutoMoving = false;
+    }
+  }
+
+  /**
+   * Advance to the next auto-play speed. Applies immediately, even mid-run.
    */
   cycleAutoPlaySpeed() {
-    const speeds = [1, 2, 4, 8, 'MAX'];
-    const currentIndex = speeds.indexOf(this.autoPlaySpeed);
-    const nextIndex = (currentIndex + 1) % speeds.length;
-    this.autoPlaySpeed = speeds[nextIndex];
-    
-    // Update speed button display
-    if (this.uiController && this.uiController.elements && this.uiController.elements.speedButton) {
-      const speedText = this.autoPlaySpeed === 'MAX' ? 'MAX' : `${this.autoPlaySpeed}x`;
-      this.uiController.elements.speedButton.textContent = speedText;
-      this.uiController.elements.speedButton.setAttribute('data-speed', speedText);
+    this.autoPlaySpeedIndex = (this.autoPlaySpeedIndex + 1) % this.autoPlaySpeeds.length;
+    this.syncSpeedUI();
+
+    // If running and currently waiting between moves, reschedule the pending
+    // move with the new delay so the change is felt right away. If the AI is
+    // mid-computation, autoMoveStep will pick up the new delay when it finishes.
+    if (this.autoPlayActive && !this.isAutoMoving) {
+      this.scheduleAutoMove(this.autoPlayMoveDelay);
     }
-    
-    Utils.log('app', `Auto-play speed changed to: ${this.autoPlaySpeed}`);
-    return this.autoPlaySpeed;
+
+    Utils.log('app', `Auto-play speed changed to: ${this.autoPlaySpeedLabel}`);
+    return this.autoPlaySpeedLabel;
+  }
+
+  /**
+   * Reflect the auto-play on/off state on its button
+   */
+  syncAutoPlayUI() {
+    const button = this.uiController?.elements?.aiAutoButton;
+    if (!button) return;
+    button.classList.toggle('active', this.autoPlayActive);
+    button.textContent = this.autoPlayActive ? 'Stop' : 'Auto Play';
+    button.setAttribute('aria-pressed', String(this.autoPlayActive));
+  }
+
+  /**
+   * Reflect the current speed on the speed button (text + data-speed styling)
+   */
+  syncSpeedUI() {
+    const button = this.uiController?.elements?.speedButton;
+    if (!button) return;
+    const label = this.autoPlaySpeedLabel;
+    button.textContent = label;
+    button.setAttribute('data-speed', label);
   }
 
   /**
