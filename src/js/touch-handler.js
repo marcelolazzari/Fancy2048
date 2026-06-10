@@ -378,17 +378,12 @@ class TouchHandler {
   }
 
   /**
-   * Show move success animation
+   * Hook for move feedback. The board itself is intentionally NOT transformed
+   * here: translating the whole board while its tiles re-render caused
+   * smear/ghost artifacts on mobile. Haptic feedback already signals the move.
    */
   showMoveSuccess(direction) {
-    const gameBoard = document.getElementById('game-board');
-    if (!gameBoard) return;
-    
-    gameBoard.classList.add(`move-${direction}`);
-    
-    setTimeout(() => {
-      gameBoard.classList.remove(`move-${direction}`);
-    }, 200);
+    // Intentionally left as a no-op for visual stability.
   }
 
   /**
@@ -507,47 +502,11 @@ const touchStyles = `
     transition: opacity 0.2s ease;
   }
   
-  .game-board.move-up {
-    animation: moveUp 0.2s ease;
-  }
-  
-  .game-board.move-down {
-    animation: moveDown 0.2s ease;
-  }
-  
-  .game-board.move-left {
-    animation: moveLeft 0.2s ease;
-  }
-  
-  .game-board.move-right {
-    animation: moveRight 0.2s ease;
-  }
-  
   @keyframes ripple {
     to {
       transform: scale(2);
       opacity: 0;
     }
-  }
-  
-  @keyframes moveUp {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(-3px); }
-  }
-  
-  @keyframes moveDown {
-    0%, 100% { transform: translateY(0); }
-    50% { transform: translateY(3px); }
-  }
-  
-  @keyframes moveLeft {
-    0%, 100% { transform: translateX(0); }
-    50% { transform: translateX(-3px); }
-  }
-  
-  @keyframes moveRight {
-    0%, 100% { transform: translateX(0); }
-    50% { transform: translateX(3px); }
   }
 `;
 

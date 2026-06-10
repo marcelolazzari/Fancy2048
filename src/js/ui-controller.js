@@ -240,25 +240,33 @@ class UIController {
   updateBoard() {
     if (!this.elements.gameBoard) return;
 
+    const gameBoard = this.elements.gameBoard;
     const board = this.gameEngine.board;
     const size = this.gameEngine.size;
     const prev = this.previousBoard;
     const sameAsPrev = !!prev && prev.length === size;
 
     // Drive grid layout and cell-relative font sizing from the board size
-    this.elements.gameBoard.style.setProperty('--size', size);
-    this.elements.gameBoard.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
-    this.elements.gameBoard.style.gridTemplateRows = `repeat(${size}, 1fr)`;
-    this.elements.gameBoard.className = `game-board board-size-${size}`;
+    gameBoard.style.setProperty('--size', size);
+    gameBoard.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+    gameBoard.style.gridTemplateRows = `repeat(${size}, 1fr)`;
+    gameBoard.className = `game-board board-size-${size}`;
 
-    // Clear existing tiles
-    this.elements.gameBoard.innerHTML = '';
-
-    // Create the static background cells
-    for (let i = 0; i < size * size; i++) {
-      const placeholder = document.createElement('div');
-      placeholder.className = 'tile-placeholder';
-      this.elements.gameBoard.appendChild(placeholder);
+    // Rebuild the static background cells only when the board size changes.
+    // On a normal move we keep them in place and swap just the tiles, so the
+    // whole grid isn't torn down every move (a source of flicker on mobile).
+    const placeholders = gameBoard.querySelectorAll('.tile-placeholder');
+    if (placeholders.length !== size * size) {
+      gameBoard.innerHTML = '';
+      const fragment = document.createDocumentFragment();
+      for (let i = 0; i < size * size; i++) {
+        const placeholder = document.createElement('div');
+        placeholder.className = 'tile-placeholder';
+        fragment.appendChild(placeholder);
+      }
+      gameBoard.appendChild(fragment);
+    } else {
+      gameBoard.querySelectorAll('.tile').forEach(tile => tile.remove());
     }
 
     // Create tiles, animating only what changed since the previous render

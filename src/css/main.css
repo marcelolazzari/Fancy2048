@@ -382,6 +382,12 @@ body {
   gap: var(--tile-gap);
   /* Prevent the page from scrolling while swiping on the board */
   touch-action: none;
+  /* Clip tiles to the rounded board and keep painting on its own layer so
+     mobile browsers don't leave smear/ghost artifacts while tiles re-render */
+  overflow: hidden;
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  contain: layout paint;
 }
 
 /* Tiles fill their grid cell, so they can never overflow the board. */
@@ -401,11 +407,13 @@ body {
   line-height: 1;
   overflow: hidden;
   position: relative;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.18);
-  transition: transform var(--transition-fast);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
   transform-origin: center;
   user-select: none;
   -webkit-user-select: none;
+  /* Render each tile on its own GPU layer to avoid sub-pixel seams/ghosting */
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
 }
 
 .tile.new-tile {
