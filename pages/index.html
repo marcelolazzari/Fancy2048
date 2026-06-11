@@ -189,6 +189,26 @@
         </div>
     </div>
 
+    <!-- Settings Overlay -->
+    <div id="settings-overlay" class="settings-overlay hidden" role="dialog" aria-modal="true" aria-labelledby="settings-title">
+        <div class="settings-panel">
+            <div class="settings-header">
+                <h2 id="settings-title">Settings</h2>
+                <button id="settings-close" class="settings-close" aria-label="Close settings">✕</button>
+            </div>
+
+            <div class="settings-section">
+                <label for="tile-hue-slider" class="settings-label">
+                    Tile colour <span id="tile-hue-value" class="settings-value">30°</span>
+                </label>
+                <input id="tile-hue-slider" class="hue-slider" type="range" min="0" max="360" step="1" value="30"
+                       aria-label="Tile colour hue">
+                <div id="tile-hue-preview" class="tile-preview" aria-hidden="true"></div>
+                <p class="settings-hint">Slide to recolour the tiles — the board updates live and numbers stay readable automatically. Saved as you go.</p>
+            </div>
+        </div>
+    </div>
+
     <!-- Scripts -->
     <script src="../src/js/error-handler.js"></script>
     <script src="../src/js/utils.js"></script>

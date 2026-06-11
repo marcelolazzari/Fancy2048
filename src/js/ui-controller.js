@@ -30,8 +30,9 @@ class UIController {
     this.cacheElements();
     this.setupEventListeners();
     this.setupTheme();
+    this.applySavedTileHue();
     this.updateDisplay();
-    
+
     Utils.log('ui', 'UI Controller initialized');
   }
 
@@ -59,7 +60,12 @@ class UIController {
       aiHintButton: document.getElementById('ai-hint'),
       aiAutoButton: document.getElementById('ai-auto'),
       speedButton: document.getElementById('ai-speed'),
-      aiDifficultySelect: document.getElementById('ai-difficulty')
+      aiDifficultySelect: document.getElementById('ai-difficulty'),
+      settingsOverlay: document.getElementById('settings-overlay'),
+      settingsClose: document.getElementById('settings-close'),
+      tileHueSlider: document.getElementById('tile-hue-slider'),
+      tileHueValue: document.getElementById('tile-hue-value'),
+      tileHuePreview: document.getElementById('tile-hue-preview')
     };
 
     // Cache size buttons
@@ -127,9 +133,21 @@ class UIController {
     if (this.elements.aiDifficultySelect) {
       this.elements.aiDifficultySelect.addEventListener('change', (e) => this.setAIDifficulty(e.target.value));
     }
-    
 
-    
+    // Settings panel (tile-hue picker)
+    if (this.elements.settingsClose) {
+      this.elements.settingsClose.addEventListener('click', () => this.hideSettings());
+    }
+    if (this.elements.settingsOverlay) {
+      // Click on the dimmed backdrop (outside the panel) closes the dialog
+      this.elements.settingsOverlay.addEventListener('click', (e) => {
+        if (e.target === this.elements.settingsOverlay) this.hideSettings();
+      });
+    }
+    if (this.elements.tileHueSlider) {
+      this.elements.tileHueSlider.addEventListener('input', (e) => this.onTileHueInput(e.target.value));
+    }
+
     // Keyboard controls
     document.addEventListener('keydown', (e) => this.handleKeyPress(e));
     
@@ -614,11 +632,17 @@ class UIController {
    * Handle keyboard input
    */
   handleKeyPress(event) {
+    // While the settings dialog is open, swallow game keys; Escape closes it.
+    if (this.elements.settingsOverlay && !this.elements.settingsOverlay.classList.contains('hidden')) {
+      if (event.key === 'Escape') this.hideSettings();
+      return;
+    }
+
     // Prevent default for arrow keys to avoid page scrolling
     if (['ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight'].includes(event.key)) {
       event.preventDefault();
     }
-    
+
     // Don't handle keyboard events if overlays are shown or input is focused
     if (!this.elements.gameOverOverlay?.classList.contains('hidden') ||
         !this.elements.victoryOverlay?.classList.contains('hidden') ||
@@ -750,11 +774,169 @@ class UIController {
 
 
   /**
-   * Show settings (could be modal or separate page)
+   * Open the settings dialog (tile-hue picker).
    */
   showSettings() {
-    // For now, just show notification
-    this.showNotification('Settings coming soon!', 'info');
+    if (!this.elements.settingsOverlay) {
+      this.showNotification('Settings unavailable', 'error');
+      return;
+    }
+
+    // Build the live sample board once.
+    this.buildHuePreview();
+
+    // Reflect the current hue on the slider.
+    const hue = this.tileHue != null ? this.tileHue : (Storage.getSettings().tileHue ?? 30);
+    if (this.elements.tileHueSlider) this.elements.tileHueSlider.value = hue;
+    if (this.elements.tileHueValue) this.elements.tileHueValue.textContent = `${hue}°`;
+
+    this.elements.settingsOverlay.classList.remove('hidden');
+    Utils.log('ui', 'Settings opened');
+  }
+
+  /**
+   * Close the settings dialog.
+   */
+  hideSettings() {
+    if (this.elements.settingsOverlay) {
+      this.elements.settingsOverlay.classList.add('hidden');
+    }
+  }
+
+  /**
+   * Slider moved: recolour the board live and auto-save.
+   */
+  onTileHueInput(value) {
+    const hue = this.applyTileHue(value, true);
+    if (this.elements.tileHueValue) this.elements.tileHueValue.textContent = `${hue}°`;
+  }
+
+  /**
+   * Apply the saved tile hue at startup (no save, just render the palette).
+   */
+  applySavedTileHue() {
+    const hue = Storage.getSettings().tileHue;
+    this.applyTileHue(hue == null ? 30 : hue, false);
+  }
+
+  /**
+   * Generate and install the tile colour palette for `hue` (0-360).
+   *
+   * Tiles share one hue (chosen here) and ramp from light/desaturated for small
+   * values to dark/saturated for large ones, so every value stays visually
+   * distinct. The number colour is picked per tile as whichever of near-black
+   * or near-white has the higher WCAG contrast ratio against that tile, so the
+   * digits are always legible — in light and dark theme alike. The rules are
+   * injected with `!important`, overriding the static per-theme tile colours.
+   * The same rules colour both the real board and the settings preview, which
+   * is why sliding updates the board itself live.
+   *
+   * Returns the normalised hue.
+   */
+  applyTileHue(hue, save = true) {
+    hue = ((Math.round(Number(hue)) || 0) % 360 + 360) % 360;
+    this.tileHue = hue;
+
+    let styleEl = document.getElementById('tile-hue-style');
+    if (!styleEl) {
+      styleEl = document.createElement('style');
+      styleEl.id = 'tile-hue-style';
+      document.head.appendChild(styleEl);
+    }
+    styleEl.textContent = this.buildTilePaletteCSS(hue);
+
+    if (save) Storage.updateSetting('tileHue', hue);
+    return hue;
+  }
+
+  /**
+   * Build the CSS text for the tile palette at a given hue.
+   */
+  buildTilePaletteCSS(hue) {
+    const values = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192];
+    let css = '';
+    values.forEach((v, i) => {
+      const t = i / (values.length - 1);          // 0..1 across the ramp
+      const light = Math.round(86 - t * 48);        // 86% -> 38%
+      const sat = Math.round(48 + t * 40);          // 48% -> 88%
+      const bg = `hsl(${hue}, ${sat}%, ${light}%)`;
+      const text = this.contrastText(hue, sat, light);
+      css += `.tile[data-value="${v}"]{background:${bg} !important;color:${text} !important;}\n`;
+    });
+    return css;
+  }
+
+  /**
+   * Pick the most legible text colour (near-black vs near-white) for an HSL
+   * background by comparing WCAG contrast ratios.
+   */
+  contrastText(h, s, l) {
+    const [r, g, b] = this.hslToRgb(h, s / 100, l / 100);
+    const bgLum = this.relativeLuminance(r, g, b);
+    // Pure black/white maximize the contrast ratio; whichever is higher keeps
+    // every tile's digits legible (the worst case across all hues is ~4.58:1,
+    // which clears WCAG AA for normal text — and these digits are large/bold).
+    const contrastWhite = (1.0 + 0.05) / (bgLum + 0.05);
+    const contrastBlack = (bgLum + 0.05) / (0.0 + 0.05);
+    return contrastBlack >= contrastWhite ? '#000000' : '#ffffff';
+  }
+
+  /**
+   * HSL (h in degrees, s/l in 0..1) -> [r, g, b] each 0..255.
+   */
+  hslToRgb(h, s, l) {
+    h = (h % 360) / 360;
+    let r, g, b;
+    if (s === 0) {
+      r = g = b = l;
+    } else {
+      const hue2rgb = (p, q, t) => {
+        if (t < 0) t += 1;
+        if (t > 1) t -= 1;
+        if (t < 1 / 6) return p + (q - p) * 6 * t;
+        if (t < 1 / 2) return q;
+        if (t < 2 / 3) return p + (q - p) * (2 / 3 - t) * 6;
+        return p;
+      };
+      const q = l < 0.5 ? l * (1 + s) : l + s - l * s;
+      const p = 2 * l - q;
+      r = hue2rgb(p, q, h + 1 / 3);
+      g = hue2rgb(p, q, h);
+      b = hue2rgb(p, q, h - 1 / 3);
+    }
+    return [Math.round(r * 255), Math.round(g * 255), Math.round(b * 255)];
+  }
+
+  /**
+   * sRGB relative luminance (0..1) per the WCAG definition.
+   */
+  relativeLuminance(r, g, b) {
+    const channel = (c) => {
+      c /= 255;
+      return c <= 0.03928 ? c / 12.92 : Math.pow((c + 0.055) / 1.055, 2.4);
+    };
+    return 0.2126 * channel(r) + 0.7152 * channel(g) + 0.0722 * channel(b);
+  }
+
+  /**
+   * Build the small sample board shown in the settings dialog. The tiles are
+   * real `.tile[data-value]` elements so the injected palette colours them in
+   * sync with the live board.
+   */
+  buildHuePreview() {
+    const container = this.elements.tileHuePreview;
+    if (!container || container.childElementCount > 0) return;
+
+    const values = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048];
+    const fragment = document.createDocumentFragment();
+    for (const v of values) {
+      const tile = document.createElement('div');
+      tile.className = 'tile';
+      tile.setAttribute('data-value', v);
+      tile.textContent = Utils.formatNumber(v);
+      fragment.appendChild(tile);
+    }
+    container.appendChild(fragment);
   }
 
   /**
