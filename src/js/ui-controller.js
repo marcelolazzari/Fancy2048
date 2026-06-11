@@ -354,22 +354,33 @@ class UIController {
   }
 
   /**
-   * Show victory overlay
+   * Show victory overlay. In AI auto mode (`options.ai`) the overlay asks
+   * whether the AI should keep playing; persistence is deferred to game over to
+   * avoid double-counting, and the message is tailored to the AI.
    */
-  showVictory(result) {
+  showVictory(result, options = {}) {
     if (!this.elements.victoryOverlay) return;
-    
+
+    const message = this.elements.victoryOverlay.querySelector('.overlay-message');
+    const continueBtn = this.elements.continueButton;
+    if (options.ai) {
+      if (message) message.textContent = 'The AI reached 2048! Keep playing for a higher tile?';
+      if (continueBtn) continueBtn.textContent = 'Keep AI Playing';
+    } else {
+      if (message) message.textContent = 'You reached 2048!';
+      if (continueBtn) continueBtn.textContent = 'Keep Playing';
+      // Human win: record it now (AI wins are saved when the game ends).
+      Storage.saveGameResult(result);
+    }
+
     this.elements.victoryOverlay.classList.remove('hidden');
-    
-    // Save game result
-    Storage.saveGameResult(result);
-    
+
     // Play victory sound
     this.playSound('victory');
-    
+
     // Haptic feedback
     Utils.vibrate([50, 50, 50, 50, 100]);
-    
+
     Utils.log('ui', 'Victory displayed', result);
   }
 
@@ -432,7 +443,14 @@ class UIController {
   continueGame() {
     this.gameEngine.continueGame();
     this.hideOverlays();
-    
+
+    // If the AI hit 2048 and the player chose to keep playing, resume auto-play
+    // from the current board.
+    const app = window.fancy2048App;
+    if (app && app.pendingAiWin) {
+      app.resumeAfterAiWin();
+    }
+
     Utils.log('ui', 'Game continued after victory');
   }
 

@@ -180,17 +180,21 @@ class StatsPage {
     item.className = 'game-item';
     
     const status = game.won ? 'win' : 'lose';
-    const statusIcon = game.won ? '🏆' : '❌';
-    
+
+    // Highlight AI-played games with a small badge so they stand out from
+    // human games in the history.
+    const aiBadge = game.isAI
+      ? '<span class="ai-badge" title="Played by the AI" style="display:inline-block;margin-left:6px;padding:1px 6px;border-radius:6px;font-size:0.7em;font-weight:700;letter-spacing:0.03em;background:var(--secondary-color,#8f7a66);color:#fff;vertical-align:middle;">🤖 AI</span>'
+      : '';
+
     item.innerHTML = `
       <div class="game-info-left">
         <div class="game-status ${status}" title="${game.won ? 'Won' : 'Lost'}"></div>
         <div class="game-details">
-          <div class="game-score">${Utils.formatNumber(game.score)}</div>
+          <div class="game-score">${Utils.formatNumber(game.score)}${aiBadge}</div>
           <div class="game-meta">
             ${game.moves || 0} moves • ${game.boardSize || 4}×${game.boardSize || 4}
             ${game.duration ? ` • ${Utils.formatTime(game.duration)}` : ''}
-            ${game.isAI ? ' • AI' : ''}
           </div>
         </div>
       </div>

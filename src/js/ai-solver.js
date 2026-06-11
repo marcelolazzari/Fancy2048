@@ -1,14 +1,27 @@
 /**
  * Fancy2048 - AI Solver
  *
- * Expectimax search with:
+ * Expectimax search using the heuristic from nneonneo's 2048-ai
+ * (https://github.com/nneonneo/2048-ai), the strongest documented 2048 AI
+ * (~100% win rate at 4x4). The board is scored per row and per column with
+ * four terms — open space, available merges, monotonicity (a strong gradient
+ * toward a corner) and a penalty on large scattered values — using the same
+ * weights and exponents nneonneo tuned. Unlike the original (a 4x4-only bitboard
+ * with lookup tables), this computes the heuristic directly so it works for
+ * every board size the game offers (3-6).
+ *
+ * Search features:
  *  - Iterative deepening bounded by a hard per-move time budget, so a move is
- *    always returned quickly and the UI thread never freezes (the previous
- *    fixed-depth search could block for seconds on near-empty boards).
+ *    always returned quickly and the UI thread never freezes.
+ *  - Probability-cutoff pruning (nneonneo's CPROB_THRESH_BASE): chance branches
+ *    whose cumulative probability falls below a threshold are evaluated
+ *    statically instead of expanded, which lets the search reach much deeper
+ *    along the likely lines.
  *  - In-place chance-node expansion (mutate/undo) to avoid allocating a board
  *    per empty cell.
  *  - A transposition table (cleared each move) to skip repeated states.
- *  - A cheap positional heuristic (no per-leaf move generation).
+ *  - A large penalty for states with no legal move, so the AI actively avoids
+ *    dead ends.
  */
 
 class AISolver {
@@ -34,20 +47,30 @@ class AISolver {
     this.evaluationCache = new Map();
     this.maxCacheSize = 200000;
 
-    // Heuristic weights. Raw positional terms (snake/corner) are scaled down so
-    // the log-space terms (monotonicity/smoothness) still influence the score.
+    // nneonneo's heuristic weights (the linear terms the learner may tune).
     this.weights = {
-      snakePattern: 0.018,
-      cornerGradient: 0.06,
-      monotonicity: 6.0,
-      smoothness: 3.5,
-      emptySpaces: 14.0,
-      mergePotential: 0.4,
-      clusteringPenalty: 1.2
+      emptyWeight: 270.0,
+      mergesWeight: 700.0,
+      monotonicityWeight: 47.0,
+      sumWeight: 11.0
     };
 
-    // Snake weights are generated lazily per board size and cached.
-    this.snakeWeightCache = {};
+    // Fixed exponents from nneonneo (kept out of the learner: large powers are
+    // numerically unstable to mutate). Ranks are integer log2 tile values, so
+    // rank^power is precomputed into a small lookup table.
+    this.monotonicityPower = 4.0;
+    this.sumPower = 3.5;
+    this.MAX_RANK = 20;
+    this._powMono = [];
+    this._powSum = [];
+    for (let r = 0; r <= this.MAX_RANK; r++) {
+      this._powMono[r] = Math.pow(r, this.monotonicityPower);
+      this._powSum[r] = Math.pow(r, this.sumPower);
+    }
+
+    // Search tuning.
+    this.probThreshold = 0.0001; // prune chance branches below this probability
+    this.LOST_PENALTY = 1e6;     // strongly discourage dead-end (no-move) states
 
     // Performance / quality statistics.
     this.stats = {
@@ -140,13 +163,17 @@ class AISolver {
 
   /**
    * Evaluate every root move at the given depth and return the best one.
+   *
+   * After the player's move a random tile spawns, so the layer below the root
+   * is a chance node (this is what makes it expectimax rather than a plain
+   * two-ply max search).
    */
   searchRoot(moves, depth, randomness) {
     let bestScore = -Infinity;
     let bestMove = moves[0].direction;
 
     for (const move of moves) {
-      let score = this.expectimax(move.board, depth - 1, false);
+      let score = this.expectimax(move.board, depth - 1, true, 1);
       if (this._timedOut) {
         return { move: bestMove, score: bestScore };
       }
@@ -166,16 +193,20 @@ class AISolver {
 
   /**
    * Expectimax with alternating max (player) and chance (random tile) nodes.
+   *
+   * `cprob` is the cumulative probability of reaching this node. Chance
+   * branches below `probThreshold` are scored statically instead of expanded,
+   * concentrating the search budget on the lines that actually matter.
    * Aborts cooperatively once the deadline passes (sets `_timedOut`).
    */
-  expectimax(board, depth, isChance) {
+  expectimax(board, depth, isChance, cprob) {
     if (this._timedOut) return 0;
     if (Date.now() >= this._deadline) {
       this._timedOut = true;
       return 0;
     }
 
-    if (depth <= 0) {
+    if (depth <= 0 || cprob < this.probThreshold) {
       this.stats.evaluations++;
       return this.evaluateBoard(board);
     }
@@ -193,31 +224,36 @@ class AISolver {
       // Computer's turn: expected value over each empty cell getting a 2 (90%)
       // or 4 (10%). Mutate the board in place and undo to avoid allocations.
       const emptyCells = this.getEmptyCells(board);
-      if (emptyCells.length === 0) {
+      const n = emptyCells.length;
+      if (n === 0) {
         result = this.evaluateBoard(board);
       } else {
         let sum = 0;
+        const p2 = 0.9 / n;
+        const p4 = 0.1 / n;
         for (const cell of emptyCells) {
           board[cell.row][cell.col] = 2;
-          const score2 = this.expectimax(board, depth - 1, false);
+          const score2 = this.expectimax(board, depth - 1, false, cprob * p2);
           board[cell.row][cell.col] = 4;
-          const score4 = this.expectimax(board, depth - 1, false);
+          const score4 = this.expectimax(board, depth - 1, false, cprob * p4);
           board[cell.row][cell.col] = 0;
 
           if (this._timedOut) return 0;
           sum += 0.9 * score2 + 0.1 * score4;
         }
-        result = sum / emptyCells.length;
+        result = sum / n;
       }
     } else {
       // Player's turn: maximize over the available moves.
       const moves = this.getPossibleMoves(board);
       if (moves.length === 0) {
-        result = this.evaluateBoard(board); // no moves available
+        // No legal move: this line dead-ends. Penalize heavily so the AI
+        // steers away from positions that can be forced into a loss.
+        result = this.evaluateBoard(board) - this.LOST_PENALTY;
       } else {
         result = -Infinity;
         for (const move of moves) {
-          const score = this.expectimax(move.board, depth - 1, true);
+          const score = this.expectimax(move.board, depth - 1, true, cprob);
           if (this._timedOut) return 0;
           if (score > result) result = score;
         }
@@ -231,250 +267,93 @@ class AISolver {
   }
 
   /**
-   * Static positional evaluation of a board (higher is better).
-   *
-   * Combines a snake gradient + corner anchoring (which force a monotonic
-   * chain toward one corner), monotonicity and smoothness (in log2 space),
-   * open space, ready merges, and a clustering penalty. Weights keep the
-   * positional and log-space terms on a comparable scale so each matters.
+   * Static evaluation of a board (higher is better), summed over every row and
+   * every column using nneonneo's heuristic. Rows and columns are scored with
+   * the same per-line function, so structure along both axes is rewarded.
    */
   evaluateBoard(board) {
-    const phase = this.getGamePhase(board);
+    const size = board.length;
+    let score = 0;
 
-    // Phase-aware weighting: value open space early, structure late.
-    const w = { ...this.weights };
-    if (phase === 'early') {
-      w.emptySpaces += 6;
-    } else if (phase === 'mid') {
-      w.monotonicity += 2;
-    } else { // late / end
-      w.monotonicity += 3;
-      w.snakePattern += 0.01;
-      w.cornerGradient += 0.04;
+    // Rows.
+    for (let i = 0; i < size; i++) {
+      score += this.evaluateLine(board[i]);
+    }
+    // Columns.
+    for (let j = 0; j < size; j++) {
+      const col = new Array(size);
+      for (let i = 0; i < size; i++) col[i] = board[i][j];
+      score += this.evaluateLine(col);
     }
 
-    let score = 0;
-    score += this.evaluateSnakePattern(board) * w.snakePattern;
-    score += this.evaluateCornerGradient(board) * w.cornerGradient;
-    score += this.evaluateMonotonicity(board) * w.monotonicity;
-    score += this.evaluateSmoothness(board) * w.smoothness;
-    score += this.evaluateEmptySpaces(board) * w.emptySpaces;
-    score += this.evaluateMergePotential(board) * w.mergePotential;
-    score -= this.evaluateClusteringPenalty(board) * w.clusteringPenalty;
     return score;
   }
 
   /**
-   * Determine game phase for dynamic weighting.
+   * nneonneo's per-line heuristic:
+   *   emptyWeight * (empty cells)
+   * + mergesWeight * (runs of equal adjacent tiles)
+   * - monotonicityWeight * min(left-leaning, right-leaning gradient)
+   * - sumWeight * (sum of rank^sumPower)
+   * where rank = log2(value) and empty cells count as rank 0.
    */
-  getGamePhase(board) {
-    const maxTile = Math.max(...board.flat());
-    const empty = this.getEmptyCells(board).length;
-    if (maxTile < 128) return 'early';
-    if (maxTile < 1024) return empty > 4 ? 'mid' : 'late';
-    return empty > 2 ? 'late' : 'end';
-  }
+  evaluateLine(line) {
+    const n = line.length;
+    const w = this.weights;
+    const powMono = this._powMono;
+    const powSum = this._powSum;
 
-  /**
-   * Generate snake (boustrophedon) weights for any board size, cached per size.
-   * The maximum weight sits in a corner and decreases along a snake path,
-   * encouraging a monotonic chain toward that corner. Returns all four
-   * corner orientations.
-   */
-  generateSnakeWeights(size = 4) {
-    if (this.snakeWeightCache[size]) {
-      return this.snakeWeightCache[size];
-    }
+    let empty = 0;
+    let sum = 0;
+    let merges = 0;
+    let prevRank = -1;
+    let counter = 0;
 
-    const topLeft = [];
-    for (let i = 0; i < size; i++) {
-      const row = [];
-      const rowFromBottom = size - 1 - i;
-      const base = size * rowFromBottom;
-      for (let j = 0; j < size; j++) {
-        row.push(rowFromBottom % 2 === 0 ? base + j : base + (size - 1 - j));
+    for (let i = 0; i < n; i++) {
+      const v = line[i];
+      if (v <= 0) {
+        empty++;
+        continue;
       }
-      topLeft.push(row);
-    }
+      const rank = this.rankOf(v);
+      sum += powSum[rank];
 
-    const mirrorCols = grid => grid.map(row => [...row].reverse());
-    const mirrorRows = grid => [...grid].reverse();
-
-    const weights = {
-      topLeft,
-      topRight: mirrorCols(topLeft),
-      bottomLeft: mirrorRows(topLeft),
-      bottomRight: mirrorRows(mirrorCols(topLeft))
-    };
-
-    this.snakeWeightCache[size] = weights;
-    return weights;
-  }
-
-  /**
-   * Reward tiles arranged along a snake path toward a corner.
-   */
-  evaluateSnakePattern(board) {
-    const size = board.length;
-    const snakeWeights = this.generateSnakeWeights(size);
-    const patterns = [
-      snakeWeights.topLeft,
-      snakeWeights.topRight,
-      snakeWeights.bottomLeft,
-      snakeWeights.bottomRight
-    ];
-
-    let bestPatternScore = -Infinity;
-    for (const pattern of patterns) {
-      let patternScore = 0;
-      for (let i = 0; i < size; i++) {
-        for (let j = 0; j < size; j++) {
-          if (board[i][j] > 0) {
-            patternScore += board[i][j] * pattern[i][j];
-          }
-        }
+      if (prevRank === rank) {
+        counter++;
+      } else if (counter > 0) {
+        merges += 1 + counter;
+        counter = 0;
       }
-      if (patternScore > bestPatternScore) bestPatternScore = patternScore;
+      prevRank = rank;
+    }
+    if (counter > 0) merges += 1 + counter;
+
+    // Monotonicity over adjacent ranks (empties contribute rank 0). We keep the
+    // smaller of the two directional gradients so a line that is monotonic in
+    // either direction is penalized least.
+    let monoLeft = 0;
+    let monoRight = 0;
+    let prevPow = powMono[this.rankOf(line[0])];
+    for (let i = 1; i < n; i++) {
+      const curPow = powMono[this.rankOf(line[i])];
+      if (prevPow > curPow) monoLeft += prevPow - curPow;
+      else monoRight += curPow - prevPow;
+      prevPow = curPow;
     }
 
-    return bestPatternScore;
+    return w.emptyWeight * empty
+         + w.mergesWeight * merges
+         - w.monotonicityWeight * Math.min(monoLeft, monoRight)
+         - w.sumWeight * sum;
   }
 
   /**
-   * Reward keeping the maximum tile in a corner (or at least on an edge).
+   * Integer rank (log2) of a tile value, 0 for empty, clamped to the pow table.
    */
-  evaluateCornerGradient(board) {
-    const size = board.length;
-    let maxTile = 0;
-    let maxPos = { row: -1, col: -1 };
-
-    for (let i = 0; i < size; i++) {
-      for (let j = 0; j < size; j++) {
-        if (board[i][j] > maxTile) {
-          maxTile = board[i][j];
-          maxPos = { row: i, col: j };
-        }
-      }
-    }
-
-    if (maxTile === 0) return 0;
-
-    const onTopOrBottom = maxPos.row === 0 || maxPos.row === size - 1;
-    const onLeftOrRight = maxPos.col === 0 || maxPos.col === size - 1;
-
-    if (onTopOrBottom && onLeftOrRight) return maxTile * 10; // corner
-    if (onTopOrBottom || onLeftOrRight) return maxTile * 5;  // edge
-    return 0;
-  }
-
-  /**
-   * Reward monotonic (ordered) rows and columns.
-   */
-  evaluateMonotonicity(board) {
-    const size = board.length;
-    let total = 0;
-
-    for (let i = 0; i < size; i++) {
-      total += this.calculateDirectionalMonotonicity(board[i]);
-    }
-    for (let j = 0; j < size; j++) {
-      const column = board.map(row => row[j]);
-      total += this.calculateDirectionalMonotonicity(column);
-    }
-
-    return total;
-  }
-
-  calculateDirectionalMonotonicity(array) {
-    let increasing = 0;
-    let decreasing = 0;
-
-    for (let i = 0; i < array.length - 1; i++) {
-      const current = array[i] > 0 ? Math.log2(array[i]) : 0;
-      const next = array[i + 1] > 0 ? Math.log2(array[i + 1]) : 0;
-
-      if (current > next) decreasing += current - next;
-      else if (current < next) increasing += next - current;
-    }
-
-    return Math.max(increasing, decreasing);
-  }
-
-  /**
-   * Reward neighbouring tiles with similar values (easier merges). Returned as
-   * a non-negative "smoothness" value (higher is smoother).
-   */
-  evaluateSmoothness(board) {
-    const size = board.length;
-    let penalty = 0;
-
-    for (let i = 0; i < size; i++) {
-      for (let j = 0; j < size; j++) {
-        if (board[i][j] <= 0) continue;
-        const currentLog = Math.log2(board[i][j]);
-
-        if (j < size - 1 && board[i][j + 1] > 0) {
-          penalty += Math.abs(currentLog - Math.log2(board[i][j + 1]));
-        }
-        if (i < size - 1 && board[i + 1][j] > 0) {
-          penalty += Math.abs(currentLog - Math.log2(board[i + 1][j]));
-        }
-      }
-    }
-
-    // Higher = smoother. Negative penalty offset so smoother boards score more.
-    return -penalty;
-  }
-
-  /**
-   * Reward open space (quadratic so the difference grows as the board fills).
-   */
-  evaluateEmptySpaces(board) {
-    const empty = this.getEmptyCells(board).length;
-    return empty * empty;
-  }
-
-  /**
-   * Reward adjacent equal tiles (immediate merge potential).
-   */
-  evaluateMergePotential(board) {
-    const size = board.length;
-    let mergePotential = 0;
-
-    for (let i = 0; i < size; i++) {
-      for (let j = 0; j < size; j++) {
-        const value = board[i][j];
-        if (value <= 0) continue;
-        if (j < size - 1 && board[i][j + 1] === value) mergePotential += value;
-        if (i < size - 1 && board[i + 1][j] === value) mergePotential += value;
-      }
-    }
-
-    return mergePotential;
-  }
-
-  /**
-   * Penalize spreading high-value tiles apart (prefer keeping them grouped).
-   */
-  evaluateClusteringPenalty(board) {
-    const size = board.length;
-    const highTiles = [];
-
-    for (let i = 0; i < size; i++) {
-      for (let j = 0; j < size; j++) {
-        if (board[i][j] >= 128) highTiles.push([i, j]);
-      }
-    }
-
-    let penalty = 0;
-    for (let a = 0; a < highTiles.length; a++) {
-      for (let b = a + 1; b < highTiles.length; b++) {
-        penalty += Math.abs(highTiles[a][0] - highTiles[b][0]) +
-                   Math.abs(highTiles[a][1] - highTiles[b][1]);
-      }
-    }
-
-    return penalty;
+  rankOf(value) {
+    if (value <= 0) return 0;
+    const r = Math.round(Math.log2(value));
+    return r > this.MAX_RANK ? this.MAX_RANK : r;
   }
 
   /**
