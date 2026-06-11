@@ -18,19 +18,18 @@
 
 class AILearner {
   constructor(options = {}) {
-    this.storageKey = options.storageKey || 'fancy2048_ai_learning';
+    // v2: the heuristic was replaced with nneonneo's (different weight keys),
+    // so the key is versioned to avoid loading stale, incompatible weights.
+    this.storageKey = options.storageKey || 'fancy2048_ai_learning_v2';
     this.evalGames = options.evalGames || 3;     // games averaged per candidate
     this.stepSize = options.stepSize || 0.12;    // mutation strength
 
     // Defaults MUST match the solver's starting weights (passed in by the app).
     this.defaultWeights = { ...(options.defaultWeights || {
-      snakePattern: 0.018,
-      cornerGradient: 0.06,
-      monotonicity: 6.0,
-      smoothness: 3.5,
-      emptySpaces: 14.0,
-      mergePotential: 0.4,
-      clusteringPenalty: 1.2
+      emptyWeight: 270.0,
+      mergesWeight: 700.0,
+      monotonicityWeight: 47.0,
+      sumWeight: 11.0
     }) };
     this.keys = Object.keys(this.defaultWeights);
 

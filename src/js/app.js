@@ -171,6 +171,8 @@ class Fancy2048App {
    */
   prepareLearningForGame() {
     this.gameAiMoves = 0;
+    this.currentGameRecorded = false; // whether this game is already in the stats history
+    this.pendingAiWin = false;        // never carry an AI-win prompt into a fresh game
     if (!this.aiLearner || !this.aiSolver) return;
     const size = this.gameEngine.size;
     this.aiSolver.weights = this.aiLearner.beginGame(size);
@@ -247,26 +249,45 @@ class Fancy2048App {
    * Handle game over
    */
   handleGameOver(result) {
-    // Was the AI driving this game? (used for both learning and self-play)
+    // Was the AI driving this game? (used for both learning and stats)
     const wasAutoPlaying = this.autoPlayActive;
     const totalMoves = this.gameEngine.moves || 0;
     const aiDriven = this.aiLearner &&
       this.gameAiMoves >= 10 &&
       this.gameAiMoves >= 0.6 * totalMoves;
 
-    // Stop auto-play if active
-    this.stopAutoPlay();
+    // Tag the result so stats can distinguish AI-played games, and treat a game
+    // that reached 2048 at any point as a win even if it later filled up.
+    result.isAI = wasAutoPlaying;
+    result.won = result.won || this.gameEngine.hasWon;
 
-    // Show the game-over card only for human play. In AI auto mode we don't
-    // interrupt with an overlay; we just roll into the next training game.
-    if (!wasAutoPlaying) {
+    // Stop auto-play if active. We do NOT auto-restart: the AI plays one game,
+    // records what it learned, and leaves the final board on screen for review.
+    this.stopAutoPlay();
+    this.pendingAiWin = false;
+
+    if (wasAutoPlaying) {
+      // No blocking game-over card in AI mode; persist the result to the stats
+      // history directly (the overlay is what normally saves it) unless this
+      // game was already recorded when it hit 2048. Show a brief, non-blocking
+      // summary instead of an overlay.
+      if (!this.currentGameRecorded) {
+        Storage.saveGameResult(result);
+        this.currentGameRecorded = true;
+      }
+      this.uiController.showNotification(
+        `AI game over — score ${Utils.formatNumber(result.score)}, best tile ${Utils.formatNumber(result.highestTile)}`,
+        'info', 3500);
+    } else {
+      // Human play: the overlay handles persistence.
       this.uiController.showGameOver(result);
     }
 
-    // Auto-save game state
+    // Auto-save current game state
     this.saveGameState();
 
-    // Learn from the AI's own play
+    // Learn from the AI's own play (stores the best-performing weights so the
+    // AI keeps improving from every game it plays).
     if (aiDriven) {
       const event = this.aiLearner.recordResult(result.boardSize || this.gameEngine.size, result);
       Utils.log('app', 'AI learning', event);
@@ -276,25 +297,28 @@ class Fancy2048App {
       }
     }
 
-    // Continuous self-play: if the AI was auto-playing, start a fresh game and
-    // keep going so it trains across many games (no game-over card shown).
-    if (wasAutoPlaying) {
-      this.selfPlayTimer = setTimeout(() => {
-        if (!this.isInitialized) return;
-        this.newGame();
-        this.startAutoPlay();
-      }, 600);
-    }
-
     Utils.log('app', 'Game over', result);
   }
 
   /**
-   * Handle game win
+   * Handle game win (a 2048 tile appeared)
    */
   handleGameWin(result) {
-    // Don't interrupt AI auto mode with a victory card; it keeps playing.
-    if (!this.autoPlayActive) {
+    result.isAI = this.autoPlayActive;
+
+    if (this.autoPlayActive) {
+      // Record the AI's win to the stats history now (so it counts even if the
+      // player starts a new game from here), then pause and ask whether the AI
+      // should keep going. The per-game guard stops game-over double-counting.
+      result.won = true;
+      if (!this.currentGameRecorded) {
+        Storage.saveGameResult(result);
+        this.currentGameRecorded = true;
+      }
+      this.pendingAiWin = true;
+      this.stopAutoPlay();
+      this.uiController.showVictory(result, { ai: true });
+    } else {
       this.uiController.showVictory(result);
     }
 
@@ -521,6 +545,7 @@ class Fancy2048App {
    */
   newGame() {
     this.stopAutoPlay();
+    this.pendingAiWin = false;
     this.gameEngine.newGame();
     this.prepareLearningForGame();
     this.uiController.hideOverlays();
@@ -528,6 +553,16 @@ class Fancy2048App {
     this.saveGameState();
 
     Utils.log('app', 'New game started');
+  }
+
+  /**
+   * The player chose "Keep Playing" after the AI hit 2048: resume auto-play
+   * from the current board so the AI continues toward a higher tile.
+   */
+  resumeAfterAiWin() {
+    if (!this.pendingAiWin) return false;
+    this.pendingAiWin = false;
+    return this.startAutoPlay();
   }
 
   /**

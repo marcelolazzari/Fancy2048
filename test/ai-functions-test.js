@@ -124,24 +124,23 @@ function assertClose(actual, expected, tolerance, message) {
   // Reset to medium for further tests
   aiSolver.setDifficulty('medium');
 
-  // === Test 3: Snake Weights Generation ===
-  log('\n=== Test 3: Snake Weights Generation ===');
+  // === Test 3: Heuristic configuration (nneonneo weights) ===
+  log('\n=== Test 3: Heuristic configuration ===');
 
-  const weights = aiSolver.generateSnakeWeights(4);
-  assert(typeof weights === 'object' && weights !== null, 'Snake weights is an object');
-  assert(Array.isArray(weights.topLeft), 'topLeft pattern is an array');
-  assert(weights.topLeft.length === 4 && weights.topLeft[0].length === 4, 'topLeft is a 4x4 pattern');
+  assert(typeof aiSolver.weights.emptyWeight === 'number', 'Heuristic exposes an emptyWeight');
+  assert(typeof aiSolver.weights.mergesWeight === 'number', 'Heuristic exposes a mergesWeight');
+  assert(typeof aiSolver.weights.monotonicityWeight === 'number', 'Heuristic exposes a monotonicityWeight');
+  assert(typeof aiSolver.weights.sumWeight === 'number', 'Heuristic exposes a sumWeight');
 
-  // Each orientation places the maximum weight in its designated corner.
-  assert(weights.topLeft[0][0] === 15, 'topLeft corner holds the maximum weight');
-  assert(weights.topRight[0][3] === 15, 'topRight corner holds the maximum weight');
-  assert(weights.bottomLeft[3][0] === 15, 'bottomLeft corner holds the maximum weight');
-  assert(weights.bottomRight[3][3] === 15, 'bottomRight corner holds the maximum weight');
-  assert(weights.topLeft[0][0] > weights.topLeft[1][1], 'Corner weight exceeds center weight');
+  // Rank helper converts a tile value to its log2 rank (empty -> 0).
+  assert(aiSolver.rankOf(2) === 1, 'rankOf(2) === 1');
+  assert(aiSolver.rankOf(2048) === 11, 'rankOf(2048) === 11');
+  assert(aiSolver.rankOf(0) === 0, 'rankOf(empty) === 0');
 
-  // Snake weights adapt to other board sizes.
-  const weights3 = aiSolver.generateSnakeWeights(3);
-  assert(weights3.topLeft.length === 3 && weights3.topLeft[0].length === 3, 'Generates 3x3 snake weights');
+  // An all-empty line is scored purely by the empty-cell reward.
+  const emptyLineScore = aiSolver.evaluateLine([0, 0, 0, 0]);
+  assert(emptyLineScore === aiSolver.weights.emptyWeight * 4,
+         'Empty line scored by the empty-cell weight alone');
 
   // === Test 4: Board Evaluation Functions ===
   log('\n=== Test 4: Board Evaluation Functions ===');
@@ -334,9 +333,11 @@ function assertClose(actual, expected, tolerance, message) {
   assert(key === sameKey, 'Same boards generate same keys');
   assert(key !== differentKey, 'Different boards generate different keys');
 
-  // === Test 12: Monotonicity Evaluation ===
-  log('\n=== Test 12: Monotonicity Evaluation ===');
+  // === Test 12: Monotonicity Preference ===
+  log('\n=== Test 12: Monotonicity Preference ===');
 
+  // A smooth gradient toward a corner should evaluate higher than the same
+  // tiles jumbled out of order.
   const monotonicBoard = [
     [1024, 512, 256, 128],
     [64, 32, 16, 8],
@@ -344,46 +345,47 @@ function assertClose(actual, expected, tolerance, message) {
     [0, 0, 0, 0]
   ];
 
-  // A board where every row and column holds equal values has no gradient.
-  const flatBoard = [
-    [4, 4, 4, 4],
-    [4, 4, 4, 4],
-    [4, 4, 4, 4],
-    [4, 4, 4, 4]
+  const jumbledBoard = [
+    [2, 512, 8, 128],
+    [256, 4, 1024, 16],
+    [32, 64, 0, 0],
+    [0, 0, 0, 0]
   ];
 
-  const monotonicScore = aiSolver.evaluateMonotonicity(monotonicBoard);
-  const flatScore = aiSolver.evaluateMonotonicity(flatBoard);
+  const monotonicScore = aiSolver.evaluateBoard(monotonicBoard);
+  const jumbledScore = aiSolver.evaluateBoard(jumbledBoard);
 
-  // A graded (monotonic) board has a stronger directional ordering than a flat one.
-  assert(Number.isFinite(monotonicScore), 'Monotonicity score is a finite number');
-  assert(monotonicScore > flatScore, 'Graded board has higher monotonicity score than a flat board');
+  assert(Number.isFinite(monotonicScore), 'Board evaluation is a finite number');
+  assert(monotonicScore > jumbledScore,
+         'A monotonic board scores higher than a jumbled board with the same tiles');
 
-  // === Test 13: Smoothness Evaluation ===
-  log('\n=== Test 13: Smoothness Evaluation ===');
+  // === Test 13: Merge Potential ===
+  log('\n=== Test 13: Merge Potential ===');
 
-  const smoothBoard = [
-    [2, 2, 4, 4],
-    [2, 2, 4, 4],
+  // Adjacent equal tiles (ready merges) should evaluate higher than the same
+  // values arranged so nothing can merge.
+  const mergeReadyBoard = [
+    [4, 4, 8, 8],
+    [0, 0, 0, 0],
     [0, 0, 0, 0],
     [0, 0, 0, 0]
   ];
 
-  const roughBoard = [
-    [2, 1024, 4, 512],
-    [256, 8, 128, 16],
+  const noMergeBoard = [
+    [4, 8, 4, 8],
+    [0, 0, 0, 0],
     [0, 0, 0, 0],
     [0, 0, 0, 0]
   ];
 
-  const smoothScore = aiSolver.evaluateSmoothness(smoothBoard);
-  const roughScore = aiSolver.evaluateSmoothness(roughBoard);
+  const mergeReadyScore = aiSolver.evaluateBoard(mergeReadyBoard);
+  const noMergeScore = aiSolver.evaluateBoard(noMergeBoard);
 
-  // Smooth board should have better (higher) smoothness score
-  assert(smoothScore >= roughScore, 'Smooth board has better or equal smoothness score');
+  assert(mergeReadyScore > noMergeScore,
+         'A board with adjacent equal tiles (ready merges) scores higher');
 
-  // === Test 14: Max Tile Position Evaluation ===
-  log('\n=== Test 14: Max Tile Position Evaluation ===');
+  // === Test 14: Max Tile Position ===
+  log('\n=== Test 14: Max Tile Position ===');
 
   const cornerMaxBoard = [
     [1024, 2, 0, 0],
@@ -399,10 +401,11 @@ function assertClose(actual, expected, tolerance, message) {
     [0, 0, 0, 0]
   ];
 
-  const cornerMaxScore = aiSolver.evaluateCornerGradient(cornerMaxBoard);
-  const centerMaxScore = aiSolver.evaluateCornerGradient(centerMaxBoard);
+  const cornerMaxScore = aiSolver.evaluateBoard(cornerMaxBoard);
+  const centerMaxScore = aiSolver.evaluateBoard(centerMaxBoard);
 
-  assert(cornerMaxScore > centerMaxScore, 'Corner max tile position scores higher than center');
+  assert(cornerMaxScore > centerMaxScore,
+         'Keeping the max tile in a corner scores higher than centering it');
 
   // === Test 15: AI Statistics ===
   log('\n=== Test 15: AI Statistics ===');
