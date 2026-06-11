@@ -388,6 +388,9 @@ body {
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
   contain: layout paint;
+  /* Query container so tile numbers can be sized as a fraction of the actual
+     board/cell width (see the number-sizing block below). */
+  container-type: inline-size;
 }
 
 /* Tiles fill their grid cell, so they can never overflow the board. */
@@ -402,8 +405,12 @@ body {
   justify-content: center;
   font-weight: 700;
   font-family: var(--font-family-mono);
-  /* Font scales with the cell size for every board dimension (3x3 - 6x6). */
-  font-size: clamp(0.85rem, calc(var(--board-size) / var(--size, 4) * 0.4), 2.4rem);
+  /* Base size for 1-2 digit values. Sized from the board's inline width via
+     container-query units (100cqi = board width) divided by the column count,
+     so it tracks the real cell size on every board (3x3 - 6x6). Larger values
+     step down only by digit count in the number-sizing block below, keeping
+     numbers as large as possible without overflowing. */
+  font-size: clamp(0.9rem, calc(0.55 * 100cqi / var(--size, 4)), 3.4rem);
   line-height: 1;
   overflow: hidden;
   position: relative;
@@ -468,6 +475,33 @@ body {
 /* Higher tiles */
 .tile[data-value="4096"] { background: #ff6b6b; color: #f9f6f2; font-size: 0.7em; }
 .tile[data-value="8192"] { background: #4ecdc4; color: #f9f6f2; font-size: 0.7em; }
+
+/* Number sizing by digit count -------------------------------------------
+   Digits scale with the tile (container-query units) and step down only as the
+   number gets longer, so they stay as large as possible without overflowing.
+   `!important` and these grouped selectors supersede the per-value font sizes
+   set in the colour rules above (including the higher-specificity dark-theme
+   ones), keeping sizing identical in both themes. Factors are tuned for the
+   monospace digit width (~0.6em) so the widest value still fits its cell. */
+.tile[data-value="128"],
+.tile[data-value="256"],
+.tile[data-value="512"] {
+  font-size: clamp(0.85rem, calc(0.41 * 100cqi / var(--size, 4)), 2.7rem) !important;
+}
+.tile[data-value="1024"],
+.tile[data-value="2048"],
+.tile[data-value="4096"],
+.tile[data-value="8192"] {
+  font-size: clamp(0.8rem, calc(0.32 * 100cqi / var(--size, 4)), 2.2rem) !important;
+}
+.tile[data-value="16384"],
+.tile[data-value="32768"],
+.tile[data-value="65536"] {
+  font-size: clamp(0.72rem, calc(0.255 * 100cqi / var(--size, 4)), 1.8rem) !important;
+}
+.tile[data-value="131072"] {
+  font-size: clamp(0.66rem, calc(0.215 * 100cqi / var(--size, 4)), 1.5rem) !important;
+}
 
 /* Empty tile placeholder */
 .tile-placeholder {
