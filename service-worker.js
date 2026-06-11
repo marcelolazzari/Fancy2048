@@ -6,7 +6,7 @@
 // Bump this version on every deploy to purge stale caches. Combined with the
 // network-first strategy for the app shell below, returning visitors always
 // receive the latest version when online (and the cache serves them offline).
-const CACHE_NAME = 'fancy2048-v1.3.0';
+const CACHE_NAME = 'fancy2048-v1.4.0';
 const CACHE_STRATEGY = {
   STALE_WHILE_REVALIDATE: 'stale-while-revalidate',
   CACHE_FIRST: 'cache-first',

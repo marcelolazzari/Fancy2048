@@ -388,6 +388,9 @@ body {
   transform: translateZ(0);
   -webkit-transform: translateZ(0);
   contain: layout paint;
+  /* Query container so tile numbers can be sized as a fraction of the actual
+     board/cell width (see the number-sizing block below). */
+  container-type: inline-size;
 }
 
 /* Tiles fill their grid cell, so they can never overflow the board. */
@@ -402,8 +405,12 @@ body {
   justify-content: center;
   font-weight: 700;
   font-family: var(--font-family-mono);
-  /* Font scales with the cell size for every board dimension (3x3 - 6x6). */
-  font-size: clamp(0.85rem, calc(var(--board-size) / var(--size, 4) * 0.4), 2.4rem);
+  /* Base size for 1-2 digit values. Sized from the board's inline width via
+     container-query units (100cqi = board width) divided by the column count,
+     so it tracks the real cell size on every board (3x3 - 6x6). Larger values
+     step down only by digit count in the number-sizing block below, keeping
+     numbers as large as possible without overflowing. */
+  font-size: clamp(0.9rem, calc(0.55 * 100cqi / var(--size, 4)), 3.4rem);
   line-height: 1;
   overflow: hidden;
   position: relative;
@@ -468,6 +475,33 @@ body {
 /* Higher tiles */
 .tile[data-value="4096"] { background: #ff6b6b; color: #f9f6f2; font-size: 0.7em; }
 .tile[data-value="8192"] { background: #4ecdc4; color: #f9f6f2; font-size: 0.7em; }
+
+/* Number sizing by digit count -------------------------------------------
+   Digits scale with the tile (container-query units) and step down only as the
+   number gets longer, so they stay as large as possible without overflowing.
+   `!important` and these grouped selectors supersede the per-value font sizes
+   set in the colour rules above (including the higher-specificity dark-theme
+   ones), keeping sizing identical in both themes. Factors are tuned for the
+   monospace digit width (~0.6em) so the widest value still fits its cell. */
+.tile[data-value="128"],
+.tile[data-value="256"],
+.tile[data-value="512"] {
+  font-size: clamp(0.85rem, calc(0.41 * 100cqi / var(--size, 4)), 2.7rem) !important;
+}
+.tile[data-value="1024"],
+.tile[data-value="2048"],
+.tile[data-value="4096"],
+.tile[data-value="8192"] {
+  font-size: clamp(0.8rem, calc(0.32 * 100cqi / var(--size, 4)), 2.2rem) !important;
+}
+.tile[data-value="16384"],
+.tile[data-value="32768"],
+.tile[data-value="65536"] {
+  font-size: clamp(0.72rem, calc(0.255 * 100cqi / var(--size, 4)), 1.8rem) !important;
+}
+.tile[data-value="131072"] {
+  font-size: clamp(0.66rem, calc(0.215 * 100cqi / var(--size, 4)), 1.5rem) !important;
+}
 
 /* Empty tile placeholder */
 .tile-placeholder {
@@ -1291,3 +1325,161 @@ select:focus,
 }
 
 
+
+/* ==========================================================================
+   Settings dialog (tile-hue picker)
+   ========================================================================== */
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 1500;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 16px;
+  background: rgba(0, 0, 0, 0.45);
+  -webkit-backdrop-filter: blur(2px);
+  backdrop-filter: blur(2px);
+  animation: settingsFade 0.2s ease;
+}
+
+/* Anchored to the bottom so the live game board stays visible above it. */
+@media (min-width: 700px) {
+  .settings-overlay { align-items: center; }
+}
+
+.settings-overlay.hidden { display: none; }
+
+@keyframes settingsFade {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.settings-panel {
+  width: 100%;
+  max-width: 460px;
+  background: var(--surface-color, #ffffff);
+  color: var(--text-primary, #333);
+  border: 1px solid var(--border-color, #ddd);
+  border-radius: calc(var(--tile-radius) * 2);
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35);
+  padding: 20px;
+  animation: settingsSlide 0.25s ease;
+}
+
+@keyframes settingsSlide {
+  from { transform: translateY(12px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
+.settings-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 16px;
+}
+
+.settings-header h2 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.settings-close {
+  border: none;
+  background: transparent;
+  color: inherit;
+  font-size: 1.1rem;
+  line-height: 1;
+  cursor: pointer;
+  padding: 6px 10px;
+  border-radius: 8px;
+  opacity: 0.7;
+}
+
+.settings-close:hover { opacity: 1; background: rgba(127, 127, 127, 0.15); }
+
+.settings-section { display: flex; flex-direction: column; gap: 12px; }
+
+.settings-label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-weight: 600;
+}
+
+.settings-value {
+  font-family: var(--font-family-mono);
+  font-weight: 700;
+  opacity: 0.85;
+}
+
+/* Hue slider with a full-spectrum track so the choices are visible. */
+.hue-slider {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 100%;
+  height: 14px;
+  border-radius: 999px;
+  outline: none;
+  cursor: pointer;
+  background: linear-gradient(
+    to right,
+    hsl(0, 75%, 55%), hsl(60, 75%, 55%), hsl(120, 75%, 55%),
+    hsl(180, 75%, 55%), hsl(240, 75%, 55%), hsl(300, 75%, 55%), hsl(360, 75%, 55%)
+  );
+}
+
+.hue-slider::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 3px solid rgba(0, 0, 0, 0.55);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+}
+
+.hue-slider::-moz-range-thumb {
+  width: 26px;
+  height: 26px;
+  border-radius: 50%;
+  background: #ffffff;
+  border: 3px solid rgba(0, 0, 0, 0.55);
+  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.4);
+  cursor: pointer;
+}
+
+.hue-slider:focus { box-shadow: 0 0 0 3px rgba(255, 204, 0, 0.35); }
+
+/* Live sample board. Tiles are real .tile[data-value] elements so they recolour
+   together with the game board as the slider moves. */
+.tile-preview {
+  display: grid;
+  grid-template-columns: repeat(6, 1fr);
+  gap: 6px;
+}
+
+.tile-preview .tile {
+  position: static;
+  width: auto;
+  height: auto;
+  aspect-ratio: 1 / 1;
+  font-size: clamp(0.55rem, 2.2vw, 0.85rem);
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.2);
+}
+
+.settings-hint {
+  margin: 4px 0 0;
+  font-size: 0.82rem;
+  opacity: 0.7;
+  line-height: 1.4;
+}
+
+[data-theme="dark"] .settings-panel {
+  background: var(--dark-surface, #2a2a2a);
+  border-color: var(--dark-border, #444);
+  color: var(--dark-text-primary, #f0f0f0);
+}
