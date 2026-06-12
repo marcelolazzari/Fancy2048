@@ -786,7 +786,7 @@ class UIController {
     this.buildHuePreview();
 
     // Reflect the current hue on the slider.
-    const hue = this.tileHue != null ? this.tileHue : (Storage.getSettings().tileHue ?? 30);
+    const hue = this.tileHue != null ? this.tileHue : (Storage.getSettings().tileHue ?? 0);
     if (this.elements.tileHueSlider) this.elements.tileHueSlider.value = hue;
     if (this.elements.tileHueValue) this.elements.tileHueValue.textContent = `${hue}°`;
 
@@ -816,26 +816,36 @@ class UIController {
    */
   applySavedTileHue() {
     const hue = Storage.getSettings().tileHue;
-    this.applyTileHue(hue == null ? 30 : hue, false);
+    this.applyTileHue(hue == null ? 0 : hue, false);
   }
 
   /**
-   * Generate and install the tile colour palette for `hue` (0-360).
-   *
-   * Tiles share one hue (chosen here) and ramp from light/desaturated for small
-   * values to dark/saturated for large ones, so every value stays visually
-   * distinct. The number colour is picked per tile as whichever of near-black
-   * or near-white has the higher WCAG contrast ratio against that tile, so the
-   * digits are always legible — in light and dark theme alike. The rules are
-   * injected with `!important`, overriding the static per-theme tile colours.
-   * The same rules colour both the real board and the settings preview, which
-   * is why sliding updates the board itself live.
-   *
-   * Returns the normalised hue.
+   * The canonical 2048 palette (value -> tile background), extended past 2048
+   * with vivid, distinct colours so the highest tiles stay clearly visible on
+   * the board. The hue slider rotates every colour by the same offset, so at 0°
+   * the board shows the exact standard 2048 colours and the variety/contrast
+   * between tiles is preserved at any setting.
    */
-  applyTileHue(hue, save = true) {
-    hue = ((Math.round(Number(hue)) || 0) % 360 + 360) % 360;
-    this.tileHue = hue;
+  get basePalette() {
+    return {
+      2: '#eee4da', 4: '#ede0c8', 8: '#f2b179', 16: '#f59563',
+      32: '#f67c5f', 64: '#f65e3b', 128: '#edcf72', 256: '#edcc61',
+      512: '#edc850', 1024: '#edc53f', 2048: '#edc22e',
+      4096: '#ed6a2e', 8192: '#e1483b', 16384: '#d4399b',
+      32768: '#9b4dd4', 65536: '#4d7fd4', 131072: '#3bb4c4'
+    };
+  }
+
+  /**
+   * Generate and install the tile colour palette for a hue offset (0-360).
+   * Rotates the standard 2048 palette by `hueOffset` and picks each number's
+   * colour for legibility. Injected with `!important`, so it overrides the
+   * static per-theme tile colours and recolours both the real board and the
+   * settings preview live. Returns the normalised offset.
+   */
+  applyTileHue(hueOffset, save = true) {
+    hueOffset = ((Math.round(Number(hueOffset)) || 0) % 360 + 360) % 360;
+    this.tileHue = hueOffset;
 
     let styleEl = document.getElementById('tile-hue-style');
     if (!styleEl) {
@@ -843,42 +853,76 @@ class UIController {
       styleEl.id = 'tile-hue-style';
       document.head.appendChild(styleEl);
     }
-    styleEl.textContent = this.buildTilePaletteCSS(hue);
+    styleEl.textContent = this.buildTilePaletteCSS(hueOffset);
 
-    if (save) Storage.updateSetting('tileHue', hue);
-    return hue;
+    if (save) Storage.updateSetting('tileHue', hueOffset);
+    return hueOffset;
   }
 
   /**
-   * Build the CSS text for the tile palette at a given hue.
+   * Build the CSS text for the palette rotated by `hueOffset` degrees.
    */
-  buildTilePaletteCSS(hue) {
-    const values = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192];
+  buildTilePaletteCSS(hueOffset) {
+    const palette = this.basePalette;
     let css = '';
-    values.forEach((v, i) => {
-      const t = i / (values.length - 1);          // 0..1 across the ramp
-      const light = Math.round(86 - t * 48);        // 86% -> 38%
-      const sat = Math.round(48 + t * 40);          // 48% -> 88%
-      const bg = `hsl(${hue}, ${sat}%, ${light}%)`;
-      const text = this.contrastText(hue, sat, light);
-      css += `.tile[data-value="${v}"]{background:${bg} !important;color:${text} !important;}\n`;
-    });
+    for (const value of Object.keys(palette)) {
+      const base = this.hexToHsl(palette[value]);
+      const h = (base.h + hueOffset) % 360;
+      const [r, g, b] = this.hslToRgb(h, base.s, base.l);
+      const text = this.contrastText(r, g, b);
+      css += `.tile[data-value="${value}"]{background:rgb(${r}, ${g}, ${b}) !important;color:${text} !important;}\n`;
+    }
     return css;
   }
 
   /**
-   * Pick the most legible text colour (near-black vs near-white) for an HSL
-   * background by comparing WCAG contrast ratios.
+   * Number colour for a tile background (r, g, b 0-255). Prefers the standard
+   * 2048 number colours (dark brown / off-white), whichever has more contrast,
+   * and falls back to pure black/white when neither is legible enough — so
+   * digits stay readable at every hue, in light and dark theme alike.
    */
-  contrastText(h, s, l) {
-    const [r, g, b] = this.hslToRgb(h, s / 100, l / 100);
+  contrastText(r, g, b) {
     const bgLum = this.relativeLuminance(r, g, b);
-    // Pure black/white maximize the contrast ratio; whichever is higher keeps
-    // every tile's digits legible (the worst case across all hues is ~4.58:1,
-    // which clears WCAG AA for normal text — and these digits are large/bold).
-    const contrastWhite = (1.0 + 0.05) / (bgLum + 0.05);
-    const contrastBlack = (bgLum + 0.05) / (0.0 + 0.05);
-    return contrastBlack >= contrastWhite ? '#000000' : '#ffffff';
+    const darkLum = this.relativeLuminance(0x77, 0x6e, 0x65);   // #776e65
+    const lightLum = this.relativeLuminance(0xf9, 0xf6, 0xf2);  // #f9f6f2
+    const ratio = (a, c) => (Math.max(a, c) + 0.05) / (Math.min(a, c) + 0.05);
+    const crDark = ratio(bgLum, darkLum);
+    const crLight = ratio(bgLum, lightLum);
+
+    if (Math.max(crDark, crLight) >= 3.2) {
+      return crDark >= crLight ? '#776e65' : '#f9f6f2';
+    }
+    // Standard colours are too low-contrast on this background: use the most
+    // legible extreme so the number is never hard to read.
+    const crBlack = (bgLum + 0.05) / 0.05;
+    const crWhite = 1.05 / (bgLum + 0.05);
+    return crBlack >= crWhite ? '#000000' : '#ffffff';
+  }
+
+  /**
+   * Hex colour -> HSL ({ h: 0-360, s: 0-1, l: 0-1 }).
+   */
+  hexToHsl(hex) {
+    const m = hex.replace('#', '');
+    const r = parseInt(m.slice(0, 2), 16) / 255;
+    const g = parseInt(m.slice(2, 4), 16) / 255;
+    const b = parseInt(m.slice(4, 6), 16) / 255;
+    const max = Math.max(r, g, b);
+    const min = Math.min(r, g, b);
+    const l = (max + min) / 2;
+    let h = 0;
+    let s = 0;
+    if (max !== min) {
+      const d = max - min;
+      s = l > 0.5 ? d / (2 - max - min) : d / (max + min);
+      switch (max) {
+        case r: h = (g - b) / d + (g < b ? 6 : 0); break;
+        case g: h = (b - r) / d + 2; break;
+        default: h = (r - g) / d + 4; break;
+      }
+      h *= 60;
+    }
+    return { h, s, l };
   }
 
   /**
@@ -927,7 +971,8 @@ class UIController {
     const container = this.elements.tileHuePreview;
     if (!container || container.childElementCount > 0) return;
 
-    const values = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048];
+    // Include the super-tiles so the preview also shows the high-value colours.
+    const values = [2, 4, 8, 16, 32, 64, 128, 256, 512, 1024, 2048, 4096, 8192, 16384, 32768, 65536];
     const fragment = document.createDocumentFragment();
     for (const v of values) {
       const tile = document.createElement('div');

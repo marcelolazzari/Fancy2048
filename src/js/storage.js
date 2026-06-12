@@ -19,7 +19,7 @@ class StorageManager {
       highContrastMode: false,
       autoSave: true,
       showHints: true,
-      tileHue: 30
+      tileHue: 0
     };
     
     this.initializeSettings();

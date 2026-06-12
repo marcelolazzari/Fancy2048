@@ -410,7 +410,7 @@ body {
      so it tracks the real cell size on every board (3x3 - 6x6). Larger values
      step down only by digit count in the number-sizing block below, keeping
      numbers as large as possible without overflowing. */
-  font-size: clamp(0.9rem, calc(0.55 * 100cqi / var(--size, 4)), 3.4rem);
+  font-size: clamp(0.85rem, calc(0.50 * 100cqi / var(--size, 4)), 2.8rem);
   line-height: 1;
   overflow: hidden;
   position: relative;
@@ -486,21 +486,21 @@ body {
 .tile[data-value="128"],
 .tile[data-value="256"],
 .tile[data-value="512"] {
-  font-size: clamp(0.85rem, calc(0.41 * 100cqi / var(--size, 4)), 2.7rem) !important;
+  font-size: clamp(0.8rem, calc(0.38 * 100cqi / var(--size, 4)), 2.1rem) !important;
 }
 .tile[data-value="1024"],
 .tile[data-value="2048"],
 .tile[data-value="4096"],
 .tile[data-value="8192"] {
-  font-size: clamp(0.8rem, calc(0.32 * 100cqi / var(--size, 4)), 2.2rem) !important;
+  font-size: clamp(0.72rem, calc(0.295 * 100cqi / var(--size, 4)), 1.65rem) !important;
 }
 .tile[data-value="16384"],
 .tile[data-value="32768"],
 .tile[data-value="65536"] {
-  font-size: clamp(0.72rem, calc(0.255 * 100cqi / var(--size, 4)), 1.8rem) !important;
+  font-size: clamp(0.64rem, calc(0.24 * 100cqi / var(--size, 4)), 1.35rem) !important;
 }
 .tile[data-value="131072"] {
-  font-size: clamp(0.66rem, calc(0.215 * 100cqi / var(--size, 4)), 1.5rem) !important;
+  font-size: clamp(0.58rem, calc(0.20 * 100cqi / var(--size, 4)), 1.2rem) !important;
 }
 
 /* Empty tile placeholder */
